@@ -1,0 +1,70 @@
+#ifndef NETWORK_H
+#define NETWORK_H
+
+#include "observer.h"
+
+// Forward declarations
+template<typename T>
+class Buffer;
+
+// Traits for NIC configuration
+namespace Traits {
+    struct NIC {
+        static const unsigned int SEND_BUFFERS = 16;
+        static const unsigned int RECEIVE_BUFFERS = 16;
+    };
+}
+
+// Statistics class for network metrics
+class Statistics {
+public:
+    Statistics() : 
+        tx_packets(0), tx_bytes(0), 
+        rx_packets(0), rx_bytes(0), 
+        tx_drops(0), rx_drops(0) {}
+    
+    unsigned long tx_packets;
+    unsigned long tx_bytes;
+    unsigned long rx_packets;
+    unsigned long rx_bytes;
+    unsigned long tx_drops;
+    unsigned long rx_drops;
+};
+
+// Network
+class Ethernet; // all necessary definitions and formats
+
+template <typename Engine>
+class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::Frame>,
+Ethernet::Protocol>, private Engine
+{
+public:
+    static const unsigned int BUFFER_SIZE =
+        Traits<NIC>::SEND_BUFFERS * sizeof(Buffer<Ethernet::Frame>) +
+        Traits<NIC>::RECEIVE_BUFFERS * sizeof(Buffer<Ethernet::Frame>);
+    typedef Ethernet::Address Address;
+    typedef Ethernet::Protocol Protocol_Number;
+    typedef Buffer<Ethernet::Frame> Buffer;
+    typedef Conditional_Data_Observer<Buffer<Ethernet::Frame>, Ethernet::Protocol> Observer;
+    typedef Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Ethernet::Protocol> Observed;
+protected:
+    NIC();
+public:
+    ~NIC();
+    int send(Address dst, Protocol_Number prot, const void * data, unsigned int size);
+    int receive(Address * src, Protocol_Number * prot, void * data, unsigned int size);
+    Buffer * alloc(Address dst, Protocol_Number prot, unsigned int size);
+    int send(Buffer * buf);
+    void free(Buffer * buf);
+    int receive(Buffer * buf, Address * src, Address * dst, void * data, unsigned int size);
+    const Address & address();
+    void address(Address address);
+    const Statistics & statistics();
+    void attach(Observer * obs, Protocol_Number prot); // possibly inherited
+    void detach(Observer * obs, Protocol_Number prot); // possibly inherited
+private:
+    Statistics _statistics;
+    Buffer _buffer[BUFFER_SIZE];
+};
+
+#endif // NETWORK_H
