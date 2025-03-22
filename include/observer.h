@@ -21,18 +21,36 @@ public:
     void v();
 
 private:
-    std::mutex mtx;
-    std::condition_variable cv;
-    int count;
+    int _count;
+    std::mutex _mutex;
+    std::condition_variable _cv;
 };
 
 // Simple List implementation
 template<typename T>
 class List {
 public:
-    void insert(T* item);
-    T* remove();
+    void insert(T* item) {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _items.push_back(item);
+    }
+    
+    T* remove() {
+        std::lock_guard<std::mutex> lock(_mutex);
+        if (_items.empty())
+            return nullptr;
+        
+        T* item = _items.front();
+        _items.pop_front();
+        return item;
+    }
+    
+    bool empty() const {
+        std::lock_guard<std::mutex> lock(_mutex);
+        return _items.empty();
+    }
 private:
+    mutable std::mutex _mutex;
     std::list<T*> _items;
 };
 
@@ -62,13 +80,14 @@ public:
     Iterator end();
 
 private:
+    mutable std::mutex _mutex;
     std::list<T*> _items;
 };
 
 // Fundamentals for Observer X Observed
 template <typename T, typename Condition>
 class Conditional_Data_Observer {
-    friend class Conditionally_Data_Observed<T, Condition>;
+    // friend class Conditionally_Data_Observed<T, Condition>;
 public:
     typedef T Observed_Data;
     typedef Condition Observing_Condition;
@@ -119,6 +138,7 @@ public:
     bool notify(C c, D * d);
     
 private:
+    mutable std::mutex _mutex;
     Observers _observers;
 };
 
@@ -130,8 +150,8 @@ public:
     typedef D Observed_Data;
     typedef C Observing_Condition;
 public:
-    Concurrent_Observer(): _semaphore(0) {}
-    ~Concurrent_Observer() {}
+    Concurrent_Observer(C rank): _semaphore(0), _rank(rank) {}
+    virtual ~Concurrent_Observer() = default;
     
     void update(C c, D * d);
     D * updated();
@@ -140,6 +160,10 @@ public:
 private:
     Semaphore _semaphore;
     List<D> _data;
+    C _rank;
 };
+
+// Include template implementations
+#include "observer_impl.h"
 
 #endif // OBSERVER_H
