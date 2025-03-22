@@ -1,45 +1,47 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
 INCLUDES = -Iinclude
+
 SRCDIR = src
+INCDIR = include
 BUILDDIR = build
-TARGET = $(BUILDDIR)/program
-
-# Source files
-SOURCES = $(shell find $(SRCDIR) -name "*.cpp")
-OBJECTS = $(SOURCES:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o)
-
-# Test files
 TESTDIR = tests
-TESTSOURCES = $(shell find $(TESTDIR) -name "*.cpp")
-TESTOBJECTS = $(TESTSOURCES:$(TESTDIR)/%.cpp=$(BUILDDIR)/$(TESTDIR)/%.o)
-TESTEXEC = $(BUILDDIR)/tests/runTests
 
-# Create build directory structure
-DIRS = $(sort $(dir $(OBJECTS) $(TESTOBJECTS)))
+SOURCES = $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/core/*.cpp)
+OBJECTS = $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
+
+TARGET = $(BUILDDIR)/main
+
+DIRS = $(dir $(OBJECTS))
 $(shell mkdir -p $(DIRS))
 
-.PHONY: all clean test doc
+.PHONY: all clean test doc directories observer_test run_observer_test
 
-all: $(TARGET)
+all: $(TARGET) observer_test
 
 $(TARGET): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-test: $(TESTEXEC)
-	./$(TESTEXEC)
-
-$(TESTEXEC): $(TESTOBJECTS) $(filter-out $(BUILDDIR)/main.o, $(OBJECTS))
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^
-
-$(BUILDDIR)/$(TESTDIR)/%.o: $(TESTDIR)/%.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
+test: $(TARGET)
+	./$(TARGET)
 
 doc:
-	@echo "Generating documentation..."
+	doxygen
 
 clean:
 	rm -rf $(BUILDDIR)/*
+
+# Observer Test specific rules
+build_test_observer: $(BUILDDIR)/test_observer
+
+$(BUILDDIR)/test_observer: $(BUILDDIR)/core/observer.o $(BUILDDIR)/test_observer.o
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ -pthread
+
+$(BUILDDIR)/test_observer.o: $(TESTDIR)/test_observer.cpp $(INCDIR)/observer.h
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+test_observer: $(BUILDDIR)/test_observer
+	./$(BUILDDIR)/test_observer
