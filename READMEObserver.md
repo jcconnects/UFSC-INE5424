@@ -1,243 +1,146 @@
 
-# README_Observer.md
+# Observer Pattern Implementation Documentation
 
-## Observer Pattern Implementation
+## Overview
 
-This document explains the implementation of the Observer design pattern for the Operating Systems II course project. The implementation focuses on creating a thread-safe, semaphore-based observer pattern suitable for asynchronous communication between components.
+This document describes the implementation of the Observer pattern in a thread-safe, concurrent environment. The implementation consists of two main components:
 
-### 1. Overview
+1. `observer.h` - Core implementation of the Observer pattern
+2. `observer_test.cpp` - Test suite demonstrating functionality
 
-The implementation provides a foundation for asynchronous communication through the Observer pattern, with the following key features:
+## Core Implementation (observer.h)
 
-- Thread-safe operations with proper locking mechanisms
-- POSIX semaphore-based signaling for observer notification
-- Support for conditional observation based on message types/conditions
-- Reference counting for proper memory management
-- Two-level observer pattern hierarchy:
-  - Base level: `Conditional_Data_Observer` and `Conditionally_Data_Observed`
-  - Thread-safe level: `Concurrent_Observer` and `Concurrent_Observed`
+The implementation features several key components designed to work together in a concurrent environment:
 
-### 2. Key Components
+### Utility Classes
 
-#### 2.1 Semaphore
+#### Semaphore
 
-A wrapper around POSIX semaphores providing a simple P/V interface:
+A POSIX semaphore wrapper that provides synchronization primitives:
 
-```cpp
-class Semaphore {
-public:
-    Semaphore(int count = 0);
-    ~Semaphore();
-    void p();  // Wait operation
-    void v();  // Signal operation
-private:
-    sem_t _sem;
-};
-```
+- `Semaphore(int count)`: Initializes a semaphore with given count
+- `p()`: Decrements the semaphore (blocks if zero)
+- `v()`: Increments the semaphore (signals waiting threads)
 
-#### 2.2 Thread-safe Collections
+#### List<T>
 
-Two collections are implemented for thread-safe operations:
+Thread-safe list implementation with:
 
-**List<T>**
-```cpp
-template<typename T>
-class List {
-public:
-    void insert(T* item);
-    T* remove();
-    bool empty() const;
-private:
-    mutable std::mutex _mutex;
-    std::list<T*> _items;
-};
-```
+- `insert(T* item)`: Thread-safely adds an item to the list
+- `remove()`: Thread-safely removes and returns the first item
+- `empty()`: Thread-safely checks if the list is empty
 
-**Ordered_List<T, C>**
-```cpp
-template<typename T, typename C>
-class Ordered_List {
-public:
-    class Iterator { ... };
-    void insert(T* item);
-    void remove(T* item);
-    Iterator begin();
-    Iterator end();
-private:
-    mutable std::mutex _mutex;
-    std::list<T*> _items;
-};
-```
+#### Ordered_List<T, C>
 
-#### 2.3 Base Observer Pattern
+An ordered list implementation with iterator support:
 
-The base implementation providing conditional observation:
+- `insert(T* item)`: Adds an item to the list
+- `remove(T* item)`: Removes a specific item from the list
+- `begin()`, `end()`: Return iterators for list traversal
 
-**Conditional_Data_Observer<T, Condition>**
-```cpp
-template <typename T, typename Condition = void>
-class Conditional_Data_Observer {
-public:
-    Conditional_Data_Observer(Condition rank);
-    virtual void update(Condition c, T* d) = 0;
-    virtual Condition rank() const;
-protected:
-    Condition _rank;
-};
-```
+### Base Observer Framework
 
-**Conditionally_Data_Observed<T, Condition>**
-```cpp
-template <typename T, typename Condition = void>
-class Conditionally_Data_Observed {
-public:
-    void attach(Conditional_Data_Observer<T, Condition>* o, Condition c);
-    void detach(Conditional_Data_Observer<T, Condition>* o, Condition c);
-    bool notify(Condition c, T* d);
-private:
-    Observers _observers;
-};
-```
+#### Conditional_Data_Observer<T, Condition>
 
-#### 2.4 Concurrent Observer Pattern
+Base observer class template:
 
-Thread-safe observer implementation with semaphore signaling:
+- Constructor takes a `rank` (condition) parameter
+- Virtual `update(Condition c, T* d)` method to be overridden
+- `rank()` accessor method
 
-**Concurrent_Observer<D, C>**
-```cpp
-template<typename D, typename C = void>
-class Concurrent_Observer {
-public:
-    Concurrent_Observer(C rank);
-    void update(C c, D* d);
-    D* updated();  // Blocks until data is available
-    C rank() const;
-private:
-    Semaphore _semaphore;
-    List<D> _data;
-    C _rank;
-};
-```
+#### Conditionally_Data_Observed<T, Condition>
 
-**Concurrent_Observed<D, C>**
-```cpp
-template<typename D, typename C = void>
-class Concurrent_Observed {
-public:
-    void attach(Concurrent_Observer<D, C>* o, C c);
-    void detach(Concurrent_Observer<D, C>* o, C c);
-    bool notify(C c, D* d);
-private:
-    Observers _observers;
-};
-```
+Base observable class template:
 
-### 3. Test Implementation
+- `attach(Observer* o, Condition c)`: Registers an observer
+- `detach(Observer* o, Condition c)`: Unregisters an observer
+- `notify(Condition c, T* d)`: Notifies observers of matching condition
 
-The test code demonstrates how to use the observer pattern with two test cases:
+### Concurrent Implementation
 
-#### 3.1 Test Data Structures
+#### Concurrent_Observer<D, C>
 
-```cpp
-struct TestData {
-    int value;
-    std::atomic<int> ref_count;
-};
+Thread-safe observer implementation:
 
-enum class TestCondition {
-    CONDITION_1,
-    CONDITION_2,
-    CONDITION_3
-};
-```
+- `update(C c, D* d)`: Adds data to internal queue and signals via semaphore
+- `updated()`: Blocks until data is available, then returns it
+- Includes reference counting for safe memory management
 
-#### 3.2 Test Observer and Observed Classes
+#### Concurrent_Observed<D, C>
 
-```cpp
-class TestObserver : public Concurrent_Observer<TestData, TestCondition> {
-    // Receives and processes messages in a separate thread
-};
+Thread-safe observable implementation:
 
-class TestObserved : public Concurrent_Observed<TestData, TestCondition> {
-    // Generates and broadcasts messages to observers
-};
-```
+- `attach(Observer* o, C c)`: Thread-safely registers an observer
+- `detach(Observer* o, C c)`: Thread-safely unregisters an observer
+- `notify(C c, D* d)`: Thread-safely notifies observers with matching condition
+- Implements reference counting to ensure proper memory management
 
-#### 3.3 Test Cases
+## Test Implementation (observer_test.cpp)
 
-1. **Basic Functionality Test**
-   - Tests simple 1:1 communication between observed and observers
-   - Verifies correct message delivery by condition
-   - Checks proper thread synchronization
+The test suite demonstrates and validates the implementation through:
 
-2. **Concurrent Access Test**
-   - Tests multiple observers for each condition
-   - Tests concurrent data generation from multiple threads
-   - Validates thread safety and memory management
+### Test Support Classes
 
-### 4. Known Issues
+#### ThreadSafeOutput
 
-1. **Segmentation Fault**
-   - Reference counting mechanism is not fully thread-safe
-   - Multiple observers may try to delete the same data object
-   - Concurrent access to shared resources may not be properly synchronized
+Ensures thread-safe console output:
 
-2. **Inconsistent Output**
-   - Observer messages sometimes overlap in output
-   - Sometimes observers don't process all messages before termination
+- `print(const std::string& msg)`: Thread-safely prints messages
 
-3. **Memory Management**
-   - Current implementation may have memory leaks in error conditions
-   - Data may not be properly cleaned up if an observer crashes
+#### TestData
 
-4. **Termination Issues**
-   - Observers may not clean up properly on program termination
-   - Semaphores may remain signaled even after program exit
+Test data structure with reference counting:
 
-### 5. Potential Improvements
+- `value`: Integer value for testing
+- `ref_count`: Atomic reference counter
 
-1. **Reference Counting**
-   - Implement a more robust thread-safe reference counting mechanism
-   - Consider using `std::shared_ptr` instead of raw pointers for automatic cleanup
+#### TestObserver
 
-2. **Thread Management**
-   - Add proper thread cancellation support
-   - Implement a clean shutdown mechanism for observers
+Concrete implementation of Concurrent_Observer:
 
-3. **Error Handling**
-   - Add more comprehensive error handling for semaphore operations
-   - Implement recovery mechanisms for failed observer operations
+- `run()`: Main processing loop that waits for and processes updates
+- `stop()`: Signals the observer to terminate
 
-4. **Memory Safety**
-   - Use smart pointers for automatic memory management
-   - Add proper cleanup on destruction
+#### TestObserved
 
-5. **Synchronization**
-   - Improve thread synchronization mechanisms
-   - Consider using C++17's `std::shared_mutex` for better reader/writer locks
+Concrete implementation of Concurrent_Observed:
 
-6. **Performance Optimization**
-   - Add batching support for high-frequency messages
-   - Implement thread pool for observer processing
-   - Add priority support for different message types
+- `generateData(TestCondition condition, int value)`: Creates and distributes test data
 
-7. **API Improvements**
-   - Add timeout support for the `updated()` method
-   - Provide non-blocking `tryUpdate()` method
-   - Add support for filtering messages based on additional criteria
+### Test Cases
 
-8. **Extensibility**
-   - Make the observer pattern more extensible with hooks
-   - Add support for multi-condition observation
-   - Provide serialization support for network transmission
+#### test_basic_functionality()
 
-### 6. Integration with Project
+Tests basic functionality with:
+- Two observers with different conditions
+- Sequential data generation
+- Proper observer notification
+- Clean shutdown
 
-This observer implementation serves as the foundation for the communication library in the autonomous vehicle project. To integrate it:
+#### test_concurrent_access()
 
-1. Use `NIC` class as a subclass of `Conditionally_Data_Observed`
-2. Implement `Protocol` as a subclass of `Conditional_Data_Observer`
-3. Make `Communicator` a subclass of `Concurrent_Observer`
-4. Ensure proper memory management throughout the stack
+Tests concurrent data handling with:
+- Multiple observers per condition
+- Multiple data producers running in parallel
+- Validation of thread-safety
 
-By addressing the known issues and implementing the suggested improvements, this observer pattern implementation can provide a robust foundation for asynchronous communication in the project.
+## Integration Potential
+
+The implementation is designed for easy integration with future communication APIs:
+
+1. **Template-Based Design**: Allows for any data type and condition type
+2. **Clean Separation**: Observer and Observable components are loosely coupled
+3. **Thread Safety**: Built-in synchronization for concurrent environments
+4. **Memory Management**: Reference counting prevents memory leaks
+5. **Extensibility**: Base classes can be extended for specific use cases
+
+## Usage Pattern
+
+1. Define your data type and condition enum
+2. Extend Concurrent_Observer for your specific needs
+3. Extend Concurrent_Observed to distribute data
+4. Attach observers to observables with specific conditions
+5. Run observers in separate threads
+6. Generate and distribute data through the observable
+
+This implementation provides a robust foundation for event-driven, concurrent communication between components in a system.

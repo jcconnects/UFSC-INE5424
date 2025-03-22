@@ -5,6 +5,7 @@
 #include <semaphore.h>
 #include <stdexcept>
 #include <mutex>
+#include <iostream>
 
 // POSIX Semaphore wrapper
 class Semaphore {
@@ -165,6 +166,8 @@ public:
 
     void update(C c, D* d) {
         if (c == _rank) {
+            // Increment reference count when adding to the observer's queue
+            if (d) d->ref_count++;
             _data.insert(d);
             _semaphore.v();
         }
@@ -192,27 +195,48 @@ public:
     typedef Ordered_List<Concurrent_Observer<D, C>, C> Observers;
 
     void attach(Concurrent_Observer<D, C>* o, C c) {
+        std::lock_guard<std::mutex> lock(_mutex);
         _observers.insert(o);
     }
 
     void detach(Concurrent_Observer<D, C>* o, C c) {
+        std::lock_guard<std::mutex> lock(_mutex);
         _observers.remove(o);
     }
 
     bool notify(C c, D* d) {
+        std::lock_guard<std::mutex> lock(_mutex);
         bool notified = false;
+        int observer_count = 0;
+        
+        // First count how many observers will receive this notification
+        for (typename Observers::Iterator obs = _observers.begin(); 
+             obs != _observers.end(); ++obs) {
+            if ((*obs)->rank() == c) {
+                observer_count++;
+            }
+        }
+        
+        // Only set initial reference count if there are observers
+        if (observer_count > 0 && d) {
+            d->ref_count = observer_count;
+            notified = true;
+        }
+        
+        // Now notify all matching observers
         for (typename Observers::Iterator obs = _observers.begin(); 
              obs != _observers.end(); ++obs) {
             if ((*obs)->rank() == c) {
                 (*obs)->update(c, d);
-                notified = true;
             }
         }
+        
         return notified;
     }
 
 private:
     Observers _observers;
+    std::mutex _mutex;
 };
 
 #endif // OBSERVER_H

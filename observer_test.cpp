@@ -6,10 +6,24 @@
 #include <cassert>
 #include <atomic>
 
+// Thread-safe output helper
+class ThreadSafeOutput {
+public:
+    static void print(const std::string& msg) {
+        std::lock_guard<std::mutex> lock(_mutex);
+        std::cout << msg << std::endl;
+    }
+    
+private:
+    static std::mutex _mutex;
+};
+
+std::mutex ThreadSafeOutput::_mutex;
+
 // Test data structures
 struct TestData {
     int value;
-    std::atomic<int> ref_count; // Add reference counting
+    std::atomic<int> ref_count; // Reference counting
     
     TestData(int v) : value(v), ref_count(0) {}
 };
@@ -27,7 +41,7 @@ public:
         : Concurrent_Observer<TestData, TestCondition>(condition), _name(name), _running(true) {}
 
     void run() {
-        std::cout << _name << " started waiting for data..." << std::endl;
+        ThreadSafeOutput::print(_name + " started waiting for data...");
         while (_running) {
             TestData* data = updated();  // Will block until data is available
             if (!data) {
@@ -36,7 +50,7 @@ public:
             }
             
             if (data->value < 0) {
-                std::cout << _name << " received termination signal" << std::endl;
+                ThreadSafeOutput::print(_name + " received termination signal");
                 _running = false;
                 
                 // Decrement reference and delete if no more references
@@ -46,7 +60,7 @@ public:
                 break;
             }
             
-            std::cout << _name << " received value: " << data->value << std::endl;
+            ThreadSafeOutput::print(_name + " received value: " + std::to_string(data->value));
             
             // Decrement reference and delete if no more references
             if (--data->ref_count <= 0) {
@@ -61,7 +75,7 @@ public:
 
 private:
     std::string _name;
-    bool _running;
+    std::atomic<bool> _running;
 };
 
 // Test observed implementation
@@ -70,8 +84,7 @@ public:
     void generateData(TestCondition condition, int value) {
         TestData* data = new TestData(value);
         
-        // Set initial reference count to 1
-        data->ref_count = 1;
+        // Reference count will be set in notify if there are observers
         
         // Notify observers and let the base class handle it
         // The return value tells us if any observers were notified
@@ -86,7 +99,7 @@ public:
 
 // Test function to validate basic functionality
 void test_basic_functionality() {
-    std::cout << "\nTesting basic functionality..." << std::endl;
+    ThreadSafeOutput::print("\nTesting basic functionality...");
     
     TestObserved observed;
     TestObserver observer1(TestCondition::CONDITION_1, "Observer1");
@@ -114,12 +127,12 @@ void test_basic_functionality() {
     t1.join();
     t2.join();
     
-    std::cout << "Basic functionality test completed successfully" << std::endl;
+    ThreadSafeOutput::print("Basic functionality test completed successfully");
 }
 
 // Test function to validate concurrent access
 void test_concurrent_access() {
-    std::cout << "\nTesting concurrent access..." << std::endl;
+    ThreadSafeOutput::print("\nTesting concurrent access...");
     
     TestObserved observed;
     std::vector<std::unique_ptr<TestObserver>> observers;
@@ -135,10 +148,17 @@ void test_concurrent_access() {
                 "Observer_" + std::to_string(i) + "_" + std::to_string(static_cast<int>(condition))
             );
             observed.attach(observer.get(), condition);
-            threads.emplace_back(&TestObserver::run, observer.get());
             observers.push_back(std::move(observer));
         }
     }
+    
+    // Start all observer threads after attaching them all
+    for (auto& observer : observers) {
+        threads.emplace_back(&TestObserver::run, observer.get());
+    }
+    
+    // Wait a bit to ensure all observers are ready
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
     // Generate data from multiple threads
     std::vector<std::thread> producer_threads;
@@ -146,13 +166,13 @@ void test_concurrent_access() {
         producer_threads.emplace_back([&observed, i]() {
             for (int j = 1; j <= 3; j++) {
                 observed.generateData(TestCondition::CONDITION_1, i * 100 + j);
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
                 
                 observed.generateData(TestCondition::CONDITION_2, i * 100 + j);
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
                 
                 observed.generateData(TestCondition::CONDITION_3, i * 100 + j);
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
             }
         });
     }
@@ -163,7 +183,7 @@ void test_concurrent_access() {
     }
     
     // Give some time for processing
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
     
     // Send termination signal to all observers
     for (auto condition : {TestCondition::CONDITION_1, 
@@ -179,14 +199,14 @@ void test_concurrent_access() {
         }
     }
     
-    std::cout << "Concurrent access test completed successfully" << std::endl;
+    ThreadSafeOutput::print("Concurrent access test completed successfully");
 }
 
 int main() {
     try {
         test_basic_functionality();
         test_concurrent_access();
-        std::cout << "\nAll tests completed successfully!" << std::endl;
+        ThreadSafeOutput::print("\nAll tests completed successfully!");
         return 0;
     }
     catch (const std::exception& e) {
