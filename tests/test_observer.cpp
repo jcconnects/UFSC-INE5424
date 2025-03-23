@@ -1,4 +1,5 @@
 #include "observer.h"
+#include "observed.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
