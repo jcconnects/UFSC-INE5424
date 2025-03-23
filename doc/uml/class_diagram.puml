@@ -1,0 +1,51 @@
+@startuml Observer_Pattern_Classes
+
+' Class definitions
+abstract class "Concurrent_Observer<T, C>" {
+  # {abstract} T* updated()
+}
+
+abstract class "Concurrent_Observed<T, C>" {
+  # bool notify(C condition, T* data)
+  + void attach(Observer* observer, C condition)
+}
+
+class TestObserver {
+  - std::string _name
+  - std::atomic<bool> _running
+  + TestObserver(TestCondition condition, std::string name)
+  + void run()
+  + void stop()
+}
+
+class TestObserved {
+  + void generateData(TestCondition condition, int value)
+}
+
+enum TestCondition {
+  CONDITION_1
+  CONDITION_2
+  CONDITION_3
+}
+
+class TestData {
+  + int value
+  + std::atomic<int> ref_count
+  + TestData(int v)
+}
+
+class ThreadSafeOutput {
+  - static std::mutex _mutex
+  + static void print(const std::string& msg)
+}
+
+' Relationships
+"Concurrent_Observer<T, C>" <|-- TestObserver
+"Concurrent_Observed<T, C>" <|-- TestObserved
+TestObserver ..> TestData : processes
+TestObserved ..> TestData : creates
+TestObserver ..> ThreadSafeOutput : uses
+TestObserved ..> TestCondition : uses
+TestObserver ..> TestCondition : subscribes to
+
+@enduml 
