@@ -1,63 +1,36 @@
 @startuml Observer_Pattern_Sequence
 
 ' Process flow
-participant Concurrent_Observed
-participant "Concurrent_Observer[*]" as Observers
-participant "Observer Thread" as ObserverThread
-participant Client
+participant Vehicle
 participant Message
-participant Communicator
+participant "Communicator\nextends Concurrent_Observer<Channel::Observer::Observed_Data,\nChannel::Observer::Observing_Condition>" as Communicator
 participant Protocol
 participant NIC
+participant SocketEngine
 
 autonumber
-Client -> Message: Create
-Message -> Client: Message
-Client -> Communicator: send(Message)
-Communicator -> Message: message->data()
-Communicator -> Message: message->size()
+Vehicle -> Message: Create
+Message -> Vehicle: Message
+Vehicle -> Communicator: send(Message)
 Communicator -> Protocol: send(address, BROADCAST, data, size)
 activate Protocol
 Protocol -> NIC: alloc(address, PROTO, size)
 NIC --> Protocol: return buffer
 note right of Protocol: Copy data to buffer
 Protocol -> NIC: send(buffer)
+NIC -> SocketEngine: sendto(...)
 deactivate Protocol
 
 ==== Network Layer Boundary ====
 
-' Receiving flow
-
-' Show the observer thread waiting on semaphore
-activate ObserverThread
-ObserverThread -> Observers: updated()
-activate Observers
-note right of ObserverThread: Thread calls updated() and blocks waiting for data
-Observers -> Observers: _semaphore.p()
-note right of Observers: Blocks inside updated() method until semaphore is signaled
-
-Something -> Concurrent_Observed: notify(condition, data)
-activate Concurrent_Observed
-note right of Concurrent_Observed: Notify all observers that match the condition
-' Iterate through multiple observers
-loop for each observer in Observers
-    Concurrent_Observed -> Observers: rank()
-    Observers --> Concurrent_Observed: return rank
-    alt rank == condition
-        Concurrent_Observed -> Observers: update(condition, data)
-        activate Observers #DarkSalmon
-        Observers -> Observers: _data.insert(data)
-        Observers -> Observers: _semaphore.v()
-        note right of Observers: Semaphore incremented, signals waiting threads
-        deactivate Observers #DarkSalmon
-    end
-end
-deactivate Concurrent_Observed
-
-note right of Observers: Semaphore now allows updated() to continue
-Observers --> ObserverThread: return data
-deactivate Observers
-note right of ObserverThread: Thread receives data and processes it
-deactivate ObserverThread
+' NIC receives data from the network
+SocketEngine -> NIC: notify(PROTO, buffer)
+NIC -> Protocol: notify(PROTO, buffer)
+Protocol -> Protocol: update(&_observed, PROTO, buffer)
+Protocol -> Communicator: notify(condition, data)
+Communicator -> Communicator: update(condition, data)
+note right of Communicator: Calls update and releases the thread waiting for data
+Vehicle -> Communicator: receive(Message)
+note right of Vehicle: Updated that data is available
 
 @enduml 
