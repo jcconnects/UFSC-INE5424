@@ -12,31 +12,13 @@ class List;
 template <typename T, typename C>
 class Ordered_List;
 
-// Fundamentals for Observer X Observed
-template <typename T, typename Condition = void>
-class Conditional_Data_Observer;
-
-template <typename T, typename Condition = void>
-class Conditionally_Data_Observed;
-
 // Semaphore implementation for Concurrent Observer
 class Semaphore {
 public:
-    Semaphore(int count = 0) : count(count) {}
+    Semaphore(int count = 0);
 
-    void p() {
-        std::unique_lock<std::mutex> lock(mtx);
-        while (count == 0) {
-            cv.wait(lock);
-        }
-        count--;
-    }
-
-    void v() {
-        std::unique_lock<std::mutex> lock(mtx);
-        count++;
-        cv.notify_one();
-    }
+    void p();
+    void v();
 
 private:
     std::mutex mtx;
@@ -48,19 +30,8 @@ private:
 template<typename T>
 class List {
 public:
-    void insert(T* item) {
-        _items.push_back(item);
-    }
-
-    T* remove() {
-        if (_items.empty())
-            return nullptr;
-        
-        T* item = _items.front();
-        _items.pop_front();
-        return item;
-    }
-
+    void insert(T* item);
+    T* remove();
 private:
     std::list<T*> _items;
 };
@@ -71,49 +42,67 @@ class Ordered_List {
 public:
     class Iterator {
     public:
-        Iterator(typename std::list<T*>::iterator it) : _it(it) {}
+        Iterator(typename std::list<T*>::iterator it);
         
-        T* operator*() { return *_it; }
-        T* operator->() { return *_it; }
+        T* operator*();
+        T* operator->();
         
-        Iterator& operator++() {
-            ++_it;
-            return *this;
-        }
+        Iterator& operator++();
         
-        bool operator!=(const Iterator& other) const {
-            return _it != other._it;
-        }
+        bool operator!=(const Iterator& other);
         
     private:
         typename std::list<T*>::iterator _it;
     };
 
-    void insert(T* item) {
-        _items.push_back(item);
-    }
+    void insert(T* item); 
+    void remove(T* item);
 
-    void remove(T* item) {
-        _items.remove(item);
-    }
-
-    Iterator begin() {
-        return Iterator(_items.begin());
-    }
-
-    Iterator end() {
-        return Iterator(_items.end());
-    }
+    Iterator begin();
+    Iterator end();
 
 private:
     std::list<T*> _items;
 };
 
+// Fundamentals for Observer X Observed
+template <typename T, typename Condition>
+class Conditional_Data_Observer {
+    friend class Conditionally_Data_Observed<T, Condition>;
+public:
+    typedef T Observed_Data;
+    typedef Condition Observing_Condition;
+
+    Conditional_Data_Observer() = default;
+    virtual ~Conditional_Data_Observer() = default;
+
+    virtual void update(Condition c, T* d) = 0;
+    virtual Condition rank() const = 0;
+};
+
+template <typename T, typename Condition>
+class Conditionally_Data_Observed {
+public:
+    typedef T Observed_Data;
+    typedef Condition Observing_Condition;
+    typedef Ordered_List<Conditional_Data_Observer<T, Condition>, Condition> Observers;
+
+    Conditionally_Data_Observed() = default;
+    virtual ~Conditionally_Data_Observed() = default;
+
+    void attach(Conditional_Data_Observer<T, Condition>* o, Condition c);
+    void detach(Conditional_Data_Observer<T, Condition>* o, Condition c);
+    bool notify(Condition c, T* d);
+
+private:
+    Observers _observers;
+};
+
 // Conditional Observer x Conditionally Observed with Data decoupled by a Semaphore
 template<typename D, typename C = void>
-class Concurrent_Observer;
+class Concurrent_Observer;  // Forward declaration
 
-template<typename D, typename C = void>
+template<typename D, typename C>
 class Concurrent_Observed
 {
     friend class Concurrent_Observer<D, C>;
@@ -125,24 +114,9 @@ public:
     Concurrent_Observed() {}
     ~Concurrent_Observed() {}
     
-    void attach(Concurrent_Observer<D, C> * o, C c) {
-        _observers.insert(o);
-    }
-    
-    void detach(Concurrent_Observer<D, C> * o, C c) {
-        _observers.remove(o);
-    }
-    
-    bool notify(C c, D * d) {
-        bool notified = false;
-        for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-            if((*obs)->rank() == c) {
-                (*obs)->update(c, d);
-                notified = true;
-            }
-        }
-        return notified;
-    }
+    void attach(Concurrent_Observer<D, C> * o, C c);
+    void detach(Concurrent_Observer<D, C> * o, C c);
+    bool notify(C c, D * d);
     
 private:
     Observers _observers;
@@ -159,18 +133,9 @@ public:
     Concurrent_Observer(): _semaphore(0) {}
     ~Concurrent_Observer() {}
     
-    void update(C c, D * d) {
-        _data.insert(d);
-        _semaphore.v();
-    }
-    
-    D * updated() {
-        _semaphore.p();
-        return _data.remove();
-    }
-    
-    // Added rank method to make the code compile
-    C rank() const { return C(); }
+    void update(C c, D * d);
+    D * updated();
+    C rank();
     
 private:
     Semaphore _semaphore;
