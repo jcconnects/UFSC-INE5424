@@ -27,7 +27,9 @@ public:
     virtual ~Conditional_Data_Observer() = default;
 
     virtual void update(Condition c, T* d) = 0;
-    virtual Condition rank() const = 0;
+    virtual Condition rank();
+protected:
+    Condition _rank;
 };
 
 // Conditional Observer x Conditionally Observed with Data decoupled by a Semaphore
@@ -58,9 +60,8 @@ void Conditional_Data_Observer<T, Condition>::update(Condition c, T* d) {
 }
 
 template <typename T, typename Condition>
-Condition Conditional_Data_Observer<T, Condition>::rank() const {
-    // TODO: Implement
-    return Condition();
+Condition Conditional_Data_Observer<T, Condition>::rank() {
+    return _rank;
 }
 
 template <typename T, typename C>
