@@ -37,7 +37,7 @@ clean:
 # Observer Test specific rules
 build_test_observer: $(BUILDDIR)/test_observer
 
-$(BUILDDIR)/test_observer: $(BUILDDIR)/core/observer.o $(BUILDDIR)/test_observer.o
+$(BUILDDIR)/test_observer: $(BUILDDIR)/test_observer.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ -pthread
 
 $(BUILDDIR)/test_observer.o: $(TESTDIR)/test_observer.cpp $(INCDIR)/observer.h

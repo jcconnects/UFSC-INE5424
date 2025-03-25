@@ -1,8 +1,12 @@
 #ifndef OBSERVER_H
 #define OBSERVER_H
 
-#include <semaphore.h>
+#include "semaphore_wrapper.h"
 #include "list.h"
+#include <atomic>
+#include <stdexcept>
+#include <unistd.h>  // for getpid()
+#include <fcntl.h>   // for O_CREAT, O_EXCL
 
 // Forward declarations for observed classes
 template <typename T, typename Condition>
@@ -34,7 +38,7 @@ public:
     typedef D Observed_Data;
     typedef C Observing_Condition;
 public:
-    Concurrent_Observer(C rank): _semaphore(0), _rank(rank) {}
+    Concurrent_Observer(C rank): _semaphore(), _rank(rank) {}
     virtual ~Concurrent_Observer() = default;
     
     void update(C c, D * d);
@@ -42,7 +46,7 @@ public:
     C rank();
     
 private:
-    sem_t _semaphore;
+    SemaphoreWrapper _semaphore;
     List<D> _data;
     C _rank;
 };
@@ -64,13 +68,13 @@ void Concurrent_Observer<T, C>::update(C c, T* d) {
     if (c == _rank && d != nullptr) {
         // Store a copy of the pointer, don't modify ref_count here
         _data.insert(d);
-        sem_post(&_semaphore);
+        _semaphore.post();
     }
 }
 
 template <typename T, typename C>
 T* Concurrent_Observer<T, C>::updated() {
-    sem_wait(&_semaphore);
+    _semaphore.wait();
     return _data.remove();
 }
 
