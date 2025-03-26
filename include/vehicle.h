@@ -2,15 +2,34 @@
 #define VEHICLE_H
 
 #include <string>
-#include "initializer.h"
+#include <iostream>
 #include <chrono>
 #include <thread>
+#include "stubs/stub.h"
+
+// Forward declarations
+class Initializer;
+// Forward declaration of VehicleConfig struct
+namespace VehicleConfig_Fwd {
+    struct VehicleConfig {
+        int id;
+        int period_ms;
+        bool verbose_logging;
+        std::string log_prefix;
+    };
+}
+
+class SocketEngine;
+template <typename E> class NIC;
+template <typename N> class Protocol;
+template <typename C> class Communicator;
+class Message;
 
 // Vehicle class that uses the communication stack
 class Vehicle {
     friend class Initializer;
 public:
-    typedef Initializer::VehicleConfig Config;
+    typedef VehicleConfig_Fwd::VehicleConfig Config;
     
     // Modified constructor without Communicator
     template <typename N, typename P>

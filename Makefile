@@ -15,9 +15,9 @@ TARGET = $(BUILDDIR)/main
 DIRS = $(dir $(OBJECTS))
 $(shell mkdir -p $(DIRS))
 
-.PHONY: all clean test doc directories observer_test run_observer_test
+.PHONY: all clean test doc directories observer_test run_observer_test initializer_test
 
-all: $(TARGET) observer_test
+all: $(TARGET) observer_test initializer_test
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
@@ -35,13 +35,26 @@ clean:
 	rm -rf $(BUILDDIR)/*
 
 # Observer Test specific rules
-build_test_observer: $(BUILDDIR)/test_observer
+build_observer_test: $(BUILDDIR)/test_observer
 
-$(BUILDDIR)/test_observer: $(BUILDDIR)/core/observer.o $(BUILDDIR)/test_observer.o
+$(BUILDDIR)/test_observer: $(BUILDDIR)/test_observer.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ -pthread
 
 $(BUILDDIR)/test_observer.o: $(TESTDIR)/test_observer.cpp $(INCDIR)/observer.h
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-test_observer: $(BUILDDIR)/test_observer
+run_observer_test: $(BUILDDIR)/test_observer
 	./$(BUILDDIR)/test_observer
+
+# Initializer Test rules
+initializer_test: $(BUILDDIR)/test_initializer
+
+$(BUILDDIR)/test_initializer: $(BUILDDIR)/test_initializer.o
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ -pthread
+
+$(BUILDDIR)/test_initializer.o: $(TESTDIR)/test_initializer.cpp $(INCDIR)/initializer.h $(INCDIR)/vehicle.h $(INCDIR)/stubs/stub.h
+	mkdir -p $(BUILDDIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+run_initializer_test: initializer_test
+	./$(BUILDDIR)/test_initializer 3 1000 -v
