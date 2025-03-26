@@ -2,79 +2,67 @@
 #define COMMUNICATOR_H
 
 #include "observer.h"
-#include "protocol.h"
+#include "stubs/communicator_stubs.h" // Include actual Message implementation
+#include <iostream>
+#include <cstring> // For memcpy
 
-// Forward declaration for Message class
-class Message {
-public:
-    virtual ~Message() {}
-    virtual const void* data() const = 0;
-    virtual unsigned int size() const = 0;
-};
+// Forward declarations
+class Message;
 
-// Communication End-Point (for client classes)
 template <typename Channel>
-class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data,
-typename Channel::Observer::Observing_Condition>
+class Communicator: public Concurrent_Observer<typename Channel::Buffer, typename Channel::Port>
 {
-        typedef Concurrent_Observer<typename Channel::Observer::Observed_Data,
-        typename Channel::Observer::Observing_Condition> Observer;
+public:
+    typedef typename Channel::Buffer Buffer;
+    typedef typename Channel::Address Address;
+    typedef typename Channel::Port Port;
+    typedef Concurrent_Observer<Buffer, Port> Observer;
 
-    public:
-        typedef typename Channel::Buffer Buffer;
-        typedef typename Channel::Address Address;
+    Communicator(Channel* channel, Address address)
+        : Observer(address._port), _channel(channel), _address(address) {
+        _channel->attach(this, address);
+    }
 
-    public:
-        Communicator(Channel * channel, Address address);
-        
-        ~Communicator();
-        
-        bool send(const Message * message);
-        
-        bool receive(Message * message);
+    ~Communicator() {
+        _channel->detach(this, _address);
+    }
 
-    private:
-        void update(typename Channel::Observed * obs, typename
-        Channel::Observer::Observing_Condition c, Buffer * buf) {
-            Observer::update(c, buf); // releases the thread waiting for data
+    bool send(const Message* message) {
+        if (!message) return false;
+        
+        return (_channel->send(_address, Address::BROADCAST, message->data(), message->size()) > 0);
+    }
+
+    bool receive(Message* message) {
+        if (!message) return false;
+        
+        Buffer* buf = Observer::updated(); // Block until a notification is triggered
+        
+        if (!buf) return false;
+        
+        Address from;
+        
+        // Create a temporary buffer to receive data
+        char temp_buffer[1024] = {0}; // Assuming messages are smaller than 1024 bytes
+        int size = _channel->receive(buf, &from, temp_buffer, sizeof(temp_buffer));
+        
+        if (size > 0) {
+            // Create a new message with the received data
+            std::string received_content(temp_buffer, size);
+            *message = Message(received_content);
         }
         
-    private:
-        Channel * _channel;
-        Address _address;
+        // Decrement reference count for buffer after use
+        if (buf->ref_count.fetch_sub(1) == 1) {
+            delete buf;
+        }
+        
+        return (size > 0);
+    }
+
+private:
+    Channel* _channel;
+    Address _address;
 };
-
-template <typename Channel>
-Communicator<Channel>::Communicator(Channel * channel, Address address): _channel(channel), _address(address) {
-    _channel->attach(this, _address);
-}
-
-template <typename Channel>
-Communicator<Channel>::~Communicator() {
-    _channel->detach(this, _address);
-}
-
-template <typename Channel>
-bool Communicator<Channel>::send(const Message * message) {
-    Buffer * buf = Observer::updated(); // block until a notification is triggered
-    Channel::Address from;
-    int size = _channel->receive(buf, &from, message->data(), message->size());
-    // . . .
-    if(size > 0)
-        return true;
-    
-    return false; // Added to ensure all paths return a value
-}
-
-template <typename Channel>
-bool Communicator<Channel>::receive(Message * message) {
-    Buffer * buf = Observer::updated(); // block until a notification is triggered
-    Channel::Address from;
-    int size = _channel->receive(buf, &from, message->data(), message->size());
-    // . . .
-    if(size > 0)
-        return true;
-    return false; // Added to ensure all paths return a value   
-}
 
 #endif // COMMUNICATOR_H

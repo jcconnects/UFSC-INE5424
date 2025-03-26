@@ -15,9 +15,9 @@ TARGET = $(BUILDDIR)/main
 DIRS = $(dir $(OBJECTS))
 $(shell mkdir -p $(DIRS))
 
-.PHONY: all clean test doc directories observer_test run_observer_test initializer_test
+.PHONY: all clean test doc directories observer_test run_observer_test initializer_test run_initializer_test communicator_test run_communicator_test
 
-all: $(TARGET) observer_test initializer_test
+all: $(TARGET) observer_test initializer_test communicator_test
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
@@ -58,3 +58,16 @@ $(BUILDDIR)/test_initializer.o: $(TESTDIR)/test_initializer.cpp $(INCDIR)/initia
 
 run_initializer_test: initializer_test
 	./$(BUILDDIR)/test_initializer 3 1000 -v
+
+# Communicator Test rules
+communicator_test: $(BUILDDIR)/test_communicator
+
+$(BUILDDIR)/test_communicator: $(BUILDDIR)/test_communicator.o
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ -pthread
+
+$(BUILDDIR)/test_communicator.o: $(TESTDIR)/test_communicator.cpp $(INCDIR)/communicator.h $(INCDIR)/stubs/communicator_stubs.h $(INCDIR)/observer.h $(INCDIR)/observed.h
+	mkdir -p $(BUILDDIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+run_communicator_test: communicator_test
+	./$(BUILDDIR)/test_communicator
