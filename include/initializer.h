@@ -1,10 +1,11 @@
 #ifndef INITIALIZER_H
 #define INITIALIZER_H
 
-// #include "protocol.h"
-// #include "nic.h"
 #include "vehicle.h"
-#include "stubs/stub.h"
+#include "communicator.h"
+#include "nic.h" // Include actual NIC implementation
+#include "protocol.h" // Include actual Protocol implementation
+#include "stubs/socketengine.h" // Include SocketEngine
 #include <iostream>
 #include <signal.h>
 #include <sys/wait.h>
@@ -158,16 +159,14 @@ void Initializer::runVehicleProcess()  {
 
 template <typename Engine>
 void Initializer::setupCommunicationStack()  {
-    // Create NIC
+    // Create NIC with real implementation
     auto nic = new NIC<Engine>();
     
-    // Create Protocol and attach to NIC
+    // Create Protocol with real implementation
     auto protocol = new Protocol<NIC<Engine>>(nic);
     
-    // Create Vehicle with only NIC and Protocol
+    // Create Vehicle with NIC and Protocol
     Vehicle vehicle(_config, nic, protocol);
-    
-    // Vehicle will create its own Communicator in its constructor
     
     // Start vehicle communication
     vehicle.communicate();

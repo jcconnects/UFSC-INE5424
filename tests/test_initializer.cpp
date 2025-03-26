@@ -1,4 +1,5 @@
 #include "../include/initializer.h"
+#include "../include/communicator.h"
 #include <iostream>
 #include <vector>
 #include <csignal>
@@ -38,7 +39,7 @@ int main(int argc, char* argv[]) {
     
     for (int i = 0; i < numVehicles; i++) {
         Initializer::VehicleConfig config;
-        config.id = i;
+        config.id = 1000 + i;
         config.period_ms = period_ms;
         config.verbose_logging = verbose;
         config.log_prefix = "[PID ?] ";  // Will be updated by the process

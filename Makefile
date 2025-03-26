@@ -1,73 +1,40 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
-INCLUDES = -Iinclude
+CXXFLAGS = -std=c++14 -Wall -I./include
 
-SRCDIR = src
-INCDIR = include
-BUILDDIR = build
-TESTDIR = tests
+# All source files
+SRCS = $(wildcard src/*.cpp) $(wildcard src/core/*.cpp)
 
-SOURCES = $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/core/*.cpp)
-OBJECTS = $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
+# Test sources
+TEST_COMMUNICATOR_SRC = tests/test_communicator.cpp
+TEST_INITIALIZER_SRC = tests/test_initializer.cpp
 
-TARGET = $(BUILDDIR)/main
+# Output binaries
+TEST_COMMUNICATOR_BIN = bin/test_communicator
+TEST_INITIALIZER_BIN = bin/test_initializer
 
-DIRS = $(dir $(OBJECTS))
-$(shell mkdir -p $(DIRS))
+# Build all tests
+all: dirs $(TEST_COMMUNICATOR_BIN) $(TEST_INITIALIZER_BIN)
 
-.PHONY: all clean test doc directories observer_test run_observer_test initializer_test run_initializer_test communicator_test run_communicator_test
+# Create directories
+dirs:
+	mkdir -p bin
 
-all: $(TARGET) observer_test initializer_test communicator_test
+# Test targets
+$(TEST_COMMUNICATOR_BIN): $(TEST_COMMUNICATOR_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $< -pthread
 
-$(TARGET): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
+$(TEST_INITIALIZER_BIN): $(TEST_INITIALIZER_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $< -pthread
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+# Run test targets
+run_test_communicator: $(TEST_COMMUNICATOR_BIN)
+	./$(TEST_COMMUNICATOR_BIN)
 
-test: $(TARGET)
-	./$(TARGET)
+run_test_initializer: $(TEST_INITIALIZER_BIN)
+	./$(TEST_INITIALIZER_BIN) 1 100 -v
 
-doc:
-	doxygen
-
+# Clean
 clean:
-	rm -rf $(BUILDDIR)/*
+	rm -rf bin/*
 
-# Observer Test specific rules
-build_observer_test: $(BUILDDIR)/test_observer
-
-$(BUILDDIR)/test_observer: $(BUILDDIR)/test_observer.o
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ -pthread
-
-$(BUILDDIR)/test_observer.o: $(TESTDIR)/test_observer.cpp $(INCDIR)/observer.h
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-
-run_observer_test: $(BUILDDIR)/test_observer
-	./$(BUILDDIR)/test_observer
-
-# Initializer Test rules
-initializer_test: $(BUILDDIR)/test_initializer
-
-$(BUILDDIR)/test_initializer: $(BUILDDIR)/test_initializer.o
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ -pthread
-
-$(BUILDDIR)/test_initializer.o: $(TESTDIR)/test_initializer.cpp $(INCDIR)/initializer.h $(INCDIR)/vehicle.h $(INCDIR)/stubs/stub.h
-	mkdir -p $(BUILDDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-
-run_initializer_test: initializer_test
-	./$(BUILDDIR)/test_initializer 3 1000 -v
-
-# Communicator Test rules
-communicator_test: $(BUILDDIR)/test_communicator
-
-$(BUILDDIR)/test_communicator: $(BUILDDIR)/test_communicator.o
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ -pthread
-
-$(BUILDDIR)/test_communicator.o: $(TESTDIR)/test_communicator.cpp $(INCDIR)/communicator.h $(INCDIR)/stubs/communicator_stubs.h $(INCDIR)/observer.h $(INCDIR)/observed.h
-	mkdir -p $(BUILDDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-
-run_communicator_test: communicator_test
-	./$(BUILDDIR)/test_communicator
+.PHONY: all clean dirs run_test_communicator run_test_initializer
