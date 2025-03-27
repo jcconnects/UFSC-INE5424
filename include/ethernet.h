@@ -39,6 +39,8 @@ class Ethernet {
         
         // Protocol Type
         typedef std::uint16_t Protocol;
+        
+        static constexpr std::size_t HEADER_SIZE = Address::MAC_SIZE*2 + sizeof(Protocol);
 
         // Defining Ethernet Frame
         struct Frame {
@@ -46,6 +48,10 @@ class Ethernet {
             Address src;
             Protocol prot;
             std::uint8_t payload[MTU];
+            
+            std::size_t size(std::size_t data_length) const {
+                return HEADER_SIZE + data_length;
+            }
         } __attribute__((packed));
 
         // Constructor / Destructor
