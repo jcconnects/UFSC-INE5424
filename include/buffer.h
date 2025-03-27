@@ -8,7 +8,7 @@ template <typename T>
 class Buffer{
 
     public:
-        static constexpr size_t MAX_SIZE = Ethernet::MTU;
+        static constexpr size_t MAX_SIZE = sizeof(Ethernet::Frame);
 
     public:
         Buffer();
