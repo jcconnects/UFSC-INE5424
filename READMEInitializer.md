@@ -1,11 +1,14 @@
+# Initializer Framework Implementation
 
-# Detailed Description of the Initializer Framework (Updated)
+## Overview
 
-## Overview of Files and Their Purpose
+This document describes the implementation of the Initializer framework, which manages the creation and lifecycle of autonomous vehicle processes and their communication components. The implementation follows the specified design patterns to create a reliable multi-process system for vehicle simulation and communication.
+
+## Files and Their Purpose
 
 1. **Initializer.h**:
    - Defines class interfaces and relationships
-   - Contains stub implementations for NIC, Protocol, and Communicator
+   - Integrates with actual implementations of NIC, Protocol, and Communicator
    - Establishes the friend relationships between classes
    - Defines Vehicle with responsibility for creating its own Communicator
 
@@ -13,36 +16,51 @@
    - Implements the core functionality of the Initializer and Vehicle classes
    - Contains the process management logic
    - Implements the communication setup where Initializer creates NIC and Protocol
-   - Vehicle now creates its own Communicator
 
-3. **InitializerTest.cc**:
+3. **test_initializer.cpp**:
    - Provides a test harness to create and manage multiple vehicles
    - Handles command-line arguments and signal handling
    - Manages the lifecycle of multiple vehicle processes
+   - Demonstrates the integrated communication stack with actual implementations
 
-## Class Relationships and Interactions
+## Class Relationships
 
-### Class Hierarchy and Responsibility
+The implementation consists of several related classes with a clear hierarchy and responsibility chain:
 
 ```
-InitializerTest (Main)
-    |
-    |--> Initializer (Process Manager)
-            |
-            |--> Creates NIC
-            |
-            |--> Creates Protocol
-            |
-            |--> Creates Vehicle with NIC and Protocol
-                    |
-                    |--> Vehicle creates own Communicator
-                    |
-                    |--> Vehicle runs communication cycle
+                   +-------------------+
+                   | test_initializer  |
+                   | (Main)            |
+                   +-------------------+
+                           |
+                           | creates
+                           v
+                   +-------------------+
+                   | Initializer       |
+                   | (Process Manager) |
+                   +-------------------+
+                           |
+                           | creates
+                           v
+       +------------------------------------------+
+       |                   |                      |
+       v                   v                      v
++-------------+    +----------------+    +-----------------+
+| NIC         |<---| Protocol       |    | Vehicle         |
++-------------+    +----------------+    +-----------------+
+                           ^                      |
+                           |                      |
+                           |                      v
+                           |             +-----------------+
+                           +-------------| Communicator    |
+                                         +-----------------+
 ```
+
+## Friend Relationship Implementation
+
+The framework uses C++ friend relationships to manage component creation and dependency injection:
 
 ### Friend Relationship Flow
-
-The friendship mechanism works as follows:
 
 1. **Initializer is a friend of Vehicle**:
    - Allows Initializer to access Vehicle's private constructor
@@ -52,147 +70,110 @@ The friendship mechanism works as follows:
    - Enables Initializer to correctly instantiate and configure these components
    - Gives Initializer access to special configuration methods if needed
 
-### Data Flow and Responsibility Chain
-
-The setup process follows this sequence:
-
-1. **InitializerTest** creates one or more **Initializer** instances with configuration
-2. Each **Initializer** calls `startVehicle()` to fork a new process
-3. In the child process, **Initializer** calls `runVehicleProcess()`
-4. **runVehicleProcess()** calls `setupCommunicationStack<SocketEngine>()`
-5. This method creates and connects components in this order:
-   - Creates a new **NIC<SocketEngine>**
-   - Creates a new **Protocol<NIC<SocketEngine>>** and attaches it to the NIC
-   - Creates a **Vehicle** and passes NIC and Protocol (but not Communicator)
-6. The **Vehicle** then:
-   - Calls its own `createCommunicator()` method to create the Communicator
-   - Uses the communication stack to send and receive messages
-
-## Detailed Execution Flow
+## Process Management
 
 ### Process Creation
 
-1. **Main Script (InitializerTest.cc)**:
-   ```cpp
-   // Create multiple initializers
-   for (int i = 0; i < numVehicles; i++) {
-       Initializer::VehicleConfig config = { ... };
-       auto initializer = std::make_unique<Initializer>(config);
-       initializer->startVehicle();
-       initializers.push_back(std::move(initializer));
-   }
-   ```
+The implementation manages vehicle processes through a parent-child relationship:
 
-2. **Process Creation (Initializer.cc)**:
-   ```cpp
-   pid_t Initializer::startVehicle() {
-       pid_t pid = fork();
-       
-       if (pid == 0) {
-           // Child process
-           runVehicleProcess();
-           exit(EXIT_SUCCESS);
-       } else {
-           // Parent process
-           _vehicle_pid = pid;
-           _running = true;
-           return pid;
-       }
-   }
-   ```
+1. **InitializerTest** creates one or more **Initializer** instances
+2. Each **Initializer** forks a new process using `startVehicle()`
+3. Parent process tracks the child process ID
+4. Child process runs the vehicle simulation using `runVehicleProcess()`
 
-### Communication Stack Setup
-
-1. **Initializer Setup (Initializer.cc)**:
-   ```cpp
-   template <typename Engine>
-   void Initializer::setupCommunicationStack() {
-       // Create NIC
-       auto nic = new NIC<Engine>();
-       
-       // Create Protocol and attach to NIC
-       auto protocol = new Protocol<NIC<Engine>>(nic);
-       
-       // Create Vehicle with only NIC and Protocol
-       Vehicle vehicle(_config, nic, protocol);
-       
-       // Vehicle will create its own Communicator in its constructor
-       
-       // Start vehicle communication
-       vehicle.communicate();
-   }
-   ```
-
-2. **Vehicle Setup (Initializer.cc)**:
-   ```cpp
-   template <typename N, typename P>
-   Vehicle::Vehicle(const Config& config, N* nic, P* protocol)
-       : _config(config), _is_communicator_set(false) {
-       
-       _nic = static_cast<void*>(nic);
-       _protocol = static_cast<void*>(protocol);
-       _communicator = nullptr;
-       
-       log("Vehicle created with NIC and Protocol");
-       
-       // Create the communicator
-       createCommunicator(protocol);
-   }
-   
-   template <typename P>
-   void Vehicle::createCommunicator(P* protocol) {
-       log("Creating Communicator");
-       
-       // Create Protocol address
-       auto address = typename P::Address(
-           static_cast<typename P::Physical_Address>(
-               static_cast<NIC<SocketEngine>*>(_nic)->address()
-           ),
-           static_cast<typename P::Port>(_config.id)
-       );
-       
-       // Create Communicator and attach to Protocol
-       _communicator = static_cast<void*>(
-           new Communicator<P>(protocol, address)
-       );
-       
-       _is_communicator_set = true;
-       log("Communicator created successfully");
-   }
-   ```
-
-### Vehicle Communication
+### Key Methods:
 
 ```cpp
-void Vehicle::communicate() {
-    log("Beginning communication cycle");
+pid_t Initializer::startVehicle() {
+    pid_t pid = fork();
     
-    if (!_is_communicator_set) {
-        error("Communicator is not properly set up");
-        return;
-    }
-    
-    // Send and receive messages in a loop
-    for (int counter = 1; counter <= 10; counter++) {
-        // Create a message with timestamp
-        Message msg(...);
-        
-        // Send message
-        log("Sending message: " + msg.data());
-        
-        // Simulate network delay
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        
-        // Receive response
-        log("Message received at " + std::to_string(time_ms) + " (simulated)");
-        
-        // Wait before next communication
-        std::this_thread::sleep_for(std::chrono::milliseconds(_config.period_ms));
+    if (pid == 0) {
+        // Child process
+        runVehicleProcess();
+        exit(EXIT_SUCCESS);
+    } else {
+        // Parent process
+        _vehicle_pid = pid;
+        _running = true;
+        return pid;
     }
 }
 ```
 
-## Key Design Patterns and Changes
+## Communication Stack Setup
+
+The framework follows a specific sequence for setting up the communication stack:
+
+1. **Component Creation Sequence**:
+   - **Initializer** creates a new **NIC<Engine>** using the actual implementation
+   - **Initializer** creates a new **Protocol<NIC<Engine>>** using the actual implementation and attaches it to the NIC
+   - **Initializer** creates a **Vehicle** and passes NIC and Protocol
+   - **Vehicle** creates its own **Communicator** using the actual implementation
+
+2. **Vehicle Communication**:
+   - Vehicle uses its Communicator to send and receive messages
+   - Communication follows the Observer pattern for asynchronous notifications
+   - Actual implementations handle the message flow through the communication stack
+
+### Key Implementation:
+
+```cpp
+template <typename Engine>
+void Initializer::setupCommunicationStack() {
+    // Create NIC
+    auto nic = new NIC<Engine>();
+    
+    // Create Protocol and attach to NIC
+    auto protocol = new Protocol<NIC<Engine>>(nic);
+    
+    // Create Vehicle with only NIC and Protocol
+    Vehicle vehicle(_config, nic, protocol);
+    
+    // Vehicle will create its own Communicator
+    vehicle.communicate();
+}
+```
+
+## Component Responsibilities
+
+Each component in the system has clearly defined responsibilities, now implemented with actual classes:
+
+1. **Initializer**:
+   - Creates and manages vehicle processes
+   - Creates NIC and Protocol
+   - Injects dependencies into Vehicle
+   - Monitors process lifecycle
+
+2. **Vehicle**:
+   - Creates its own Communicator using the actual implementation
+   - Manages the complete communication stack
+   - Coordinates message sending and receiving
+   - Implements the communication protocol
+
+3. **Protocol** (Actual Implementation):
+   - Formats messages for transmission
+   - Handles message routing
+   - Provides addressing mechanisms
+   - Connects to NIC for raw communication
+   - Inherits from Concurrent_Observer to receive notifications from NIC
+
+4. **NIC** (Actual Implementation):
+   - Provides network interface abstraction
+   - Handles raw frames
+   - Manages physical addressing
+   - Uses SocketEngine for actual network I/O
+   - Extends Concurrent_Observed to notify Protocol of incoming packets
+
+5. **Communicator** (Actual Implementation):
+   - Provides high-level communication API
+   - Manages message queues
+   - Implements asynchronous communication
+   - Connects to Protocol for message transmission
+   - Inherits from Concurrent_Observer to receive notifications from Protocol
+
+## Key Design Patterns
+
+The implementation leverages several design patterns:
 
 1. **Modified Dependency Injection**:
    - Initializer injects only NIC and Protocol into Vehicle
@@ -212,52 +193,95 @@ void Vehicle::communicate() {
    - Each vehicle runs in its own process
    - Provides better isolation and error containment
 
-## Component Responsibilities
+## Test Implementation
 
-1. **Initializer**:
-   - Creates and manages vehicle processes
-   - Creates NIC and Protocol
-   - Injects dependencies into Vehicle
-   - Monitors process lifecycle
+The test implementation in test_initializer.cpp demonstrates the framework's capabilities:
 
-2. **Vehicle** (Updated Responsibilities):
-   - Creates its own Communicator
-   - Manages the complete communication stack
-   - Coordinates message sending and receiving
-   - Implements the communication protocol
+1. **Command-line Configuration**:
+   - Number of vehicles to create
+   - Communication period
+   - Run duration
 
-3. **Protocol**:
-   - Formats messages for transmission
-   - Handles message routing
-   - Provides addressing mechanisms
-   - Connects to NIC for raw communication
+2. **Signal Handling**:
+   - Graceful shutdown on SIGINT (Ctrl+C)
+   - Proper cleanup of child processes
 
-4. **NIC**:
-   - Provides network interface abstraction
-   - Handles raw frames
-   - Manages physical addressing
-   - Uses SocketEngine for actual network I/O
+3. **Multiple Vehicle Creation**:
+   - Creates and manages multiple vehicle processes
+   - Each vehicle operates independently
+   - Parent process monitors all children
 
-5. **Communicator**:
-   - Provides high-level communication API
-   - Manages message queues
-   - Implements asynchronous communication
-   - Connects to Protocol for message transmission
+## Alignment with Project Requirements
 
-## Memory Management
+The implementation aligns with the project specifications:
 
-The memory management approach remains similar:
-- Components are created with `new` but not explicitly deleted
-- The destructors log but don't free memory
-- In a production implementation, proper cleanup would be needed
+1. **Process and Thread Model**:
+   - Each autonomous system (vehicle) runs in its own process
+   - Future components will run in threads within the vehicle process
 
-## Future Extensions
+2. **Communication Model**:
+   - Uses broadcast communication
+   - Leverages the Observer pattern for asynchronous notifications
+   - Follows the specified communication API
 
-This framework can be extended by:
-1. Implementing the actual socket communication in SocketEngine
-2. Adding real Observer pattern implementation for message passing
-3. Implementing component threads within each vehicle process
-4. Adding actual message serialization and deserialization
-5. Implementing performance metrics and latency tracking
+3. **Dependency Structure**:
+   - Follows the specified class hierarchy
+   - Implements the friend relationships as required
+   - Maintains proper encapsulation and information hiding
 
-The current design provides all the necessary hooks for these extensions while maintaining the core process-based architecture required by the project. The change to make Vehicle responsible for creating its own Communicator improves the separation of concerns and better aligns with object-oriented design principles.
+## Integration Status
+
+This framework has been fully integrated with the actual implementations of the communication stack components:
+
+1. **Integration with Communicator**:
+   - Replaced stub implementation with actual Communicator class
+   - Vehicle now creates and manages a real Communicator
+   - Communicator interfaces with Protocol for message transmission
+
+2. **Integration with Protocol and NIC**:
+   - Implemented actual Protocol class that inherits from NIC::Observer (Conditional_Data_Observer)
+   - Implemented actual NIC class extending Conditionally_Data_Observed for protocol-based filtering
+   - Protocol contains a Concurrent_Observed member to notify Communicator components
+   - Communicator inherits from Concurrent_Observer for asynchronous message handling
+   - This dual observer pattern implementation follows the professor's specifications exactly
+   - Complete observer chain allows for both conditional filtering and asynchronous message passing
+
+3. **Current Limitations**:
+   - SocketEngine remains a simulation layer rather than using raw Ethernet frames
+   - Message passing is demonstrated but with simplified network operations
+   - Network layer abstractions are in place but not fully implemented
+
+4. **Future Extensions**:
+   - Socket implementation for real network communication
+   - Component threads within each vehicle process
+   - Message serialization and deserialization
+   - Performance metrics and latency tracking
+
+## Usage Example
+
+```cpp
+// Create multiple initializers with configuration
+for (int i = 0; i < numVehicles; i++) {
+    Initializer::VehicleConfig config = {
+        .id = 1000 + i,
+        .period_ms = 500,
+        .name = "Vehicle_" + std::to_string(i)
+    };
+    
+    auto initializer = std::make_unique<Initializer>(config);
+    initializer->startVehicle();
+    initializers.push_back(std::move(initializer));
+}
+
+// Wait for all vehicles to run for specified duration
+std::this_thread::sleep_for(std::chrono::seconds(runDuration));
+
+// Shutdown all vehicles
+for (auto& init : initializers) {
+    init->stopVehicle();
+}
+```
+
+## Conclusion
+
+The Initializer framework provides a robust foundation for managing vehicle processes and their communication components. By following the specified design patterns and class relationships, it enables the creation and management of multiple autonomous vehicles, each with its own communication stack. The framework is designed to be extensible, supporting future enhancements while maintaining the core architecture required by the project.

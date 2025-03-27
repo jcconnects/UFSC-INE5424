@@ -1,47 +1,48 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
-INCLUDES = -Iinclude
+CXXFLAGS = -std=c++14 -Wall -I./include
 
-SRCDIR = src
-INCDIR = include
-BUILDDIR = build
-TESTDIR = tests
+# All source files
+SRCS = $(wildcard src/*.cpp) $(wildcard src/core/*.cpp)
 
-SOURCES = $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/core/*.cpp)
-OBJECTS = $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
+# Test sources
+TEST_COMMUNICATOR_SRC = tests/test_communicator.cpp
+TEST_INITIALIZER_SRC = tests/test_initializer.cpp
+TEST_OBSERVER_SRC = tests/test_observer.cpp
 
-TARGET = $(BUILDDIR)/main
+# Output binaries
+TEST_COMMUNICATOR_BIN = bin/test_communicator
+TEST_INITIALIZER_BIN = bin/test_initializer
+TEST_OBSERVER_BIN = bin/test_observer
 
-DIRS = $(dir $(OBJECTS))
-$(shell mkdir -p $(DIRS))
+# Build all tests
+all: dirs $(TEST_COMMUNICATOR_BIN) $(TEST_INITIALIZER_BIN) $(TEST_OBSERVER_BIN)
 
-.PHONY: all clean test doc directories observer_test run_observer_test
+# Create directories
+dirs:
+	mkdir -p bin
 
-all: $(TARGET) observer_test
+# Test targets
+$(TEST_COMMUNICATOR_BIN): $(TEST_COMMUNICATOR_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $< -pthread
 
-$(TARGET): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
+$(TEST_INITIALIZER_BIN): $(TEST_INITIALIZER_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $< -pthread
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+$(TEST_OBSERVER_BIN): $(TEST_OBSERVER_SRC)
+	$(CXX) $(CXXFLAGS) -o $@ $< -pthread
 
-test: $(TARGET)
-	./$(TARGET)
+# Run test targets
+run_test_communicator: $(TEST_COMMUNICATOR_BIN)
+	./$(TEST_COMMUNICATOR_BIN)
 
-doc:
-	doxygen
+run_test_initializer: $(TEST_INITIALIZER_BIN)
+	./$(TEST_INITIALIZER_BIN) 1 100 -v
 
+run_test_observer: $(TEST_OBSERVER_BIN)
+	./$(TEST_OBSERVER_BIN)
+
+# Clean
 clean:
-	rm -rf $(BUILDDIR)/*
+	rm -rf bin/*
 
-# Observer Test specific rules
-build_test_observer: $(BUILDDIR)/test_observer
-
-$(BUILDDIR)/test_observer: $(BUILDDIR)/core/observer.o $(BUILDDIR)/test_observer.o
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ -pthread
-
-$(BUILDDIR)/test_observer.o: $(TESTDIR)/test_observer.cpp $(INCDIR)/observer.h
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-
-test_observer: $(BUILDDIR)/test_observer
-	./$(BUILDDIR)/test_observer
+.PHONY: all clean dirs run_test_communicator run_test_initializer run_test_observer
