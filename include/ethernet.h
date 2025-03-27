@@ -44,14 +44,17 @@ class Ethernet {
         struct Frame {
             Address dst;
             Address src;
-            unsigned char payload[MTU];
-        };
+            Protocol prot;
+            std::uint8_t payload[MTU];
+        } __attribute__((packed));
 
         // Constructor / Destructor
         Ethernet();
         virtual ~Ethernet();
 
         const Address address() const { return _address; };
+
+        void address(Address& address) { _address = address; };
 
     protected:
         Address _address; // MAC address
