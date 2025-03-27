@@ -128,4 +128,81 @@ private:
     Statistics _statistics;
 };
 
+
+/************** IMPLEMENTATION ****************/
+template <typename Engine>
+NIC<Engine>::NIC() {
+    for (unsigned int i = 0; i < BUFFER_SIZE; ++i){
+        _buffer[i] = Buffer();
+        _free_buffers.push(&_buffer[i]);
+    }
+
+    sem_init(&_buffer_sem, 0, BUFFER_SIZE);
+    pthread_mutex_init(&_buffer_mtx, nullptr);
+}
+
+template <typename Engine>
+NIC<Engine>::~NIC() {
+    for (unsigned int i = 0; i < BUFFER_SIZE; ++i) {
+        free(_buffer[i]);
+    }
+
+    sem_destroy(&_buffer_sem);
+    pthread_mutex_destroy(&_buffer_mtx);
+}
+
+template <typename Engine>
+NIC<Engine>::Buffer * NIC<Engine>::alloc(Address dst, Protocol_Number prot, std::size_t size) {
+    sem_wait(&_buffer_sem);
+
+    pthread_mutex_lock(&_buffer_mtx);
+    Buffer* buf = _free_buffers.front();
+    _free_buffers.pop()
+    pthread_mutex_unlock(&_buffer_mtx);
+
+    Ethernet::Frame* frame = buf->data();
+    frame->src = address();
+    frame->dst = dst;
+    frame->prot = prot;
+
+    buf-> setSize(frame->size(size));
+    return buf;
+}
+
+template <typename Engine>
+void NIC<Engine>::free(Buffer* buf) {
+    buf->clear();
+
+    pthread_mutex_lock(&_buffer_mtx);
+    _free_buffers.push(buf);
+    pthread_mutex_unlock(&_buffer_mtx);
+
+    sem_post(&_buffer_sem);
+}
+
+template <typename Engine>
+int NIC<Engine>::send(Buffer* buf) {
+    return Engine::send(reinterpret_cast<const void*>(buf->data()), buf->size());
+}
+
+template <typename Engine>
+int NIC<Engine>::receive(Buffer* buf, Address* src, Address* dst, void* data, std::size_t size) {
+    Observed::notify(buf->data()->prot, buf);
+    // Not sure about that
+}
+
+template <typename Engine>
+void NIC<Engine>::receive(const void* data, std::size_t size) {
+    const Ethernet::Frame* frame = reinterpret_cast<const Ethernet::Frame*>(data);
+    Buffer* buf = alloc(frame->dst, frame->prot, size);
+    buf->setData(data, size);
+    receive(buf, frame->src, frame->dst, data, size);
+    // Also not sure about that
+}
+
+template <typename Engine>
+const Statistics& NIC<Engine>::statistics() {
+    return _statistics;
+}
+
 #endif // NIC_H
