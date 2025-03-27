@@ -9,16 +9,17 @@
 #include <stdexcept>
 #include <cstring>
 
+
 class SocketEngine {
 public:
 
     SocketEngine();
     ~SocketEngine();
 
-    void send(const void* data, size_t length);
+    void send(const void* data, std::size_t length);
 
 protected:
-    virtual void receive(const void* data, size_t size); // override in derived class NIC
+    virtual void receive(const void* data, std::size_t size); // override in derived class NIC
 
 private:
     int _socket;
