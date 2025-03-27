@@ -18,13 +18,14 @@ class Protocol: private typename NIC::Observer
         typedef typename NIC::Buffer Buffer;
         typedef typename NIC::Address Physical_Address;
         typedef XXX Port;
-        typedef Conditional_Data_Observer<Buffer<Ethernet::Frame>, Port> Observer;
-        typedef Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Port> Observed;
+        typedef Conditional_Data_Observer<Buffer, Port> Observer;
+        typedef Conditionally_Data_Observed<Buffer, Port> Observed;
         
         class Address
         {
             public:
                 enum Null { NULL_VALUE };
+                
             public:
                 Address();
                 Address(const Null & null);

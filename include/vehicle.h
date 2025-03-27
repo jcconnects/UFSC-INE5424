@@ -2,9 +2,10 @@
 #define VEHICLE_H
 
 #include <string>
-#include "initializer.h"
 #include <chrono>
 #include <thread>
+#include "initializer.h"
+#include "message.h"
 
 // Vehicle class that uses the communication stack
 class Vehicle {
@@ -52,7 +53,7 @@ public:
                                     " message " + std::to_string(counter) + 
                                     " at " + std::to_string(time_ms);
             
-            Message msg(msgContent);
+            Message<std::string> msg(msgContent, msgContent.size());
             
             // Simulate sending
             log("Sending message: " + msg.data());
