@@ -17,7 +17,7 @@ public:
     typedef typename Channel::Address Address;
     typedef typename Channel::Port Port;
     typedef Concurrent_Observer<Buffer, Port> Observer;
-
+    
     Communicator(Channel* channel, Address address)
         : Observer(address._port), _channel(channel), _address(address) {
         _channel->attach(this, address);

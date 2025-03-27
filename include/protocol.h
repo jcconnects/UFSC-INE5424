@@ -18,8 +18,8 @@ public:
     typedef typename NICType::Address Physical_Address;
     typedef int Port;
     
-    typedef Conditional_Data_Observer<Buffer, Port> Observer;
-    typedef Conditionally_Data_Observed<Buffer, Port> Observed;
+    typedef Concurrent_Observer<Buffer, Port> Observer;
+    typedef Concurrent_Observed<Buffer, Port> Observed;
     
     // Address class for Protocol layer
     class Address
@@ -104,7 +104,8 @@ public:
     void update(typename NICType::Protocol_Number prot, Buffer* buf) override {
         std::cout << "Protocol: Received notification from NIC for protocol " << prot << std::endl;
         
-        // Create a copy of the buffer for each observer
+        // If we have observers, notify them and let reference counting handle buffer cleanup
+        // Otherwise, free the buffer ourselves
         if (!_observed.notify(999, buf)) { // Use a default port for testing
             // No observers, free the buffer
             _nic->free(buf);

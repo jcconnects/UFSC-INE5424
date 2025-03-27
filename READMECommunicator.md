@@ -216,9 +216,13 @@ The Communicator implementation has been successfully integrated with the Initia
    - Communicator: Provides high-level send/receive API to Vehicle
 
 3. **Observer Chain**:
-   - NIC notifies Protocol of incoming packets
-   - Protocol notifies Communicator of messages for its address
-   - Communicator provides asynchronous message handling to Vehicle
+   - Between NIC and Protocol: Conditional Observer pattern
+     * NIC (as `Conditionally_Data_Observed`) notifies Protocol (as `Conditional_Data_Observer`) based on protocol numbers
+     * This filtering mechanism ensures Protocol only receives packets for protocols it handles
+   - Between Protocol and Communicator: Concurrent Observer pattern
+     * Protocol (via `Concurrent_Observed` member) notifies Communicator (as `Concurrent_Observer`) based on port numbers
+     * This enables asynchronous message handling with thread synchronization via semaphores
+   - The dual observer pattern implementation aligns with the professor's specifications
 
 4. **Testing Integration**:
    - The `test_initializer.cpp` file demonstrates running multiple vehicles

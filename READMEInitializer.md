@@ -239,10 +239,12 @@ This framework has been fully integrated with the actual implementations of the 
    - Communicator interfaces with Protocol for message transmission
 
 2. **Integration with Protocol and NIC**:
-   - Implemented actual Protocol class that attaches to NIC as an observer
-   - Implemented actual NIC class with the required interface
-   - Communicator attaches to Protocol as an observer
-   - Complete observer chain allows for asynchronous message passing
+   - Implemented actual Protocol class that inherits from NIC::Observer (Conditional_Data_Observer)
+   - Implemented actual NIC class extending Conditionally_Data_Observed for protocol-based filtering
+   - Protocol contains a Concurrent_Observed member to notify Communicator components
+   - Communicator inherits from Concurrent_Observer for asynchronous message handling
+   - This dual observer pattern implementation follows the professor's specifications exactly
+   - Complete observer chain allows for both conditional filtering and asynchronous message passing
 
 3. **Current Limitations**:
    - SocketEngine remains a simulation layer rather than using raw Ethernet frames

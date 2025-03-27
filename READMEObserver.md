@@ -231,18 +231,22 @@ The implementation aligns with the project specifications:
 The Observer pattern implementation is not just theoretical but has been fully realized in the project:
 
 1. **Actual Component Integration**:
-   - The Communicator class extends Concurrent_Observer to receive messages
-   - The Protocol class extends Concurrent_Observer to receive raw packets
-   - The NIC class extends Concurrent_Observed to notify Protocol
-   - The Protocol class contains a Concurrent_Observed to notify Communicators
+   - The Communicator class extends `Concurrent_Observer` to receive messages
+   - The Protocol class extends `Conditional_Data_Observer` (via NIC::Observer) to receive raw packets
+   - The NIC class extends `Conditionally_Data_Observed` to notify Protocol based on protocol numbers
+   - The Protocol class contains a `Concurrent_Observed` member to notify Communicators based on ports
 
-2. **Working Observer Chain**:
-   - A complete observer chain has been implemented: NIC → Protocol → Communicator
-   - Messages flow through this chain using the observer notifications
-   - Reference counting ensures proper resource management throughout
+2. **Dual Observer Pattern Chain**:
+   - Between NIC and Protocol: Conditional Observer pattern
+     * NIC (as `Conditionally_Data_Observed`) notifies Protocol (as `Conditional_Data_Observer`)
+     * This is used for filtering based on protocol numbers without thread synchronization
+   - Between Protocol and Communicator: Concurrent Observer pattern
+     * Protocol (via its `Concurrent_Observed` member) notifies Communicator (as `Concurrent_Observer`)
+     * This enables asynchronous message handling with semaphores for thread synchronization
 
 3. **Practical Validation**:
    - Integration tests demonstrate the observer chain working end-to-end
+   - The new `run_test_observer` target validates both patterns
    - Multiple vehicles can send and receive messages in separate processes
    - The asynchronous nature of the pattern is validated with concurrent operations
 
