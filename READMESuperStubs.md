@@ -79,7 +79,7 @@ The `NIC` template class serves as an abstraction layer for network operations, 
   - Cleans up NIC resources
   - Outputs destruction message to console for debugging
   
-- **send(Address dst, Protocol_Number prot, const void* data, unsigned int size)**
+- **send(Address dst, Protocol_Number prot, const void\* data, unsigned int size)**
   - Sends data to a specific destination address using a specific protocol
   - Parameters:
     - `dst`: Destination address
@@ -89,7 +89,7 @@ The `NIC` template class serves as an abstraction layer for network operations, 
   - Returns: Number of bytes sent
   - Updates the statistics (packets_sent, bytes_sent)
   
-- **receive(Address* src, Protocol_Number* prot, void* data, unsigned int size)**
+- **receive(Address\* src, Protocol_Number\* prot, void\* data, unsigned int size)**
   - Receives data and stores information about the sender
   - Parameters:
     - `src`: Pointer to store the source address (if not NULL)
@@ -99,7 +99,7 @@ The `NIC` template class serves as an abstraction layer for network operations, 
   - Returns: Number of bytes received
   - Updates the statistics (packets_received, bytes_received)
   
-- **receive(Buffer* buf, Address* src, Address* dst, void* data, unsigned int size)**
+- **receive(Buffer\* buf, Address\* src, Address\* dst, void\* data, unsigned int size)**
   - Processes a received buffer and extracts information
   - Parameters:
     - `buf`: Buffer containing the received data
@@ -117,14 +117,14 @@ The `NIC` template class serves as an abstraction layer for network operations, 
     - `size`: Size of the buffer to allocate
   - Returns: Pointer to the allocated buffer
   
-- **send(Buffer* buf)**
+- **send(Buffer\* buf)**
   - Sends a pre-allocated buffer
   - Parameters:
     - `buf`: Buffer to send
   - Returns: Number of bytes sent
   - Updates the statistics (packets_sent, bytes_sent)
   
-- **free(Buffer* buf)**
+- **free(Buffer\* buf)**
   - Frees a buffer after use
   - Parameters:
     - `buf`: Buffer to free
@@ -142,14 +142,14 @@ The `NIC` template class serves as an abstraction layer for network operations, 
   - Gets the network statistics
   - Returns: Reference to the Statistics structure
 
-- **attach(Observer* obs, Protocol_Number prot)**
+- **attach(Observer\* obs, Protocol_Number prot)**
   - Registers an observer for a specific protocol
   - Parameters:
     - `obs`: The observer to register
     - `prot`: The protocol number to observe
   - Implementation aligns with the professor's Conditional_Data_Observed pattern
 
-- **detach(Observer* obs, Protocol_Number prot)**
+- **detach(Observer\* obs, Protocol_Number prot)**
   - Unregisters an observer
   - Parameters:
     - `obs`: The observer to unregister
@@ -223,7 +223,7 @@ The `Address` class encapsulates addressing at the Protocol layer:
   - Cleans up Protocol resources
   - Outputs destruction message to console for debugging
   
-- **send(Address from, Address to, const void* data, unsigned int size)**
+- **send(Address from, Address to, const void\* data, unsigned int size)**
   - Sends data from one address to another
   - Parameters:
     - `from`: Source address
@@ -233,7 +233,7 @@ The `Address` class encapsulates addressing at the Protocol layer:
   - Returns: Number of bytes sent
   - Currently passes the message directly to the NIC layer
   
-- **receive(Buffer* buf, Address* from, void* data, unsigned int size)**
+- **receive(Buffer\* buf, Address\* from, void\* data, unsigned int size)**
   - Receives data from a buffer and extracts source information
   - Parameters:
     - `buf`: Buffer containing the received data
@@ -242,19 +242,19 @@ The `Address` class encapsulates addressing at the Protocol layer:
     - `size`: Maximum number of bytes to copy
   - Returns: Number of bytes received
   
-- **attach(Observer* obs, Address address)**
+- **attach(Observer\* obs, Address address)**
   - Registers an observer to receive notifications for a specific address
   - Parameters:
     - `obs`: The observer to register
     - `address`: The address to observe
   
-- **detach(Observer* obs, Address address)**
+- **detach(Observer\* obs, Address address)**
   - Unregisters an observer
   - Parameters:
     - `obs`: The observer to unregister
     - `address`: The address the observer was monitoring
   
-- **update(typename NICType::Observed* obs, typename NICType::Protocol_Number prot, Buffer* buf)**
+- **update(typename NICType::Observed\* obs, typename NICType::Protocol_Number prot, Buffer\* buf)**
   - Handles notifications from the NIC layer (implements the Observer pattern)
   - Parameters:
     - `obs`: The observed entity (NIC)

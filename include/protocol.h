@@ -9,7 +9,7 @@
 
 // Protocol implementation that works with the real Communicator
 template <typename NICType>
-class Protocol: private typename NICType::Observer
+class Protocol: private NICType::Observer
 {
 public:
     static const typename NICType::Protocol_Number PROTO = 0; // Default protocol number
