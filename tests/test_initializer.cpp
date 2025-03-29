@@ -13,15 +13,16 @@ void signal_handler(int signal) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " <number_of_vehicles> <message_periodicity_ms> [-v]" 
+    if (argc < 4) {
+        std::cerr << "Usage: " << argv[0] << " <number_of_vehicles> <message_periodicity_ms> <timeout_seconds> [-v]" 
                   << std::endl;
         return EXIT_FAILURE;
     }
     
     int numVehicles = std::atoi(argv[1]);
     int period_ms = std::atoi(argv[2]);
-    bool verbose = (argc > 3 && std::string(argv[3]) == "-v");
+    int timeout_seconds = std::atoi(argv[3]);
+    bool verbose = (argc > 4 && std::string(argv[4]) == "-v");
     
     // Set up signal handling
     struct sigaction sa;
@@ -32,7 +33,7 @@ int main(int argc, char* argv[]) {
     sigaction(SIGTERM, &sa, nullptr);
     
     std::cout << "Creating " << numVehicles << " vehicles with message periodicity of "
-              << period_ms << " ms." << std::endl;
+              << period_ms << " ms and timeout of " << timeout_seconds << " seconds." << std::endl;
     
     // Create and start initializers
     std::vector<std::unique_ptr<Initializer>> initializers;
@@ -51,8 +52,19 @@ int main(int argc, char* argv[]) {
     
     std::cout << "All vehicles started. Press Ctrl+C to terminate." << std::endl;
     
+    // Set up timeout
+    auto start_time = std::chrono::steady_clock::now();
+    auto timeout = std::chrono::seconds(timeout_seconds);
+    
     // Wait for completion or shutdown
     while (!shutdown_requested) {
+        // Check timeout
+        auto current_time = std::chrono::steady_clock::now();
+        if (current_time - start_time > timeout) {
+            std::cout << "Timeout reached after " << timeout_seconds << " seconds. Terminating all vehicles..." << std::endl;
+            break;
+        }
+        
         // Check if any vehicle has exited
         for (auto it = initializers.begin(); it != initializers.end();) {
             if (!(*it)->isRunning()) {
@@ -64,7 +76,7 @@ int main(int argc, char* argv[]) {
         
         if (initializers.empty()) {
             std::cout << "All vehicles have completed." << std::endl;
-            break;
+            exit(EXIT_SUCCESS);  // Exit the process when all vehicles are done
         }
         
         std::this_thread::sleep_for(std::chrono::milliseconds(100));

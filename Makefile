@@ -36,7 +36,7 @@ run_test_communicator: $(TEST_COMMUNICATOR_BIN)
 	./$(TEST_COMMUNICATOR_BIN)
 
 run_test_initializer: $(TEST_INITIALIZER_BIN)
-	./$(TEST_INITIALIZER_BIN) 1 100 -v
+	./$(TEST_INITIALIZER_BIN) 1 100 10 -v
 
 run_test_observer: $(TEST_OBSERVER_BIN)
 	./$(TEST_OBSERVER_BIN)
