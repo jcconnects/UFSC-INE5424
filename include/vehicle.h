@@ -70,7 +70,7 @@ public:
                                     " message " + std::to_string(counter) + 
                                     " at " + std::to_string(time_ms);
             
-            Message<std::string> msg(msgContent, msgContent.size());
+            Message msg(msgContent);
             
             // Use the actual communicator's send method
             log("Sending message: " + msgContent);
