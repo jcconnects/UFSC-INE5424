@@ -40,11 +40,11 @@ public:
     typedef D Observed_Data;
     typedef C Observing_Condition;
 public:
-    Concurrent_Observer(C rank): _semaphore(), _rank(rank) {}
+    Concurrent_Observer(C rank);
     virtual ~Concurrent_Observer() = default;
     
-    void update(C c, D * d);
-    D * updated();
+    void update(C c, D* d);
+    D* updated();
     C rank();
     
 private:
@@ -55,17 +55,17 @@ private:
 
 // Template implementations for Conditional_Data_Observer
 template <typename T, typename Condition>
-void Conditional_Data_Observer<T, Condition>::update(Condition c, T* d) {
-    // TODO: Implement
-}
-
-template <typename T, typename Condition>
 Condition Conditional_Data_Observer<T, Condition>::rank() {
     return _rank;
 }
 
-template <typename T, typename C>
-void Concurrent_Observer<T, C>::update(C c, T* d) {
+// Template implementations for Concurrent_Observer
+template <typename D, typename C>
+Concurrent_Observer<D, C>::Concurrent_Observer(C rank)
+    : _semaphore(), _rank(rank) {}
+
+template <typename D, typename C>
+void Concurrent_Observer<D, C>::update(C c, D* d) {
     if (c == _rank && d != nullptr) {
         // Store a copy of the pointer, don't modify ref_count here
         _data.insert(d);
@@ -73,14 +73,14 @@ void Concurrent_Observer<T, C>::update(C c, T* d) {
     }
 }
 
-template <typename T, typename C>
-T* Concurrent_Observer<T, C>::updated() {
+template <typename D, typename C>
+D* Concurrent_Observer<D, C>::updated() {
     _semaphore.wait();
     return _data.remove();
 }
 
-template <typename T, typename C>
-C Concurrent_Observer<T, C>::rank() {
+template <typename D, typename C>
+C Concurrent_Observer<D, C>::rank() {
     return _rank;
 }
 
