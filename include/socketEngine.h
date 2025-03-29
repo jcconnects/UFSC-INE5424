@@ -1,6 +1,12 @@
 #ifndef ENGINE_h
 #define ENGINE_h
 
+#include <arpa/inet.h>
+#include <linux/sockios.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include<linux/if_packet.h>
+#include<net/ethernet.h>
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -20,14 +26,17 @@ public:
     void setCallback(callbackMethod cb);
 
 protected:
-    virtual void receive(const void* data, std::size_t size); // override in derived class NIC
+    virtual void callback(const void* data, std::size_t size); // override in derived class NIC
 
 private:
     int _socket;
-    callbackMethod callback;
+    callbackMethod _cb;
+    unsigned int ifindex;
 
-    static void signalHandler();
-}
+    void asyncReceive();
+    static void signalHandler(int);
+    static SocketEngine* activeInstance;
+};
 
 // ===== Implementation =====
 SocketEngine::SocketEngine() : _socket(-1) {
@@ -69,13 +78,21 @@ SocketEngine::SocketEngine() : _socket(-1) {
         close(_socket);
         throw std::runtime_error("sigaction failed");
     }
+
+    if_nametoindex("eth0");
+    activeInstance = this;
 }
 
 SocketEngine::~SocketEngine() {
     if (_socket != -1) close(_socket);
+    activeInstance = nullptr;
 }
 
-void SocketEngine::signalHandler() {
+void SocketEngine::signalHandler(int) {
+    if (activeInstance) activeInstance -> asyncReceive();
+}
+
+void SocketEngine::asyncReceive() {
     sockaddr_in src_addr{};
     socklen_t addrlen = sizeof(src_addr);
     char buffer[1518];
@@ -89,12 +106,12 @@ void SocketEngine::signalHandler() {
             throw std::runtime_error("recvfrom error");
         }
         
-        if (callback) callback(buffer, received);
+        _cb(buffer, received);
     }
 }
 
 void SocketEngine::setCallback(callbackMethod cb) {
-    callback = cb;
+    _cb = cb;
 }
 
 int SocketEngine::send(const void* data, std::size_t length) {
@@ -111,24 +128,24 @@ int SocketEngine::send(const void* data, std::size_t length) {
     struct ifreq ifr{};
     memset(&ifr, 0, sizeof(ifr));
     ifr.ifr_ifindex = ifindex;
-    if (ioctl(sockfd, SIOCGIFINDEX, &ifr) < 0) {
+    if (ioctl(_socket, SIOCGIFINDEX, &ifr) < 0) {
         throw std::runtime_error("ioctl(SIOCGIFINDEX) failed");
     }
     strncpy(ifr.ifr_name, ifr.ifr_name, IFNAMSIZ);
-    if (ioctl(sockfd, SIOCGIFHWADDR, &ifr) < 0) {
+    if (ioctl(_socket, SIOCGIFHWADDR, &ifr) < 0) {
         throw std::runtime_error("ioctl(SIOCGIFHWADDR) failed");
     }
     memcpy(src_mac, ifr.ifr_hwaddr.sa_data, 6);
 
     // Construct frame
-    uint8_t frame[sizeof(EthFrame) + data_len];
+    uint8_t frame[sizeof(EthFrame) + length];
     EthFrame* header = reinterpret_cast<EthFrame*>(frame);
     
     // Set destination MAC to broadcast address
     memset(header->dest_mac, 0xFF, 6);
     memcpy(header->src_mac, src_mac, 6);
     header->eth_type = htons(ETH_P_ARP);
-    memcpy(frame + sizeof(EthFrame), data, data_len);
+    memcpy(frame + sizeof(EthFrame), data, length);
 
     // Prepare destination address structure
     struct sockaddr_ll dest_addr{};
@@ -137,12 +154,14 @@ int SocketEngine::send(const void* data, std::size_t length) {
     dest_addr.sll_ifindex = ifindex;
     dest_addr.sll_halen = ETH_ALEN;
 
-    std::size_t bytes_sent = sendto(sockfd, frame, sizeof(frame), 0,
+    std::size_t bytes_sent = sendto(_socket, frame, sizeof(frame), 0,
                             reinterpret_cast<struct sockaddr*>(&dest_addr),
                             sizeof(dest_addr));
-    if (bytesSent) {
+    if (bytes_sent) {
         throw std::runtime_error("sendto failed");
     }
+
+    return bytes_sent;
 }
 
 #endif // ENGINE_H
