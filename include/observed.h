@@ -41,9 +41,9 @@ public:
     Concurrent_Observed() {}
     ~Concurrent_Observed() {}
     
-    void attach(Concurrent_Observer<D, C> * o, C c);
-    void detach(Concurrent_Observer<D, C> * o, C c);
-    bool notify(C c, D * d);
+    void attach(Concurrent_Observer<D, C>* o, C c);
+    void detach(Concurrent_Observer<D, C>* o, C c);
+    bool notify(C c, D* d);
     
 private:
     mutable std::mutex _mutex;

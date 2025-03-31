@@ -1,9 +1,11 @@
 #ifndef INITIALIZER_H
 #define INITIALIZER_H
 
-#include "protocol.h"
-#include "nic.h"
 #include "vehicle.h"
+#include "communicator.h"
+#include "nic.h" // Include actual NIC implementation
+#include "protocol.h" // Include actual Protocol implementation
+#include "stubs/socketengine.h" // Include SocketEngine
 #include <iostream>
 #include <signal.h>
 #include <sys/wait.h>
@@ -11,17 +13,20 @@
 #include <chrono>
 #include <thread>
 #include <stdexcept>
+#include <memory>
+#include <string>
+
+// Forward declarations
+class Vehicle;
+template <typename E> class NIC;
+template <typename N> class Protocol;
+template <typename C> class Communicator;
 
 // Initializer class responsible for creating and managing a single vehicle process
 class Initializer {
 public:
     // Configuration for vehicle instance
-    struct VehicleConfig {
-        int id;
-        int period_ms;
-        bool verbose_logging;
-        std::string log_prefix;
-    };
+    typedef VehicleConfig_Fwd::VehicleConfig VehicleConfig;
 
     Initializer(const VehicleConfig& config);
     ~Initializer();
@@ -36,10 +41,10 @@ public:
     void terminateVehicle();
     
     // Check if vehicle is running
-    bool isRunning();
+    bool isRunning() const;
     
     // Get process ID
-    pid_t getPid();
+    pid_t getPid() const;
 
 private:
     // This is the method that runs inside the vehicle process
@@ -134,11 +139,11 @@ void Initializer::terminateVehicle() {
     }
 }
 
-bool Initializer::isRunning() {
+bool Initializer::isRunning() const {
     return _running;
 }
 
-pid_t Initializer::getPid() {
+pid_t Initializer::getPid() const {
     return _vehicle_pid;
 }
 
@@ -154,16 +159,14 @@ void Initializer::runVehicleProcess()  {
 
 template <typename Engine>
 void Initializer::setupCommunicationStack()  {
-    // Create NIC
+    // Create NIC with real implementation
     auto nic = new NIC<Engine>();
     
-    // Create Protocol and attach to NIC
+    // Create Protocol with real implementation
     auto protocol = new Protocol<NIC<Engine>>(nic);
     
-    // Create Vehicle with only NIC and Protocol
+    // Create Vehicle with NIC and Protocol
     Vehicle vehicle(_config, nic, protocol);
-    
-    // Vehicle will create its own Communicator in its constructor
     
     // Start vehicle communication
     vehicle.communicate();
