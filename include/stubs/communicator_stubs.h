@@ -14,6 +14,12 @@
 #include "../observed.h"
 #include "../observer.h"
 
+// Implementations of 
+// - Buffer
+// - Message
+// - ProtocolStub
+// - NICStub
+
 // Stub Message class for testing
 class Message {
 public:
@@ -78,16 +84,55 @@ public:
     typedef std::string Physical_Address;
     typedef int Port;
     
+    typedef Conditional_Data_Observer<Buffer, Port> Observer;
+    typedef Conditionally_Data_Observed<Buffer, Port> Observed;
+    
+    // Header class for protocol messages
+    class Header {
+    public:
+        Header() : _from_port(0), _to_port(0), _size(0) {}
+        
+        Port from_port() const { return _from_port; }
+        void from_port(Port p) { _from_port = p; }
+        
+        Port to_port() const { return _to_port; }
+        void to_port(Port p) { _to_port = p; }
+        
+        unsigned int size() const { return _size; }
+        void size(unsigned int s) { _size = s; }
+        
+    private:
+        Port _from_port;
+        Port _to_port;
+        unsigned int _size;
+    };
+    
+    // Packet class that includes header and data
+    class Packet: public Header {
+    public:
+        Packet() {}
+        
+        Header* header() { return this; }
+        
+        template<typename T>
+        T* data() { return reinterpret_cast<T*>(&_data); }
+        
+        template<typename T>
+        const T* data() const { return reinterpret_cast<const T*>(&_data); }
+        
+    private:
+        unsigned char _data[1500]; // MTU size
+    } __attribute__((packed));
+    
     class Address {
     public:
         enum Null { NULL_VALUE };
-        
-        typedef int Port; // Add nested Port type for compatibility
         
         Port _port;
         Physical_Address _paddr;
         
         Address();
+        Address(const Null& null);
         Address(Physical_Address paddr, Port port);
         
         static const Address BROADCAST;
@@ -96,21 +141,19 @@ public:
         bool operator==(const Address& a) const;
     };
     
+    static const unsigned int MTU = 1500 - sizeof(Header);
+    typedef unsigned char Data[MTU];
+    
     ProtocolStub();
     ~ProtocolStub();
     
-    // This is what the Communicator will call to send a message
     int send(Address from, Address to, const void* data, unsigned int size);
-    
-    // This is what the Communicator will call to receive a message
     int receive(Buffer* buf, Address* from, void* data, unsigned int size);
-    
-    // Simulate async notification
     void simulateReceive(const std::string& message, Port port);
     
     // Observer management
-    void attach(Concurrent_Observer<Buffer, Port>* obs, Address address);
-    void detach(Concurrent_Observer<Buffer, Port>* obs, Address address);
+    void attach(Observer* obs, Address address);
+    void detach(Observer* obs, Address address);
     
     // Test helpers
     bool hasMessage(const std::string& message) const;
@@ -120,11 +163,13 @@ public:
 private:
     mutable std::mutex _mutex;
     std::vector<std::string> _sent_messages;
-    Concurrent_Observed<Buffer, Port> _observed;
+    Observed _observed;
 };
 
 // ProtocolStub::Address implementations
 ProtocolStub::Address::Address() : _port(0), _paddr("") {}
+
+ProtocolStub::Address::Address(const Null& null) : _port(0), _paddr("") {}
 
 ProtocolStub::Address::Address(Physical_Address paddr, Port port) : _port(port), _paddr(paddr) {}
 
@@ -148,13 +193,22 @@ ProtocolStub::~ProtocolStub() {
 int ProtocolStub::send(Address from, Address to, const void* data, unsigned int size) {
     std::lock_guard<std::mutex> lock(_mutex);
     
+    // Create a packet with header and data
+    Packet packet;
+    packet.from_port(from._port);
+    packet.to_port(to._port);
+    packet.size(size);
+    
+    // Copy data into packet
+    memcpy(packet.data<void>(), data, size);
+    
+    // Store the message for later verification
     std::string message(static_cast<const char*>(data), size);
+    _sent_messages.push_back(message);
+    
     std::cout << "Protocol sending message from port " << from._port 
               << " to " << (to == Address::BROADCAST ? "BROADCAST" : std::to_string(to._port))
               << ": " << message << std::endl;
-    
-    // Store the message for later verification
-    _sent_messages.push_back(message);
     
     return size;
 }
@@ -164,16 +218,20 @@ int ProtocolStub::receive(Buffer* buf, Address* from, void* data, unsigned int s
     
     if (!buf) return 0;
     
-    // Copy the buffer data to the output buffer
-    size_t copy_size = std::min<size_t>(size, buf->data.size());
-    memcpy(data, buf->data.c_str(), copy_size);
+    // Process the packet
+    const Packet* packet = reinterpret_cast<const Packet*>(buf->data.c_str());
+    
+    // Copy data from packet
+    size_t copy_size = std::min<size_t>(size, packet->size());
+    memcpy(data, packet->data<void>(), copy_size);
     
     // Set the sender address if provided
     if (from) {
-        *from = Address("sender_address", 999);
+        from->_paddr = "sender_address";
+        from->_port = packet->from_port();
     }
     
-    std::cout << "Protocol received message: " << buf->data << std::endl;
+    std::cout << "Protocol received message: " << std::string(static_cast<char*>(data), copy_size) << std::endl;
     
     return copy_size;
 }
@@ -196,12 +254,12 @@ void ProtocolStub::simulateReceive(const std::string& message, Port port) {
     }
 }
 
-void ProtocolStub::attach(Concurrent_Observer<Buffer, Port>* obs, Address address) {
+void ProtocolStub::attach(Observer* obs, Address address) {
     _observed.attach(obs, address._port);
     std::cout << "Observer attached to port " << address._port << std::endl;
 }
 
-void ProtocolStub::detach(Concurrent_Observer<Buffer, Port>* obs, Address address) {
+void ProtocolStub::detach(Observer* obs, Address address) {
     _observed.detach(obs, address._port);
     std::cout << "Observer detached from port " << address._port << std::endl;
 }

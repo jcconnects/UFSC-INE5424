@@ -35,6 +35,10 @@ public:
     Communicator& operator=(const Communicator&) = delete;
 
 private:
+    // Update method for Observer pattern
+    void update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition c, Buffer* buf);
+
+private:
     Channel* _channel;
     Address _address;
     mutable std::mutex _mutex;
@@ -135,6 +139,11 @@ bool Communicator<Channel>::receive(Message* message) {
         }
         return false;
     }
+}
+
+template <typename Channel>
+void Communicator<Channel>::update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition c, Buffer* buf) {
+    Observer::update(c, buf); // releases the thread waiting for data
 }
 
 #endif // COMMUNICATOR_H
