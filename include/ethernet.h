@@ -22,7 +22,7 @@ class Ethernet {
         // Protocol Type
         typedef unsigned int Protocol;
         
-        static constexpr unsigned int HEADER_SIZE = MAC_SIZE*2 + sizeof(Protocol);
+        static constexpr unsigned int HEADER_SIZE = sizeof(Address)*2 + sizeof(Protocol);
 
         // Defining Ethernet Frame
         struct Frame {

@@ -111,7 +111,7 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
         Address from;
         std::uint8_t temp_data[MAX_MESSAGE_SIZE];
 
-        int size = _channel->receive(buf, from, temp_data, MAX_MESSAGE_SIZE);
+        int size = _channel->receive(buf, from, temp_data, buf->size());
         db<Communicator<Channel>>(INF) << "[Communicator] Channel::receive() returned size " << std::to_string(size) << "\n";
         
         if (size > 0) {

@@ -223,7 +223,7 @@ void SocketEngine::handleSignal() {
     
     // Convert protocol from network to host byte order
     frame.prot = ntohs(frame.prot);
-    db<SocketEngine>(INF) << "[SocketEngine] received frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << frame.prot << "}\n";
+    db<SocketEngine>(INF) << "[SocketEngine] received frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << frame.prot << ", size = " << bytes_received << "}\n";
     
     // Process the frame if callback is set
     if (_callback) {

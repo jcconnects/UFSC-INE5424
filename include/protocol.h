@@ -99,7 +99,7 @@ class Protocol: private NIC::Observer
         static void detach(Observer* obs, Address address);
         
     private:
-        void update(typename NIC::Observed * obs, typename NIC::Protocol_Number prot, Buffer * buf);
+        void update(typename NIC::Protocol_Number prot, Buffer * buf) override;
 
     private:
         NIC* _nic;
@@ -165,10 +165,12 @@ template <typename NIC>
 int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int size) {
     db<Protocol>(TRC) << "Protocol<NIC>::send() called!\n";
 
-    db<Protocol>(INF) << "Protocol sending from port " << from.port() << " to port " << to.port() << "\n";
+    db<Protocol>(INF) << "[Protocol] sending from port " << from.port() << " to port " << to.port() << "\n";
     
     // Allocate buffer with header and data
-    Buffer* buf = _nic->alloc(to.paddr(), PROTO, sizeof(Header) + size);
+    unsigned int frame_size = sizeof(Header) + Ethernet::HEADER_SIZE + size;
+
+    Buffer* buf = _nic->alloc(to.paddr(), PROTO, frame_size);
     if (!buf) return 0;
     
     // Set up Packet
@@ -196,16 +198,29 @@ int Protocol<NIC>::receive(Buffer* buf, Address from, void* data, unsigned int s
     typename NIC::Address src_mac;
     typename NIC::Address dst_mac;
 
-    int payload_size = _nic->receive(buf, &src_mac, &dst_mac, data, size);
-    db<Protocol>(INF) << "[Protocol] NIC::receive returned size " << std::to_string(payload_size) << "\n";
+    std::uint8_t temp_buffer[size];
+    
+    int packet_size = _nic->receive(buf, &src_mac, &dst_mac, temp_buffer, NIC::MTU);
+    db<Protocol>(INF) << "[Protocol] NIC::receive returned size " << std::to_string(packet_size) << "\n";
+
+    if (packet_size < static_cast<int>(sizeof(Header))) {
+        db<Protocol>(ERR) << "[Protocol] Packet size too small\n";
+        return 0;
+    }
+
+    // Interpretar como Packet
+    Packet* pkt = reinterpret_cast<Packet*>(temp_buffer);
 
     if (from) {
-        Packet pkt;
-        std::memcpy(&pkt, buf->data(), sizeof(Packet));
-
-        from.paddr(src_mac);              // Physical_Address
-        from.port(pkt.from_port());       // Port
+        from.paddr(src_mac);
+        from.port(pkt->header()->from_port());
     }
+
+    // Calcular tamanho do payload
+    int payload_size = packet_size - sizeof(Header);
+
+    // Copiar apenas os dados úteis para o usuário
+    std::memcpy(data, pkt->template data<void>(), payload_size);
 
     return payload_size;
 }
@@ -227,12 +242,18 @@ void Protocol<NIC>::detach(Observer* obs, Address address) {
 }
 
 template <typename NIC>
-void Protocol<NIC>::update(typename NIC::Observed * obs, typename NIC::Protocol_Number prot, Buffer * buf) {
+void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     db<Protocol>(TRC) << "Protocol<NIC>::update() called!\n";
+
+    // Extracting packet from buffer
+    Packet* packet = reinterpret_cast<Packet*>(buf->data()->payload);
+    
+    // Extracting dst port from packet
+    Port dst_port = packet->header()->to_port();
 
     // If we have observers, notify them and let reference counting handle buffer cleanup
     // Otherwise, free the buffer ourselves
-    if (!_observed.notify(prot, buf)) { // Use a default port for testing
+    if (!Protocol::_observed.notify(dst_port, buf)) { // Use a default port for testing
         db<Protocol>(INF) << "[Protocol] data received, but no one was notified\n";
         // No observers, free the buffer
         _nic->free(buf);
