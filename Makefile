@@ -1,48 +1,39 @@
 CXX = g++
 CXXFLAGS = -std=c++14 -Wall -I./include
+LDFLAGS = -pthread
 
-# All source files
-SRCS = $(wildcard src/*.cpp) $(wildcard src/core/*.cpp)
+# Diretórios
+SRCDIR = src
+TESTDIR = tests
+BINDIR = bin
 
-# Test sources
-TEST_COMMUNICATOR_SRC = tests/test_communicator.cpp
-TEST_INITIALIZER_SRC = tests/test_initializer.cpp
-TEST_OBSERVER_SRC = tests/test_observer.cpp
+# Todos os testes encontrados
+TEST_SRCS := $(wildcard $(TESTDIR)/*.cpp)
+TEST_BINS := $(patsubst $(TESTDIR)/%.cpp, $(BINDIR)/%, $(TEST_SRCS))
 
-# Output binaries
-TEST_COMMUNICATOR_BIN = bin/test_communicator
-TEST_INITIALIZER_BIN = bin/test_initializer
-TEST_OBSERVER_BIN = bin/test_observer
+# Fontes principais
+SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/core/*.cpp)
 
-# Build all tests
-all: dirs $(TEST_COMMUNICATOR_BIN) $(TEST_INITIALIZER_BIN) $(TEST_OBSERVER_BIN)
+# Alvo padrão: compilar todos os testes
+all: dirs $(TEST_BINS)
 
-# Create directories
+# Criar diretórios necessários
 dirs:
-	mkdir -p bin
+	mkdir -p $(BINDIR)
 
-# Test targets
-$(TEST_COMMUNICATOR_BIN): $(TEST_COMMUNICATOR_SRC)
-	$(CXX) $(CXXFLAGS) -o $@ $< -pthread
+tests/%: dirs $(BINDIR)/%
+	@true
 
-$(TEST_INITIALIZER_BIN): $(TEST_INITIALIZER_SRC)
-	$(CXX) $(CXXFLAGS) -o $@ $< -pthread
+# Regra genérica para compilar cada teste
+$(BINDIR)/%: $(TESTDIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
-$(TEST_OBSERVER_BIN): $(TEST_OBSERVER_SRC)
-	$(CXX) $(CXXFLAGS) -o $@ $< -pthread
+# Executar teste específico
+run_%: $(BINDIR)/%
+	./$<
 
-# Run test targets
-run_test_communicator: $(TEST_COMMUNICATOR_BIN)
-	./$(TEST_COMMUNICATOR_BIN)
-
-run_test_initializer: $(TEST_INITIALIZER_BIN)
-	./$(TEST_INITIALIZER_BIN) 1 100 10 -v
-
-run_test_observer: $(TEST_OBSERVER_BIN)
-	./$(TEST_OBSERVER_BIN)
-
-# Clean
+# Limpeza
 clean:
-	rm -rf bin/*
+	rm -rf $(BINDIR)
 
-.PHONY: all clean dirs run_test_communicator run_test_initializer run_test_observer
+.PHONY: all clean dirs run_%
