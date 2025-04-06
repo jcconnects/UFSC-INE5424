@@ -25,7 +25,8 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
 
     public:
         static const unsigned int BUFFER_SIZE = Traits<NIC<Engine>>::SEND_BUFFERS * sizeof(Buffer<Ethernet::Frame>) + Traits<NIC<Engine>>::RECEIVE_BUFFERS * sizeof(Buffer<Ethernet::Frame>);
-        
+        static const unsigned int N_BUFFERS = Traits<NIC<Engine>>::SEND_BUFFERS + Traits<NIC<Engine>>::RECEIVE_BUFFERS;
+
         typedef Ethernet::Address Address;
         typedef Ethernet::Protocol Protocol_Number;
         typedef Buffer<Ethernet::Frame> Buffer;
@@ -100,11 +101,11 @@ template <typename Engine>
 NIC<Engine>::NIC() {
     db<NIC>(TRC) << "NIC<Engine>::NIC() called!\n";
 
-    for (unsigned int i = 0; i < BUFFER_SIZE; ++i) {
+    for (unsigned int i = 0; i < N_BUFFERS; ++i) {
         _buffer[i] = Buffer();
         _free_buffers.push(&_buffer[i]);
     }
-    db<NIC>(INF) << "[NIC] " << std::to_string(BUFFER_SIZE) << " buffers created\n";
+    db<NIC>(INF) << "[NIC] " << std::to_string(N_BUFFERS) << " buffers created\n";
 
     sem_init(&_buffer_sem, 0, BUFFER_SIZE);
     pthread_mutex_init(&_buffer_mtx, nullptr);
@@ -164,7 +165,7 @@ int NIC<Engine>::receive(Buffer* buf, Address* src, Address* dst, void* data, un
     
     // 2. Payload size
     unsigned int payload_size = buf->size() - Ethernet::HEADER_SIZE; // tamanho total do frame
-    db<NIC>(INF) << "[NIC] frame extracted from buffer: \n{\nsrc = " << Ethernet::mac_to_string(frame->src) << ", \ndst = " << Ethernet::mac_to_string(frame->dst) << ", \nprot = " << std::to_string(frame->prot) << "\n}\n";
+    db<NIC>(INF) << "[NIC] frame extracted from buffer: {src = " << Ethernet::mac_to_string(frame->src) << ", dst = " << Ethernet::mac_to_string(frame->dst) << ", prot = " << std::to_string(frame->prot) << ", size = " << buf->size() << "}\n";
     
     // 3. Copies packet to data pointer
     std::memcpy(data, frame->payload, payload_size);
@@ -205,13 +206,13 @@ typename NIC<Engine>::Buffer* NIC<Engine>::alloc(Address dst, Protocol_Number pr
     Buffer* buf = _free_buffers.front();
     _free_buffers.pop();
     pthread_mutex_unlock(&_buffer_mtx);
-    
+
     buf->data()->src = address();
     buf->data()->dst = dst;
     buf->data()->prot = prot;
     buf->setSize(size);
 
-    db<NIC>(INF) << "[NIC] buffer allocated: {src = " << Ethernet::mac_to_string(address()) << ", dst = " << Ethernet::mac_to_string(dst) << ", prot = " << std::to_string(prot) <<"}\n";
+    db<NIC>(INF) << "[NIC] buffer allocated for frame: {src = " << Ethernet::mac_to_string(address()) << ", dst = " << Ethernet::mac_to_string(dst) << ", prot = " << std::to_string(prot) << ", size = " << size << "}\n";
 
     return buf;
 }
