@@ -2,159 +2,124 @@
 #define VEHICLE_H
 
 #include <string>
-#include <iostream>
-#include <chrono>
-#include <thread>
-#include "communicator.h"
+#include <atomic>
 
-// Forward declarations
-class Initializer;
-// Forward declaration of VehicleConfig struct
-namespace VehicleConfig_Fwd {
-    struct VehicleConfig {
-        int id;
-        int period_ms;
-        bool verbose_logging;
-        std::string log_prefix;
-    };
-}
+#include "communicator.h"
+#include "message.h"
+#include "debug.h"
+
+// Foward declarations
+template <typename NIC>
+class Protocol;
+
+template <typename Engine>
+class NIC;
 
 class SocketEngine;
-template <typename E> class NIC;
-template <typename N> class Protocol;
-class Message;
 
-// Vehicle class that uses the communication stack
+// Vehicle class definition
 class Vehicle {
-    friend class Initializer;
-public:
-    typedef VehicleConfig_Fwd::VehicleConfig Config;
-    
-    // Store the protocol type for later use
-    template <typename N, typename P>
-    Vehicle(const Config& config, N* nic, P* protocol);
-    ~Vehicle();
-    
-    // Run the communication cycle
-    void communicate();
-    
-    // Log a message
-    void log(const std::string& message);
-    void error(const std::string& message);
 
-private:
-    // Private method to create communicator - store the template type
-    template <typename P>
-    void createCommunicator(P* protocol);
+    public:
+        static constexpr const unsigned int MAX_MESSAGE_SIZE = Communicator<Protocol<NIC<SocketEngine>>>::MAX_MESSAGE_SIZE;
+
+        Vehicle(unsigned int id, NIC<SocketEngine>* nic, Protocol<NIC<SocketEngine>>* protocol);
+
+        ~Vehicle();
+
+        const unsigned int id() const;
+        const bool running() const;
+
+        void start();
+        void stop();
+
+        int send(const void* data, unsigned int size);
+        int receive(void* data, unsigned int size); 
     
-    // Constructor is private, only Initializer can create
-    Vehicle(const Config& config);
-    
-    Config _config;
-    
-    // These will be initialized by the Initializer
-    void* _nic;
-    void* _protocol;
-    void* _communicator;
-    bool _is_communicator_set;
+    private:
+
+        unsigned int _id;
+        Protocol<NIC<SocketEngine>>* _protocol;
+        NIC<SocketEngine>* _nic;
+        Communicator<Protocol<NIC<SocketEngine>>>* _comms;
+
+        std::atomic<bool> _running;
 };
 
-// Implementation of template methods
-template <typename N, typename P>
-Vehicle::Vehicle(const Config& config, N* nic, P* protocol)
-    : _config(config), _is_communicator_set(false) {
-    
-    _nic = static_cast<void*>(nic);
-    _protocol = static_cast<void*>(protocol);
-    _communicator = nullptr;
-    
-    log("Vehicle created with NIC and Protocol");
-    
-    // Create the communicator
-    createCommunicator(protocol);
+/******** Vehicle Implementation *********/
+Vehicle::Vehicle(unsigned int id, NIC<SocketEngine>* nic, Protocol<NIC<SocketEngine>>* protocol) {
+    db<Vehicle>(TRC) << "Vehicle::Vehicle() called!\n";
+
+    _id = id;
+    _nic = nic;
+    _protocol = protocol;
+    _comms = new Communicator<Protocol<NIC<SocketEngine>>>(protocol, Protocol<NIC<SocketEngine>>::Address(nic->address(), 1000 + _id));
+
 }
 
 Vehicle::~Vehicle() {
-    // In this simple implementation, we won't try to free memory
-    log("Vehicle destroyed");
+    db<Vehicle>(TRC) << "Vehicle::~Vehicle() called!\n";
+
+    delete _comms;
+    delete _protocol;
+    delete _nic;
 }
 
-void Vehicle::communicate() {
-    log("Beginning communication cycle");
+const unsigned int Vehicle::id() const {
+    return _id;
+}
+
+const bool Vehicle::running() const {
+    return _running;
+}
+
+void Vehicle::start() {
+    _running = true;
+}
+
+void Vehicle::stop() {
+    _running = false;
+}
+
+int Vehicle::send(const void* data, unsigned int size) {
+    db<Vehicle>(TRC) << "Vehicle::send() called!\n";
+
+    Message<MAX_MESSAGE_SIZE> msg = Message<MAX_MESSAGE_SIZE>(data, size);
     
-    if (!_is_communicator_set) {
-        error("Communicator is not properly set up");
-        return;
+    if (!_comms->send(&msg)) {
+        db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message not sent\n";
+        return 0;
     }
     
-    int counter = 0;
-    while (counter++ < 10) {
-        // Create message
-        auto now = std::chrono::system_clock::now();
-        auto time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            now.time_since_epoch()).count();
-        
-        std::string msgContent = "Vehicle " + std::to_string(_config.id) + 
-                                " message " + std::to_string(counter) + 
-                                " at " + std::to_string(time_ms);
-        
-        Message msg(msgContent);
-        
-        // Use the actual communicator's send method
-        log("Sending message: " + msgContent);
-        
-        // For simplicity, just log the message without trying to cast the communicator
-        // This avoids the template issues
-        log("Using communicator to send message (simulation)");
-        
-        // Small delay to simulate network
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        
-        // Simulate receiving a message
-        now = std::chrono::system_clock::now();
-        time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            now.time_since_epoch()).count();
-        
-        log("Message received at " + std::to_string(time_ms) + " (simulation)");
-        
-        std::this_thread::sleep_for(std::chrono::milliseconds(_config.period_ms));
+    db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message sent\n";
+    return 1;
+}
+
+int Vehicle::receive(void* data, unsigned int size) {
+    db<Vehicle>(TRC) << "Vehicle::receive() called!\n";
+
+    if (!data || size == 0) {
+        std::cerr << "Error: Invalid data buffer in receive" << std::endl;
+        return 0;
     }
-    
-    log("Communication complete");
-}
 
-void Vehicle::log(const std::string& message) {
-    if (_config.verbose_logging) {
-        std::cout << _config.log_prefix << "[Vehicle " << _config.id << "] " 
-                  << message << std::endl;
+    Message<MAX_MESSAGE_SIZE> msg;
+    if (!_comms->receive(&msg)) {
+        db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message not received\n";
+        return 0;
     }
+
+    // Copia os dados recebidos para o buffer fornecido
+    if (msg.size() > size) {
+        db<Vehicle>(ERR) << "[Vehicle " << std::to_string(_id) << "] Received message size exceeds buffer size " << std::to_string(size) << "\n";
+        return 0;
+    }
+
+    std::memcpy(data, msg.data(), msg.size());
+    db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message received\n";
+
+    return msg.size();
 }
 
-void Vehicle::error(const std::string& message) {
-    std::cerr << _config.log_prefix << "[Vehicle " << _config.id << "] ERROR: " 
-              << message << std::endl;
-}
-
-template <typename P>
-void Vehicle::createCommunicator(P* protocol) {
-    log("Creating Communicator");
-    
-    // For demonstration purposes, create a simple address
-    typename P::Address address("localhost", _config.id);
-    
-    // Create Communicator and attach to Protocol
-    _communicator = static_cast<void*>(
-        new Communicator<P>(protocol, address)
-    );
-    
-    _is_communicator_set = true;
-    log("Communicator created successfully");
-}
-
-Vehicle::Vehicle(const Config& config)
-    : _config(config), _nic(nullptr), _protocol(nullptr), _communicator(nullptr), _is_communicator_set(false) {
-    
-    log("Vehicle created");
-}
 
 #endif // VEHICLE_H
