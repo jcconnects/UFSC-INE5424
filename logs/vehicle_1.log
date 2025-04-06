@@ -1,0 +1,75 @@
+[SocketEngine] if_index setted: 4
+[SocketEngine] MAC address setted: 66:51:6A:40:30:07
+[SocketEngine] socket setted
+[SocketEngine] epoll setted
+[SocketEngine] receive thread started
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Communicator] attached to Channel
+[Vehicle 1] running for 178s
+[Vehicle 1] sending message 1: {Vehicle 1 message 1 at 55987285}
+[SocketEngine] sendto() returned value 43
+[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Communicator] Channel::send() return value 31
+[Vehicle 1] message sent
+[Vehicle 1] message 1 sent!
+[Vehicle 1] sending message 2: {Vehicle 1 message 2 at 55992285}
+[SocketEngine] sendto() returned value 43
+[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Communicator] Channel::send() return value 31
+[Vehicle 1] message sent
+[Vehicle 1] message 2 sent!
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Vehicle 1] sending message 3: {Vehicle 1 message 3 at 56000285}
+[SocketEngine] sendto() returned value 43
+[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Communicator] Channel::send() return value 31
+[Vehicle 1] message sent
+[Vehicle 1] message 3 sent!
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Vehicle 1] sending message 4: {Vehicle 1 message 4 at 56008286}
+[SocketEngine] sendto() returned value 43
+[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Communicator] Channel::send() return value 31
+[Vehicle 1] message sent
+[Vehicle 1] message 4 sent!
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Vehicle 1] sending message 5: {Vehicle 1 message 5 at 56017287}
+[SocketEngine] sendto() returned value 43
+[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Communicator] Channel::send() return value 31
+[Vehicle 1] message sent
+[Vehicle 1] message 5 sent!
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Vehicle 1] sending message 6: {Vehicle 1 message 6 at 56022287}
+[SocketEngine] sendto() returned value 43
+[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Communicator] Channel::send() return value 31
+[Vehicle 1] message sent
+[Vehicle 1] message 6 sent!
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[SocketEngine] epoll event detected
+[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Vehicle 1] sending message 7: {Vehicle 1 message 7 at 56030288}
+[SocketEngine] sendto() returned value 43
+[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Communicator] Channel::send() return value 31
+[Vehicle 1] message sent
+[Vehicle 1] message 7 sent!
