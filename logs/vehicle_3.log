@@ -1,71 +1,17 @@
-[SocketEngine] if_index setted: 4
-[SocketEngine] MAC address setted: 66:51:6A:40:30:07
-[SocketEngine] socket setted
-[SocketEngine] epoll setted
-[SocketEngine] receive thread started
-[Communicator] attached to Channel
-[Vehicle 3] running for 96s
-[Vehicle 3] sending message 1: {Vehicle 3 message 1 at 55987276}
-[SocketEngine] sendto() returned value 43
-[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[Communicator] Channel::send() return value 31
-[Vehicle 3] message sent
-[Vehicle 3] message 1 sent!
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[Vehicle 3] sending message 2: {Vehicle 3 message 2 at 55997276}
-[SocketEngine] sendto() returned value 43
-[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[Communicator] Channel::send() return value 31
-[Vehicle 3] message sent
-[Vehicle 3] message 2 sent!
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[Vehicle 3] sending message 3: {Vehicle 3 message 3 at 56007277}
-[SocketEngine] sendto() returned value 43
-[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[Communicator] Channel::send() return value 31
-[Vehicle 3] message sent
-[Vehicle 3] message 3 sent!
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[Vehicle 3] sending message 4: {Vehicle 3 message 4 at 56017277}
-[SocketEngine] sendto() returned value 43
-[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[Communicator] Channel::send() return value 31
-[Vehicle 3] message sent
-[Vehicle 3] message 4 sent!
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[Vehicle 3] sending message 5: {Vehicle 3 message 5 at 56024278}
-[SocketEngine] sendto() returned value 43
-[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[Communicator] Channel::send() return value 31
-[Vehicle 3] message sent
-[Vehicle 3] message 5 sent!
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[Vehicle 3] sending message 6: {Vehicle 3 message 6 at 56030278}
-[SocketEngine] sendto() returned value 43
-[SocketEngine] Frame sent: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
-[Communicator] Channel::send() return value 31
-[Vehicle 3] message sent
-[Vehicle 3] message 6 sent!
-[SocketEngine] epoll event detected
-[SocketEngine] received frame: {src = 66:51:6A:40:30:07, dst = FF:FF:FF:FF:FF:FF, prot = 888}
+[Vehicle 3] running for 109s
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 1 message 2 at 64389143
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 1 message 3 at 64397143
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 1 message 4 at 64402144
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 1 message 5 at 64407145
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 1 message 6 at 64416145
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 1 message 7 at 64422145
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 1 message 8 at 64430146
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 1 message 9 at 64438147

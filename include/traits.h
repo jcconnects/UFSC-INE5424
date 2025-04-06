@@ -52,7 +52,7 @@ struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
 template<>
 struct Traits<SocketEngine> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static constexpr const char* INTERFACE_NAME = "eth0";
 };
 
@@ -60,7 +60,7 @@ struct Traits<SocketEngine> : public Traits<void>
 template<typename Channel>
 struct Traits<Communicator<Channel>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Vehicle class
