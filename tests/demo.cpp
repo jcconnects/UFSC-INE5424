@@ -12,7 +12,7 @@
 #include "debug.h"
 
 void send_run(Vehicle* v) {
-    db<Vehicle>(TRC) << "Vehicle::send_run() called!\n";
+    db<Vehicle>(TRC) << "send_run() called!\n";
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -45,7 +45,7 @@ void send_run(Vehicle* v) {
 }
 
 void receive_run(Vehicle* v) {
-    db<Vehicle>(TRC) << "Vehicle::receive_run() called!\n";
+    db<Vehicle>(TRC) << "receive_run() called!\n";
 
     while (v->running()) {
         unsigned int size = Vehicle::MAX_MESSAGE_SIZE;
@@ -77,7 +77,7 @@ void* receive_thread_entry(void* arg) {
 }
 
 void run_vehicle(Vehicle* v) {
-    db<void>(TRC) << "run_vehicle() called!\n";
+    db<Vehicle>(TRC) << "run_vehicle() called!\n";
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -93,14 +93,19 @@ void run_vehicle(Vehicle* v) {
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] running for " << lifetime << "s\n";
 
     // Creating threads
-    pthread_create(&send_thread, nullptr, send_thread_entry, v);
+    if (v->id() == 1) {
+        pthread_create(&send_thread, nullptr, send_thread_entry, v);
+    }
     pthread_create(&receive_thread, nullptr, receive_thread_entry, v);
 
     // Waits for vehicle lifetime to end;
     sleep(lifetime);
 
     pthread_join(receive_thread, nullptr);
-    pthread_join(send_thread, nullptr);
+
+    if (v->id() == 1){   
+        pthread_join(send_thread, nullptr);
+    }
 
    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] terminated.\n";
 }
