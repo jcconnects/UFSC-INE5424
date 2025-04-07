@@ -20,7 +20,7 @@ class Conditional_Data_Observer {
         typedef Conditionally_Data_Observed<T, Condition> Observed;
 
         Conditional_Data_Observer(Condition c);
-        ~Conditional_Data_Observer() = default;
+        virtual ~Conditional_Data_Observer() = default;
 
         virtual void update(Condition c, Observed_Data* d);
         T* updated();

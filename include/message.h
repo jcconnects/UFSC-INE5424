@@ -29,7 +29,7 @@ class Message {
 /******** Message Implementation ********/
 template<unsigned int MaxSize>
 Message<MaxSize>::Message() : _size(0) { 
-    memset(_data, 0, MAX_SIZE); 
+    memset(_data, 0, MAX_SIZE * sizeof(void*)); 
 }
 
 template<unsigned int MaxSize>

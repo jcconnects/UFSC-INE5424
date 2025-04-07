@@ -29,9 +29,9 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
 
         typedef Ethernet::Address Address;
         typedef Ethernet::Protocol Protocol_Number;
-        typedef Buffer<Ethernet::Frame> Buffer;
-        typedef Conditional_Data_Observer<Buffer, Protocol_Number> Observer;
-        typedef Conditionally_Data_Observed<Buffer, Protocol_Number> Observed;
+        typedef Buffer<Ethernet::Frame> DataBuffer;
+        typedef Conditional_Data_Observer<DataBuffer, Protocol_Number> Observer;
+        typedef Conditionally_Data_Observed<DataBuffer, Protocol_Number> Observed;
         
         // Statistics for network operations
         struct Statistics {
@@ -61,16 +61,16 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         // int receive(Address* src, Protocol_Number* prot, void* data, unsigned int size);
         
         // Send a pre-allocated buffer
-        int send(Buffer* buf);
+        int send(DataBuffer* buf);
 
         // Process a received buffer
-        int receive(Buffer* buf, Address* src, Address* dst, void* data, unsigned int size);
+        int receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size);
         
         // Allocate a buffer for sending
-        Buffer* alloc(Address dst, Protocol_Number prot, unsigned int size);
+        DataBuffer* alloc(Address dst, Protocol_Number prot, unsigned int size);
         
         // Free a buffer after use
-        void free(Buffer* buf);
+        void free(DataBuffer* buf);
         
         // Get the local address
         const Address& address();
@@ -90,8 +90,8 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
 
     private:
         Statistics _statistics;
-        Buffer _buffer[BUFFER_SIZE];
-        std::queue<Buffer*> _free_buffers;
+        DataBuffer _buffer[N_BUFFERS];
+        std::queue<DataBuffer*> _free_buffers;
         sem_t _buffer_sem;
         pthread_mutex_t _buffer_mtx;
 };
@@ -102,7 +102,7 @@ NIC<Engine>::NIC() {
     db<NIC>(TRC) << "NIC<Engine>::NIC() called!\n";
 
     for (unsigned int i = 0; i < N_BUFFERS; ++i) {
-        _buffer[i] = Buffer();
+        _buffer[i] = DataBuffer();
         _free_buffers.push(&_buffer[i]);
     }
     db<NIC>(INF) << "[NIC] " << std::to_string(N_BUFFERS) << " buffers created\n";
@@ -124,7 +124,7 @@ NIC<Engine>::~NIC() {
 }
 
 template <typename Engine>
-int NIC<Engine>::send(Buffer* buf) {
+int NIC<Engine>::send(DataBuffer* buf) {
     db<NIC>(TRC) << "NIC<Engine>::send() called!\n";
 
     if (!buf) {
@@ -148,7 +148,7 @@ int NIC<Engine>::send(Buffer* buf) {
 }
 
 template <typename Engine>
-int NIC<Engine>::receive(Buffer* buf, Address* src, Address* dst, void* data, unsigned int size) {
+int NIC<Engine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size) {
     db<NIC>(TRC) << "NIC<Engine>::receive() called!\n";
 
     if (!buf || !data || size == 0) {
@@ -186,7 +186,7 @@ void NIC<Engine>::receiveData(Ethernet::Frame& frame, unsigned int size) {
     Ethernet::Protocol proto = frame.prot;
 
     // 2. Allocate buffer
-    Buffer * buf = alloc(dst, proto, size);
+    DataBuffer * buf = alloc(dst, proto, size);
     if (!buf) return;
 
     // 4. Copy frame to buffer
@@ -200,15 +200,28 @@ void NIC<Engine>::receiveData(Ethernet::Frame& frame, unsigned int size) {
 }
 
 template <typename Engine>
-typename NIC<Engine>::Buffer* NIC<Engine>::alloc(Address dst, Protocol_Number prot, unsigned int size) {
+typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst,   Protocol_Number prot, unsigned int size) {
     db<NIC>(TRC) << "NIC<Engine>::alloc() called!\n";
 
     sem_wait(&_buffer_sem);
     
     pthread_mutex_lock(&_buffer_mtx);
-    Buffer* buf = _free_buffers.front();
+    DataBuffer* buf = _free_buffers.front();
     _free_buffers.pop();
     pthread_mutex_unlock(&_buffer_mtx);
+
+    if (buf == nullptr) {
+        // Option 2: Return failure indicator (e.g., nullptr)
+        std::cerr << "Warning/Error: NIC::alloc failed, no free buffers available." << std::endl;
+        return nullptr; // Or throw an exception
+    }
+
+    Ethernet::Frame init_frame;
+    init_frame.src = {};
+    init_frame.src = {};
+    init_frame.prot = 0;
+    std::memset(&init_frame, 0, Ethernet::MTU);
+    buf -> setData(&init_frame, sizeof(Ethernet::Frame));
 
     buf->data()->src = address();
     buf->data()->dst = dst;
@@ -221,7 +234,7 @@ typename NIC<Engine>::Buffer* NIC<Engine>::alloc(Address dst, Protocol_Number pr
 }
 
 template <typename Engine>
-void NIC<Engine>::free(Buffer* buf) {
+void NIC<Engine>::free(DataBuffer* buf) {
     db<NIC>(TRC) << "NIC<Engine>::free() called!\n";
 
     if (!buf) return;

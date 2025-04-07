@@ -13,8 +13,8 @@
 // Initializer class responsible for creating and managing a single vehicle process
 class Initializer {
     public:
-        typedef NIC<SocketEngine> NIC;
-        typedef Protocol<NIC> Protocol;
+        typedef NIC<SocketEngine> VehicleNIC;
+        typedef Protocol<VehicleNIC> CProtocol;
 
         Initializer() = default;
 
@@ -26,8 +26,8 @@ class Initializer {
 
 /********** Initializer Implementation ***********/
 Vehicle* Initializer::create_vehicle(unsigned int id) {
-    NIC* nic = new NIC();
-    Protocol* protocol = new Protocol(nic);
+    VehicleNIC* nic = new VehicleNIC();
+    CProtocol* protocol = new CProtocol(nic);
     return new Vehicle(id, nic, protocol);
 }
 

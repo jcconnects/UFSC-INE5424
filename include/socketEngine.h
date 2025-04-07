@@ -216,7 +216,7 @@ void SocketEngine::handleSignal() {
     }
     
     // Check for valid Ethernet frame size (at least header size)
-    if (bytes_received < Ethernet::HEADER_SIZE) {
+    if (static_cast<unsigned int>(bytes_received) < Ethernet::HEADER_SIZE) {
         db<SocketEngine>(ERR) << "[SocketEngine] Received undersized frame (" << bytes_received << " bytes)\n";
         return;
     }

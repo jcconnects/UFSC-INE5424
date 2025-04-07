@@ -17,7 +17,7 @@ class Protocol: private NIC::Observer
     public:
         static const typename NIC::Protocol_Number PROTO = Traits<Protocol>::ETHERNET_PROTOCOL_NUMBER;
         
-        typedef typename NIC::Buffer Buffer;
+        typedef typename NIC::DataBuffer Buffer;
         typedef typename NIC::Address Physical_Address;
         typedef unsigned int Port;
         
@@ -68,7 +68,7 @@ class Protocol: private NIC::Observer
                 enum Null { NULL_VALUE };
             
             public:
-                Address() = default;
+                Address();
                 Address(const Null& null);
                 Address(Physical_Address paddr, Port port);
                 
@@ -108,10 +108,13 @@ class Protocol: private NIC::Observer
 
 /******** Protocol::Address Implementation ******/
 template <typename NIC>
-Protocol<NIC>::Address::Address(const Null& null) : _paddr(), _port(0) {}
+Protocol<NIC>::Address::Address() : _port(0), _paddr() {}
 
 template <typename NIC>
-Protocol<NIC>::Address::Address(Physical_Address paddr, Port port) : _paddr(paddr), _port(port) {}
+Protocol<NIC>::Address::Address(const Null& null) : _port(0), _paddr() {}
+
+template <typename NIC>
+Protocol<NIC>::Address::Address(Physical_Address paddr, Port port) : _port(port), _paddr(paddr) {}
 
 template <typename NIC>
 void Protocol<NIC>::Address::paddr(Physical_Address addr){

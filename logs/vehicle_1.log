@@ -1,28 +1,150 @@
-[Vehicle 1] running for 107s
-[Vehicle 1] sending message 1: {Vehicle 1 message 1 at 64382142}
+Vehicle::Vehicle() called!
+run_vehicle() called!
+[Vehicle 1] running for 140s
+receive_run() called!
+Vehicle::receive() called!
+send_run() called!
+[Vehicle 1] sending message 1: {Vehicle 1 message 1 at 25008899}
+Vehicle::send() called!
 [Vehicle 1] message sent
 [Vehicle 1] message 1 sent!
-[Vehicle 1] sending message 2: {Vehicle 1 message 2 at 64389143}
+[Vehicle 1] sending message 2: {Vehicle 1 message 2 at 25016931}
+Vehicle::send() called!
 [Vehicle 1] message sent
 [Vehicle 1] message 2 sent!
-[Vehicle 1] sending message 3: {Vehicle 1 message 3 at 64397143}
+[Vehicle 1] sending message 3: {Vehicle 1 message 3 at 25022944}
+Vehicle::send() called!
 [Vehicle 1] message sent
 [Vehicle 1] message 3 sent!
-[Vehicle 1] sending message 4: {Vehicle 1 message 4 at 64402144}
+[Vehicle 1] sending message 4: {Vehicle 1 message 4 at 25028948}
+Vehicle::send() called!
 [Vehicle 1] message sent
 [Vehicle 1] message 4 sent!
-[Vehicle 1] sending message 5: {Vehicle 1 message 5 at 64407145}
+[Vehicle 1] sending message 5: {Vehicle 1 message 5 at 25036951}
+Vehicle::send() called!
 [Vehicle 1] message sent
 [Vehicle 1] message 5 sent!
-[Vehicle 1] sending message 6: {Vehicle 1 message 6 at 64416145}
+[Vehicle 1] sending message 6: {Vehicle 1 message 6 at 25043955}
+Vehicle::send() called!
 [Vehicle 1] message sent
 [Vehicle 1] message 6 sent!
-[Vehicle 1] sending message 7: {Vehicle 1 message 7 at 64422145}
+[Vehicle 1] sending message 7: {Vehicle 1 message 7 at 25053958}
+Vehicle::send() called!
 [Vehicle 1] message sent
 [Vehicle 1] message 7 sent!
-[Vehicle 1] sending message 8: {Vehicle 1 message 8 at 64430146}
+[Vehicle 1] sending message 8: {Vehicle 1 message 8 at 25062965}
+Vehicle::send() called!
 [Vehicle 1] message sent
 [Vehicle 1] message 8 sent!
-[Vehicle 1] sending message 9: {Vehicle 1 message 9 at 64438147}
+[Vehicle 1] sending message 9: {Vehicle 1 message 9 at 25068970}
+Vehicle::send() called!
 [Vehicle 1] message sent
 [Vehicle 1] message 9 sent!
+[Vehicle 1] sending message 10: {Vehicle 1 message 10 at 25075986}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 10 sent!
+[Vehicle 1] sending message 11: {Vehicle 1 message 11 at 25083993}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 11 sent!
+[Vehicle 1] sending message 12: {Vehicle 1 message 12 at 25092995}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 12 sent!
+[Vehicle 1] sending message 13: {Vehicle 1 message 13 at 25102000}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 13 sent!
+[Vehicle 1] sending message 14: {Vehicle 1 message 14 at 25107004}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 14 sent!
+[Vehicle 1] sending message 15: {Vehicle 1 message 15 at 25116011}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 15 sent!
+[Vehicle 1] sending message 16: {Vehicle 1 message 16 at 25122015}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 16 sent!
+[Vehicle 1] sending message 17: {Vehicle 1 message 17 at 25130022}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 17 sent!
+[Vehicle 1] sending message 18: {Vehicle 1 message 18 at 25138027}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 18 sent!
+[Vehicle 1] sending message 19: {Vehicle 1 message 19 at 25148030}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 19 sent!
+[Vehicle 1] sending message 20: {Vehicle 1 message 20 at 25153036}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 20 sent!
+[Vehicle 1] sending message 21: {Vehicle 1 message 21 at 25163043}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 21 sent!
+[Vehicle 1] sending message 22: {Vehicle 1 message 22 at 25169046}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 22 sent!
+[Vehicle 1] sending message 23: {Vehicle 1 message 23 at 25176052}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 23 sent!
+[Vehicle 1] sending message 24: {Vehicle 1 message 24 at 25182060}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 24 sent!
+[Vehicle 1] sending message 25: {Vehicle 1 message 25 at 25192062}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 25 sent!
+[Vehicle 1] sending message 26: {Vehicle 1 message 26 at 25199068}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 26 sent!
+[Vehicle 1] sending message 27: {Vehicle 1 message 27 at 25204073}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 27 sent!
+[Vehicle 1] sending message 28: {Vehicle 1 message 28 at 25210078}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 28 sent!
+[Vehicle 1] sending message 29: {Vehicle 1 message 29 at 25219083}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 29 sent!
+[Vehicle 1] sending message 30: {Vehicle 1 message 30 at 25225094}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 30 sent!
+[Vehicle 1] sending message 31: {Vehicle 1 message 31 at 25230099}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 31 sent!
+[Vehicle 1] sending message 32: {Vehicle 1 message 32 at 25236103}
+Vehicle::send() called!
+[Vehicle 1] message sent
+[Vehicle 1] message 32 sent!
+[Vehicle 1] sending message 33: {Vehicle 1 message 33 at 25246111}
+Vehicle::send() called!
+[Vehicle 1] message not sent
+[Vehicle 1] failed to send message 33!
+[Vehicle 1] sending message 34: {Vehicle 1 message 34 at 25254117}
+Vehicle::send() called!
+[Vehicle 1] message not sent
+[Vehicle 1] failed to send message 34!
+[Vehicle 1] sending message 35: {Vehicle 1 message 35 at 25264122}
+Vehicle::send() called!
+[Vehicle 1] message not sent
+[Vehicle 1] failed to send message 35!
+[Vehicle 1] sending message 36: {Vehicle 1 message 36 at 25271124}
+Vehicle::send() called!
+[Vehicle 1] message not sent
+[Vehicle 1] failed to send message 36!

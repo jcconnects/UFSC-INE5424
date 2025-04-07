@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
                 try {
                     n_vehicles = std::stoi(argv[++i]);
                     break;
-                } catch (const std::exception e) {
+                } catch (const std::exception& e) {
                     std::cerr << "[ERROR] invalid number of vehicles" << std::endl;
                     std::cerr << "Must be an integer between 1 and 10" << std::endl;
                     std::cerr << "Application terminated." << std::endl;

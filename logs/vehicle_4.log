@@ -1,0 +1,581 @@
+Vehicle::Vehicle() called!
+run_vehicle() called!
+[Vehicle 4] running for 160s
+receive_run() called!
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 1 at 25008899
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 2 at 25016931
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 3 at 25022944
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 4 at 25028948
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 5 at 25036951
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 6 at 25043955
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 7 at 25053958
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 8 at 25062965
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 9 at 25068970
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 10 at 25075986
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 11 at 25083993
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 12 at 25092995
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 13 at 25102000
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 14 at 25107004
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 15 at 25116011
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 16 at 25122015
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 17 at 25130022
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 18 at 25138027
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 19 at 25148030
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 20 at 25153036
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 21 at 25163043
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 22 at 25169046
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 23 at 25176052
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 24 at 25182060
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 25 at 25192062
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 26 at 25199068
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 27 at 25204073
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 28 at 25210078
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 29 at 25219083
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 30 at 25225094
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 31 at 25230099
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 32 at 25236103
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 1 at 25008899
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 2 at 25016931
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 3 at 25022944
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 4 at 25028948
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 5 at 25036951
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 6 at 25043955
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 7 at 25053958
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 8 at 25062965
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 9 at 25068970
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 10 at 25075986
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 11 at 25083993
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 12 at 25092995
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 13 at 25102000
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 14 at 25107004
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 15 at 25116011
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 16 at 25122015
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 17 at 25130022
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 18 at 25138027
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 19 at 25148030
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 20 at 25153036
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 21 at 25163043
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 22 at 25169046
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 23 at 25176052
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 24 at 25182060
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 25 at 25192062
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 26 at 25199068
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 27 at 25204073
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 28 at 25210078
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 29 at 25219083
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 30 at 25225094
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 31 at 25230099
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 32 at 25236103
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 1 at 25008899
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 2 at 25016931
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 3 at 25022944
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 4 at 25028948
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 5 at 25036951
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 6 at 25043955
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 7 at 25053958
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 8 at 25062965
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 9 at 25068970
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 10 at 25075986
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 11 at 25083993
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 12 at 25092995
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 13 at 25102000
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 14 at 25107004
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 15 at 25116011
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 16 at 25122015
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 17 at 25130022
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 18 at 25138027
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 19 at 25148030
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 20 at 25153036
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 21 at 25163043
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 22 at 25169046
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 23 at 25176052
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 24 at 25182060
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 25 at 25192062
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 26 at 25199068
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 27 at 25204073
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 28 at 25210078
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 29 at 25219083
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 30 at 25225094
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 31 at 25230099
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 32 at 25236103
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 1 at 25008899
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 2 at 25016931
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 3 at 25022944
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 4 at 25028948
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 5 at 25036951
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 6 at 25043955
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 7 at 25053958
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 8 at 25062965
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 9 at 25068970
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 10 at 25075986
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 11 at 25083993
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 12 at 25092995
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 13 at 25102000
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 14 at 25107004
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 15 at 25116011
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 16 at 25122015
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 17 at 25130022
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 18 at 25138027
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 19 at 25148030
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 20 at 25153036
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 21 at 25163043
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 22 at 25169046
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 23 at 25176052
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 24 at 25182060
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 25 at 25192062
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 26 at 25199068
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 27 at 25204073
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 28 at 25210078
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 29 at 25219083
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 30 at 25225094
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 31 at 25230099
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 32 at 25236103
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 1 at 25008899
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 2 at 25016931
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 3 at 25022944
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 4 at 25028948
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 5 at 25036951
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 6 at 25043955
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 7 at 25053958
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 8 at 25062965
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 9 at 25068970
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 10 at 25075986
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 11 at 25083993
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 12 at 25092995
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 13 at 25102000
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 14 at 25107004
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 15 at 25116011
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 16 at 25122015
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 17 at 25130022
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 18 at 25138027
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 19 at 25148030
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 20 at 25153036
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 21 at 25163043
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 22 at 25169046
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 23 at 25176052
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 24 at 25182060
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 25 at 25192062
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 26 at 25199068
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 27 at 25204073
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 28 at 25210078
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 29 at 25219083
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 30 at 25225094
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 31 at 25230099
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 32 at 25236103
+Vehicle::receive() called!
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            [Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 1 at 25008899
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 2 at 25016931
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 3 at 25022944
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 4 at 25028948
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 5 at 25036951
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 6 at 25043955
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 7 at 25053958
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 8 at 25062965
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 9 at 25068970
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 10 at 25075986
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 11 at 25083993
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 12 at 25092995
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 13 at 25102000
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 14 at 25107004
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 15 at 25116011
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 16 at 25122015
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 17 at 25130022
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 18 at 25138027
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 19 at 25148030
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 20 at 25153036
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 21 at 25163043
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 22 at 25169046
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 23 at 25176052
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 24 at 25182060
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 25 at 25192062
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 26 at 25199068
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 27 at 25204073
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 28 at 25210078
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 29 at 25219083
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 30 at 25225094
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 31 at 25230099
+Vehicle::receive() called!
+[Vehicle 4] message received
+[Vehicle 4] message received: Vehicle 1 message 32 at 25236103
+Vehicle::receive() called!
