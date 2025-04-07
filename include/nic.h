@@ -170,7 +170,10 @@ int NIC<Engine>::receive(Buffer* buf, Address* src, Address* dst, void* data, un
     // 3. Copies packet to data pointer
     std::memcpy(data, frame->payload, payload_size);
 
-    // 4. Return size of copied bytes
+    // 4. Releases the buffer
+    free(buf);
+
+    // 5. Return size of copied bytes
     return payload_size;
 }
 
