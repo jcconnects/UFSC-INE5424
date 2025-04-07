@@ -58,3 +58,6 @@ sem_post(&_buffer_sem);
 }
 
 Como a função apenas chama buf -> clear() e o recoloca na fila de buffers livres, voltamos ao ponto onde a provavel cause é buf -> clear(). Apesar disso garantir que o array Buffer._data é um array de zeros é indicado para a confiabilidade do programa.
+
+Buffer -> clear() não parece ser o problema diretamente, sem o memset o erro persiste.
+O ponteiro buf é apontado pelo valgrind como um valor não inicializado em nic.h a partir de um certo momento na execução. Além disso retidamente não é encontrado um buffer livre e o segmentation fault continua acontecendo em DataBuffer* buf = _free_buffers.front(); (nic.h 209)
