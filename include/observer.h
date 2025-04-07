@@ -47,7 +47,10 @@ void Conditional_Data_Observer<T, Condition>::update(Condition c, Observed_Data*
 
 template <typename T, typename Condition>
 T* Conditional_Data_Observer<T, Condition>::updated() {
-    return _data.remove();
+    if (!_data.empty())
+        return _data.remove();
+    
+    return nullptr;
 }
 /*****************************************************************************************/
 
@@ -70,7 +73,7 @@ class Concurrent_Observer : public Conditional_Data_Observer<D, C> {
         Concurrent_Observer(C rank) : Conditional_Data_Observer<D, C>(rank) {};
         ~Concurrent_Observer() = default;
         
-        void update(C c, D* d);
+        void update(C c, D* d) override;
         D* updated();
         
     private:
