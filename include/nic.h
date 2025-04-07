@@ -93,7 +93,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         DataBuffer _buffer[N_BUFFERS];
         std::queue<DataBuffer*> _free_buffers;
         sem_t _buffer_sem;
-        pthread_mutex_t _buffer_mtx;
+        sem_t _binary_sem;
 };
 
 // NIC implementations
@@ -107,8 +107,8 @@ NIC<Engine>::NIC() {
     }
     db<NIC>(INF) << "[NIC] " << std::to_string(N_BUFFERS) << " buffers created\n";
 
-    sem_init(&_buffer_sem, 0, BUFFER_SIZE);
-    pthread_mutex_init(&_buffer_mtx, nullptr);
+    sem_init(&_buffer_sem, 0, N_BUFFERS);
+    sem_init(&_binary_sem, 0, 1);
     this->setCallback(std::bind(&NIC::receiveData, this, std::placeholders::_1, std::placeholders::_2));
 }
 
@@ -119,7 +119,7 @@ NIC<Engine>::~NIC() {
     Engine::stop();
     
     sem_destroy(&_buffer_sem);
-    pthread_mutex_destroy(&_buffer_mtx);
+    sem_destroy(&_binary_sem);
 
 }
 
@@ -205,15 +205,10 @@ typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst,   Protocol_Num
 
     sem_wait(&_buffer_sem);
     
-    pthread_mutex_lock(&_buffer_mtx);
+    sem_wait(&_binary_sem);
     DataBuffer* buf = _free_buffers.front();
     _free_buffers.pop();
-    pthread_mutex_unlock(&_buffer_mtx);
-
-    if (buf == nullptr) {
-        std::cerr << "Warning/Error: NIC::alloc failed, no free buffers available." << std::endl;
-        return nullptr;
-    }
+    sem_post(&_binary_sem);
 
     Ethernet::Frame init_frame;
     init_frame.src = {};
@@ -241,9 +236,9 @@ void NIC<Engine>::free(DataBuffer* buf) {
     buf->clear();
     db<NIC>(INF) << "[NIC] buffer released\n";
 
-    pthread_mutex_lock(&_buffer_mtx);
+    sem_wait(&_binary_sem);
     _free_buffers.push(buf);
-    pthread_mutex_unlock(&_buffer_mtx);
+    sem_post(&_binary_sem);
 
     sem_post(&_buffer_sem);
 }
