@@ -6,75 +6,15 @@
 #include <vector>
 #include <random>
 #include <chrono>
+#include <sys/stat.h>
+#include <errno.h>
 
 #include "initializer.h"
 #include "vehicle.h"
 #include "debug.h"
-
-void send_run(Vehicle* v) {
-    db<Vehicle>(TRC) << "send_run() called!\n";
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> delay_dist(5, 10); // intervalo aleatório entre envios
-
-    int counter = 1;
-
-    while (v->running()) {
-        auto now = std::chrono::steady_clock::now();
-
-        // Mensagem de exemplo
-        auto time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-        std::string msg = "Vehicle " + std::to_string(v->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_ms);
-        
-        db<Vehicle>(INF) << "[Vehicle " << v->id() << "] sending message " << counter << ": {" << msg << "}\n";
-        if (v->send(msg.c_str(), msg.size())) {
-           db<Vehicle>(INF) << "[Vehicle " << v->id() << "] message " << counter << " sent!\n";
-        } else {
-           db<Vehicle>(INF) << "[Vehicle " << v->id() << "] failed to send message " << counter << "!\n";
-        }
-        
-        counter++;
-
-        // Espera aleatória entre 1 e 3 segundos
-        int wait_time = delay_dist(gen);
-        sleep(wait_time);
-    }
-
-   db<Vehicle>(INF) << "[Vehicle " << v->id() << "] send_thread terminated.\n";
-}
-
-void receive_run(Vehicle* v) {
-    db<Vehicle>(TRC) << "receive_run() called!\n";
-
-    while (v->running()) {
-        unsigned int size = Vehicle::MAX_MESSAGE_SIZE;
-        char buf[size];
-
-        int result = v->receive(buf, size);
-
-        if (result == 0) {
-            db<Vehicle>(INF) << "[Vehicle " << v->id() << "] failed to receive message\n";
-        } else {
-            std::string received_message(buf, result);
-            db<Vehicle>(INF) << "[Vehicle " << v->id() << "] message received: " << received_message << "\n";
-        }
-    }
-
-   db<Vehicle>(INF) << "[Vehicle " << v->id() << "] receive_thread terminated.\n";
-}
-
-void* send_thread_entry(void* arg) {
-    Vehicle* v = static_cast<Vehicle*>(arg);
-    send_run(v);
-    return nullptr;
-}
-
-void* receive_thread_entry(void* arg) {
-    Vehicle* v = static_cast<Vehicle*>(arg);
-    receive_run(v);
-    return nullptr;
-}
+#include "component.h"
+#include "sender_component.h"
+#include "receiver_component.h"
 
 void run_vehicle(Vehicle* v) {
     db<Vehicle>(TRC) << "run_vehicle() called!\n";
@@ -86,28 +26,25 @@ void run_vehicle(Vehicle* v) {
     // Generating random vehicle lifetime
     int lifetime = dist_lifetime(gen);
 
-    pthread_t send_thread;
-    pthread_t receive_thread;
+    // Create components based on vehicle ID
+    // Even ID vehicles will send and receive
+    // Odd ID vehicles will only receive
+    if (v->id() % 2 == 0) {
+        db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating sender component\n";
+        v->add_component(new SenderComponent(v));
+    }
+    
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating receiver component\n";
+    v->add_component(new ReceiverComponent(v));
 
     v->start();
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] running for " << lifetime << "s\n";
 
-    // Creating threads
-    if (v->id() == 1) {
-        pthread_create(&send_thread, nullptr, send_thread_entry, v);
-    }
-    pthread_create(&receive_thread, nullptr, receive_thread_entry, v);
-
-    // Waits for vehicle lifetime to end;
+    // Wait for vehicle lifetime to end
     sleep(lifetime);
 
-    pthread_join(receive_thread, nullptr);
-
-    if (v->id() == 1){   
-        pthread_join(send_thread, nullptr);
-    }
-
-   db<Vehicle>(INF) << "[Vehicle " << v->id() << "] terminated.\n";
+    v->stop();
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] terminated.\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -147,6 +84,9 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+    // Create logs directory if it doesn't exist
+    mkdir("./logs", 0777);
+
     std::vector<pid_t> children;
 
     for (unsigned int id = 1; id <= n_vehicles; ++id) {
@@ -165,9 +105,10 @@ int main(int argc, char* argv[]) {
             std::cout << "[Child " << getpid() << "] creating vehicle " << id << std::endl;
             Vehicle* v = Initializer::create_vehicle(id);
             run_vehicle(v);
-
+            
+            delete v;
             Debug::close_log_file();
-            std::cout << "[Child " << getpid() <<"] vehicle " << id << "finished execution" << std::endl;
+            std::cout << "[Child " << getpid() << "] vehicle " << id << " finished execution" << std::endl;
 
             exit(0);
         } else {

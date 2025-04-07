@@ -1,0 +1,38 @@
+Vehicle::Vehicle() called!
+run_vehicle() called!
+[Vehicle 1] creating receiver component
+[Vehicle 1] running for 60s
+ReceiverComponent::run() started for vehicle 1
+Vehicle::receive() called!
+[Vehicle 1] message received
+[Vehicle 1] message received: Vehicle 2 message 1 at 281407155
+Vehicle::receive() called!
+[Vehicle 1] message received
+[Vehicle 1] message received: Vehicle 2 message 2 at 281413155
+Vehicle::receive() called!
+[Vehicle 1] message received
+[Vehicle 1] message received: Vehicle 2 message 3 at 281419156
+Vehicle::receive() called!
+[Vehicle 1] message received
+[Vehicle 1] message received: Vehicle 2 message 4 at 281425156
+Vehicle::receive() called!
+[Vehicle 1] message received
+[Vehicle 1] message received: Vehicle 2 message 5 at 281433156
+Vehicle::receive() called!
+[Vehicle 1] message received
+[Vehicle 1] message received: Vehicle 2 message 6 at 281440156
+Vehicle::receive() called!
+[Vehicle 1] message received
+[Vehicle 1] message received: Vehicle 2 message 7 at 281448157
+Vehicle::receive() called!
+[Vehicle 1] message received
+[Vehicle 1] message received: Vehicle 2 message 8 at 281456157
+Vehicle::receive() called!
+[Vehicle 1] message received
+[Vehicle 1] message received: Vehicle 2 message 9 at 281464157
+Vehicle::receive() called!
+[Vehicle 1] message received
+[Vehicle 1] message received: Vehicle 2 message 10 at 281472158
+[Vehicle 1] receiver component terminated.
+[Vehicle 1] terminated.
+Vehicle::~Vehicle() called!

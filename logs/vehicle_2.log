@@ -1,0 +1,77 @@
+Vehicle::Vehicle() called!
+run_vehicle() called!
+[Vehicle 2] creating sender component
+[Vehicle 2] creating receiver component
+[Vehicle 2] running for 130s
+SenderComponent::run() started for vehicle 2
+ReceiverComponent::run() started for vehicle 2
+Vehicle::receive() called!
+[Vehicle 2] sending message 1: {Vehicle 2 message 1 at 281407155}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 1 sent!
+[Vehicle 2] sending message 2: {Vehicle 2 message 2 at 281413155}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 2 sent!
+[Vehicle 2] sending message 3: {Vehicle 2 message 3 at 281419156}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 3 sent!
+[Vehicle 2] sending message 4: {Vehicle 2 message 4 at 281425156}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 4 sent!
+[Vehicle 2] sending message 5: {Vehicle 2 message 5 at 281433156}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 5 sent!
+[Vehicle 2] sending message 6: {Vehicle 2 message 6 at 281440156}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 6 sent!
+[Vehicle 2] sending message 7: {Vehicle 2 message 7 at 281448157}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 7 sent!
+[Vehicle 2] sending message 8: {Vehicle 2 message 8 at 281456157}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 8 sent!
+[Vehicle 2] sending message 9: {Vehicle 2 message 9 at 281464157}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 9 sent!
+[Vehicle 2] sending message 10: {Vehicle 2 message 10 at 281472158}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 10 sent!
+[Vehicle 2] sending message 11: {Vehicle 2 message 11 at 281482158}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 11 sent!
+[Vehicle 2] sending message 12: {Vehicle 2 message 12 at 281489158}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 12 sent!
+[Vehicle 2] sending message 13: {Vehicle 2 message 13 at 281499158}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 13 sent!
+[Vehicle 2] sending message 14: {Vehicle 2 message 14 at 281505159}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 14 sent!
+[Vehicle 2] sending message 15: {Vehicle 2 message 15 at 281515159}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 15 sent!
+[Vehicle 2] sending message 16: {Vehicle 2 message 16 at 281523159}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 16 sent!
+[Vehicle 2] sending message 17: {Vehicle 2 message 17 at 281530159}
+Vehicle::send() called!
+[Vehicle 2] message sent
+[Vehicle 2] message 17 sent!
+[Vehicle 2] sender component terminated.

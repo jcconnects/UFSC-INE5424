@@ -1,0 +1,54 @@
+Vehicle::Vehicle() called!
+run_vehicle() called!
+[Vehicle 3] creating receiver component
+[Vehicle 3] running for 126s
+ReceiverComponent::run() started for vehicle 3
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 2 at 281413155
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 3 at 281419156
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 4 at 281425156
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 5 at 281433156
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 6 at 281440156
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 7 at 281448157
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 8 at 281456157
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 9 at 281464157
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 10 at 281472158
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 11 at 281482158
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 12 at 281489158
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 13 at 281499158
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 14 at 281505159
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 15 at 281515159
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 16 at 281523159
+Vehicle::receive() called!
+[Vehicle 3] message received
+[Vehicle 3] message received: Vehicle 2 message 17 at 281530159
+Vehicle::receive() called!

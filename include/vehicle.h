@@ -3,12 +3,17 @@
 
 #include <string>
 #include <atomic>
+#include <vector>
+#include <memory>
+#include <sys/stat.h>
+#include <errno.h>
 
 #include "communicator.h"
 #include "message.h"
 #include "debug.h"
+#include "component.h"
 
-// Foward declarations
+// Forward declarations
 template <typename NIC>
 class Protocol;
 
@@ -16,6 +21,7 @@ template <typename Engine>
 class NIC;
 
 class SocketEngine;
+class Component;
 
 // Vehicle class definition
 class Vehicle {
@@ -32,6 +38,10 @@ class Vehicle {
 
         void start();
         void stop();
+        
+        void add_component(Component* component);
+        void start_components();
+        void stop_components();
 
         int send(const void* data, unsigned int size);
         int receive(void* data, unsigned int size); 
@@ -44,6 +54,7 @@ class Vehicle {
         Communicator<Protocol<NIC<SocketEngine>>>* _comms;
 
         std::atomic<bool> _running;
+        std::vector<Component*> _components;
 };
 
 /******** Vehicle Implementation *********/
@@ -54,12 +65,17 @@ Vehicle::Vehicle(unsigned int id, NIC<SocketEngine>* nic, Protocol<NIC<SocketEng
     _nic = nic;
     _protocol = protocol;
     _comms = new Communicator<Protocol<NIC<SocketEngine>>>(protocol, Protocol<NIC<SocketEngine>>::Address(nic->address(), Protocol<NIC<SocketEngine>>::Address::NULL_VALUE));
-
 }
 
 Vehicle::~Vehicle() {
     db<Vehicle>(TRC) << "Vehicle::~Vehicle() called!\n";
 
+    stop_components();
+    
+    for (auto component : _components) {
+        delete component;
+    }
+    
     delete _comms;
     delete _protocol;
     delete _nic;
@@ -75,10 +91,29 @@ const bool Vehicle::running() const {
 
 void Vehicle::start() {
     _running = true;
+    start_components();
 }
 
 void Vehicle::stop() {
     _running = false;
+    stop_components();
+}
+
+void Vehicle::add_component(Component* component) {
+    _components.push_back(component);
+}
+
+void Vehicle::start_components() {
+    for (auto component : _components) {
+        component->start();
+    }
+}
+
+void Vehicle::stop_components() {
+    for (auto component : _components) {
+        component->stop();
+        component->join();
+    }
 }
 
 int Vehicle::send(const void* data, unsigned int size) {
