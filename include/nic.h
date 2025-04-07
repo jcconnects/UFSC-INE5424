@@ -213,6 +213,7 @@ typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst,   Protocol_Num
     if (buf == nullptr) {
         std::cerr << "Warning/Error: NIC::alloc failed, no free buffers available." << std::endl;
         return nullptr;
+    }
 
     Ethernet::Frame init_frame;
     init_frame.src = {};
