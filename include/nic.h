@@ -211,10 +211,8 @@ typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst,   Protocol_Num
     pthread_mutex_unlock(&_buffer_mtx);
 
     if (buf == nullptr) {
-        // Option 2: Return failure indicator (e.g., nullptr)
         std::cerr << "Warning/Error: NIC::alloc failed, no free buffers available." << std::endl;
-        return nullptr; // Or throw an exception
-    }
+        return nullptr;
 
     Ethernet::Frame init_frame;
     init_frame.src = {};

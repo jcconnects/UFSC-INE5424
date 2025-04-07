@@ -186,10 +186,7 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     int result = _nic->send(buf);
     db<Protocol>(INF) << "[Protocol] NIC::send() returned value " << std::to_string(result) << "\n";
     
-    if (result <= 0) {
-        _nic->free(buf);
-        return 0;
-    }
+   _nic->free(buf);
     
     return size;
 }

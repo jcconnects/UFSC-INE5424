@@ -61,3 +61,9 @@ Como a função apenas chama buf -> clear() e o recoloca na fila de buffers livr
 
 Buffer -> clear() não parece ser o problema diretamente, sem o memset o erro persiste.
 O ponteiro buf é apontado pelo valgrind como um valor não inicializado em nic.h a partir de um certo momento na execução. Além disso retidamente não é encontrado um buffer livre e o segmentation fault continua acontecendo em DataBuffer* buf = _free_buffers.front(); (nic.h 209)
+
+Solução adotada:
+Em protocol.h a chamada _nic -> free(buf) ocorria somente quando havia falha no envio da mensagem. Com isso os buffers não eram corretamente liberados após o sucesso no envio.
+
+## demo.cpp não termina de executar
+Não existe chamada v -> stop() em demo.cp run_vehicle. Mesmo que a chamada existisse o programa não terminaria corretamente já que os processos filhos ficam presos no semáfaro quando as mensagens param de ser enviadas pela sender thread do primeiro processo filho. O processo pai poderia enviar uma última mmensagem de fim para garantir que isso não aconteça após a finalização dos filhos. Porém apenas os processos sabem seu tempo de vida.
