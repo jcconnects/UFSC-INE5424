@@ -38,7 +38,12 @@ Protocol -> Communicator: update(condition, data)
 note right of Communicator: Calls update and releases the thread waiting for data
 deactivate Protocol
 deactivate NIC
+
 Vehicle -> Communicator: receive(Message)
+activate Communicator
+Communicator -> Communicator: updated()
+note right of Communicator: Method inherited from Observer pattern class that waits until data is returned
+deactivate Communicator
 note right of Vehicle: Updated that data is available
 
 @enduml 
