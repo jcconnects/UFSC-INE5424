@@ -78,3 +78,9 @@ Classe SocketEgnine revisada. Não há necessidade de métodos signal safe já q
 
 ## NIC aloca buffers nullptr
 O semáfaro que bloqueia a alocação quando não há buffers disponíveis não havia sido corretamente inicializado
+
+# Alterações feits 3:
+
+## Processos não terminam no teste
+Signal interrompe processos travados os liberando do block em observer::updated()
+A interrupção causa "Error: Null buffer received" no communicator, mas isso só acontece pela finalização forçada de updated
