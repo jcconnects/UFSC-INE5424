@@ -4,7 +4,7 @@
 participant "Vehicle <<Process>>" as Vehicle
 participant "Message" as Message
 participant "Communicator <<Concurrent_Observer>>" as Communicator
-participant "Protocol <<Subject>>" as Protocol
+participant "Protocol <<Conditional_Data_Observer>>" as Protocol
 participant "NIC" as NIC
 participant "SocketEngine <<Engine>>" as SocketEngine
 participant "NIC <<Physical>>" as NIC_Physical
@@ -18,22 +18,26 @@ activate Protocol
 Protocol -> NIC: alloc(address, PROTO, size)
 NIC --> Protocol: return buffer
 note right of Protocol: Copy data to buffer
-Protocol -> NIC: send(buffer)
-NIC -> SocketEngine: sendto(...)
-SocketEngine --> NIC_Physical: send(buffer)
+Protocol -> NIC: send(buf)
+NIC -> SocketEngine: send(buf->data(), buf->size())
+SocketEngine --> NIC_Physical: sendto(F)
 deactivate Protocol
 
 ==== Network Layer Boundary ====
 
 ' NIC receives data from the network
 NIC_Physical <-: F 
-NIC_Physical -> SocketEngine: Interruption
-SocketEngine -> NIC: notify(PROTO, buffer)
-NIC -> Protocol: notify(PROTO, buffer)
-Protocol -> Protocol: update(&_observed, PROTO, buffer)
-Protocol -> Communicator: notify(condition, data)
-Communicator -> Communicator: update(condition, data)
+NIC_Physical -> SocketEngine: handleSignal()
+SocketEngine -> NIC: receiveData(PROTO, buffer)
+activate NIC
+NIC -> NIC: notify(PROTO, buffer)
+NIC -> Protocol: update(&_observed, PROTO, buffer)
+activate Protocol
+Protocol -> Protocol: notify(condition, data)
+Protocol -> Communicator: update(condition, data)
 note right of Communicator: Calls update and releases the thread waiting for data
+deactivate Protocol
+deactivate NIC
 Vehicle -> Communicator: receive(Message)
 note right of Vehicle: Updated that data is available
 
