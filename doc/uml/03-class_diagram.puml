@@ -1,51 +1,434 @@
 @startuml 03-class_diagram
 
-' Class definitions
-abstract class "Concurrent_Observer<T, C>" {
-  # {abstract} T* updated()
+class Buffer<T> {
+  - _data: std::uint8_t[MAX_SIZE]
+  - _size: unsigned int
+  + {static} MAX_SIZE: unsigned int
+  + Buffer()
+  + Buffer(data: const void*, size: unsigned int)
+  + ~Buffer()
+  + data(): T*
+  + setData(data: const void*, size: unsigned int): void
+  + size(): const unsigned int
+  + setSize(size: unsigned int): void
+  + clear(): void
 }
 
-abstract class "Concurrent_Observed<T, C>" {
-  # bool notify(C condition, T* data)
-  + void attach(Observer* observer, C condition)
+class Communicator<Channel> {
+  + {static} MAX_MESSAGE_SIZE: unsigned int
+  - _channel: Channel*
+  - _address: Address
+  + Communicator(channel: Channel*, address: Address)
+  + ~Communicator()
+  + send(message: const Message<MAX_MESSAGE_SIZE>*): bool
+  + receive(message: Message<MAX_MESSAGE_SIZE>*): bool
+  - update(obs: Channel::Observed*, c: Channel::Observer::Observing_Condition, buf: Buffer*): void
+  .. Typedefs ..
+  + Observer: typedef
+  + Buffer: typedef
+  + Address: typedef
+  + Port: typedef
+  .. Deleted methods ..
+  + Communicator(const Communicator&) = delete
+  + operator=(const Communicator&) = delete
 }
 
-class TestObserver {
-  - std::string _name
-  - std::atomic<bool> _running
-  + TestObserver(TestCondition condition, std::string name)
-  + void run()
-  + void stop()
+note top of Communicator
+  Inherits from Concurrent_Observer<
+    typename Channel::Observer::Observed_Data,
+    typename Channel::Observer::Observing_Condition>
+end note
+
+class Debug {
+  - _error: volatile bool
+  - {static} _file_stream: std::unique_ptr<std::ofstream>
+  - {static} _stream: std::ostream*
+  + operator<<(T p): Debug &
+  + operator<<(const Begl & begl): Debug &
+  + operator<<(const Err & err): Debug &
+  + {static} set_log_file(const std::string &filename): void
+  + {static} close_log_file(): void
+  + {static} instance(): Debug &
+  .. Nested classes ..
+  + Begl
+  + Err
+  .. Static members ..
+  + {static} begl: Begl
+  + {static} error: Err
 }
 
-class TestObserved {
-  + void generateData(TestCondition condition, int value)
+class Null_Debug {
+  + operator<<(const T & o): Null_Debug &
+  + operator<<(const T * o): Null_Debug &
 }
 
-enum TestCondition {
-  CONDITION_1
-  CONDITION_2
-  CONDITION_3
+class "Select_Debug<bool debugged>" as SelectDebug {
 }
 
-class TestData {
-  + int value
-  + std::atomic<int> ref_count
-  + TestData(int v)
+note top of SelectDebug
+  Template specializations:
+  - Select_Debug<true> inherits from Debug
+  - Select_Debug<false> inherits from Null_Debug
+end note
+
+class Ethernet {
+  + {static} MTU: unsigned int
+  + {static} MAC_SIZE: unsigned int
+  + {static} HEADER_SIZE: unsigned int
+  + {static} NULL_ADDRESS: Address
+  + Ethernet()
+  + ~Ethernet()
+  + {static} mac_to_string(addr: Address): std::string
+  .. Nested types ..
+  + Address: struct
+  + Protocol: typedef
+  + Frame: struct
 }
 
-class ThreadSafeOutput {
-  - static std::mutex _mutex
-  + static void print(const std::string& msg)
+class "Ethernet::Address" as EthernetAddress <<struct>> {
+  + bytes: std::uint8_t[MAC_SIZE]
 }
 
-' Relationships
-"Concurrent_Observer<T, C>" <|-- TestObserver
-"Concurrent_Observed<T, C>" <|-- TestObserved
-TestObserver ..> TestData : processes
-TestObserved ..> TestData : creates
-TestObserver ..> ThreadSafeOutput : uses
-TestObserved ..> TestCondition : uses
-TestObserver ..> TestCondition : subscribes to
+class "Ethernet::Frame" as EthernetFrame <<struct>> {
+  + dst: Address
+  + src: Address
+  + prot: Protocol
+  + payload: std::uint8_t[MTU]
+}
 
-@enduml 
+class Initializer {
+  + Initializer() = default
+  + ~Initializer() = default
+  + {static} create_vehicle(id: unsigned int): Vehicle*
+  .. Typedefs ..
+  + VehicleNIC: typedef NIC<SocketEngine>
+  + CProtocol: typedef Protocol<VehicleNIC>
+}
+
+class "List<T>" as List {
+  + List() = default
+  + ~List() = default
+  + insert(item: T*): void
+  + remove(): T*
+  + empty(): bool
+  - _list: std::list<T*>
+  - _mutex: mutable std::mutex
+}
+
+class "Ordered_List<T, R>" as OrderedList {
+  + Iterator: typedef
+  + Ordered_List() = default
+  + ~Ordered_List() = default
+  + insert(item: T*): void
+  + remove(item: T*): void
+  + begin(): Iterator
+  + end(): Iterator
+  + empty(): bool
+  - _list: std::list<T*>
+  - _mutex: mutable std::mutex
+}
+
+class "Message<MaxSize>" as Message {
+  - _data: void*[MAX_SIZE]
+  - _size: unsigned int
+  + {static} MAX_SIZE: unsigned int
+  + Message()
+  + Message(data: const void*, size: unsigned int)
+  + Message(other: const Message&)
+  + operator=(other: const Message&): Message&
+  + data(): const void*
+  + size(): const unsigned int
+}
+
+class "NIC<Engine>" as NIC {
+  + {static} BUFFER_SIZE: unsigned int
+  + {static} N_BUFFERS: unsigned int
+  - _statistics: Statistics
+  - _buffer: DataBuffer[N_BUFFERS]
+  - _free_buffers: std::queue<DataBuffer*>
+  - _buffer_sem: sem_t
+  - _binary_sem: sem_t
+  # NIC()
+  + ~NIC()
+  + send(buf: DataBuffer*): int
+  + receive(buf: DataBuffer*, src: Address*, dst: Address*, data: void*, size: unsigned int): int
+  + alloc(dst: Address, prot: Protocol_Number, size: unsigned int): DataBuffer*
+  + free(buf: DataBuffer*): void
+  + address(): const Address&
+  + setAddress(address: Address): void
+  + statistics(): const Statistics&
+  - receiveData(frame: Ethernet::Frame&, size: unsigned int): void
+  .. Typedefs ..
+  + Address: typedef
+  + Protocol_Number: typedef
+  + DataBuffer: typedef
+  + Observer: typedef
+  + Observed: typedef
+  .. Nested types ..
+  + Statistics: struct 
+}
+
+note top of NIC
+  Inherits from:
+  - Ethernet
+  - Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Ethernet::Protocol>
+  - Engine (private)
+end note
+
+class "NIC<Engine>::Statistics" as NICStatistics <<struct>> {
+  + packets_sent: std::atomic<unsigned int>
+  + packets_received: std::atomic<unsigned int>
+  + bytes_sent: std::atomic<unsigned int>
+  + bytes_received: std::atomic<unsigned int>
+  + tx_drops: std::atomic<unsigned int>
+  + rx_drops: std::atomic<unsigned int>
+  + Statistics()
+}
+
+class "Conditional_Data_Observer<T, Condition>" as ConditionalDataObserver {
+  # _rank: Condition
+  - _data: List<T>
+  + {typedef} Observed_Data
+  + {typedef} Observing_Condition
+  + {typedef} Observed
+  + Conditional_Data_Observer(c: Condition)
+  + ~Conditional_Data_Observer() = default
+  + {virtual} update(c: Condition, d: Observed_Data*): void
+  + updated(): T*
+  + rank(): const Condition
+}
+
+class "Conditionally_Data_Observed<T, Condition>" as ConditionallyDataObserved {
+  - _observers: Observers
+  + {typedef} Observed_Data
+  + {typedef} Observing_Condition
+  + {typedef} Observer
+  + {typedef} Observers
+  + Conditionally_Data_Observed() = default
+  + ~Conditionally_Data_Observed() = default
+  + attach(o: Observer*, c: Condition): void
+  + detach(o: Observer*, c: Condition): void
+  + notify(c: Condition, d: T*): bool
+}
+
+class "Concurrent_Observer<D, C>" as ConcurrentObserver {
+  - _semaphore: SemaphoreWrapper
+  + {typedef} Observed_Data
+  + {typedef} Observing_Condition
+  + {typedef} Observed
+  + Concurrent_Observer(rank: C)
+  + ~Concurrent_Observer() = default
+  + update(c: C, d: D*): void
+  + updated(): D*
+}
+
+note bottom of ConcurrentObserver
+  Inherits from Conditional_Data_Observer<D, C>
+end note
+
+class "Concurrent_Observed<D, C>" as ConcurrentObserved {
+  - _mtx: pthread_mutex_t
+  + {typedef} Observed_Data
+  + {typedef} Observing_Condition
+  + {typedef} Observers
+  + Concurrent_Observed()
+  + ~Concurrent_Observed()
+  + attach(o: Concurrent_Observer<D, C>*, c: C): void
+  + detach(o: Concurrent_Observer<D, C>*, c: C): void
+}
+
+note bottom of ConcurrentObserved
+  Inherits from Conditionally_Data_Observed<D, C>
+end note
+
+class "Protocol<NIC>" as ProtocolNIC {
+  + {static} PROTO: NIC::Protocol_Number
+  + {static} MTU: unsigned int
+  - _nic: NIC*
+  - {static} _observed: Observed
+  + Protocol(nic: NIC*)
+  + ~Protocol()
+  + send(from: Address, to: Address, data: const void*, size: unsigned int): int
+  + receive(buf: Buffer*, from: Address, data: void*, size: unsigned int): int
+  + {static} attach(obs: Observer*, address: Address): void
+  + {static} detach(obs: Observer*, address: Address): void
+  - update(prot: NIC::Protocol_Number, buf: Buffer*): void
+  .. Typedefs ..
+  + Buffer: typedef
+  + Physical_Address: typedef
+  + Port: typedef
+  + Observer: typedef
+  + Observed: typedef
+  + Data: typedef
+}
+
+note top of ProtocolNIC
+  Inherits from NIC::Observer
+end note
+
+class "Protocol<NIC>::Header" as ProtocolHeader {
+  - _from_port: Port
+  - _to_port: Port
+  - _size: unsigned int
+  + Header()
+  + from_port(): Port
+  + from_port(p: Port): void
+  + to_port(): Port
+  + to_port(p: Port): void
+  + size(): unsigned int
+  + size(s: unsigned int): void
+}
+
+class "Protocol<NIC>::Packet" as ProtocolPacket {
+  - _data: Data
+  + Packet()
+  + header(): Header*
+  + data<T>(): T*
+}
+
+note top of ProtocolPacket
+  Inherits from Protocol<NIC>::Header
+end note
+
+class "Protocol<NIC>::Address" as ProtocolAddress {
+  - _port: Port
+  - _paddr: Physical_Address
+  + {static} BROADCAST: Address
+  + Address()
+  + Address(null: const Null&)
+  + Address(paddr: Physical_Address, port: Port)
+  + paddr(addr: Physical_Address): void
+  + paddr(): const Physical_Address&
+  + port(port: Port): void
+  + port(): const Port&
+  + operator bool() const
+  + operator==(a: const Address&): bool
+  .. Nested types ..
+  + enum Null { NULL_VALUE }
+}
+
+class SocketEngine {
+  + {static} INTERFACE: const char*
+  - _sock_fd: int
+  - _ep_fd: int
+  - _if_index: int
+  - _callback: CallbackMethod
+  - _receive_thread: pthread_t
+  # _address: Ethernet::Address
+  - {static} _running: bool
+  + SocketEngine()
+  + ~SocketEngine()
+  + setCallback(callback: CallbackMethod): void
+  + send(frame: Ethernet::Frame*, size: unsigned int): int
+  + {static} run(arg: void*): void*
+  + stop(): void
+  - setUpSocket(): void
+  - setUpEpoll(): void
+  - handleSignal(): void
+  .. Typedefs ..
+  + CallbackMethod: typedef std::function<void(Ethernet::Frame&, unsigned int)>
+}
+
+' Traits classes
+class "Traits<T>" as BaseTraits <<template>> {
+  + {static} debugged: bool = false
+}
+
+class "Traits<NIC<Engine>>" as NICTraits <<template>> {
+  + {static} debugged: bool = false
+  + {static} SEND_BUFFERS: unsigned int = 16
+  + {static} RECEIVE_BUFFERS: unsigned int = 16
+}
+
+note bottom of NICTraits
+  Inherits from Traits<void>
+end note
+
+class "Traits<Protocol<NIC>>" as ProtocolTraits <<template>> {
+  + {static} debugged: bool = false
+}
+
+note bottom of ProtocolTraits
+  Inherits from Traits<void>
+end note
+
+class "Traits<Protocol<NIC<SocketEngine>>>" as SocketProtocolTraits {
+  + {static} debugged: bool = false
+  + {static} ETHERNET_PROTOCOL_NUMBER: unsigned int = 888
+}
+
+note bottom of SocketProtocolTraits
+  Inherits from Traits<void>
+end note
+
+class "Traits<SocketEngine>" as SocketEngineTraits {
+  + {static} debugged: bool = false
+  + {static} INTERFACE_NAME: const char* = "eth0"
+}
+
+note bottom of SocketEngineTraits
+  Inherits from Traits<void>
+end note
+
+class "Traits<Communicator<Channel>>" as CommunicatorTraits <<template>> {
+  + {static} debugged: bool = false
+}
+
+note bottom of CommunicatorTraits
+  Inherits from Traits<void>
+end note
+
+class "Traits<Vehicle>" as VehicleTraits {
+  + {static} debugged: bool = true
+}
+
+note bottom of VehicleTraits
+  Inherits from Traits<void>
+end note
+
+class "Traits<Debug>" as DebugTraits {
+  + {static} error: bool = false
+  + {static} warning: bool = false
+  + {static} info: bool = true
+  + {static} trace: bool = true
+}
+
+note bottom of DebugTraits
+  Inherits from Traits<void>
+end note
+
+class Vehicle {
+  + {static} MAX_MESSAGE_SIZE: unsigned int
+  - _id: unsigned int
+  - _protocol: Protocol<NIC<SocketEngine>>*
+  - _nic: NIC<SocketEngine>*
+  - _comms: Communicator<Protocol<NIC<SocketEngine>>>*
+  - _running: std::atomic<bool>
+  + Vehicle(id: unsigned int, nic: NIC<SocketEngine>*, protocol: Protocol<NIC<SocketEngine>>*)
+  + ~Vehicle()
+  + id(): const unsigned int
+  + running(): const bool
+  + start(): void
+  + stop(): void
+  + send(data: const void*, size: unsigned int): int
+  + receive(data: void*, size: unsigned int): int
+}
+
+class SemaphoreWrapper {
+  # ifdef __APPLE__
+  - _sem: sem_t*
+  - _name: char[32]
+  - {static} _sem_count: std::atomic<int>
+  # else
+  - _sem: sem_t
+  # endif
+  + SemaphoreWrapper(initial_value: int = 0)
+  + ~SemaphoreWrapper()
+  + post(): void
+  + wait(): void
+  .. Deleted methods ..
+  + SemaphoreWrapper(const SemaphoreWrapper&) = delete
+  + operator=(const SemaphoreWrapper&): SemaphoreWrapper& = delete
+}
+
+@enduml
