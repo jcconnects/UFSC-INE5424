@@ -1,4 +1,4 @@
-@startuml Process and Thread Diagram
+@startuml 02-process_thread_diagram
 
 ' Style definitions
 skinparam componentStyle rectangle

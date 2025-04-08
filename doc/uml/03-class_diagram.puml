@@ -1,4 +1,4 @@
-@startuml Observer_Pattern_Classes
+@startuml 03-class_diagram
 
 ' Class definitions
 abstract class "Concurrent_Observer<T, C>" {

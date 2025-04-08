@@ -1,12 +1,13 @@
-@startuml Observer_Pattern_Sequence
+@startuml 01-system_sequence_diagram
 
 ' Process flow
-participant Vehicle
-participant Message
-participant "Communicator\nextends Concurrent_Observer<Channel::Observer::Observed_Data,\nChannel::Observer::Observing_Condition>" as Communicator
-participant Protocol
-participant NIC
-participant SocketEngine
+participant "Vehicle <<Process>>" as Vehicle
+participant "Message" as Message
+participant "Communicator <<Concurrent_Observer>>" as Communicator
+participant "Protocol <<Subject>>" as Protocol
+participant "NIC" as NIC
+participant "SocketEngine <<Engine>>" as SocketEngine
+participant "NIC <<Physical>>" as NIC_Physical
 
 autonumber
 Vehicle -> Message: Create
@@ -19,11 +20,14 @@ NIC --> Protocol: return buffer
 note right of Protocol: Copy data to buffer
 Protocol -> NIC: send(buffer)
 NIC -> SocketEngine: sendto(...)
+SocketEngine --> NIC_Physical: send(buffer)
 deactivate Protocol
 
 ==== Network Layer Boundary ====
 
 ' NIC receives data from the network
+NIC_Physical <-: F 
+NIC_Physical -> SocketEngine: Interruption
 SocketEngine -> NIC: notify(PROTO, buffer)
 NIC -> Protocol: notify(PROTO, buffer)
 Protocol -> Protocol: update(&_observed, PROTO, buffer)
