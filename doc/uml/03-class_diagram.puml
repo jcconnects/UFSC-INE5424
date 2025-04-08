@@ -159,11 +159,11 @@ class "NIC<Engine>" as NIC {
   + statistics(): const Statistics&
   - receiveData(frame: Ethernet::Frame&, size: unsigned int): void
   .. Typedefs ..
-  + Address: typedef
-  + Protocol_Number: typedef
-  + DataBuffer: typedef
-  + Observer: typedef
-  + Observed: typedef
+  + Address: typedef Ethernet::Address
+  + Protocol_Number: typedef Ethernet::Protocol
+  + DataBuffer: typedef Buffer<Ethernet::Frame>
+  + Observer: typedef Conditional_Data_Observer<DataBuffer, Protocol_Number>
+  + Observed: typedef Conditionally_Data_Observed<DataBuffer, Protocol_Number>
   .. Nested types ..
   + Statistics: struct 
 }
@@ -184,6 +184,13 @@ class "NIC<Engine>::Statistics" as NICStatistics <<struct>> {
   + rx_drops: std::atomic<unsigned int>
   + Statistics()
 }
+
+class "NIC<Engine>::Observer" as NICObserver {
+}
+
+note top of NICObserver
+  typedef Conditional_Data_Observer<DataBuffer, Protocol_Number>
+end note
 
 class "Conditional_Data_Observer<T, Condition>" as ConditionalDataObserver {
   # _rank: Condition
@@ -430,5 +437,33 @@ class SemaphoreWrapper {
   + SemaphoreWrapper(const SemaphoreWrapper&) = delete
   + operator=(const SemaphoreWrapper&): SemaphoreWrapper& = delete
 }
+
+' Communicator Relationships
+Concurrent_Observer <|-- Communicator
+Communicator o-- "1" Channel : _channel
+Communicator *-- "1" Address : _address
+Communicator ..> Message : uses
+Communicator ..> Buffer : uses
+
+' NIC Relationships
+Ethernet <|-- NIC
+ConditionallyDataObserved <|-- NIC
+Engine <|-- NIC : private
+NIC *-- "1" NICStatistics : _statistics
+NIC *-- "N_BUFFERS" DataBuffer : _buffer
+NIC <.. Initializer : friend
+'' Maybe these uses could be removed
+NIC ..> Buffer : uses
+NIC ..> Traits : uses constants
+
+' Protocol Relationships
+ConditionalDataObserver <|-- NICObserver
+NICObserver <|-- ProtocolNIC : private
+ProtocolHeader <|-- ProtocolPacket
+ProtocolNIC o-- "1" NIC : _nic
+ProtocolNIC *-- "1" ConditionallyDataObserved : _observed > static
+'' Maybe these uses could be removed
+ProtocolNIC ..> Buffer : uses
+ProtocolNIC ..> Traits : uses configuration
 
 @enduml
