@@ -10,8 +10,6 @@ class "Address" <<struct>> {
 class "Frame" <<struct>> {
 }
 
-
-
 ' Relationships
 "Ethernet" *-- "Address"
 "Ethernet" *-- "Frame"
