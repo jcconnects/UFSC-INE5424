@@ -1,0 +1,156 @@
+# Communication System Architecture
+
+This document provides an overview of the entire communication system architecture and serves as a navigation hub for the detailed documentation of each component.
+
+## System Overview
+
+The communication system implements a layered architecture for network communication between autonomous vehicles. The system follows the Observer design pattern for asynchronous message passing between components.
+
+### Architecture Diagram
+
+```
++------------------+    +------------------+
+|     Vehicle      |    |     Vehicle      |
++------------------+    +------------------+
+         |                       |
+         v                       v
++------------------+    +------------------+
+|   Communicator   |    |   Communicator   |
++------------------+    +------------------+
+         |                       |
+         v                       v
++------------------+    +------------------+
+|     Protocol     |    |     Protocol     |
++------------------+    +------------------+
+         |                       |
+         v                       v
++------------------+    +------------------+
+|       NIC        |    |       NIC        |
++------------------+    +------------------+
+         |                       |
+         v                       v
++------------------+    +------------------+
+|   SocketEngine   |    |   SocketEngine   |
++------------------+    +------------------+
+         |                       |
+         v                       v
++------------------+----+------------------+
+|              Network                     |
++------------------------------------------+
+```
+
+### Observer Pattern Flow
+
+The communication stack implements two types of Observer patterns:
+
+1. **Conditional Observer Pattern** (NIC → Protocol)
+   - NIC (as `Conditionally_Data_Observed`) notifies Protocol (as `Conditional_Data_Observer`) based on protocol numbers
+   - Used for filtering packets without thread synchronization
+
+2. **Concurrent Observer Pattern** (Protocol → Communicator)
+   - Protocol (via `Concurrent_Observed`) notifies Communicator (as `Concurrent_Observer`) based on port numbers
+   - Enables asynchronous message handling with thread synchronization via semaphores
+
+## Component Documentation
+
+### Core Components
+
+| Component | Description | Detailed Documentation |
+|-----------|-------------|------------------------|
+| **Initializer** | Manages process creation and lifecycle for vehicles and communication components | [README-Initializer.md](README-Initializer.md) |
+| **Observer** | Implements thread-safe observer patterns for asynchronous communication | [README-Observer.md](README-Observer.md) |
+
+### Communication Stack
+
+| Layer | Component | Description | Detailed Documentation |
+|-------|-----------|-------------|------------------------|
+| Application | **Communicator** | High-level communication endpoint for applications | [README-Communicator.md](README-Communicator.md) |
+| Transport | **Protocol** | Implements port-based addressing and message routing | [README-Protocol.md](README-Protocol.md) |
+| Network | **NIC** | Network interface card implementation for frame handling | [README-Nic.md](README-Nic.md) |
+| Link | **Ethernet** | Ethernet frame handling and MAC address management | [README-Ethernet.md](README-Ethernet.md) |
+| Physical | **SocketEngine** | Low-level network access with raw sockets and asynchronous I/O | [README-SocketEngine.md](README-SocketEngine.md) |
+
+### Data Structures
+
+| Component | Description | Detailed Documentation |
+|-----------|-------------|------------------------|
+| **Message** | Generic container for communication data | [README-Message.md](README-Message.md) |
+| **Buffer** | Memory management for network data | [README-Buffer.md](README-Buffer.md) |
+
+## Component Relationships
+
+### Initializer Framework
+
+The Initializer framework manages the creation and lifecycle of vehicle processes and communication components:
+
+- **Initializer** creates **NIC** and **Protocol** instances
+- **Initializer** creates a **Vehicle** and passes NIC and Protocol to it
+- **Vehicle** creates its own **Communicator** using the Protocol
+- Each vehicle runs in its own process for isolation
+
+### Communication Flow
+
+1. **Message Creation**:
+   - Application creates a **Message** with data
+   - **Communicator** prepares the message for transmission
+
+2. **Message Sending**:
+   - **Communicator** passes message to **Protocol**
+   - **Protocol** adds protocol headers and passes to **NIC**
+   - **NIC** formats an **Ethernet** frame and passes to **SocketEngine**
+   - **SocketEngine** transmits the raw frame to the network using raw sockets
+
+3. **Message Reception**:
+   - **SocketEngine** receives a raw frame via its dedicated thread
+   - **SocketEngine** notifies **NIC** through its callback mechanism
+   - **NIC** notifies **Protocol** based on protocol number (Conditional Observer)
+   - **Protocol** processes the frame and notifies **Communicator** based on port (Concurrent Observer)
+   - **Communicator** delivers the **Message** to the application
+
+### SocketEngine Integration
+
+The SocketEngine provides the lowest level of network access:
+
+- Implemented with raw sockets for direct Ethernet frame transmission/reception
+- Uses epoll for efficient asynchronous I/O
+- Runs a dedicated thread for receiving frames
+- Provides callback mechanism that integrates with the NIC layer
+- Handles low-level details like interface binding and MAC address retrieval
+
+## Implementation Details
+
+### Memory Management
+
+The system uses reference counting for shared buffer management:
+
+- Buffers are created with reference count 0
+- Each component that receives a buffer increments the count
+- After processing, each component decrements the count
+- When count reaches zero, the last component deletes the buffer
+
+### Thread Safety
+
+The system ensures thread safety through:
+
+- Atomic operations for reference counting
+- Semaphores for thread synchronization in the Concurrent Observer pattern
+- Mutex protection for shared data structures
+- Proper encapsulation and information hiding
+- Dedicated thread in SocketEngine for asynchronous reception
+
+## Usage Examples
+
+For detailed usage examples of each component, refer to their respective README files. The basic flow for implementing a new vehicle would be:
+
+1. Create a Vehicle configuration
+2. Initialize the communication stack using the Initializer
+3. Use the Communicator to send and receive messages
+4. Process messages in the application logic
+
+## Key Design Patterns
+
+1. **Observer Pattern**: For asynchronous message passing
+2. **Template-Based Design**: For type-safe component implementation
+3. **Process-Based Isolation**: Each vehicle runs in its own process
+4. **Dependency Injection**: Components are passed dependencies through constructors
+5. **Callback Pattern**: For asynchronous event handling in SocketEngine 
