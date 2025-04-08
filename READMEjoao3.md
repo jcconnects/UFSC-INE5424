@@ -67,3 +67,20 @@ Em protocol.h a chamada _nic -> free(buf) ocorria somente quando havia falha no 
 
 ## demo.cpp não termina de executar
 Não existe chamada v -> stop() em demo.cp run_vehicle. Mesmo que a chamada existisse o programa não terminaria corretamente já que os processos filhos ficam presos no semáfaro quando as mensagens param de ser enviadas pela sender thread do primeiro processo filho. O processo pai poderia enviar uma última mmensagem de fim para garantir que isso não aconteça após a finalização dos filhos. Porém apenas os processos sabem seu tempo de vida.
+
+# Alterações feitas 2:
+
+## Mutex na NIC (não signal safe):
+Substituido por semáfaro binário
+
+## SocketEngine signal safe:
+Classe SocketEgnine revisada. Não há necessidade de métodos signal safe já que a classe faz event handling, e não efetivamente registra um signal handler. Nada é executado em contexto e interrupção de sinal.
+
+## NIC aloca buffers nullptr
+O semáfaro que bloqueia a alocação quando não há buffers disponíveis não havia sido corretamente inicializado
+
+# Alterações feits 3:
+
+## Processos não terminam no teste
+Signal interrompe processos travados os liberando do block em observer::updated()
+A interrupção causa "Error: Null buffer received" no communicator, mas isso só acontece pela finalização forçada de updated
