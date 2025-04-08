@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstring> // For memcpy
 #include <stdexcept>
+#include <unistd.h> // For usleep
 
 #include "protocol.h"
 #include "message.h"
@@ -29,6 +30,9 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         // Communication methods
         bool send(const Message<MAX_MESSAGE_SIZE>* message);
         bool receive(Message<MAX_MESSAGE_SIZE>* message);
+        
+        // Method to close the communicator and unblock any pending receive calls
+        void close();
         
         // Deleted copy constructor and assignment operator to prevent copying
         Communicator(const Communicator&) = delete;
@@ -102,9 +106,16 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
     db<Communicator<Channel>>(INF) << "[Communicator] buffer retrieved\n";
 
     if (!buf) {
-            std::cerr << "Error: Null buffer received" << std::endl;
-            return false;
+        // Check if this is likely a shutdown (observer has been detached) or a real error
+        if (!_channel) {
+            // During normal shutdown, we'll get a null buffer from the notify() call after detaching
+            db<Communicator<Channel>>(TRC) << "[Communicator] null buffer received during shutdown (expected)\n";
+        } else {
+            // This is unexpected during normal operation and should be logged as an error
+            std::cerr << "Error: Unexpected null buffer received during normal operation" << std::endl;
         }
+        return false;
+    }
 
     try {
         
@@ -125,6 +136,27 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
     } catch (const std::exception& e) {
         std::cerr << "Error receiving message: " << e.what() << std::endl;
         return false;
+    }
+}
+
+template <typename Channel>
+void Communicator<Channel>::close() {
+    db<Communicator<Channel>>(TRC) << "Communicator<Channel>::close() called!\n";
+    
+    try {
+        // First try to detach and reattach to force connection close
+        if (_channel) {
+            _channel->detach(this, _address);
+            db<Communicator<Channel>>(INF) << "[Communicator] detached from Channel during close\n";
+            
+            // Wait a small amount of time to ensure connections are closed
+            usleep(50000); // 50ms
+            
+            // Signal any threads waiting on receive to wake up
+            Observer::notify();
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error during communicator close: " << e.what() << std::endl;
     }
 }
 

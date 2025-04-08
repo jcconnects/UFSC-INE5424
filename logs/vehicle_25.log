@@ -1,0 +1,414 @@
+Vehicle::Vehicle() called!
+run_vehicle() called!
+[Vehicle 25] SIGUSR1 handler installed.
+[Vehicle 25] creating receiver component
+[Vehicle 25] starting. Lifetime: 50s
+[Vehicle 25] sleeping for lifetime: 50s
+ReceiverComponent::run() started for vehicle 25
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 20 message 1 at 347329387217
+[Vehicle 25] received message from Vehicle 20, msg_id=1, latency=130μs (0.13ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 22 message 1 at 347329387221
+[Vehicle 25] received message from Vehicle 22, msg_id=1, latency=411μs (0.411ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 16 message 1 at 347329387225
+[Vehicle 25] received message from Vehicle 16, msg_id=1, latency=1445μs (1.445ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 14 message 1 at 347329387231
+[Vehicle 25] received message from Vehicle 14, msg_id=1, latency=1698μs (1.698ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 30 message 1 at 347329387273
+[Vehicle 25] received message from Vehicle 30, msg_id=1, latency=1911μs (1.911ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 18 message 1 at 347329387295
+[Vehicle 25] received message from Vehicle 18, msg_id=1, latency=2147μs (2.147ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 28 message 1 at 347329389370
+[Vehicle 25] received message from Vehicle 28, msg_id=1, latency=321μs (0.321ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 26 message 2 at 347334383393
+[Vehicle 25] received message from Vehicle 26, msg_id=2, latency=252μs (0.252ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 24 message 2 at 347334384286
+[Vehicle 25] received message from Vehicle 24, msg_id=2, latency=112μs (0.112ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 14 message 2 at 347335387362
+[Vehicle 25] received message from Vehicle 14, msg_id=2, latency=169μs (0.169ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 18 message 2 at 347335387416
+[Vehicle 25] received message from Vehicle 18, msg_id=2, latency=456μs (0.456ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 28 message 2 at 347335389569
+[Vehicle 25] received message from Vehicle 28, msg_id=2, latency=480μs (0.48ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 6 message 2 at 347336382362
+[Vehicle 25] received message from Vehicle 6, msg_id=2, latency=125μs (0.125ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 12 message 2 at 347336384309
+[Vehicle 25] received message from Vehicle 12, msg_id=2, latency=49μs (0.049ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 4 message 2 at 347337383375
+[Vehicle 25] received message from Vehicle 4, msg_id=2, latency=287μs (0.287ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 20 message 2 at 347337387432
+[Vehicle 25] received message from Vehicle 20, msg_id=2, latency=370μs (0.37ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 2 message 2 at 347338383270
+[Vehicle 25] received message from Vehicle 2, msg_id=2, latency=475μs (0.475ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 16 message 2 at 347338387359
+[Vehicle 25] received message from Vehicle 16, msg_id=2, latency=159μs (0.159ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 8 message 2 at 347339382341
+[Vehicle 25] received message from Vehicle 8, msg_id=2, latency=75μs (0.075ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 10 message 2 at 347339382734
+[Vehicle 25] received message from Vehicle 10, msg_id=2, latency=103μs (0.103ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 22 message 2 at 347339387357
+[Vehicle 25] received message from Vehicle 22, msg_id=2, latency=79μs (0.079ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 30 message 2 at 347339387413
+[Vehicle 25] received message from Vehicle 30, msg_id=2, latency=385μs (0.385ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 24 message 3 at 347340384424
+[Vehicle 25] received message from Vehicle 24, msg_id=3, latency=269μs (0.269ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 26 message 3 at 347341383675
+[Vehicle 25] received message from Vehicle 26, msg_id=3, latency=110μs (0.11ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 14 message 3 at 347341387511
+[Vehicle 25] received message from Vehicle 14, msg_id=3, latency=116μs (0.116ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 28 message 3 at 347341389719
+[Vehicle 25] received message from Vehicle 28, msg_id=3, latency=38μs (0.038ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 18 message 3 at 347342387562
+[Vehicle 25] received message from Vehicle 18, msg_id=3, latency=416μs (0.416ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 6 message 3 at 347344382536
+[Vehicle 25] received message from Vehicle 6, msg_id=3, latency=89μs (0.089ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 10 message 3 at 347344382896
+[Vehicle 25] received message from Vehicle 10, msg_id=3, latency=131μs (0.131ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 2 message 3 at 347344383451
+[Vehicle 25] received message from Vehicle 2, msg_id=3, latency=494μs (0.494ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 22 message 3 at 347344387462
+[Vehicle 25] received message from Vehicle 22, msg_id=3, latency=38μs (0.038ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 12 message 3 at 347345384460
+[Vehicle 25] received message from Vehicle 12, msg_id=3, latency=196μs (0.196ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 16 message 3 at 347345387476
+[Vehicle 25] received message from Vehicle 16, msg_id=3, latency=790μs (0.79ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 30 message 3 at 347345387532
+[Vehicle 25] received message from Vehicle 30, msg_id=3, latency=995μs (0.995ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 20 message 3 at 347346387673
+[Vehicle 25] received message from Vehicle 20, msg_id=3, latency=170μs (0.17ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 4 message 3 at 347347383627
+[Vehicle 25] received message from Vehicle 4, msg_id=3, latency=523μs (0.523ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 26 message 4 at 347347384146
+[Vehicle 25] received message from Vehicle 26, msg_id=4, latency=354μs (0.354ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 28 message 4 at 347347389882
+[Vehicle 25] received message from Vehicle 28, msg_id=4, latency=126μs (0.126ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 8 message 3 at 347349382484
+[Vehicle 25] received message from Vehicle 8, msg_id=3, latency=93μs (0.093ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 18 message 4 at 347349387721
+[Vehicle 25] received message from Vehicle 18, msg_id=4, latency=31μs (0.031ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 2 message 4 at 347350383577
+[Vehicle 25] received message from Vehicle 2, msg_id=4, latency=236μs (0.236ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 24 message 4 at 347350384736
+[Vehicle 25] received message from Vehicle 24, msg_id=4, latency=120μs (0.12ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 6 message 4 at 347351382737
+[Vehicle 25] received message from Vehicle 6, msg_id=4, latency=216μs (0.216ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 14 message 4 at 347351387615
+[Vehicle 25] received message from Vehicle 14, msg_id=4, latency=751μs (0.751ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 22 message 4 at 347351387635
+[Vehicle 25] received message from Vehicle 22, msg_id=4, latency=981μs (0.981ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 20 message 4 at 347352387829
+[Vehicle 25] received message from Vehicle 20, msg_id=4, latency=149μs (0.149ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 26 message 5 at 347353384341
+[Vehicle 25] received message from Vehicle 26, msg_id=5, latency=527μs (0.527ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 10 message 4 at 347354383009
+[Vehicle 25] received message from Vehicle 10, msg_id=4, latency=122μs (0.122ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 16 message 4 at 347354387589
+[Vehicle 25] received message from Vehicle 16, msg_id=4, latency=160μs (0.16ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 30 message 4 at 347354387998
+[Vehicle 25] received message from Vehicle 30, msg_id=4, latency=69μs (0.069ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 18 message 5 at 347354388005
+[Vehicle 25] received message from Vehicle 18, msg_id=5, latency=336μs (0.336ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 8 message 4 at 347355382694
+[Vehicle 25] received message from Vehicle 8, msg_id=4, latency=109μs (0.109ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 12 message 4 at 347355384700
+[Vehicle 25] received message from Vehicle 12, msg_id=4, latency=58μs (0.058ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 24 message 5 at 347355385145
+[Vehicle 25] received message from Vehicle 24, msg_id=5, latency=52μs (0.052ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 28 message 5 at 347355390007
+[Vehicle 25] received message from Vehicle 28, msg_id=5, latency=194μs (0.194ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 6 message 5 at 347357382977
+[Vehicle 25] received message from Vehicle 6, msg_id=5, latency=246μs (0.246ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 2 message 5 at 347357383728
+[Vehicle 25] received message from Vehicle 2, msg_id=5, latency=124μs (0.124ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 4 message 4 at 347357383800
+[Vehicle 25] received message from Vehicle 4, msg_id=4, latency=437μs (0.437ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 26 message 6 at 347358384570
+[Vehicle 25] received message from Vehicle 26, msg_id=6, latency=249μs (0.249ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 16 message 5 at 347359387720
+[Vehicle 25] received message from Vehicle 16, msg_id=5, latency=805μs (0.805ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 14 message 5 at 347359387781
+[Vehicle 25] received message from Vehicle 14, msg_id=5, latency=1019μs (1.019ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 24 message 6 at 347360385720
+[Vehicle 25] received message from Vehicle 24, msg_id=6, latency=168μs (0.168ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 22 message 5 at 347360387750
+[Vehicle 25] received message from Vehicle 22, msg_id=5, latency=135μs (0.135ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 30 message 5 at 347360388205
+[Vehicle 25] received message from Vehicle 30, msg_id=5, latency=151μs (0.151ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 28 message 6 at 347360390148
+[Vehicle 25] received message from Vehicle 28, msg_id=6, latency=475μs (0.475ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 20 message 5 at 347361387996
+[Vehicle 25] received message from Vehicle 20, msg_id=5, latency=179μs (0.179ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 6 message 6 at 347362383148
+[Vehicle 25] received message from Vehicle 6, msg_id=6, latency=125μs (0.125ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 10 message 5 at 347362383181
+[Vehicle 25] received message from Vehicle 10, msg_id=5, latency=533μs (0.533ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 2 message 6 at 347362384080
+[Vehicle 25] received message from Vehicle 2, msg_id=6, latency=47μs (0.047ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 12 message 5 at 347363384993
+[Vehicle 25] received message from Vehicle 12, msg_id=5, latency=169μs (0.169ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 18 message 6 at 347364388886
+[Vehicle 25] received message from Vehicle 18, msg_id=6, latency=134μs (0.134ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 8 message 5 at 347365382850
+[Vehicle 25] received message from Vehicle 8, msg_id=5, latency=650μs (0.65ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 28 message 7 at 347365390309
+[Vehicle 25] received message from Vehicle 28, msg_id=7, latency=129μs (0.129ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 4 message 5 at 347366384023
+[Vehicle 25] received message from Vehicle 4, msg_id=5, latency=234μs (0.234ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 22 message 6 at 347366387912
+[Vehicle 25] received message from Vehicle 22, msg_id=6, latency=209μs (0.209ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 30 message 6 at 347366388353
+[Vehicle 25] received message from Vehicle 30, msg_id=6, latency=66μs (0.066ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 20 message 6 at 347366388411
+[Vehicle 25] received message from Vehicle 20, msg_id=6, latency=292μs (0.292ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 2 message 7 at 347368384667
+[Vehicle 25] received message from Vehicle 2, msg_id=7, latency=168μs (0.168ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 26 message 7 at 347368384792
+[Vehicle 25] received message from Vehicle 26, msg_id=7, latency=413μs (0.413ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 14 message 6 at 347368387914
+[Vehicle 25] received message from Vehicle 14, msg_id=6, latency=124μs (0.124ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 6 message 7 at 347369383313
+[Vehicle 25] received message from Vehicle 6, msg_id=7, latency=500μs (0.5ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 16 message 6 at 347369387923
+[Vehicle 25] received message from Vehicle 16, msg_id=6, latency=477μs (0.477ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 12 message 6 at 347370385305
+[Vehicle 25] received message from Vehicle 12, msg_id=6, latency=216μs (0.216ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 24 message 7 at 347370385970
+[Vehicle 25] received message from Vehicle 24, msg_id=7, latency=52μs (0.052ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 18 message 7 at 347371389006
+[Vehicle 25] received message from Vehicle 18, msg_id=7, latency=244μs (0.244ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 10 message 6 at 347372383471
+[Vehicle 25] received message from Vehicle 10, msg_id=6, latency=95μs (0.095ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 8 message 6 at 347373383026
+[Vehicle 25] received message from Vehicle 8, msg_id=6, latency=234μs (0.234ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 4 message 6 at 347374384191
+[Vehicle 25] received message from Vehicle 4, msg_id=6, latency=513μs (0.513ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 30 message 7 at 347374388514
+[Vehicle 25] received message from Vehicle 30, msg_id=7, latency=430μs (0.43ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 28 message 8 at 347374390461
+[Vehicle 25] received message from Vehicle 28, msg_id=8, latency=192μs (0.192ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 6 message 8 at 347375383472
+[Vehicle 25] received message from Vehicle 6, msg_id=8, latency=242μs (0.242ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 12 message 7 at 347375385512
+[Vehicle 25] received message from Vehicle 12, msg_id=7, latency=360μs (0.36ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 22 message 7 at 347375388017
+[Vehicle 25] received message from Vehicle 22, msg_id=7, latency=516μs (0.516ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 20 message 7 at 347376388542
+[Vehicle 25] received message from Vehicle 20, msg_id=7, latency=206μs (0.206ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 10 message 7 at 347377383729
+[Vehicle 25] received message from Vehicle 10, msg_id=7, latency=445μs (0.445ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 2 message 8 at 347378384821
+[Vehicle 25] received message from Vehicle 2, msg_id=8, latency=603μs (0.603ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 26 message 8 at 347378384967
+[Vehicle 25] received message from Vehicle 26, msg_id=8, latency=729μs (0.729ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 14 message 7 at 347378388063
+[Vehicle 25] received message from Vehicle 14, msg_id=7, latency=231μs (0.231ms)
+Vehicle::receive() called!
+[Vehicle 25] message received
+[Vehicle 25] message received: Vehicle 16 message 7 at 347378388095
+[Vehicle 25] received message from Vehicle 16, msg_id=7, latency=476μs (0.476ms)
+Vehicle::receive() called!
+[Vehicle 25] lifetime ended. Stopping vehicle.
+[Vehicle 25] closing connections to unblock receive calls
+[Vehicle 25] receive() call interrupted by vehicle stop
+[Vehicle 25] detected vehicle is no longer running, exiting receiver loop
+[Vehicle 25] receiver component terminated.
+[Vehicle 25] stopping receiver thread.
+[Vehicle 25] v->stop() called.
+[Vehicle 25] terminated cleanly.
+Vehicle::~Vehicle() called!
+[Vehicle 25] stopping receiver thread.
