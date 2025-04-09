@@ -1,128 +1,49 @@
 [Vehicle 20] creating sender component
 [Vehicle 20] creating receiver component
-[Vehicle 20] starting. Lifetime: 107s
-[Vehicle 20] sleeping for lifetime: 107s
-[SenderComponent 20] sending message 1: {Vehicle 20 message 1 at 12709653326}
+[Vehicle 20] starting. Lifetime: 44s
+[Vehicle 20] sleeping for lifetime: 44s
+[SenderComponent 20] sending message 1: {Vehicle 20 message 1 at 407997516244}
 [Vehicle 20] message sent
 [SenderComponent 20] message 1 sent!
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 16, msg_id = 1, latency = 773μs (0.773ms)
+[ReceiverComponent 20] received message from Vehicle 26, msg_id = 1, latency = 136μs (0.136ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 12, msg_id = 1, latency = 937μs (0.937ms)
+[ReceiverComponent 20] received message from Vehicle 24, msg_id = 1, latency = 390μs (0.39ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 28, msg_id = 1, latency = 4014μs (4.014ms)
+[ReceiverComponent 20] received message from Vehicle 4, msg_id = 1, latency = 588μs (0.588ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 22, msg_id = 1, latency = 4404μs (4.404ms)
+[ReceiverComponent 20] received message from Vehicle 10, msg_id = 1, latency = 810μs (0.81ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 10, msg_id = 1, latency = 4697μs (4.697ms)
+[ReceiverComponent 20] received message from Vehicle 6, msg_id = 1, latency = 1028μs (1.028ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 26, msg_id = 1, latency = 4682μs (4.682ms)
+[ReceiverComponent 20] received message from Vehicle 22, msg_id = 1, latency = 463μs (0.463ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 24, msg_id = 1, latency = 4924μs (4.924ms)
+[ReceiverComponent 20] received message from Vehicle 14, msg_id = 1, latency = 543μs (0.543ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 30, msg_id = 1, latency = 2894μs (2.894ms)
+[ReceiverComponent 20] received message from Vehicle 2, msg_id = 1, latency = 1005μs (1.005ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 18, msg_id = 1, latency = 2825μs (2.825ms)
+[ReceiverComponent 20] received message from Vehicle 30, msg_id = 1, latency = 1263μs (1.263ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 18, msg_id = 2, latency = 3793μs (3.793ms)
+[ReceiverComponent 20] received message from Vehicle 28, msg_id = 1, latency = 1366μs (1.366ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 30, msg_id = 2, latency = 2186μs (2.186ms)
+[ReceiverComponent 20] received message from Vehicle 16, msg_id = 1, latency = 359μs (0.359ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 8, msg_id = 2, latency = 2965μs (2.965ms)
+[ReceiverComponent 20] received message from Vehicle 18, msg_id = 1, latency = 631μs (0.631ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 6, msg_id = 2, latency = 2516μs (2.516ms)
+[ReceiverComponent 20] received message from Vehicle 2, msg_id = 2, latency = 104μs (0.104ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 4, msg_id = 2, latency = 379μs (0.379ms)
-[SenderComponent 20] sending message 2: {Vehicle 20 message 2 at 12735653982}
+[ReceiverComponent 20] received message from Vehicle 28, msg_id = 2, latency = 104μs (0.104ms)
+[Vehicle 20] message received
+[ReceiverComponent 20] received message from Vehicle 12, msg_id = 2, latency = 276μs (0.276ms)
+[SenderComponent 20] sending message 2: {Vehicle 20 message 2 at 408024516367}
 [Vehicle 20] message sent
 [SenderComponent 20] message 2 sent!
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 24, msg_id = 2, latency = 1826μs (1.826ms)
+[ReceiverComponent 20] received message from Vehicle 24, msg_id = 2, latency = 196μs (0.196ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 28, msg_id = 2, latency = 3213μs (3.213ms)
+[ReceiverComponent 20] received message from Vehicle 10, msg_id = 2, latency = 251μs (0.251ms)
 [Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 16, msg_id = 2, latency = 2931μs (2.931ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 26, msg_id = 2, latency = 2178μs (2.178ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 10, msg_id = 2, latency = 2095μs (2.095ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 12, msg_id = 2, latency = 625μs (0.625ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 22, msg_id = 2, latency = 672μs (0.672ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 14, msg_id = 2, latency = 569μs (0.569ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 2, msg_id = 2, latency = 4524μs (4.524ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 8, msg_id = 3, latency = 2315μs (2.315ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 26, msg_id = 3, latency = 1863μs (1.863ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 28, msg_id = 3, latency = 2031μs (2.031ms)
-[SenderComponent 20] sending message 3: {Vehicle 20 message 3 at 12762657857}
-[Vehicle 20] message sent
-[SenderComponent 20] message 3 sent!
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 18, msg_id = 3, latency = 1158μs (1.158ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 10, msg_id = 3, latency = 969μs (0.969ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 24, msg_id = 3, latency = 1712μs (1.712ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 4, msg_id = 3, latency = 469μs (0.469ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 16, msg_id = 3, latency = 333μs (0.333ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 22, msg_id = 3, latency = 1453μs (1.453ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 30, msg_id = 3, latency = 581μs (0.581ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 6, msg_id = 3, latency = 2583μs (2.583ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 14, msg_id = 3, latency = 1109μs (1.109ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 8, msg_id = 4, latency = 4459μs (4.459ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 12, msg_id = 3, latency = 392μs (0.392ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 2, msg_id = 3, latency = 1778μs (1.778ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 26, msg_id = 4, latency = 344μs (0.344ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 10, msg_id = 4, latency = 713μs (0.713ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 28, msg_id = 4, latency = 1104μs (1.104ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 24, msg_id = 4, latency = 692μs (0.692ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 16, msg_id = 4, latency = 2355μs (2.355ms)
-[SenderComponent 20] sending message 4: {Vehicle 20 message 4 at 12794658566}
-[Vehicle 20] message sent
-[SenderComponent 20] message 4 sent!
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 22, msg_id = 4, latency = 2677μs (2.677ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 30, msg_id = 4, latency = 820μs (0.82ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 4, msg_id = 4, latency = 2572μs (2.572ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 8, msg_id = 5, latency = 1573μs (1.573ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 18, msg_id = 4, latency = 785μs (0.785ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 2, msg_id = 4, latency = 1374μs (1.374ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 14, msg_id = 4, latency = 464μs (0.464ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 12, msg_id = 4, latency = 365μs (0.365ms)
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 6, msg_id = 4, latency = 2121μs (2.121ms)
-[SenderComponent 20] sending message 5: {Vehicle 20 message 5 at 12815659410}
-[Vehicle 20] message sent
-[SenderComponent 20] message 5 sent!
-[Vehicle 20] message received
-[ReceiverComponent 20] received message from Vehicle 26, msg_id = 5, latency = 3169μs (3.169ms)
+[ReceiverComponent 20] received message from Vehicle 18, msg_id = 2, latency = 162μs (0.162ms)
 [Vehicle 20] lifetime ended. Stopping vehicle.
 [Vehicle 20] message not received
 [ReceiverComponent 20] failed to receive message

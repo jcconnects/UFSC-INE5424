@@ -71,6 +71,15 @@ make
 make clean
 ```
 
+### Demo Test Configuration
+
+The main demo test simulates a network of autonomous vehicles:
+- Creates 30 vehicles running in separate processes
+- Each vehicle has a random lifetime between 10-50 seconds
+- Even-numbered vehicles act as both senders and receivers
+- Odd-numbered vehicles act only as receivers
+- All log output is saved to the logs/ directory
+
 ## System Architecture
 
 The complete system architecture and detailed component interactions are documented in [doc/README.md](doc/README.md). This document provides:

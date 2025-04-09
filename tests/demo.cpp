@@ -20,8 +20,8 @@ void run_vehicle(Vehicle* v) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist_lifetime(90, 180);
-    int lifetime = dist_lifetime(gen); // Keeping the fixed lifetime from bug fix
+    std::uniform_int_distribution<> dist_lifetime(10, 50);
+    int lifetime = dist_lifetime(gen); // Reduced lifetime range from 10-50 seconds
 
     // Create components based on vehicle ID
     // Even ID vehicles will send and receive
@@ -52,7 +52,7 @@ void run_vehicle(Vehicle* v) {
 int main(int argc, char* argv[]) {
     std::cout << "Application started!" << std::endl;
 
-    unsigned int n_vehicles = 10;
+    unsigned int n_vehicles = 30;
 
     // Create logs directory if it doesn't exist
     mkdir("./logs", 0777);

@@ -1,149 +1,33 @@
 [Vehicle 28] creating sender component
 [Vehicle 28] creating receiver component
-[Vehicle 28] starting. Lifetime: 145s
-[Vehicle 28] sleeping for lifetime: 145s
-[SenderComponent 28] sending message 1: {Vehicle 28 message 1 at 12709655052}
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 20, msg_id = 1, latency = 2056μs (2.056ms)
-[Vehicle 28] message received
+[Vehicle 28] starting. Lifetime: 45s
+[Vehicle 28] sleeping for lifetime: 45s
+[SenderComponent 28] sending message 1: {Vehicle 28 message 1 at 407997518347}
 [Vehicle 28] message sent
 [SenderComponent 28] message 1 sent!
-[ReceiverComponent 28] received message from Vehicle 16, msg_id = 1, latency = 2407μs (2.407ms)
 [Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 12, msg_id = 1, latency = 2749μs (2.749ms)
+[ReceiverComponent 28] received message from Vehicle 30, msg_id = 1, latency = 883μs (0.883ms)
 [Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 22, msg_id = 1, latency = 1878μs (1.878ms)
+[ReceiverComponent 28] received message from Vehicle 2, msg_id = 1, latency = 1267μs (1.267ms)
 [Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 10, msg_id = 1, latency = 2392μs (2.392ms)
+[ReceiverComponent 28] received message from Vehicle 18, msg_id = 1, latency = 174μs (0.174ms)
 [Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 26, msg_id = 1, latency = 2583μs (2.583ms)
+[ReceiverComponent 28] received message from Vehicle 16, msg_id = 1, latency = 380μs (0.38ms)
 [Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 24, msg_id = 1, latency = 3052μs (3.052ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 30, msg_id = 1, latency = 5807μs (5.807ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 18, msg_id = 1, latency = 1300μs (1.3ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 18, msg_id = 2, latency = 1283μs (1.283ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 30, msg_id = 2, latency = 3393μs (3.393ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 8, msg_id = 2, latency = 2171μs (2.171ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 6, msg_id = 2, latency = 3503μs (3.503ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 4, msg_id = 2, latency = 380μs (0.38ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 20, msg_id = 2, latency = 2096μs (2.096ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 24, msg_id = 2, latency = 623μs (0.623ms)
-[SenderComponent 28] sending message 2: {Vehicle 28 message 2 at 12736657983}
+[ReceiverComponent 28] received message from Vehicle 2, msg_id = 2, latency = 111μs (0.111ms)
+[SenderComponent 28] sending message 2: {Vehicle 28 message 2 at 408022518600}
 [Vehicle 28] message sent
 [SenderComponent 28] message 2 sent!
 [Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 16, msg_id = 2, latency = 1121μs (1.121ms)
+[ReceiverComponent 28] received message from Vehicle 12, msg_id = 2, latency = 126μs (0.126ms)
 [Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 26, msg_id = 2, latency = 323μs (0.323ms)
+[ReceiverComponent 28] received message from Vehicle 20, msg_id = 2, latency = 328μs (0.328ms)
 [Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 10, msg_id = 2, latency = 428μs (0.428ms)
+[ReceiverComponent 28] received message from Vehicle 24, msg_id = 2, latency = 180μs (0.18ms)
 [Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 12, msg_id = 2, latency = 2758μs (2.758ms)
+[ReceiverComponent 28] received message from Vehicle 10, msg_id = 2, latency = 108μs (0.108ms)
 [Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 22, msg_id = 2, latency = 742μs (0.742ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 14, msg_id = 2, latency = 877μs (0.877ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 2, msg_id = 2, latency = 4952μs (4.952ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 8, msg_id = 3, latency = 904μs (0.904ms)
-[Vehicle 28] message received
-[SenderComponent 28] sending message 3: {Vehicle 28 message 3 at 12759660198}
-[Vehicle 28] message sent
-[SenderComponent 28] message 3 sent!
-[ReceiverComponent 28] received message from Vehicle 26, msg_id = 3, latency = 661μs (0.661ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 20, msg_id = 3, latency = 433μs (0.433ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 18, msg_id = 3, latency = 385μs (0.385ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 10, msg_id = 3, latency = 971μs (0.971ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 24, msg_id = 3, latency = 5680μs (5.68ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 4, msg_id = 3, latency = 1178μs (1.178ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 16, msg_id = 3, latency = 1382μs (1.382ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 22, msg_id = 3, latency = 1905μs (1.905ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 30, msg_id = 3, latency = 304μs (0.304ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 6, msg_id = 3, latency = 864μs (0.864ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 14, msg_id = 3, latency = 2318μs (2.318ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 8, msg_id = 4, latency = 4530μs (4.53ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 12, msg_id = 3, latency = 472μs (0.472ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 2, msg_id = 3, latency = 653μs (0.653ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 26, msg_id = 4, latency = 309μs (0.309ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 10, msg_id = 4, latency = 273μs (0.273ms)
-[SenderComponent 28] sending message 4: {Vehicle 28 message 4 at 12788661174}
-[Vehicle 28] message sent
-[SenderComponent 28] message 4 sent!
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 24, msg_id = 4, latency = 582μs (0.582ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 16, msg_id = 4, latency = 788μs (0.788ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 20, msg_id = 4, latency = 2585μs (2.585ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 22, msg_id = 4, latency = 2109μs (2.109ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 30, msg_id = 4, latency = 2880μs (2.88ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 4, msg_id = 4, latency = 518μs (0.518ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 8, msg_id = 5, latency = 1926μs (1.926ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 18, msg_id = 4, latency = 2466μs (2.466ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 2, msg_id = 4, latency = 950μs (0.95ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 14, msg_id = 4, latency = 2252μs (2.252ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 12, msg_id = 4, latency = 1423μs (1.423ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 6, msg_id = 4, latency = 1076μs (1.076ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 20, msg_id = 5, latency = 931μs (0.931ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 26, msg_id = 5, latency = 2390μs (2.39ms)
-[SenderComponent 28] sending message 5: {Vehicle 28 message 5 at 12820661474}
-[Vehicle 28] message sent
-[SenderComponent 28] message 5 sent!
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 22, msg_id = 5, latency = 427μs (0.427ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 4, msg_id = 5, latency = 2362μs (2.362ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 30, msg_id = 5, latency = 433μs (0.433ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 18, msg_id = 5, latency = 1028μs (1.028ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 6, msg_id = 5, latency = 668μs (0.668ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 8, msg_id = 6, latency = 603μs (0.603ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 26, msg_id = 6, latency = 870μs (0.87ms)
-[SenderComponent 28] sending message 6: {Vehicle 28 message 6 at 12841662406}
-[Vehicle 28] message sent
-[SenderComponent 28] message 6 sent!
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 22, msg_id = 6, latency = 477μs (0.477ms)
+[ReceiverComponent 28] received message from Vehicle 18, msg_id = 2, latency = 301μs (0.301ms)
 [Vehicle 28] lifetime ended. Stopping vehicle.
 [Vehicle 28] message not received
 [ReceiverComponent 28] failed to receive message

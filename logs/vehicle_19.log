@@ -1,146 +1,46 @@
 [Vehicle 19] creating receiver component
-[Vehicle 19] starting. Lifetime: 160s
-[Vehicle 19] sleeping for lifetime: 160s
+[Vehicle 19] starting. Lifetime: 49s
+[Vehicle 19] sleeping for lifetime: 49s
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 16, msg_id = 1, latency = 1913μs (1.913ms)
+[ReceiverComponent 19] received message from Vehicle 26, msg_id = 1, latency = 121μs (0.121ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 12, msg_id = 1, latency = 2275μs (2.275ms)
+[ReceiverComponent 19] received message from Vehicle 20, msg_id = 1, latency = 439μs (0.439ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 28, msg_id = 1, latency = 1552μs (1.552ms)
+[ReceiverComponent 19] received message from Vehicle 24, msg_id = 1, latency = 761μs (0.761ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 22, msg_id = 1, latency = 1947μs (1.947ms)
+[ReceiverComponent 19] received message from Vehicle 4, msg_id = 1, latency = 957μs (0.957ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 10, msg_id = 1, latency = 2456μs (2.456ms)
+[ReceiverComponent 19] received message from Vehicle 10, msg_id = 1, latency = 1122μs (1.122ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 26, msg_id = 1, latency = 2644μs (2.644ms)
+[ReceiverComponent 19] received message from Vehicle 6, msg_id = 1, latency = 1267μs (1.267ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 24, msg_id = 1, latency = 3105μs (3.105ms)
+[ReceiverComponent 19] received message from Vehicle 22, msg_id = 1, latency = 688μs (0.688ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 30, msg_id = 1, latency = 4949μs (4.949ms)
+[ReceiverComponent 19] received message from Vehicle 14, msg_id = 1, latency = 751μs (0.751ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 18, msg_id = 1, latency = 121μs (0.121ms)
+[ReceiverComponent 19] received message from Vehicle 2, msg_id = 1, latency = 220μs (0.22ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 18, msg_id = 2, latency = 1203μs (1.203ms)
+[ReceiverComponent 19] received message from Vehicle 30, msg_id = 1, latency = 588μs (0.588ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 30, msg_id = 2, latency = 2972μs (2.972ms)
+[ReceiverComponent 19] received message from Vehicle 28, msg_id = 1, latency = 794μs (0.794ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 8, msg_id = 2, latency = 458μs (0.458ms)
+[ReceiverComponent 19] received message from Vehicle 16, msg_id = 1, latency = 628μs (0.628ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 6, msg_id = 2, latency = 605μs (0.605ms)
+[ReceiverComponent 19] received message from Vehicle 18, msg_id = 1, latency = 901μs (0.901ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 4, msg_id = 2, latency = 1309μs (1.309ms)
+[ReceiverComponent 19] received message from Vehicle 2, msg_id = 2, latency = 121μs (0.121ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 20, msg_id = 2, latency = 216μs (0.216ms)
+[ReceiverComponent 19] received message from Vehicle 28, msg_id = 2, latency = 223μs (0.223ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 24, msg_id = 2, latency = 773μs (0.773ms)
+[ReceiverComponent 19] received message from Vehicle 12, msg_id = 2, latency = 371μs (0.371ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 28, msg_id = 2, latency = 1962μs (1.962ms)
+[ReceiverComponent 19] received message from Vehicle 20, msg_id = 2, latency = 93μs (0.093ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 16, msg_id = 2, latency = 864μs (0.864ms)
+[ReceiverComponent 19] received message from Vehicle 24, msg_id = 2, latency = 145μs (0.145ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 26, msg_id = 2, latency = 2469μs (2.469ms)
+[ReceiverComponent 19] received message from Vehicle 10, msg_id = 2, latency = 245μs (0.245ms)
 [Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 10, msg_id = 2, latency = 559μs (0.559ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 12, msg_id = 2, latency = 623μs (0.623ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 22, msg_id = 2, latency = 2077μs (2.077ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 14, msg_id = 2, latency = 412μs (0.412ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 2, msg_id = 2, latency = 5488μs (5.488ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 8, msg_id = 3, latency = 2452μs (2.452ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 26, msg_id = 3, latency = 628μs (0.628ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 28, msg_id = 3, latency = 3054μs (3.054ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 20, msg_id = 3, latency = 419μs (0.419ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 18, msg_id = 3, latency = 1308μs (1.308ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 10, msg_id = 3, latency = 3217μs (3.217ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 24, msg_id = 3, latency = 5117μs (5.117ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 4, msg_id = 3, latency = 347μs (0.347ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 16, msg_id = 3, latency = 1448μs (1.448ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 22, msg_id = 3, latency = 382μs (0.382ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 30, msg_id = 3, latency = 316μs (0.316ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 6, msg_id = 3, latency = 372μs (0.372ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 14, msg_id = 3, latency = 3166μs (3.166ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 8, msg_id = 4, latency = 4159μs (4.159ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 12, msg_id = 3, latency = 340μs (0.34ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 2, msg_id = 3, latency = 661μs (0.661ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 26, msg_id = 4, latency = 344μs (0.344ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 10, msg_id = 4, latency = 789μs (0.789ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 28, msg_id = 4, latency = 1475μs (1.475ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 24, msg_id = 4, latency = 1537μs (1.537ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 16, msg_id = 4, latency = 3550μs (3.55ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 20, msg_id = 4, latency = 1063μs (1.063ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 22, msg_id = 4, latency = 1623μs (1.623ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 30, msg_id = 4, latency = 1915μs (1.915ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 4, msg_id = 4, latency = 711μs (0.711ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 8, msg_id = 5, latency = 500μs (0.5ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 18, msg_id = 4, latency = 766μs (0.766ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 2, msg_id = 4, latency = 1307μs (1.307ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 14, msg_id = 4, latency = 473μs (0.473ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 12, msg_id = 4, latency = 917μs (0.917ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 6, msg_id = 4, latency = 698μs (0.698ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 20, msg_id = 5, latency = 864μs (0.864ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 26, msg_id = 5, latency = 2958μs (2.958ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 28, msg_id = 5, latency = 805μs (0.805ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 22, msg_id = 5, latency = 1371μs (1.371ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 4, msg_id = 5, latency = 859μs (0.859ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 30, msg_id = 5, latency = 325μs (0.325ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 18, msg_id = 5, latency = 2573μs (2.573ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 6, msg_id = 5, latency = 563μs (0.563ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 8, msg_id = 6, latency = 2070μs (2.07ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 26, msg_id = 6, latency = 1350μs (1.35ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 28, msg_id = 6, latency = 866μs (0.866ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 22, msg_id = 6, latency = 1611μs (1.611ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 30, msg_id = 6, latency = 532μs (0.532ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 18, msg_id = 6, latency = 609μs (0.609ms)
-[Vehicle 19] message received
-[ReceiverComponent 19] received message from Vehicle 8, msg_id = 7, latency = 252μs (0.252ms)
+[ReceiverComponent 19] received message from Vehicle 18, msg_id = 2, latency = 245μs (0.245ms)
 [Vehicle 19] lifetime ended. Stopping vehicle.
 [Vehicle 19] message not received
 [ReceiverComponent 19] failed to receive message
