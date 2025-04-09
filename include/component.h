@@ -3,56 +3,52 @@
 
 #include <atomic>
 #include <string>
-#include <thread>
+#include <pthread.h>
 #include <fstream>
+
+#include "traits.h"
 
 // Forward declaration
 class Vehicle;
 
 class Component {
-public:
-    Component(Vehicle* vehicle, const std::string& name);
-    virtual ~Component();
+    public:
+        Component(Vehicle* vehicle, const std::string& name);
+        virtual ~Component();
 
-    virtual void start() = 0;
-    virtual void stop();
-    virtual void join();
-    
-    bool running() const { return _running; }
-    const std::string& name() const { return _name; }
-    
-protected:
-    Vehicle* _vehicle;
-    std::string _name;
-    std::atomic<bool> _running;
-    std::thread _thread;
-    
-    // CSV logging functionality
-    std::ofstream _log_file;
-    void open_log_file(const std::string& filename);
-    void close_log_file();
+        virtual void start() = 0;
+        virtual void stop();
+        
+        bool running() const { return _running; }
+        const std::string& name() const { return _name; }
+        
+        Vehicle* vehicle() const { return _vehicle; };
+        std::ofstream* log_file() { return &_log_file; };
+
+    protected:
+        Vehicle* _vehicle;
+        std::string _name;
+        std::atomic<bool> _running;
+        pthread_t _thread;
+        
+        // CSV logging functionality
+        std::ofstream _log_file;
+        void open_log_file(const std::string& filename);
+        void close_log_file();
 };
 
 // Component Implementation
-Component::Component(Vehicle* vehicle, const std::string& name) 
-    : _vehicle(vehicle), _name(name), _running(false) {
-}
+Component::Component(Vehicle* vehicle, const std::string& name)  : _vehicle(vehicle), _name(name), _running(false) {}
 
 Component::~Component() {
-    stop();
-    join();
     close_log_file();
 }
 
 void Component::stop() {
-    db<Component>(TRC) << "[Component " << _name << "] stop() called\n";
-    _running = false;
-}
+    db<Component>(TRC) << "Component::stop() called for component " << _name << "\n";
 
-void Component::join() {
-    if (_thread.joinable()) {
-        _thread.join();
-    }
+    _running = false;
+    pthread_join(_thread, nullptr);
 }
 
 void Component::open_log_file(const std::string& filename) {
