@@ -10,9 +10,11 @@ package "Process" {
   component [Comm] as comm1
   component [Prot.] as prot1
   component [NIC] as nic1
+  component [SocketEngine] as SocketEngine1
   
   comm1 --> prot1
   prot1 --> nic1
+  nic1 --> SocketEngine1
 }
 
 ' Second Process with Threads
@@ -20,18 +22,19 @@ package "Process'" {
   component [Comm] as comm2
   component [Prot.] as prot2
   component [NIC] as nic2
+  component [SocketEngine] as SocketEngine2
   
+  nic2 <-- SocketEngine2
   prot2 <-- nic2 
   comm2 <-- prot2 
 }
 
-' Hardware architecture section
-package "Hardware" {
-  component [SocketEngine] as socket
+' Kernel architecture section
+package "Kernel" {
+  component [Socket] as socket
   
-  nic1 --> socket
-  socket --> nic2 : "signal"
-  nic2 --> socket : "receive"
+  SocketEngine1 --> socket
+  SocketEngine2 <-- socket
 }
 
 @enduml 
