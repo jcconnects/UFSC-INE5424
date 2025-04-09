@@ -39,38 +39,6 @@ note top of Communicator
     typename Channel::Observer::Observing_Condition>
 end note
 
-class Debug {
-  - _error: volatile bool
-  - {static} _file_stream: std::unique_ptr<std::ofstream>
-  - {static} _stream: std::ostream*
-  + operator<<(T p): Debug &
-  + operator<<(const Begl & begl): Debug &
-  + operator<<(const Err & err): Debug &
-  + {static} set_log_file(const std::string &filename): void
-  + {static} close_log_file(): void
-  + {static} instance(): Debug &
-  .. Nested classes ..
-  + Begl
-  + Err
-  .. Static members ..
-  + {static} begl: Begl
-  + {static} error: Err
-}
-
-class Null_Debug {
-  + operator<<(const T & o): Null_Debug &
-  + operator<<(const T * o): Null_Debug &
-}
-
-class "Select_Debug<bool debugged>" as SelectDebug {
-}
-
-note top of SelectDebug
-  Template specializations:
-  - Select_Debug<true> inherits from Debug
-  - Select_Debug<false> inherits from Null_Debug
-end note
-
 class Ethernet {
   + {static} MTU: unsigned int
   + {static} MAC_SIZE: unsigned int
@@ -103,29 +71,6 @@ class Initializer {
   .. Typedefs ..
   + VehicleNIC: typedef NIC<SocketEngine>
   + CProtocol: typedef Protocol<VehicleNIC>
-}
-
-class "List<T>" as List {
-  + List() = default
-  + ~List() = default
-  + insert(item: T*): void
-  + remove(): T*
-  + empty(): bool
-  - _list: std::list<T*>
-  - _mutex: mutable std::mutex
-}
-
-class "Ordered_List<T, R>" as OrderedList {
-  + Iterator: typedef
-  + Ordered_List() = default
-  + ~Ordered_List() = default
-  + insert(item: T*): void
-  + remove(item: T*): void
-  + begin(): Iterator
-  + end(): Iterator
-  + empty(): bool
-  - _list: std::list<T*>
-  - _mutex: mutable std::mutex
 }
 
 class "Message<MaxSize>" as Message {
@@ -297,23 +242,6 @@ note top of ProtocolPacket
   Inherits from Protocol<NIC>::Header
 end note
 
-class "Protocol<NIC>::Address" as ProtocolAddress {
-  - _port: Port
-  - _paddr: Physical_Address
-  + {static} BROADCAST: Address
-  + Address()
-  + Address(null: const Null&)
-  + Address(paddr: Physical_Address, port: Port)
-  + paddr(addr: Physical_Address): void
-  + paddr(): const Physical_Address&
-  + port(port: Port): void
-  + port(): const Port&
-  + operator bool() const
-  + operator==(a: const Address&): bool
-  .. Nested types ..
-  + enum Null { NULL_VALUE }
-}
-
 class SocketEngine {
   + {static} INTERFACE: const char*
   - _sock_fd: int
@@ -335,74 +263,6 @@ class SocketEngine {
   .. Typedefs ..
   + CallbackMethod: typedef std::function<void(Ethernet::Frame&, unsigned int)>
 }
-
-' Traits classes
-class "Traits<T>" as BaseTraits <<template>> {
-  + {static} debugged: bool = false
-}
-
-class "Traits<NIC<Engine>>" as NICTraits <<template>> {
-  + {static} debugged: bool = false
-  + {static} SEND_BUFFERS: unsigned int = 16
-  + {static} RECEIVE_BUFFERS: unsigned int = 16
-}
-
-note bottom of NICTraits
-  Inherits from Traits<void>
-end note
-
-class "Traits<Protocol<NIC>>" as ProtocolTraits <<template>> {
-  + {static} debugged: bool = false
-}
-
-note bottom of ProtocolTraits
-  Inherits from Traits<void>
-end note
-
-class "Traits<Protocol<NIC<SocketEngine>>>" as SocketProtocolTraits {
-  + {static} debugged: bool = false
-  + {static} ETHERNET_PROTOCOL_NUMBER: unsigned int = 888
-}
-
-note bottom of SocketProtocolTraits
-  Inherits from Traits<void>
-end note
-
-class "Traits<SocketEngine>" as SocketEngineTraits {
-  + {static} debugged: bool = false
-  + {static} INTERFACE_NAME: const char* = "eth0"
-}
-
-note bottom of SocketEngineTraits
-  Inherits from Traits<void>
-end note
-
-class "Traits<Communicator<Channel>>" as CommunicatorTraits <<template>> {
-  + {static} debugged: bool = false
-}
-
-note bottom of CommunicatorTraits
-  Inherits from Traits<void>
-end note
-
-class "Traits<Vehicle>" as VehicleTraits {
-  + {static} debugged: bool = true
-}
-
-note bottom of VehicleTraits
-  Inherits from Traits<void>
-end note
-
-class "Traits<Debug>" as DebugTraits {
-  + {static} error: bool = false
-  + {static} warning: bool = false
-  + {static} info: bool = true
-  + {static} trace: bool = true
-}
-
-note bottom of DebugTraits
-  Inherits from Traits<void>
-end note
 
 class Vehicle {
   + {static} MAX_MESSAGE_SIZE: unsigned int
@@ -439,22 +299,17 @@ class SemaphoreWrapper {
 }
 
 ' Communicator Relationships
-Concurrent_Observer <|-- Communicator
-Communicator o-- "1" Channel : _channel
-Communicator *-- "1" Address : _address
+ConcurrentObserver <|-- Communicator
 Communicator ..> Message : uses
 Communicator ..> Buffer : uses
 
 ' NIC Relationships
 Ethernet <|-- NIC
 ConditionallyDataObserved <|-- NIC
-Engine <|-- NIC : private
+SocketEngine <|-- NIC : private
 NIC *-- "1" NICStatistics : _statistics
-NIC *-- "N_BUFFERS" DataBuffer : _buffer
 NIC <.. Initializer : friend
-'' Maybe these uses could be removed
 NIC ..> Buffer : uses
-NIC ..> Traits : uses constants
 
 ' Protocol Relationships
 ConditionalDataObserver <|-- NICObserver
@@ -462,8 +317,32 @@ NICObserver <|-- ProtocolNIC : private
 ProtocolHeader <|-- ProtocolPacket
 ProtocolNIC o-- "1" NIC : _nic
 ProtocolNIC *-- "1" ConditionallyDataObserved : _observed > static
-'' Maybe these uses could be removed
-ProtocolNIC ..> Buffer : uses
-ProtocolNIC ..> Traits : uses configuration
+ProtocolNIC +-- "1" ProtocolHeader : nested class
+ProtocolNIC +-- "1" ProtocolPacket : nested class
+
+' SocketEngine Relationships
+SocketEngine o-- "1" EthernetAddress : _address
+
+' Vehicle Relationships
+Vehicle o-- "1" ProtocolNIC : _protocol
+Vehicle o-- "1" NIC : _nic
+Vehicle o-- "1" Communicator : _comms
+
+' Ethernet Relationships
+Ethernet +-- EthernetAddress : nested class
+Ethernet +-- EthernetFrame : nested class
+EthernetFrame o-- "2" EthernetAddress : dst,src
+Ethernet o-- "1" EthernetAddress : NULL_ADDRESS > static
+
+' Observer Relationships
+ConditionalDataObserver <|-- ConcurrentObserver
+ConditionalDataObserver ..> ConditionallyDataObserved : <<friend>>
+ConcurrentObserver ..> ConcurrentObserved : <<friend>>
+ConcurrentObserver *-- "1" SemaphoreWrapper : _semaphore
+ConcurrentObserver -- ConcurrentObserved : <<observes>>
+
+' Observed Relationships
+ConditionallyDataObserved <|-- ConcurrentObserved
+ConditionalDataObserver -- ConditionallyDataObserved : <<observes>>
 
 @enduml
