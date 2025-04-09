@@ -21,26 +21,17 @@ package "Process'" {
   component [Prot.] as prot2
   component [NIC] as nic2
   
-  note left of comm2 : "Thread"
-  
-  comm2 --> prot2 : "write"
-  prot2 --> nic2 : "write"
-  
-  nic2 --> prot2 : "receive" 
-  prot2 --> comm2 : "signal"
+  prot2 <-- nic2 
+  comm2 <-- prot2 
 }
 
 ' Hardware architecture section
 package "Hardware" {
-  component [Socket] as socket
-  component [NET] as net
-  component [DMA] as dma
-  component [NIC] as hwnic
+  component [SocketEngine] as socket
   
-  net --> dma
-  dma --> hwnic
-  
-  hwnic <--> nic2 : "int"
+  nic1 --> socket
+  socket --> nic2 : "signal"
+  nic2 --> socket : "receive"
 }
 
 @enduml 
