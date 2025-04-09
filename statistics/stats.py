@@ -56,9 +56,8 @@ Max: {max(latencies)}; Min: {min(latencies)}
     data_series = pd.Series(latencies, name="Latência")
     print(f"Calculated Lower Whisker bound (approx): {lower_bound:.2f}")
     print(f"Calculated Upper Whisker bound (approx): {upper_bound:.2f}")
-    print("Note: Plot whiskers extend to the furthest data point *within* these bounds.")
 
-    plt.figure(figsize=(6, 8)) # Set the figure size (width, height in inches)
+    plt.figure(figsize=(6, 8))
 
     ax = sns.boxplot(y=data_series,
                     showfliers=True,
@@ -66,26 +65,15 @@ Max: {max(latencies)}; Min: {min(latencies)}
                     linewidth=1.5,  
                     )
 
-    # --- 4. Customize the Plot ---
     ax.set_title('Distribution and Quartiles Visualization', fontsize=16)
-    ax.set_ylabel(data_series.name, fontsize=12) # Use the Series name for the label
-    # ax.set_xlabel("Dataset", fontsize=12) # Label for x-axis if needed
+    ax.set_ylabel(data_series.name, fontsize=12)
 
-    # Add horizontal grid lines for easier reading of values
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
-    # You could add text annotations for Q1, Median, Q3 if desired
-    # plt.text(0.1, q1, f' Q1={q1:.2f}', verticalalignment='center', size='small', color='blue')
-    # plt.text(0.1, median, f' Median={median:.2f}', verticalalignment='center', size='small', color='red', weight='semibold')
-    # plt.text(0.1, q3, f' Q3={q3:.2f}', verticalalignment='center', size='small', color='blue')
-
-
-    # --- 5. Save the Image ---
     image_filename = path.join('statistics','quartile_boxplot.png')
-    plt.savefig(image_filename, dpi=300, bbox_inches='tight') # Save with good resolution
+    plt.savefig(image_filename, dpi=300, bbox_inches='tight') 
     print(f"\nPlot saved as '{image_filename}'")
 
-    # --- 6. Show the Plot ---
     plt.show()
 
 main()
