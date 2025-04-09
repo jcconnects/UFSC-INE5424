@@ -30,10 +30,28 @@ $(BINDIR)/%: $(TESTDIR)/%.cpp
 
 # Executar teste específico
 run_%: $(BINDIR)/%
-	./$<
+	make setup_dummy_iface
+	sudo ./$< $(ARGS)
+	make clean_iface
 
 # Limpeza
 clean:
 	rm -rf $(BINDIR)
 
-.PHONY: all clean dirs run_%
+setup_dummy_iface:
+	@if ! ip link show eth0 > /dev/null 2>&1; then \
+		echo "Criando interface dummy eth0..."; \
+		sudo ip link add eth0 type dummy; \
+		sudo ip link set eth0 up; \
+	else \
+		echo "Interface dummy eth0 já existe."; \
+	fi
+
+clean_iface:
+	@if ip link show eth0 > /dev/null 2>&1; then \
+		echo "Removendo interface dummy eth0..."; \
+		sudo ip link delete eth0 type dummy; \
+	fi
+
+.PHONY: all clean dirs run_% setup_dummy_iface clean_iface
+
