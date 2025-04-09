@@ -76,12 +76,6 @@ class Concurrent_Observer : public Conditional_Data_Observer<D, C> {
         void update(C c, D* d) override;
         D* updated();
         
-        // Method to unblock any threads waiting on updated() without providing data
-        void notify() { 
-            // We just post to the semaphore - the calling thread will need to handle null data
-            _semaphore.post(); 
-        }
-        
     private:
         SemaphoreWrapper _semaphore;
 };
