@@ -57,25 +57,25 @@ The communication stack implements two types of Observer patterns:
 
 | Component | Description | Detailed Documentation |
 |-----------|-------------|------------------------|
-| **Initializer** | Manages process creation and lifecycle for vehicles and communication components | [README-Initializer.md](README-Initializer.md) |
-| **Observer** | Implements thread-safe observer patterns for asynchronous communication | [README-Observer.md](README-Observer.md) |
+| **Initializer** | Manages process creation and lifecycle for vehicles and communication components | [README-Initializer.md](classes/README-Initializer.md) |
+| **Observer** | Implements thread-safe observer patterns for asynchronous communication | [README-Observer.md](classes/README-Observer.md) |
 
 ### Communication Stack
 
 | Layer | Component | Description | Detailed Documentation |
 |-------|-----------|-------------|------------------------|
-| Application | **Communicator** | High-level communication endpoint for applications | [README-Communicator.md](README-Communicator.md) |
-| Transport | **Protocol** | Implements port-based addressing and message routing | [README-Protocol.md](README-Protocol.md) |
-| Network | **NIC** | Network interface card implementation for frame handling | [README-Nic.md](README-Nic.md) |
-| Link | **Ethernet** | Ethernet frame handling and MAC address management | [README-Ethernet.md](README-Ethernet.md) |
-| Physical | **SocketEngine** | Low-level network access with raw sockets and asynchronous I/O | [README-SocketEngine.md](README-SocketEngine.md) |
+| Application | **Communicator** | High-level communication endpoint for applications | [README-Communicator.md](classes/README-Communicator.md) |
+| Transport | **Protocol** | Implements port-based addressing and message routing | [README-Protocol.md](classes/README-Protocol.md) |
+| Network | **NIC** | Network interface card implementation for frame handling | [README-Nic.md](classes/README-Nic.md) |
+| Link | **Ethernet** | Ethernet frame handling and MAC address management | [README-Ethernet.md](classes/README-Ethernet.md) |
+| Physical | **SocketEngine** | Low-level network access with raw sockets and asynchronous I/O | [README-SocketEngine.md](classes/README-SocketEngine.md) |
 
 ### Data Structures
 
 | Component | Description | Detailed Documentation |
 |-----------|-------------|------------------------|
-| **Message** | Generic container for communication data | [README-Message.md](README-Message.md) |
-| **Buffer** | Memory management for network data | [README-Buffer.md](README-Buffer.md) |
+| **Message** | Generic container for communication data | [README-Message.md](classes/README-Message.md) |
+| **Buffer** | Memory management for network data | [README-Buffer.md](classes/README-Buffer.md) |
 
 ## Component Relationships
 
