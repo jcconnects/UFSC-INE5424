@@ -52,39 +52,7 @@ void run_vehicle(Vehicle* v) {
 int main(int argc, char* argv[]) {
     std::cout << "Application started!" << std::endl;
 
-    if (argc < 3) {
-        std::cerr << "[ERROR] undefined number of vehicles" << std::endl;
-        std::cerr << "Usage: " << argv[0] << " -v number_of_vehicles" << std::endl;
-        std::cerr << "Application terminated." << std::endl;
-        return -1;
-    }
-
-    unsigned int n_vehicles = 0;
-
-    for (int i = 1; i < argc; i++) {
-        std::string arg = argv[i];
-
-        if (arg == "-v") {
-            if (i + 1 < argc) {
-                try {
-                    n_vehicles = std::stoi(argv[++i]);
-                    break;
-                } catch (const std::exception& e) {
-                    std::cerr << "[ERROR] invalid number of vehicles" << std::endl;
-                    std::cerr << "Must be an integer between 1 and 10" << std::endl;
-                    std::cerr << "Application terminated." << std::endl;
-                    return -1;
-                }
-            }
-        }
-    }
-
-    if (n_vehicles <= 0) {
-        std::cerr << "[ERROR] invalid number of vehicles" << std::endl;
-        std::cerr << "Must be an integer greater than 0" << std::endl;
-        std::cerr << "Application terminated." << std::endl;
-        return -1;
-    }
+    unsigned int n_vehicles = 10;
 
     // Create logs directory if it doesn't exist
     mkdir("./logs", 0777);
@@ -138,7 +106,7 @@ int main(int argc, char* argv[]) {
         std::cout << "Application terminated!" << std::endl;
         return -1;
     }
-    
+
     std::cout << "Application completed successfully!" << std::endl;
     return 0;
 }
