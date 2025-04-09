@@ -41,7 +41,7 @@ def main():
     upper_str = "".join(upper_str)
 
     print(
-        f"""Statistics:
+        f"""Statistics (μs):
 Median: {median}; Mean: {mean}; Variance: {var}; Standard Deviation: {std_dev};
 {lower_str} | Q1 = {q1} | Q2 = {med_q} | Q3 = {q3} | {upper_str}
 Max: {max(latencies)}; Min: {min(latencies)}
