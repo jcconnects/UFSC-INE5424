@@ -1,0 +1,23 @@
+@startuml NIC_Classes
+
+' Class definitions
+' # means private
+class "NIC<Engine>" {
+}
+
+class "Conditionally_Data_Observed<T, Condition>" {
+}
+
+class "Statistics" <<struct>> {
+}
+
+' Relationships
+Ethernet <|-- "NIC<Engine>"
+"Conditionally_Data_Observed<T, Condition>" <|-- "NIC<Engine>"
+Engine <|.. "NIC<Engine>"
+"Statistics" *-- "NIC<Engine>"
+"Traits<NIC<Engine>>" <.. "NIC<Engine>" : <<uses>>
+"Buffer<T>" <-- "NIC<Engine>"
+"Conditionally_Data_Observed<T, Condition>" <--> "Conditional_Data_Observer<T, Condition>"
+
+@enduml 

@@ -1,0 +1,27 @@
+@startuml Protocol_Classes
+
+' Class definitions
+class "Protocol<NIC>" {
+}
+
+class "NIC::Observer" {
+}
+
+class "Header" {
+}
+
+class "Packet" {
+}
+
+class "Address" {
+}
+
+' Relationships
+"NIC::Observer" <|-- "Protocol<NIC>" : <<private>>
+"Protocol<NIC>" --* "Address"
+"Header" <|-- "Packet"
+
+' Don't know where this is in the code
+"Protocol<NIC>" --* "Packet"
+
+@enduml 

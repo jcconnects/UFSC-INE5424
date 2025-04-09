@@ -16,11 +16,6 @@ This document describes the implementation of the Observer pattern in a thread-s
    - Manages registration and notification of observers
    - Contains the reference counting mechanism
 
-3. **observer_test.cpp**:
-   - Tests the Observer implementation
-   - Verifies correct behavior in concurrent scenarios
-   - Demonstrates proper usage patterns
-
 ## Class Relationships
 
 The implementation consists of several related classes organized in a hierarchy:
@@ -46,7 +41,7 @@ The implementation consists of several related classes organized in a hierarchy:
                               | observed by
                               |
 +------------------+    +---------------------+
-| Test Application |<-->| Concurrent_Observed |
+|   Application    |<-->| Concurrent_Observed |
 +------------------+    +---------------------+
                               ^
                               |

@@ -5,7 +5,6 @@
 #include <iostream>
 #include <cstring>
 
-#include "observed.h"
 #include "nic.h"
 #include "traits.h"
 #include "debug.h"

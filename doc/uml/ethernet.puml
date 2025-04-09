@@ -1,0 +1,17 @@
+@startuml Buffer_Classes
+
+' Class definitions
+class "Ethernet" {
+}
+
+class "Address" <<struct>> {
+}
+
+class "Frame" <<struct>> {
+}
+
+' Relationships
+"Ethernet" *-- "Address"
+"Ethernet" *-- "Frame"
+
+@enduml 
