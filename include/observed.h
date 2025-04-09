@@ -62,7 +62,7 @@ class Concurrent_Observer;
 
 // Concurrent Observed
 template<typename D, typename C>
-class Concurrent_Observed : public Conditional_Data_Observer<D, C>{
+class Concurrent_Observed {
     friend class Concurrent_Observer<D, C>;
     
     public:
@@ -74,11 +74,13 @@ class Concurrent_Observed : public Conditional_Data_Observer<D, C>{
         Concurrent_Observed();
         ~Concurrent_Observed();
         
-        void attach(Concurrent_Observer<D, C>* o, C c) override;
-        void detach(Concurrent_Observer<D, C>* o, C c) override;
-        
+        void attach(Concurrent_Observer<D, C>* o, C c);
+        void detach(Concurrent_Observer<D, C>* o, C c);
+        bool notify(C c, D* d);
+    
     private:
         pthread_mutex_t _mtx;
+        Observers _observers;
 };
 
 /************************* CONCURRENT_OBSERVED IMPLEMENTATION *****************************/
@@ -104,6 +106,22 @@ void Concurrent_Observed<T, C>::detach(Concurrent_Observer<T, C>* o, C c) {
     pthread_mutex_lock(&_mtx);
     this->_observers.remove(o);
     pthread_mutex_unlock(&_mtx);
+}
+
+template <typename T, typename C>
+bool Concurrent_Observed<T, C>::notify(C c, T* d) {
+    bool notified = false;
+    
+    pthread_mutex_lock(&_mtx);
+    for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+        if ((*obs)->rank() == c) {
+            (*obs)->update(c, d);
+            notified = true;
+        }
+    }
+    pthread_mutex_unlock(&_mtx);
+    
+    return notified;
 }
 /*********************************************************************************************/
 

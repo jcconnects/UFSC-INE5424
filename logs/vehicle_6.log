@@ -1,40 +1,31 @@
 [Vehicle 6] creating sender component
 [Vehicle 6] creating receiver component
-[Vehicle 6] starting. Lifetime: 26s
-[Vehicle 6] sleeping for lifetime: 26s
-[Vehicle 6] message received
-[SenderComponent 6] sending message 1: {Vehicle 6 message 1 at 407997516384}
+[Vehicle 6] starting. Lifetime: 47s
+[Vehicle 6] sleeping for lifetime: 47s
+[SenderComponent 6] sending message 1: {Vehicle 6 message 1 at 409182597237}
 [Vehicle 6] message sent
 [SenderComponent 6] message 1 sent!
-[ReceiverComponent 6] received message from Vehicle 26, msg_id = 1, latency = 166μs (0.166ms)
 [Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 20, msg_id = 1, latency = 428μs (0.428ms)
+[ReceiverComponent 6] received message from Vehicle 28, msg_id = 1, latency = 1209μs (1.209ms)
 [Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 24, msg_id = 1, latency = 634μs (0.634ms)
+[ReceiverComponent 6] received message from Vehicle 24, msg_id = 1, latency = 924μs (0.924ms)
 [Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 4, msg_id = 1, latency = 849μs (0.849ms)
+[ReceiverComponent 6] received message from Vehicle 2, msg_id = 2, latency = 120μs (0.12ms)
 [Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 10, msg_id = 1, latency = 1069μs (1.069ms)
+[ReceiverComponent 6] received message from Vehicle 12, msg_id = 2, latency = 108μs (0.108ms)
 [Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 22, msg_id = 1, latency = 468μs (0.468ms)
+[ReceiverComponent 6] received message from Vehicle 26, msg_id = 2, latency = 122μs (0.122ms)
 [Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 14, msg_id = 1, latency = 546μs (0.546ms)
+[ReceiverComponent 6] received message from Vehicle 20, msg_id = 2, latency = 114μs (0.114ms)
+[SenderComponent 6] sending message 2: {Vehicle 6 message 2 at 409215597408}
+[Vehicle 6] message sent
+[SenderComponent 6] message 2 sent!
 [Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 2, msg_id = 1, latency = 1361μs (1.361ms)
+[ReceiverComponent 6] received message from Vehicle 4, msg_id = 2, latency = 108μs (0.108ms)
 [Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 30, msg_id = 1, latency = 1710μs (1.71ms)
+[ReceiverComponent 6] received message from Vehicle 18, msg_id = 2, latency = 131μs (0.131ms)
 [Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 28, msg_id = 1, latency = 1828μs (1.828ms)
-[Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 16, msg_id = 1, latency = 831μs (0.831ms)
-[Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 18, msg_id = 1, latency = 1109μs (1.109ms)
-[Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 2, msg_id = 2, latency = 121μs (0.121ms)
-[Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 28, msg_id = 2, latency = 271μs (0.271ms)
-[Vehicle 6] message received
-[ReceiverComponent 6] received message from Vehicle 12, msg_id = 2, latency = 249μs (0.249ms)
+[ReceiverComponent 6] received message from Vehicle 16, msg_id = 2, latency = 99μs (0.099ms)
 [Vehicle 6] lifetime ended. Stopping vehicle.
 [Vehicle 6] message not received
 [ReceiverComponent 6] failed to receive message

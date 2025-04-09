@@ -8,6 +8,7 @@
 #include "nic.h"
 #include "traits.h"
 #include "debug.h"
+#include "observed.h"
 
 // Protocol implementation that works with the real Communicator
 template <typename NIC>
@@ -20,8 +21,9 @@ class Protocol: private NIC::Observer
         typedef typename NIC::Address Physical_Address;
         typedef unsigned int Port;
         
-        typedef Conditional_Data_Observer<Buffer, Port> Observer;
-        typedef Conditionally_Data_Observed<Buffer, Port> Observed;
+        // Change to use Concurrent_Observer for Communicator interactions
+        typedef Concurrent_Observer<Buffer, Port> Observer;
+        typedef Concurrent_Observed<Buffer, Port> Observed;
         
         // Header class for protocol messages
         class Header {
@@ -252,7 +254,7 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
 
     // If we have observers, notify them and let reference counting handle buffer cleanup
     // Otherwise, free the buffer ourselves
-    if (!Protocol::_observed.notify(dst_port, buf)) { // Use a default port for testing
+    if (!Protocol::_observed.notify(dst_port, buf)) { // Use port for notification
         db<Protocol>(INF) << "[Protocol] data received, but no one was notified\n";
         // No observers, free the buffer
         _nic->free(buf);

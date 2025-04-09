@@ -1,22 +1,24 @@
 [Vehicle 14] creating sender component
 [Vehicle 14] creating receiver component
-[Vehicle 14] starting. Lifetime: 19s
-[Vehicle 14] sleeping for lifetime: 19s
-[SenderComponent 14] sending message 1: {Vehicle 14 message 1 at 407997517341}
-[Vehicle 14] message received
+[Vehicle 14] starting. Lifetime: 17s
+[Vehicle 14] sleeping for lifetime: 17s
+[SenderComponent 14] sending message 1: {Vehicle 14 message 1 at 409182595246}
 [Vehicle 14] message sent
 [SenderComponent 14] message 1 sent!
-[ReceiverComponent 14] received message from Vehicle 22, msg_id = 1, latency = 193μs (0.193ms)
 [Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 30, msg_id = 1, latency = 220μs (0.22ms)
+[ReceiverComponent 14] received message from Vehicle 22, msg_id = 1, latency = 105μs (0.105ms)
 [Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 2, msg_id = 1, latency = 448μs (0.448ms)
+[ReceiverComponent 14] received message from Vehicle 30, msg_id = 1, latency = 499μs (0.499ms)
 [Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 28, msg_id = 1, latency = 570μs (0.57ms)
+[ReceiverComponent 14] received message from Vehicle 8, msg_id = 1, latency = 828μs (0.828ms)
 [Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 18, msg_id = 1, latency = 87μs (0.087ms)
+[ReceiverComponent 14] received message from Vehicle 18, msg_id = 1, latency = 1052μs (1.052ms)
 [Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 16, msg_id = 1, latency = 419μs (0.419ms)
+[ReceiverComponent 14] received message from Vehicle 6, msg_id = 1, latency = 312μs (0.312ms)
+[Vehicle 14] message received
+[ReceiverComponent 14] received message from Vehicle 28, msg_id = 1, latency = 251μs (0.251ms)
+[Vehicle 14] message received
+[ReceiverComponent 14] received message from Vehicle 24, msg_id = 1, latency = 383μs (0.383ms)
 [Vehicle 14] lifetime ended. Stopping vehicle.
 [Vehicle 14] message not received
 [ReceiverComponent 14] failed to receive message

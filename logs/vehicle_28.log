@@ -1,33 +1,12 @@
 [Vehicle 28] creating sender component
 [Vehicle 28] creating receiver component
-[Vehicle 28] starting. Lifetime: 45s
-[Vehicle 28] sleeping for lifetime: 45s
-[SenderComponent 28] sending message 1: {Vehicle 28 message 1 at 407997518347}
+[Vehicle 28] starting. Lifetime: 12s
+[Vehicle 28] sleeping for lifetime: 12s
+[SenderComponent 28] sending message 1: {Vehicle 28 message 1 at 409182597572}
 [Vehicle 28] message sent
 [SenderComponent 28] message 1 sent!
 [Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 30, msg_id = 1, latency = 883μs (0.883ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 2, msg_id = 1, latency = 1267μs (1.267ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 18, msg_id = 1, latency = 174μs (0.174ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 16, msg_id = 1, latency = 380μs (0.38ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 2, msg_id = 2, latency = 111μs (0.111ms)
-[SenderComponent 28] sending message 2: {Vehicle 28 message 2 at 408022518600}
-[Vehicle 28] message sent
-[SenderComponent 28] message 2 sent!
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 12, msg_id = 2, latency = 126μs (0.126ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 20, msg_id = 2, latency = 328μs (0.328ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 24, msg_id = 2, latency = 180μs (0.18ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 10, msg_id = 2, latency = 108μs (0.108ms)
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 18, msg_id = 2, latency = 301μs (0.301ms)
+[ReceiverComponent 28] received message from Vehicle 24, msg_id = 1, latency = 103μs (0.103ms)
 [Vehicle 28] lifetime ended. Stopping vehicle.
 [Vehicle 28] message not received
 [ReceiverComponent 28] failed to receive message
