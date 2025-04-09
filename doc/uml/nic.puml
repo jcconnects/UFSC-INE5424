@@ -8,16 +8,24 @@ class "NIC<Engine>" {
 class "Conditionally_Data_Observed<T, Condition>" {
 }
 
-class "Statistics" <<struct>> {
+class "Conditional_Data_Observer<T, Condition>" {
+}
+
+
+class "Buffer<T>" {
 }
 
 ' Relationships
 Ethernet <|-- "NIC<Engine>"
 "Conditionally_Data_Observed<T, Condition>" <|-- "NIC<Engine>"
-Engine <|.. "NIC<Engine>"
-"Statistics" *-- "NIC<Engine>"
-"Traits<NIC<Engine>>" <.. "NIC<Engine>" : <<uses>>
-"Buffer<T>" <-- "NIC<Engine>"
-"Conditionally_Data_Observed<T, Condition>" <--> "Conditional_Data_Observer<T, Condition>"
+Engine <|.. "NIC<Engine>" : private
+"Buffer<T>" <.. "NIC<Engine>" : <<uses>>
+"Conditionally_Data_Observed<T, Condition>" <--> "Conditional_Data_Observer<T, Condition>" : observer pattern
+Initializer ..> "NIC<Engine>" : <<friend>>
+
+note top of "NIC<Engine>"
+  Represents a Network Interface Card
+  that manages network communication
+end note
 
 @enduml 
