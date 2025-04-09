@@ -5,8 +5,8 @@
 #include <atomic>
 #include <vector>
 #include <memory>
-#include <thread>
 #include <chrono>
+#include <unistd.h>
 
 #include "communicator.h"
 #include "message.h"
@@ -73,9 +73,9 @@ Vehicle::Vehicle(unsigned int id, NIC<SocketEngine>* nic, Protocol<NIC<SocketEng
 
 Vehicle::~Vehicle() {
     db<Vehicle>(TRC) << "Vehicle::~Vehicle() called!\n";
-
-    stop_components();
     
+    stop_components();
+
     for (auto component : _components) {
         delete component;
     }
@@ -94,22 +94,21 @@ const bool Vehicle::running() const {
 }
 
 void Vehicle::start() {
+    db<Vehicle>(TRC) << "Vehicle::start() called!\n";
+
     _running = true;
     start_components();
 }
 
 void Vehicle::stop() {
-    _running = false;
+    db<Vehicle>(TRC) << "Vehicle::stop() called!\n";
     
+    _running = false;
+
     // Close connections to unblock receive calls
     db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] closing connections to unblock receive calls\n";
     _comms->close();
-    
-    // Give threads a chance to notice they should exit
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    
-    // Now stop components which will join all threads
-    stop_components();
+    sleep(1);
 }
 
 void Vehicle::add_component(Component* component) {
@@ -117,15 +116,16 @@ void Vehicle::add_component(Component* component) {
 }
 
 void Vehicle::start_components() {
+    db<Vehicle>(TRC) << "Vehicle::start_components() called!\n";
     for (auto component : _components) {
         component->start();
     }
 }
 
 void Vehicle::stop_components() {
+    db<Vehicle>(TRC) << "Vehicle::stop_components() called!\n";
     for (auto component : _components) {
         component->stop();
-        component->join();
     }
 }
 
@@ -147,32 +147,20 @@ int Vehicle::receive(void* data, unsigned int size) {
     db<Vehicle>(TRC) << "Vehicle::receive() called!\n";
 
     if (!data || size == 0) {
-        std::cerr << "Error: Invalid data buffer in receive" << std::endl;
+        db<Vehicle>(ERR) << "Error: Invalid data buffer in receive\n";
         return 0;
     }
     
     // Check if we're still running before attempting to receive
     if (!_running) {
         db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] receive() called after vehicle stopped\n";
-        return -1;
+        return 0;
     }
 
-    Message<MAX_MESSAGE_SIZE> msg;
+    Message<MAX_MESSAGE_SIZE> msg = Message<MAX_MESSAGE_SIZE>();
     if (!_comms->receive(&msg)) {
-        // Check if vehicle was stopped during the receive call
-        if (!_running) {
-            db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] receive() call interrupted by vehicle stop\n";
-            return -1;
-        }
-        
-        // This could be a normal timeout or a shutdown notification
-        // Only log as an error if the vehicle is still running
-        if (_running) {
-            db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message not received\n";
-        } else {
-            db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] receive() returned false during shutdown\n";
-        }
-        return -1;
+        db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message not received\n";
+        return 0;
     }
 
     // Copia os dados recebidos para o buffer fornecido
