@@ -2,6 +2,7 @@
 #define OBSERVED_H
 
 #include <pthread.h>
+#include <iostream>
 #include "list.h"
 
 // Forward declarations for Conditional Observer class
@@ -62,7 +63,7 @@ class Concurrent_Observer;
 
 // Concurrent Observed
 template<typename D, typename C>
-class Concurrent_Observed : public Conditional_Data_Observer<D, C>{
+class Concurrent_Observed : public Conditionally_Data_Observed<D, C>{
     friend class Concurrent_Observer<D, C>;
     
     public:
@@ -74,8 +75,8 @@ class Concurrent_Observed : public Conditional_Data_Observer<D, C>{
         Concurrent_Observed();
         ~Concurrent_Observed();
         
-        void attach(Concurrent_Observer<D, C>* o, C c) override;
-        void detach(Concurrent_Observer<D, C>* o, C c) override;
+        void attach(Concurrent_Observer<D, C>* o, C c) ;
+        void detach(Concurrent_Observer<D, C>* o, C c) ;
         
     private:
         pthread_mutex_t _mtx;
