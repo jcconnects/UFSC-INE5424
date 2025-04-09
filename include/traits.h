@@ -17,6 +17,7 @@ class Communicator;
 
 class Vehicle;
 
+class Component;
 
 // Traits definition
 template <typename T>
@@ -70,6 +71,12 @@ struct Traits<Vehicle> : public Traits<void>
     static const bool debugged = true;
 };
 
+template <>
+struct Traits<Component> : public Traits<void>
+{
+    static const bool debugged = true;
+};
+
 //traits para classe Debug
 template<>
 struct Traits<Debug> : public Traits<void>
@@ -77,7 +84,7 @@ struct Traits<Debug> : public Traits<void>
     static const bool error = false;
     static const bool warning = false;
     static const bool info = true;
-    static const bool trace = true;
+    static const bool trace = false;
 };
 
 
