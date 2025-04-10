@@ -101,7 +101,10 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
     db<Communicator>(TRC) << "Communicator<Channel>::receive() called!\n";
     
     // If communicator is closed, doesn't even try to receive
-    if (_closed) return false;
+    if (_closed) {
+        db<Communicator>(INF) << "[Communicator] closed! Returning false\n";
+        return false;
+    }
 
     if (!message) {
         std::cerr << "Error: Null message pointer in receive" << std::endl;
@@ -112,6 +115,7 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
     db<Communicator>(INF) << "[Communicator] buffer retrieved\n";
 
     if (buf->size() == 0) {
+        db<Communicator>(INF) << "[Communicator] empty buffer! Returning false\n";
         return false;
     }
 
