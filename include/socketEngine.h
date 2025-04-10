@@ -254,7 +254,6 @@ void* SocketEngine::run(void* arg)  {
 
     struct epoll_event events[10];
 
-    db<SocketEngine>(INF) << "[SocketEngine] running = " << engine->running() << "\n";
     while (engine->running()) {
         int n = epoll_wait(engine->_ep_fd, events, 10, -1);
         if (n < 0) {
