@@ -272,7 +272,6 @@ void* SocketEngine::run(void* arg)  {
                 db<SocketEngine>(INF) << "[SocketEngine] epoll stop event detected\n";
                 uint64_t u;
                 read(engine->_stop_ev, &u, sizeof(u)); // clears eventfd
-                return nullptr; // terminates thread
             }
         }
     }
