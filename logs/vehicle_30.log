@@ -1,21 +1,23 @@
 [Vehicle 30] creating sender component
 [Vehicle 30] creating receiver component
-[Vehicle 30] starting. Lifetime: 11s
-[Vehicle 30] sleeping for lifetime: 11s
-[SenderComponent 30] sending message 1: {Vehicle 30 message 1 at 23336876157}
+[Vehicle 30] starting. Lifetime: 24s
+[Vehicle 30] sleeping for lifetime: 24s
+[SenderComponent 30] sending message 1: {Vehicle 30 message 1 at 26101704391}
 [Vehicle 30] message sent
 [SenderComponent 30] message 1 sent!
 [Vehicle 30] message received
-[ReceiverComponent 30] received message from Vehicle 24, msg_id = 1, latency = 1135μs (1.135ms)
+[ReceiverComponent 30] received message from Vehicle 20, msg_id = 1, latency = 1271μs (1.271ms)
 [Vehicle 30] message received
-[ReceiverComponent 30] received message from Vehicle 26, msg_id = 1, latency = 1221μs (1.221ms)
+[ReceiverComponent 30] received message from Vehicle 14, msg_id = 1, latency = 1511μs (1.511ms)
 [Vehicle 30] message received
-[ReceiverComponent 30] received message from Vehicle 22, msg_id = 1, latency = 1153μs (1.153ms)
+[ReceiverComponent 30] received message from Vehicle 26, msg_id = 1, latency = 1623μs (1.623ms)
 [Vehicle 30] message received
-[ReceiverComponent 30] received message from Vehicle 18, msg_id = 1, latency = 230μs (0.23ms)
-[Vehicle 30] lifetime ended. Stopping vehicle.
-[Vehicle 30] message not received
-[ReceiverComponent 30] failed to receive message
-[ReceiverComponent 30] terminated.
-[Vehicle 30] terminated cleanly.
-[SenderComponent 30] terminated.
+[ReceiverComponent 30] received message from Vehicle 2, msg_id = 1, latency = 1811μs (1.811ms)
+[Vehicle 30] message received
+[ReceiverComponent 30] received message from Vehicle 8, msg_id = 1, latency = 1865μs (1.865ms)
+[Vehicle 30] message received
+[ReceiverComponent 30] received message from Vehicle 10, msg_id = 1, latency = 2464μs (2.464ms)
+[Vehicle 30] message received
+[ReceiverComponent 30] received message from Vehicle 28, msg_id = 1, latency = 564μs (0.564ms)
+[Vehicle 30] message received
+[ReceiverComponent 30] received message from Vehicle 26, msg_id = 2, latency = 353μs (0.353ms)

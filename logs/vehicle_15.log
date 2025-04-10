@@ -1,18 +1,29 @@
 [Vehicle 15] creating receiver component
-[Vehicle 15] starting. Lifetime: 13s
-[Vehicle 15] sleeping for lifetime: 13s
+[Vehicle 15] starting. Lifetime: 38s
+[Vehicle 15] sleeping for lifetime: 38s
 [Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 30, msg_id = 1, latency = 126μs (0.126ms)
+[ReceiverComponent 15] received message from Vehicle 18, msg_id = 1, latency = 142μs (0.142ms)
 [Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 24, msg_id = 1, latency = 501μs (0.501ms)
+[ReceiverComponent 15] received message from Vehicle 24, msg_id = 1, latency = 433μs (0.433ms)
 [Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 26, msg_id = 1, latency = 627μs (0.627ms)
+[ReceiverComponent 15] received message from Vehicle 6, msg_id = 1, latency = 662μs (0.662ms)
 [Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 22, msg_id = 1, latency = 620μs (0.62ms)
+[ReceiverComponent 15] received message from Vehicle 12, msg_id = 1, latency = 961μs (0.961ms)
 [Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 18, msg_id = 1, latency = 56μs (0.056ms)
-[Vehicle 15] lifetime ended. Stopping vehicle.
-[Vehicle 15] message not received
-[ReceiverComponent 15] failed to receive message
-[ReceiverComponent 15] terminated.
-[Vehicle 15] terminated cleanly.
+[ReceiverComponent 15] received message from Vehicle 20, msg_id = 1, latency = 333μs (0.333ms)
+[Vehicle 15] message received
+[ReceiverComponent 15] received message from Vehicle 14, msg_id = 1, latency = 543μs (0.543ms)
+[Vehicle 15] message received
+[ReceiverComponent 15] received message from Vehicle 26, msg_id = 1, latency = 660μs (0.66ms)
+[Vehicle 15] message received
+[ReceiverComponent 15] received message from Vehicle 30, msg_id = 1, latency = 884μs (0.884ms)
+[Vehicle 15] message received
+[ReceiverComponent 15] received message from Vehicle 2, msg_id = 1, latency = 1085μs (1.085ms)
+[Vehicle 15] message received
+[ReceiverComponent 15] received message from Vehicle 8, msg_id = 1, latency = 1144μs (1.144ms)
+[Vehicle 15] message received
+[ReceiverComponent 15] received message from Vehicle 10, msg_id = 1, latency = 2650μs (2.65ms)
+[Vehicle 15] message received
+[ReceiverComponent 15] received message from Vehicle 28, msg_id = 1, latency = 799μs (0.799ms)
+[Vehicle 15] message received
+[ReceiverComponent 15] received message from Vehicle 26, msg_id = 2, latency = 366μs (0.366ms)

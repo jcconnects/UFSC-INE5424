@@ -1,24 +1,24 @@
 [Vehicle 26] creating sender component
 [Vehicle 26] creating receiver component
-[Vehicle 26] starting. Lifetime: [SenderComponent 26enderComponent 24s
-] [Vehicle  message 1Vehicle 1: ] sVehicle 26 message 1 at 2Vehicle 26 message 1 at 23336876329}
-s
-s
+[Vehicle 26] starting. Lifetime: 41s
+[Vehicle 26] sleeping for lifetime: 41s
+[SenderComponent 26] sending message 1: {Vehicle 26 message 1 at 26101704375}
 [Vehicle 26] message sent
 [SenderComponent 26] message 1 sent!
 [Vehicle 26] message received
-[ReceiverComponent 26] received message from Vehicle 30, msg_id = 1, latency = 1520μs (1.52ms)
+[ReceiverComponent 26] received message from Vehicle 20, msg_id = 1, latency = 650μs (0.65ms)
 [Vehicle 26] message received
-[ReceiverComponent 26] received message from Vehicle 24, msg_id = 1, latency = 1725μs (1.725ms)
+[ReceiverComponent 26] received message from Vehicle 14, msg_id = 1, latency = 999μs (0.999ms)
 [Vehicle 26] message received
-[ReceiverComponent 26] received message from Vehicle 22, msg_id = 1, latency = 1682μs (1.682ms)
+[ReceiverComponent 26] received message from Vehicle 30, msg_id = 1, latency = 1204μs (1.204ms)
 [Vehicle 26] message received
-[ReceiverComponent 26] received message from Vehicle 18, msg_id = 1, latency = 675μs (0.675ms)
+[ReceiverComponent 26] received message from Vehicle 2, msg_id = 1, latency = 1514μs (1.514ms)
 [Vehicle 26] message received
-[ReceiverComponent 26] received message from Vehicle 18, msg_id = 2, latency = 271μs (0.271ms)
-[Vehicle 26] lifetime ended. Stopping vehicle.
-[Vehicle 26] message not received
-[ReceiverComponent 26] failed to receive message
-[ReceiverComponent 26] terminated.
-[Vehicle 26] terminated cleanly.
-[SenderComponent 26] terminated.
+[ReceiverComponent 26] received message from Vehicle 8, msg_id = 1, latency = 1684μs (1.684ms)
+[Vehicle 26] message received
+[ReceiverComponent 26] received message from Vehicle 10, msg_id = 1, latency = 2397μs (2.397ms)
+[Vehicle 26] message received
+[ReceiverComponent 26] received message from Vehicle 28, msg_id = 1, latency = 610μs (0.61ms)
+[SenderComponent 26] sending message 2: {Vehicle 26 message 2 at 26121704603}
+[Vehicle 26] message sent
+[SenderComponent 26] message 2 sent!

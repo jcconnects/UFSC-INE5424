@@ -1,24 +1,22 @@
 [Vehicle 5] creating receiver component
-[Vehicle 5] starting. Lifetime: 15s
-[Vehicle 5] sleeping for lifetime: 15s
+[Vehicle 5] starting. Lifetime: 19s
+[Vehicle 5] sleeping for lifetime: 19s
 [Vehicle 5] message received
-[ReceiverComponent 5] received message from Vehicle 2, msg_id = 1, latency = 99μs (0.099ms)
+[ReceiverComponent 5] received message from Vehicle 20, msg_id = 1, latency = 350μs (0.35ms)
 [Vehicle 5] message received
-[ReceiverComponent 5] received message from Vehicle 6, msg_id = 1, latency = 490μs (0.49ms)
+[ReceiverComponent 5] received message from Vehicle 14, msg_id = 1, latency = 717μs (0.717ms)
 [Vehicle 5] message received
-[ReceiverComponent 5] received message from Vehicle 12, msg_id = 1, latency = 736μs (0.736ms)
+[ReceiverComponent 5] received message from Vehicle 26, msg_id = 1, latency = 945μs (0.945ms)
 [Vehicle 5] message received
-[ReceiverComponent 5] received message from Vehicle 14, msg_id = 1, latency = 97μs (0.097ms)
+[ReceiverComponent 5] received message from Vehicle 30, msg_id = 1, latency = 1282μs (1.282ms)
 [Vehicle 5] message received
-[ReceiverComponent 5] received message from Vehicle 30, msg_id = 1, latency = 505μs (0.505ms)
+[ReceiverComponent 5] received message from Vehicle 2, msg_id = 1, latency = 1600μs (1.6ms)
 [Vehicle 5] message received
-[ReceiverComponent 5] received message from Vehicle 24, msg_id = 1, latency = 804μs (0.804ms)
+[ReceiverComponent 5] received message from Vehicle 8, msg_id = 1, latency = 1772μs (1.772ms)
 [Vehicle 5] message received
-[ReceiverComponent 5] received message from Vehicle 26, msg_id = 1, latency = 1037μs (1.037ms)
+[ReceiverComponent 5] received message from Vehicle 10, msg_id = 1, latency = 2490μs (2.49ms)
 [Vehicle 5] message received
-[ReceiverComponent 5] received message from Vehicle 22, msg_id = 1, latency = 1132μs (1.132ms)
-[Vehicle 5] message received
-[ReceiverComponent 5] received message from Vehicle 18, msg_id = 1, latency = 287μs (0.287ms)
+[ReceiverComponent 5] received message from Vehicle 28, msg_id = 1, latency = 721μs (0.721ms)
 [Vehicle 5] lifetime ended. Stopping vehicle.
 [Vehicle 5] message not received
 [ReceiverComponent 5] failed to receive message

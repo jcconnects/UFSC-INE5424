@@ -1,0 +1,24 @@
+Test started: ethernet_test
+Asserting: Identical MAC addresses should be equal
+PASS: Identical MAC addresses should be equal
+Asserting: Different MAC addresses should not be equal
+PASS: Different MAC addresses should not be equal
+Asserting: Different MAC addresses should not be equal
+PASS: Different MAC addresses should not be equal
+Asserting: NULL_ADDRESS should have all bytes set to zero
+PASS: NULL_ADDRESS should have all bytes set to zero
+Asserting: MAC address string conversion should work correctly
+PASS: MAC address string conversion should work correctly
+Asserting: MAC address string conversion should work correctly for different address
+PASS: MAC address string conversion should work correctly for different address
+Asserting: Ethernet frame size should be header size + MTU
+PASS: Ethernet frame size should be header size + MTU
+Asserting: Frame destination should match
+PASS: Frame destination should match
+Asserting: Frame source should match
+PASS: Frame source should match
+Asserting: Frame protocol should match
+PASS: Frame protocol should match
+Asserting: Frame payload should match the pattern
+PASS: Frame payload should match the pattern
+Test completed: ethernet_test
