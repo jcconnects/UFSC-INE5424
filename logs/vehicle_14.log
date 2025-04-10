@@ -1,24 +1,21 @@
 [Vehicle 14] creating sender component
 [Vehicle 14] creating receiver component
-[Vehicle 14] starting. Lifetime: 17s
-[Vehicle 14] sleeping for lifetime: 17s
-[SenderComponent 14] sending message 1: {Vehicle 14 message 1 at 409182595246}
+[SenderComponent 14] sending message 1 sending message [Vehicle 1: ] s] starting. Lifetime: Vehicle 14 message 1 at 23336875242}
+s
+s
+[Vehicle 14] sleeping for lifetime: 20s
 [Vehicle 14] message sent
 [SenderComponent 14] message 1 sent!
 [Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 22, msg_id = 1, latency = 105μs (0.105ms)
+[ReceiverComponent 14] received message from Vehicle 30, msg_id = 1, latency = 85μs (0.085ms)
 [Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 30, msg_id = 1, latency = 499μs (0.499ms)
+[ReceiverComponent 14] received message from Vehicle 24, msg_id = 1, latency = 794μs (0.794ms)
 [Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 8, msg_id = 1, latency = 828μs (0.828ms)
+[ReceiverComponent 14] received message from Vehicle 26, msg_id = 1, latency = 923μs (0.923ms)
 [Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 18, msg_id = 1, latency = 1052μs (1.052ms)
+[ReceiverComponent 14] received message from Vehicle 22, msg_id = 1, latency = 908μs (0.908ms)
 [Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 6, msg_id = 1, latency = 312μs (0.312ms)
-[Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 28, msg_id = 1, latency = 251μs (0.251ms)
-[Vehicle 14] message received
-[ReceiverComponent 14] received message from Vehicle 24, msg_id = 1, latency = 383μs (0.383ms)
+[ReceiverComponent 14] received message from Vehicle 18, msg_id = 1, latency = 496μs (0.496ms)
 [Vehicle 14] lifetime ended. Stopping vehicle.
 [Vehicle 14] message not received
 [ReceiverComponent 14] failed to receive message

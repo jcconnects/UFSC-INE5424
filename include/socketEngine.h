@@ -33,7 +33,7 @@ class SocketEngine{
     public:
         SocketEngine();
 
-        ~SocketEngine();
+        virtual ~SocketEngine();
 
         const bool running();
         

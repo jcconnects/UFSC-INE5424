@@ -1,26 +1,16 @@
 [Vehicle 15] creating receiver component
-[Vehicle 15] starting. Lifetime: 25s
-[Vehicle 15] sleeping for lifetime: 25s
+[Vehicle 15] starting. Lifetime: 13s
+[Vehicle 15] sleeping for lifetime: 13s
 [Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 22, msg_id = 1, latency = 95μs (0.095ms)
+[ReceiverComponent 15] received message from Vehicle 30, msg_id = 1, latency = 126μs (0.126ms)
 [Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 30, msg_id = 1, latency = 488μs (0.488ms)
+[ReceiverComponent 15] received message from Vehicle 24, msg_id = 1, latency = 501μs (0.501ms)
 [Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 8, msg_id = 1, latency = 820μs (0.82ms)
+[ReceiverComponent 15] received message from Vehicle 26, msg_id = 1, latency = 627μs (0.627ms)
 [Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 18, msg_id = 1, latency = 1817μs (1.817ms)
+[ReceiverComponent 15] received message from Vehicle 22, msg_id = 1, latency = 620μs (0.62ms)
 [Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 6, msg_id = 1, latency = 1132μs (1.132ms)
-[Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 28, msg_id = 1, latency = 1032μs (1.032ms)
-[Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 24, msg_id = 1, latency = 616μs (0.616ms)
-[Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 2, msg_id = 2, latency = 147μs (0.147ms)
-[Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 12, msg_id = 2, latency = 383μs (0.383ms)
-[Vehicle 15] message received
-[ReceiverComponent 15] received message from Vehicle 26, msg_id = 2, latency = 120μs (0.12ms)
+[ReceiverComponent 15] received message from Vehicle 18, msg_id = 1, latency = 56μs (0.056ms)
 [Vehicle 15] lifetime ended. Stopping vehicle.
 [Vehicle 15] message not received
 [ReceiverComponent 15] failed to receive message

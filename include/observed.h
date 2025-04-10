@@ -20,7 +20,7 @@ class Conditionally_Data_Observed {
 
     public:
         Conditionally_Data_Observed() = default;
-        ~Conditionally_Data_Observed() = default;
+        virtual ~Conditionally_Data_Observed() = default;
 
         void attach(Observer* o, Condition c);
         void detach(Observer* o, Condition c);

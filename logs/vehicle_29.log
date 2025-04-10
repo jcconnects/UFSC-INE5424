@@ -1,36 +1,40 @@
 [Vehicle 29] creating receiver component
-[Vehicle 29] starting. Lifetime: 18s
-[Vehicle 29] sleeping for lifetime: 18s
+[Vehicle 29] starting. Lifetime: 36s
+[Vehicle 29] sleeping for lifetime: 36s
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 4, msg_id = 1, latency = 133μs (0.133ms)
+[ReceiverComponent 29] received message from Vehicle 16, msg_id = 1, latency = 117μs (0.117ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 20, msg_id = 1, latency = 421μs (0.421ms)
+[ReceiverComponent 29] received message from Vehicle 28, msg_id = 1, latency = 82μs (0.082ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 26, msg_id = 1, latency = 619μs (0.619ms)
+[ReceiverComponent 29] received message from Vehicle 20, msg_id = 1, latency = 299μs (0.299ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 10, msg_id = 1, latency = 72μs (0.072ms)
+[ReceiverComponent 29] received message from Vehicle 4, msg_id = 1, latency = 398μs (0.398ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 16, msg_id = 1, latency = 223μs (0.223ms)
+[ReceiverComponent 29] received message from Vehicle 2, msg_id = 1, latency = 85μs (0.085ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 2, msg_id = 1, latency = 365μs (0.365ms)
+[ReceiverComponent 29] received message from Vehicle 6, msg_id = 1, latency = 327μs (0.327ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 12, msg_id = 1, latency = 103μs (0.103ms)
+[ReceiverComponent 29] received message from Vehicle 12, msg_id = 1, latency = 457μs (0.457ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 14, msg_id = 1, latency = 73μs (0.073ms)
+[ReceiverComponent 29] received message from Vehicle 14, msg_id = 1, latency = 109μs (0.109ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 22, msg_id = 1, latency = 120μs (0.12ms)
+[ReceiverComponent 29] received message from Vehicle 30, msg_id = 1, latency = 88μs (0.088ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 30, msg_id = 1, latency = 484μs (0.484ms)
+[ReceiverComponent 29] received message from Vehicle 24, msg_id = 1, latency = 400μs (0.4ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 8, msg_id = 1, latency = 802μs (0.802ms)
+[ReceiverComponent 29] received message from Vehicle 26, msg_id = 1, latency = 632μs (0.632ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 18, msg_id = 1, latency = 1036μs (1.036ms)
+[ReceiverComponent 29] received message from Vehicle 22, msg_id = 1, latency = 753μs (0.753ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 6, msg_id = 1, latency = 456μs (0.456ms)
+[ReceiverComponent 29] received message from Vehicle 18, msg_id = 1, latency = 94μs (0.094ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 28, msg_id = 1, latency = 472μs (0.472ms)
+[ReceiverComponent 29] received message from Vehicle 18, msg_id = 2, latency = 163μs (0.163ms)
 [Vehicle 29] message received
-[ReceiverComponent 29] received message from Vehicle 24, msg_id = 1, latency = 445μs (0.445ms)
+[ReceiverComponent 29] received message from Vehicle 10, msg_id = 2, latency = 221μs (0.221ms)
+[Vehicle 29] message received
+[ReceiverComponent 29] received message from Vehicle 8, msg_id = 2, latency = 197μs (0.197ms)
+[Vehicle 29] message received
+[ReceiverComponent 29] received message from Vehicle 2, msg_id = 2, latency = 102μs (0.102ms)
 [Vehicle 29] lifetime ended. Stopping vehicle.
 [Vehicle 29] message not received
 [ReceiverComponent 29] failed to receive message
