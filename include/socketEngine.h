@@ -29,7 +29,6 @@ class SocketEngine{
     
     public:
         static constexpr const char* INTERFACE = Traits<SocketEngine>::INTERFACE_NAME;
-        using CallbackMethod = std::function<void(Ethernet::Frame&, unsigned int)>;
 
     public:
         SocketEngine();
@@ -38,8 +37,6 @@ class SocketEngine{
 
         const bool running();
         
-        void setCallback(CallbackMethod callback);
-
         int send(Ethernet::Frame* frame, unsigned int size);
 
         static void* run(void* arg);
@@ -53,18 +50,16 @@ class SocketEngine{
         void setUpEpoll();
 
         // Signal handler
-        void handleSignal();
+        virtual void handleSignal() = 0;
 
     protected:
-        Ethernet::Address _address;
+    int _sock_fd;
+    int _ep_fd;
+    int _if_index;
+    Ethernet::Address _mac_address;
     
     private:
-        int _sock_fd;
-        int _ep_fd;
-        int _if_index;
         const int _stop_ev;
-
-        CallbackMethod _callback;
         pthread_t _receive_thread;
         bool _running;
 };
@@ -119,8 +114,8 @@ void SocketEngine::setUpSocket() {
         throw std::runtime_error("Failed to retrieve MAC address!");
     }
 
-    std::memcpy(_address.bytes, ifr.ifr_hwaddr.sa_data, Ethernet::MAC_SIZE);
-    db<SocketEngine>(INF) << "[SocketEngine] MAC address setted: " << Ethernet::mac_to_string(_address) << "\n";
+    std::memcpy(_mac_address.bytes, ifr.ifr_hwaddr.sa_data, Ethernet::MAC_SIZE);
+    db<SocketEngine>(INF) << "[SocketEngine] MAC address setted: " << Ethernet::mac_to_string(_mac_address) << "\n";
 
     // 5. Bind socket to interface
     struct sockaddr_ll sll;
@@ -188,7 +183,7 @@ int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
     addr.sll_protocol = htons(frame->prot);
     addr.sll_ifindex  = _if_index;
     addr.sll_halen    = Ethernet::MAC_SIZE;
-    std::memcpy(addr.sll_addr, frame->dst.bytes, Ethernet::MAC_SIZE);
+    std::memcpy(addr.sll_addr, _mac_address.bytes, Ethernet::MAC_SIZE);
 
     // Make sure protocol field is in network byte order before sending
     frame->prot = htons(frame->prot);
@@ -207,44 +202,6 @@ int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
     }
     
     return result;
-}
-
-void SocketEngine::setCallback(CallbackMethod callback) {
-    db<SocketEngine>(TRC) << "SocketEngine::setCallback() called!\n";
-    _callback = callback;
-}
-
-void SocketEngine::handleSignal() {
-    db<SocketEngine>(TRC) << "SocketEngine::handleSignal() called!\n";
-    
-    Ethernet::Frame frame;
-    struct sockaddr_ll src_addr;
-    socklen_t addr_len = sizeof(src_addr);
-    
-    int bytes_received = recvfrom(_sock_fd, &frame, sizeof(frame), 0, reinterpret_cast<sockaddr*>(&src_addr), &addr_len);
-                               
-    if (bytes_received < 0) {
-        db<SocketEngine>(INF) << "[SocketEngine] No data received\n";
-        if (errno != EAGAIN && errno != EWOULDBLOCK) {
-            perror("recvfrom");
-        }
-        return;
-    }
-    
-    // Check for valid Ethernet frame size (at least header size)
-    if (static_cast<unsigned int>(bytes_received) < Ethernet::HEADER_SIZE) {
-        db<SocketEngine>(ERR) << "[SocketEngine] Received undersized frame (" << bytes_received << " bytes)\n";
-        return;
-    }
-    
-    // Convert protocol from network to host byte order
-    frame.prot = ntohs(frame.prot);
-    db<SocketEngine>(INF) << "[SocketEngine] received frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << frame.prot << ", size = " << bytes_received << "}\n";
-    
-    // Process the frame if callback is set
-    if (_callback) {
-        _callback(frame, bytes_received);
-    }
 }
 
 void* SocketEngine::run(void* arg)  {
