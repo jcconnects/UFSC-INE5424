@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
+#include <sys/eventfd.h>
 #include <netinet/in.h>
 #include <linux/if_packet.h>
 #include <net/ethernet.h>
@@ -35,6 +36,8 @@ class SocketEngine{
 
         ~SocketEngine();
 
+        const bool running();
+        
         void setCallback(CallbackMethod callback);
 
         int send(Ethernet::Frame* frame, unsigned int size);
@@ -42,6 +45,7 @@ class SocketEngine{
         static void* run(void* arg);
 
         void stop();
+
 
     private:
         void setUpSocket();
@@ -58,20 +62,22 @@ class SocketEngine{
         int _sock_fd;
         int _ep_fd;
         int _if_index;
+        const int _stop_ev;
 
         CallbackMethod _callback;
         pthread_t _receive_thread;
-        static bool _running;
+        bool _running;
 };
 
 
 /********** SocketEngine Implementation **********/
 
-SocketEngine::SocketEngine()  {
+SocketEngine::SocketEngine() : _stop_ev(eventfd(0, EFD_NONBLOCK)){
     db<SocketEngine>(TRC) << "SocketEngine::SocketEngine() called!\n";
     setUpSocket();
     setUpEpoll();
 
+    _running = true;
     pthread_create(&_receive_thread, nullptr, SocketEngine::run, this);
     db<SocketEngine>(INF) << "[SocketEngine] receive thread started\n";
 };
@@ -148,7 +154,16 @@ void SocketEngine::setUpEpoll() {
 
     if (epoll_ctl(_ep_fd, EPOLL_CTL_ADD, _sock_fd, &ev) < 0) {
         perror("epoll_ctl");
-        throw std::runtime_error("Failed to bind SocketEngine::_sock_fd to SocketEngine::_ep_fd!");
+        throw std::runtime_error("Failed to bind SocketEngine::_sock_fd to epoll!");
+    }
+
+    // 3. Binding stop event on epoll
+    struct epoll_event stop_ev = {};
+    stop_ev.events = EPOLLIN;
+    stop_ev.data.fd = _stop_ev;
+    if (epoll_ctl(_ep_fd, EPOLL_CTL_ADD, _stop_ev, &stop_ev) < 0) {
+        perror("epoll_ctl stop_ev");
+        throw std::runtime_error("Failed to bind SocketEngine::_stop_ev to epoll!");
     }
 
     db<SocketEngine>(INF) << "[SocketEngine] epoll setted\n";
@@ -159,10 +174,11 @@ SocketEngine::~SocketEngine()  {
 
     close(_sock_fd);
     close(_ep_fd);
-
-    pthread_join(_receive_thread, nullptr);
-    db<SocketEngine>(INF) << "[SocketEngine] receive thread finished\n";
 };
+
+const bool SocketEngine::running() {
+    return _running;
+}
 
 int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
     db<SocketEngine>(TRC) << "SocketEngine::send() called!\n";
@@ -238,8 +254,9 @@ void* SocketEngine::run(void* arg)  {
 
     struct epoll_event events[10];
 
-    while (_running) {
-        int n = epoll_wait(engine->_ep_fd, events, 10, 100); // 100ms timeout for check running
+    db<SocketEngine>(INF) << "[SocketEngine] running = " << engine->running() << "\n";
+    while (engine->running()) {
+        int n = epoll_wait(engine->_ep_fd, events, 10, -1);
         if (n < 0) {
             if (errno == EINTR) continue;
             perror("epoll_wait");
@@ -247,21 +264,36 @@ void* SocketEngine::run(void* arg)  {
         }
 
         for (int i = 0; i < n; ++i) {
-            if (events[i].data.fd == engine->_sock_fd) {
-                db<SocketEngine>(INF) << "[SocketEngine] epoll event detected\n";
+            int fd = events[i].data.fd;
+
+            if (fd == engine->_sock_fd) {
+                db<SocketEngine>(INF) << "[SocketEngine] epoll socket event detected\n";
                 engine->handleSignal();
+            } else if (fd == engine->_stop_ev) {
+                db<SocketEngine>(INF) << "[SocketEngine] epoll stop event detected\n";
+                uint64_t u;
+                read(engine->_stop_ev, &u, sizeof(u)); // clears eventfd
+                return nullptr; // terminates thread
             }
         }
     }
 
     return nullptr;
+    db<SocketEngine>(INF) << "[SocketEngine] << receive thread terminated!\n";
 };
 
 void SocketEngine::stop() {
     db<SocketEngine>(TRC) << "SocketEngine::run() called!\n";
-    SocketEngine::_running = false;
-}
+    
+    if (!_running) return;
 
-bool SocketEngine::_running = true;
+    _running = false;
+
+    std::uint64_t u = 1;
+    write(_stop_ev, &u, sizeof(u));
+
+    pthread_join(_receive_thread, nullptr);
+    db<SocketEngine>(INF) << "[SocketEngine] sucessfully stopped!\n";
+}
 
 #endif // SOCKETENGINE_H
