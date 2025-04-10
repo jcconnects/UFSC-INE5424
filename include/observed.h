@@ -108,21 +108,6 @@ void Concurrent_Observed<T, C>::detach(Concurrent_Observer<T, C>* o, C c) {
     pthread_mutex_unlock(&_mtx);
 }
 
-template <typename T, typename C>
-bool Concurrent_Observed<T, C>::notify(C c, T* d) {
-    bool notified = false;
-    
-    pthread_mutex_lock(&_mtx);
-    for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-        if ((*obs)->rank() == c) {
-            (*obs)->update(c, d);
-            notified = true;
-        }
-    }
-    pthread_mutex_unlock(&_mtx);
-    
-    return notified;
-}
 /*********************************************************************************************/
 
 #endif // OBSERVED_H

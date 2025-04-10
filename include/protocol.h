@@ -22,8 +22,8 @@ class Protocol: private NIC::Observer
         typedef unsigned int Port;
         
         // Change to use Concurrent_Observer for Communicator interactions
-        typedef Concurrent_Observer<Buffer, Port> Observer;
-        typedef Concurrent_Observed<Buffer, Port> Observed;
+        typedef Conditional_Data_Observer<Buffer, Port> Observer;
+        typedef Conditionally_Data_Observed<Buffer, Port> Observed;
         
         // Header class for protocol messages
         class Header {
