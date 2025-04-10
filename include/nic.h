@@ -86,9 +86,10 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         // void detach(Observer* obs, Protocol_Number prot);
 
     private:
-        void receiveData(Ethernet::Frame& frame, unsigned int size);
+        void handleSignal() override;
 
     private:
+        Address _address;
         Statistics _statistics;
         DataBuffer _buffer[N_BUFFERS];
         std::queue<DataBuffer*> _free_buffers;
@@ -109,7 +110,9 @@ NIC<Engine>::NIC() {
 
     sem_init(&_buffer_sem, 0, N_BUFFERS);
     sem_init(&_binary_sem, 0, 1);
-    this->setCallback(std::bind(&NIC::receiveData, this, std::placeholders::_1, std::placeholders::_2));
+
+    // Setting default address
+    _address = this->_mac_address;
 }
 
 template <typename Engine>
@@ -178,19 +181,44 @@ int NIC<Engine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data
 }
 
 template <typename Engine>
-void NIC<Engine>::receiveData(Ethernet::Frame& frame, unsigned int size) {
-    db<NIC>(TRC) << "NIC<Engine>::receiveData() called!\n";
+void NIC<Engine>::handleSignal() {
+    db<SocketEngine>(TRC) << "SocketEngine::handleSignal() called!\n";
     
+    Ethernet::Frame frame;
+    struct sockaddr_ll src_addr;
+    socklen_t addr_len = sizeof(src_addr);
+    
+    int bytes_received = recvfrom(this->_sock_fd, &frame, sizeof(frame), 0, reinterpret_cast<sockaddr*>(&src_addr), &addr_len);
+                               
+    if (bytes_received < 0) {
+        db<SocketEngine>(INF) << "[SocketEngine] No data received\n";
+        if (errno != EAGAIN && errno != EWOULDBLOCK) {
+            perror("recvfrom");
+        }
+        return;
+    }
+    
+    // Check for valid Ethernet frame size (at least header size)
+    if (static_cast<unsigned int>(bytes_received) < Ethernet::HEADER_SIZE) {
+        db<SocketEngine>(ERR) << "[SocketEngine] Received undersized frame (" << bytes_received << " bytes)\n";
+        return;
+    }
+    
+    // Convert protocol from network to host byte order
+    frame.prot = ntohs(frame.prot);
+    db<SocketEngine>(INF) << "[SocketEngine] received frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << frame.prot << ", size = " << bytes_received << "}\n";
+    
+    // Process the frame if callback is set
     // 1. Extracting header
     Ethernet::Address dst = frame.dst;
     Ethernet::Protocol proto = frame.prot;
 
     // 2. Allocate buffer
-    DataBuffer * buf = alloc(dst, proto, size);
+    DataBuffer * buf = alloc(dst, proto, bytes_received);
     if (!buf) return;
 
     // 4. Copy frame to buffer
-    std::memcpy(buf->data(), &frame, size);
+    std::memcpy(buf->data(), &frame, bytes_received);
 
     // 5. Notify Observers
     if (!notify(proto, buf)) {
@@ -200,7 +228,7 @@ void NIC<Engine>::receiveData(Ethernet::Frame& frame, unsigned int size) {
 }
 
 template <typename Engine>
-typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst,   Protocol_Number prot, unsigned int size) {
+typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Number prot, unsigned int size) {
     db<NIC>(TRC) << "NIC<Engine>::alloc() called!\n";
 
     sem_wait(&_buffer_sem);
@@ -209,13 +237,6 @@ typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst,   Protocol_Num
     DataBuffer* buf = _free_buffers.front();
     _free_buffers.pop();
     sem_post(&_binary_sem);
-
-    Ethernet::Frame init_frame;
-    init_frame.src = {};
-    init_frame.src = {};
-    init_frame.prot = 0;
-    std::memset(&init_frame, 0, Ethernet::MTU);
-    buf -> setData(&init_frame, sizeof(Ethernet::Frame));
 
     buf->data()->src = address();
     buf->data()->dst = dst;
@@ -247,14 +268,15 @@ template <typename Engine>
 const typename NIC<Engine>::Address& NIC<Engine>::address() {
     db<NIC>(TRC) << "NIC<Engine>::address() called!\n";
 
-    return this->_address;
+    return _address;
 }
 
 template <typename Engine>
 void NIC<Engine>::setAddress(Address address) {
     db<NIC>(TRC) << "NIC<Engine>::setAddress() called!\n";
 
-    this->_address = address;
+    _address = address;
+    db<NIC>(INF) << "[NIC] address setted: " << Ethernet::mac_to_string(address) << "\n";
 }
 
 template <typename Engine>
