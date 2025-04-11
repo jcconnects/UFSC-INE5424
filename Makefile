@@ -117,3 +117,11 @@ clean_iface:
 
 .PHONY: dirs
 
+# Docker commands
+.PHONY: docker-build
+docker-build:
+	docker build -t cpp-vehicle-app .
+
+.PHONY: docker-run
+docker-run:
+	docker run -it --privileged -v $(PWD):/app cpp-vehicle-app
