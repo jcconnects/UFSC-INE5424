@@ -1,7 +1,7 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include "components/test_utils.h"
+#include "test_utils.h"
 #include "list.h"
 
 // Test class for List

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "components/test_utils.h"
+#include "test_utils.h"
 #include "buffer.h"
 
 struct TestData {

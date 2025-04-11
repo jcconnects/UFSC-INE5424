@@ -2,6 +2,14 @@
 
 This document describes the test suite for UFSC-INE5424 components. The tests are designed to verify the functionality of individual components in isolation, treating related components as stubs when necessary.
 
+## Test Organization
+
+All component tests are organized in the `tests/components/` directory, following a modular approach to testing:
+
+- Each component has its own dedicated test file
+- Tests use a common testing utility (`tests/components/test_utils.h`)
+- Test logs are stored in the `tests/logs/` directory
+
 ## Test Environment
 
 All tests are executed through a Makefile-based system, which:
@@ -33,7 +41,7 @@ make run_component_socketEngine_test
 
 ## Component Tests
 
-### 1. Buffer Test (`buffer_test.cpp`)
+### 1. Buffer Test (`components/buffer_test.cpp`)
 
 Tests the functionality of the `Buffer` template class, which provides a generic buffer for storing data.
 
@@ -45,7 +53,7 @@ Tests the functionality of the `Buffer` template class, which provides a generic
 - Clearing the buffer and verifying size
 - Verifying data is zeroed after clear
 
-### 2. Ethernet Test (`ethernet_test.cpp`)
+### 2. Ethernet Test (`components/ethernet_test.cpp`)
 
 Tests the functionality of the `Ethernet` class, which handles Ethernet frame operations.
 
@@ -57,7 +65,7 @@ Tests the functionality of the `Ethernet` class, which handles Ethernet frame op
 - Creating and validating frame fields
 - Setting and validating payload data
 
-### 3. List Test (`list_test.cpp`)
+### 3. List Test (`components/list_test.cpp`)
 
 Tests the functionality of the `List` and `Ordered_List` classes for managing collections of objects.
 
@@ -80,7 +88,7 @@ Tests the functionality of the `List` and `Ordered_List` classes for managing co
   - Integrity of list after concurrent operations
   - Retrieval of all inserted items
 
-### 4. Message Test (`message_test.cpp`)
+### 4. Message Test (`components/message_test.cpp`)
 
 Tests the functionality of the `Message` template class, which represents a message with a maximum size.
 

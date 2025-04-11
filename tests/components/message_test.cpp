@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cstring>
-#include "components/test_utils.h"
+#include "test_utils.h"
 #include "message.h"
 
 int main() {
