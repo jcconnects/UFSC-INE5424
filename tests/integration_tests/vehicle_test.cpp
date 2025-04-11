@@ -4,13 +4,13 @@
 #include <cstring>
 #include <thread>
 #include <chrono>
-#include "../../include/initializer.h"
-#include "../../include/vehicle.h"
-#include "../../include/nic.h"
-#include "../../include/protocol.h"
-#include "../../include/ethernet.h"
-#include "../../include/socketEngine.h"
-#include "../../include/component.h"
+#include "initializer.h"
+#include "vehicle.h"
+#include "nic.h"
+#include "protocol.h"
+#include "ethernet.h"
+#include "socketEngine.h"
+#include "component.h"
 #include "test_utils.h"
 
 // Define a test component that tracks its lifecycle events

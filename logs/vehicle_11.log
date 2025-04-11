@@ -1,7 +1,0 @@
-[Vehicle 11] creating receiver component
-[Vehicle 11] starting. Lifetime: 40s
-[Vehicle 11] sleeping for lifetime: 40s
-[Vehicle 11] message received
-[ReceiverComponent 11] received message from Vehicle 28, msg_id = 1, latency = 883μs (0.883ms)
-[Vehicle 11] message received
-[ReceiverComponent 11] received message from Vehicle 26, msg_id = 2, latency = 490μs (0.49ms)

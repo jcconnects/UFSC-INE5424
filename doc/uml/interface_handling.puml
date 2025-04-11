@@ -1,0 +1,75 @@
+@startuml Interface_Handling
+!theme plain
+
+title "Network Interface Management for Tests"
+
+' Define components
+actor "Developer" as dev
+component "Makefile" as makefile
+component "SocketEngine" as engine
+component "traits.h" as traits
+component "Test" as test
+database "logs/current_test_iface" as iface_file
+interface "test-dummy0" as iface
+interface "test-dummy1" as iface_alt
+
+' Define execution flow
+note right of dev
+  <b>Test Execution</b>
+  1. Developer runs 'make'
+  2. Makefile creates interface
+  3. Tests use interface
+  4. Makefile cleans up
+end note
+
+' Define the sequence
+dev -right-> makefile : make
+makefile -down-> iface : setup_dummy_iface
+makefile -down-> iface_file : writes interface name
+
+' Check interface existence
+iface_file -right-> traits : reads interface name
+traits -right-> engine : provides interface name
+engine -down-> iface : uses for communication
+
+test -up-> engine : creates
+test -right-> iface : communicates through
+
+' Safety checks
+note bottom of makefile #LightGreen
+  <b>Safety Measures:</b>
+  - Checks if interface exists
+  - Verifies if it's a dummy interface
+  - Uses fallback name if needed
+  - Only removes interfaces it created
+end note
+
+' Fallback path
+makefile .down.> iface_alt : creates if test-dummy0\nexists but isn't dummy
+
+' Cleanup process
+makefile -up-> iface_file : reads during cleanup
+makefile -up-> iface : clean_iface (only if dummy)
+
+' Sequence for execution
+note right of test
+  <b>Interface Usage Flow:</b>
+  1. Makefile creates interface
+  2. Writes name to current_test_iface
+  3. traits.h reads name from file
+  4. SocketEngine uses name from traits
+  5. Test communicates through interface
+  6. Makefile removes interface after tests
+end note
+
+legend
+  Interface Management Safety Features
+  ----
+  • Uses unique name (test-dummy0)
+  • Verifies interface type before deletion
+  • Tracks created interface name
+  • Provides fallback mechanisms
+  • Only removes interfaces it created
+endlegend
+
+@enduml 

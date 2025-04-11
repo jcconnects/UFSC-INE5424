@@ -1,9 +1,0 @@
-[Vehicle 28] creating sender component
-[Vehicle 28] creating receiver component
-[Vehicle 28] starting. Lifetime: 43s
-[Vehicle 28] sleeping for lifetime: 43s
-[SenderComponent 28] sending message 1: {Vehicle 28 message 1 at 26101706378}
-[Vehicle 28] message sent
-[SenderComponent 28] message 1 sent!
-[Vehicle 28] message received
-[ReceiverComponent 28] received message from Vehicle 26, msg_id = 2, latency = 361μs (0.361ms)
