@@ -1,0 +1,98 @@
+@startuml list_test
+
+skinparam actor {
+    BackgroundColor #D0E0FF
+}
+
+skinparam participant {
+    BackgroundColor #D0FFE0
+}
+
+skinparam collections {
+    BackgroundColor #FFD0E0
+}
+
+skinparam control {
+    BackgroundColor #E0D0FF
+}
+
+title List Test - Sequence Diagram
+
+actor "Test Harness" as Test
+participant "List<TestItem>" as List
+collections "Ordered_List<RankedItem>" as OrderedList
+control "Thread 1..N" as Threads
+
+group Basic List Operations
+    Test -> List: create empty list
+    Test -> Test: check list.empty() == true
+
+    Test -> Test: create item1(1), item2(2), item3(3)
+    Test -> List: insert(item1)
+    Test -> Test: check list.empty() == false
+    
+    Test -> List: insert(item2)
+    Test -> List: insert(item3)
+    
+    Test -> List: remove()
+    Test <-- List: item1
+    Test -> Test: check item1.getValue() == 1
+    
+    Test -> List: remove()
+    Test <-- List: item2
+    Test -> Test: check item2.getValue() == 2
+    
+    Test -> List: remove()
+    Test <-- List: item3
+    Test -> Test: check item3.getValue() == 3
+    
+    Test -> Test: check list.empty() == true
+    
+    Test -> List: remove()
+    Test <-- List: nullptr
+    Test -> Test: check null result from empty list
+end
+
+group Ordered List Operations
+    Test -> OrderedList: create empty list
+    Test -> Test: check orderedList.empty() == true
+    
+    Test -> Test: create item1(1,10), item2(2,20), item3(3,30)
+    Test -> OrderedList: insert(item1)
+    Test -> Test: check orderedList.empty() == false
+    
+    Test -> OrderedList: insert(item2)
+    Test -> OrderedList: insert(item3)
+    
+    Test -> OrderedList: begin() to end() iterator
+    Test -> Test: verify sequence and count of items
+    
+    Test -> OrderedList: remove(item2)
+    Test -> OrderedList: begin() to end() iterator
+    Test -> Test: verify remaining items and count
+end
+
+group Thread Safety Test
+    Test -> Threads: create 5 threads
+    
+    Threads -> List: concurrent insert operations
+    note right of Threads
+      Each thread inserts 100 items
+      with unique values
+    end note
+    
+    Test -> Test: wait for all threads to complete
+    Test -> Test: verify all threads succeeded
+    
+    loop until list empty
+        Test -> List: remove()
+        Test <-- List: item
+        Test -> Test: count items
+    end
+    
+    Test -> Test: verify count equals 5*100
+end
+
+note over Test: Test completed
+
+@enduml 

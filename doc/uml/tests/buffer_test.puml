@@ -1,0 +1,42 @@
+@startuml buffer_test
+
+skinparam actor {
+    BackgroundColor #D0E0FF
+}
+
+title Buffer Test - Sequence Diagram
+
+actor "Test Harness" as Test
+participant "Buffer<TestData>" as Buffer
+participant "TestData" as TestData
+
+note over Test: Initialize test
+
+Test -> Buffer: create empty buffer
+Test -> Test: check buffer.size() == 0
+
+Test -> TestData: create testData\n{value1: 42, value2: 'A', value3: 3.14}
+Test -> Buffer: setData(&testData, sizeof(TestData))
+Test -> Test: check buffer.size() == sizeof(TestData)
+
+Test -> Buffer: data()
+Test <-- Buffer: retrievedData
+Test -> Test: check retrievedData != nullptr
+Test -> Test: check *retrievedData == testData
+
+note over Test: Create large data
+
+Test -> Test: create largeData[Buffer::MAX_SIZE + 10]
+Test -> Buffer: setData(largeData, Buffer::MAX_SIZE + 10)
+Test -> Test: check buffer.size() == Buffer::MAX_SIZE
+
+Test -> Buffer: clear()
+Test -> Test: check buffer.size() == 0
+
+Test -> Buffer: data()
+Test <-- Buffer: dataPtr
+Test -> Test: check all bytes are zero
+
+note over Test: Test completed
+
+@enduml 

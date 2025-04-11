@@ -44,10 +44,12 @@ tests/components/%: dirs $(BINDIR)/components/%
 
 # Regra genérica para compilar cada teste
 $(BINDIR)/%: $(TESTDIR)/%.cpp
+	@mkdir -p $(BINDIR)
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
 # Regra para compilar testes de componentes
 $(BINDIR)/components/%: $(TESTDIR)/components/%.cpp
+	@mkdir -p $(BINDIR)/components
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
 # Executar todos os testes
