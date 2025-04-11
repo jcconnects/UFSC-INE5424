@@ -143,8 +143,37 @@ Tests the functionality of the `NIC` template class, which provides a network in
   - Initial statistics verification
   - Error condition handling
   - Drop counter increment on failed operations
-  
-### 7. Observer Pattern Test (`components/observer_pattern_test.cpp`)
+
+### 7. Protocol Test (`components/protocol_test.cpp`)
+
+Tests the functionality of the `Protocol` template class, which provides a protocol layer on top of the network interface.
+
+**Test Cases:**
+- **Protocol::Address Class:**
+  - Default address construction and validation
+  - Address construction with specific MAC and port
+  - Address comparison (equality testing)
+  - Boolean evaluation of addresses (null vs. non-null)
+
+- **Observer Pattern:**
+  - Observer attachment to specific protocol ports
+  - Observer notification on message reception
+  - Observer detachment and verification
+
+- **Send and Receive:**
+  - Message transmission between protocol instances
+  - Source and destination address handling
+  - Message integrity verification after transmission
+  - Buffer management during send/receive operations
+
+- **Large Data Handling:**
+  - Sending data close to MTU size
+  - Data integrity verification for large messages
+
+- **Broadcast Address:**
+  - Verification of the broadcast address constants
+
+### 8. Observer Pattern Test (`components/observer_pattern_test.cpp`)
 
 Tests the functionality of the Observer pattern classes, which implement the Observer design pattern in both conditional and concurrent variants.
 
