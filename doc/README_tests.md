@@ -173,7 +173,81 @@ Tests the functionality of the `Protocol` template class, which provides a proto
 - **Broadcast Address:**
   - Verification of the broadcast address constants
 
-### 8. Observer Pattern Test (`components/observer_pattern_test.cpp`)
+### 8. Initializer Test (`components/initializer_test.cpp`)
+
+Tests the functionality of the `Initializer` class, which is responsible for creating and initializing vehicle instances with their network components.
+
+**Test Cases:**
+- **Vehicle Creation:**
+  - Creating vehicles with specific IDs
+  - Verifying vehicle IDs are correctly set
+  - Validating that vehicles are initially not running
+  - Ensuring the proper initialization of all internal components (NIC, Protocol)
+
+- **Vehicle Identity:**
+  - Ensuring different vehicles have unique IDs
+  - Verifying multiple vehicles created with different IDs
+  - Testing creation of a batch of vehicles with sequential IDs
+
+- **Vehicle Lifecycle:**
+  - Starting vehicles and confirming running state
+  - Stopping vehicles and confirming non-running state
+  - Testing multiple start/stop cycles for stability
+
+- **MAC Address Assignment:**
+  - Verifying MAC addresses are correctly derived from vehicle IDs
+  - Checking MAC address format (02:00:00:00:HH:LL where HHLL is the 16-bit ID)
+  - Ensuring MAC address uniqueness between vehicles
+  - Validating the MAC address encoding matches the expected pattern
+
+- **Basic Functionality:**
+  - Testing send functionality of created vehicles
+  - Verifying send operations complete successfully
+  - Testing proper resource management and cleanup
+
+### 9. Vehicle Test (`components/vehicle_test.cpp`)
+
+Tests the functionality of the `Vehicle` class, which manages vehicle state, components, and communication.
+
+**Test Cases:**
+- **Creation and Basic Properties:**
+  - Creating vehicles with specific IDs
+  - Verifying correct ID retrieval
+  - Validating initial running state
+
+- **Lifecycle Management:**
+  - Starting and stopping vehicles
+  - Verifying running state changes correctly
+  - Testing multiple start/stop cycles
+
+- **Component Management:**
+  - Adding components to vehicles
+  - Starting components explicitly
+  - Stopping components explicitly
+  - Verifying component state transitions
+  - Ensuring correct component ownership (components reference correct vehicle)
+
+- **Component Lifecycle Integration:**
+  - Verifying components are started when vehicle starts
+  - Ensuring component lifecycle follows vehicle lifecycle
+  - Testing components across multiple vehicles
+
+- **Communication:**
+  - Testing send functionality with valid parameters
+  - Verifying successful message transmission
+  - Testing communication between different vehicles
+
+- **Error Handling:**
+  - Testing edge cases with empty data buffers
+  - Verifying receive fails when vehicle is stopped
+  - Ensuring proper error responses for invalid inputs
+  - Testing safe error handling for communication failures
+
+- **Resource Management:**
+  - Verifying vehicle destructor properly cleans up components
+  - Testing proper destruction order to avoid memory issues
+
+### 10. Observer Pattern Test (`components/observer_pattern_test.cpp`)
 
 Tests the functionality of the Observer pattern classes, which implement the Observer design pattern in both conditional and concurrent variants.
 
