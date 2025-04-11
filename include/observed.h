@@ -77,6 +77,7 @@ class Concurrent_Observed : public Conditionally_Data_Observed<D, C>{
         
         void attach(Concurrent_Observer<D, C>* o, C c) ;
         void detach(Concurrent_Observer<D, C>* o, C c) ;
+        bool notify(C c, D* d);
         
     private:
         pthread_mutex_t _mtx;
@@ -106,6 +107,22 @@ void Concurrent_Observed<T, C>::detach(Concurrent_Observer<T, C>* o, C c) {
     pthread_mutex_lock(&_mtx);
     this->_observers.remove(o);
     pthread_mutex_unlock(&_mtx);
+}
+
+template <typename T, typename C>
+bool Concurrent_Observed<T, C>::notify(C c, T* d) {
+    pthread_mutex_lock(&_mtx);
+    bool notified = false;
+    
+    for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+        if ((*obs)->rank() == c) {
+            (*obs)->update(c, d);
+            notified = true;
+        }
+    }
+    
+    pthread_mutex_unlock(&_mtx);
+    return notified;
 }
 
 /*********************************************************************************************/

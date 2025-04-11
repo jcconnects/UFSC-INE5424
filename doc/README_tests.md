@@ -143,6 +143,28 @@ Tests the functionality of the `NIC` template class, which provides a network in
   - Initial statistics verification
   - Error condition handling
   - Drop counter increment on failed operations
+  
+### 7. Observer Pattern Test (`components/observer_pattern_test.cpp`)
+
+Tests the functionality of the Observer pattern classes, which implement the Observer design pattern in both conditional and concurrent variants.
+
+**Test Cases:**
+- **Conditional Observer Pattern:**
+  - Observer registration (attach) to specific conditions
+  - Observer detachment (detach) from observed entities
+  - Notification filtering based on conditions
+  - Multiple observers for the same condition
+  - Behavior when notifying with no observers for a condition
+  - Data retrieval after notification
+
+- **Concurrent Observer Pattern:**
+  - Thread-safe observer registration and notification
+  - Concurrent data production and consumption
+  - Multiple producer threads sending notifications
+  - Multiple consumer threads receiving notifications
+  - Blocking behavior when waiting for notifications
+  - Reference counting for shared data
+  - Observer detachment while concurrent operations are running
 
 ## Test Architecture
 
