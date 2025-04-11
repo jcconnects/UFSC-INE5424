@@ -123,6 +123,27 @@ Tests the functionality of the `SocketEngine` class, which manages raw socket co
   - Engine stopping
   - Running status after stop
 
+### 6. NIC Test (`components/nic_test.cpp`)
+
+Tests the functionality of the `NIC` template class, which provides a network interface controller implementation.
+
+**Test Cases:**
+- **Address Functions:**
+  - Default address verification
+  - Setting a custom MAC address
+  - Address retrieval and validation
+
+- **Buffer Management:**
+  - Buffer allocation with destination address and protocol
+  - Frame field validation (source, destination, protocol)
+  - Buffer size verification
+  - Buffer freeing and reuse
+
+- **Statistics Tracking:**
+  - Initial statistics verification
+  - Error condition handling
+  - Drop counter increment on failed operations
+
 ## Test Architecture
 
 The tests use a common testing utility (`test_utils.h`) that provides:
@@ -144,4 +165,4 @@ Test results are logged to:
 - Console: summary information and success/failure status
 - Log files: detailed test execution information, assertions, and results
 
-Log files are located in the `tests/logs/` directory and named after the test (e.g., `socketEngine_test.log`). 
+Log files are located in the `tests/logs/` directory and named after the test (e.g., `socketEngine_test.log`).
