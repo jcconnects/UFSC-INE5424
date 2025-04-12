@@ -1,0 +1,77 @@
+Test started: vehicle_test
+Creating vehicle with Initializer
+Asserting: Vehicle should not be null
+PASS: Vehicle should not be null
+Asserting: Vehicle ID should be 42
+PASS: Vehicle ID should be 42
+Asserting: Vehicle should not be running initially
+PASS: Vehicle should not be running initially
+Testing vehicle lifecycle management
+Asserting: Vehicle should be running after start()
+PASS: Vehicle should be running after start()
+Asserting: Vehicle should not be running after stop()
+PASS: Vehicle should not be running after stop()
+Asserting: Vehicle should be running after start()
+PASS: Vehicle should be running after start()
+Asserting: Vehicle should not be running after stop()
+PASS: Vehicle should not be running after stop()
+Asserting: Vehicle should be running after start()
+PASS: Vehicle should be running after start()
+Asserting: Vehicle should not be running after stop()
+PASS: Vehicle should not be running after stop()
+Asserting: Vehicle should be running after start()
+PASS: Vehicle should be running after start()
+Asserting: Vehicle should not be running after stop()
+PASS: Vehicle should not be running after stop()
+Testing component management
+Asserting: Component 1 start() should have been called
+PASS: Component 1 start() should have been called
+Asserting: Component 2 start() should have been called
+PASS: Component 2 start() should have been called
+Asserting: Component 3 start() should have been called
+PASS: Component 3 start() should have been called
+Asserting: Component 1 should be running
+PASS: Component 1 should be running
+Asserting: Component 2 should be running
+PASS: Component 2 should be running
+Asserting: Component 3 should be running
+PASS: Component 3 should be running
+Asserting: Component 1 stop() should have been called
+PASS: Component 1 stop() should have been called
+Asserting: Component 2 stop() should have been called
+PASS: Component 2 stop() should have been called
+Asserting: Component 3 stop() should have been called
+PASS: Component 3 stop() should have been called
+Asserting: Component 1 should not be running
+PASS: Component 1 should not be running
+Asserting: Component 2 should not be running
+PASS: Component 2 should not be running
+Asserting: Component 3 should not be running
+PASS: Component 3 should not be running
+Testing components are started when vehicle starts
+Asserting: Vehicle 2 should be running after start()
+PASS: Vehicle 2 should be running after start()
+Asserting: Component 4 start() should have been called when vehicle starts
+PASS: Component 4 start() should have been called when vehicle starts
+Asserting: Component 5 start() should have been called when vehicle starts
+PASS: Component 5 start() should have been called when vehicle starts
+Testing communication functionality
+Asserting: Send should return success value
+PASS: Send should return success value
+Send operation completed successfully
+Testing invalid parameters for send/receive
+Asserting: Sending zero size should fail
+PASS: Sending zero size should fail
+Asserting: Receiving with null buffer should fail
+PASS: Receiving with null buffer should fail
+Asserting: Receiving with zero size should fail
+PASS: Receiving with zero size should fail
+Testing receive after vehicle has stopped
+Asserting: Vehicle 2 should not be running after stop()
+PASS: Vehicle 2 should not be running after stop()
+Asserting: Receive should fail when vehicle is not running
+PASS: Receive should fail when vehicle is not running
+Testing vehicle destructor and component cleanup
+Vehicle 2 deleted successfully
+Vehicle test passed successfully!
+Test completed: vehicle_test

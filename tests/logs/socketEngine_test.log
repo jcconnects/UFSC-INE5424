@@ -1,0 +1,48 @@
+Test started: socketEngine_test
+Creating two TestSocketEngine instances
+Asserting: EngineA socket file descriptor should be valid
+PASS: EngineA socket file descriptor should be valid
+Asserting: EngineA epoll file descriptor should be valid
+PASS: EngineA epoll file descriptor should be valid
+Asserting: EngineA interface index should be valid
+PASS: EngineA interface index should be valid
+Asserting: EngineB socket file descriptor should be valid
+PASS: EngineB socket file descriptor should be valid
+Asserting: EngineB epoll file descriptor should be valid
+PASS: EngineB epoll file descriptor should be valid
+Asserting: EngineB interface index should be valid
+PASS: EngineB interface index should be valid
+EngineA MAC Address: 3A:01:80:31:A8:A2
+EngineB MAC Address: 3A:01:80:31:A8:A2
+Asserting: EngineA MAC address should not be empty
+PASS: EngineA MAC address should not be empty
+Asserting: EngineB MAC address should not be empty
+PASS: EngineB MAC address should not be empty
+Asserting: EngineA should be running after initialization
+PASS: EngineA should be running after initialization
+Asserting: EngineB should be running after initialization
+PASS: EngineB should be running after initialization
+Preparing to send a broadcast frame from EngineA
+Sending broadcast frame with size: 62 bytes
+Asserting: Send operation from EngineA should succeed
+PASS: Send operation from EngineA should succeed
+EngineA Signal count: 0
+EngineA Received frames: 0
+EngineB Signal count: 1
+EngineB Received frames: 1
+Asserting: At least one engine should receive a signal
+PASS: At least one engine should receive a signal
+Sending direct frame from EngineB to EngineA
+Asserting: Send operation from EngineB should succeed
+PASS: Send operation from EngineB should succeed
+After direct send:
+EngineA Signal count: 1
+EngineA Received frames: 1
+EngineB Signal count: 0
+EngineB Received frames: 0
+Stopping engines
+Asserting: EngineA should not be running after stop
+PASS: EngineA should not be running after stop
+Asserting: EngineB should not be running after stop
+PASS: EngineB should not be running after stop
+Test completed: socketEngine_test

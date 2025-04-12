@@ -1,0 +1,28 @@
+Test started: message_test
+Asserting: Empty message should have size 0
+PASS: Empty message should have size 0
+Asserting: Message size should match data size
+PASS: Message size should match data size
+Asserting: Message data should not be null
+PASS: Message data should not be null
+Asserting: Message data should match original data
+PASS: Message data should match original data
+Asserting: Copied message size should match original
+PASS: Copied message size should match original
+Asserting: Copied message data should not be null
+PASS: Copied message data should not be null
+Asserting: Copied message data should match original data
+PASS: Copied message data should match original data
+Asserting: Assigned message size should match original
+PASS: Assigned message size should match original
+Asserting: Assigned message data should not be null
+PASS: Assigned message data should not be null
+Asserting: Assigned message data should match original data
+PASS: Assigned message data should match original data
+Asserting: Message size should be capped at MAX_SIZE
+PASS: Message size should be capped at MAX_SIZE
+Asserting: Self-assignment should not change size
+PASS: Self-assignment should not change size
+Asserting: Self-assignment should not change data
+PASS: Self-assignment should not change data
+Test completed: message_test

@@ -1,0 +1,17 @@
+@startuml Buffer_Classes
+
+' Class definitions
+' # means private
+class "Buffer<T>" {
+  # {abstract} T* updated()
+}
+' # means private
+class "Protocol<NIC>" {
+  # {abstract} void update(Buffer<T>* buf) 
+}
+
+' Relationships
+"Buffer<T>" <-- "NIC<Engine>"
+"NIC<Engine>" <-- "Protocol<NIC>"
+
+@enduml 

@@ -1,0 +1,17 @@
+@startuml Message_Classes
+
+' Class definitions
+class "Message<T>" {
+}
+
+class "Vehicle" {
+}
+
+class "Communicator<Channel>" {
+}
+
+' Relationships
+"Vehicle" o--"Message<T>"
+"Communicator<Channel>" o--"Message<T>"
+
+@enduml 

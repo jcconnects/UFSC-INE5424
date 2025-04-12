@@ -1,0 +1,104 @@
+@startuml Test_Dependencies
+!theme plain
+
+title "Test Dependencies Structure"
+
+package "Unit Tests" as unit {
+  class "socketEngine_test" as SocketTest {
+    Tests raw socket functionality
+  }
+  class "ethernet_test" as EthernetTest {
+    Tests MAC addressing
+    Tests frame format
+  }
+  class "buffer_test" as BufferTest {
+    Tests buffer allocation
+    Tests data handling
+  }
+  class "message_test" as MessageTest {
+    Tests message creation
+    Tests content validation
+  }
+  class "list_test" as ListTest {
+    Tests data collections
+  }
+  class "observer_pattern_test" as ObserverTest {
+    Tests notification system
+  }
+}
+
+package "Integration Tests" as integration {
+  class "nic_test" as NicTest {
+    Tests network interface
+    Tests frame transmission
+  }
+  class "protocol_test" as ProtocolTest {
+    Tests protocol handling
+    Tests addressing
+  }
+  class "initializer_test" as InitializerTest {
+    Tests component creation
+  }
+  class "vehicle_test" as VehicleTest {
+    Tests vehicle management
+    Tests component lifecycle
+  }
+}
+
+package "System Tests" as system {
+  class "demo" as DemoTest {
+    Tests full system operation
+    Runs multiple vehicles
+  }
+}
+
+' Dependencies between unit tests
+EthernetTest <-- SocketTest : uses
+BufferTest <-- NicTest : uses
+
+' Dependencies between test levels
+SocketTest <-- NicTest : builds on
+EthernetTest <-- NicTest : builds on
+NicTest <-- ProtocolTest : builds on
+ObserverTest <-- ProtocolTest : builds on
+ProtocolTest <-- VehicleTest : builds on
+InitializerTest <-- VehicleTest : builds on
+VehicleTest <-- DemoTest : builds on
+
+' Test levels
+note right of unit #LightBlue
+  <b>Unit Tests</b>
+  - Test components in isolation
+  - Must pass before integration tests
+end note
+
+note right of integration #LightGreen
+  <b>Integration Tests</b>
+  - Test component interactions
+  - Must pass before system tests
+end note
+
+note right of system #LightPink
+  <b>System Tests</b>
+  - Test full system operation
+  - Validates complete system
+end note
+
+' Execution order
+unit -down-> integration : execute after
+integration -down-> system : execute after
+
+note bottom of DemoTest
+  System tests like demo verify the entire
+  communication stack working together
+end note
+
+legend right
+  Test Execution Flow
+  ----
+  1. Unit Tests
+  2. Integration Tests
+  3. System Tests
+endlegend
+
+@enduml 

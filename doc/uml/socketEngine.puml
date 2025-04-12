@@ -1,0 +1,15 @@
+@startuml SocketEngine_Classes
+
+class SocketEngine {
+}
+
+class "Ethernet::Frame" {
+}
+
+class "Ethernet::Address" {
+}
+
+"SocketEngine" o-- "Ethernet::Address" : has >
+"SocketEngine" --> "Ethernet::Frame" : uses >
+
+@enduml
