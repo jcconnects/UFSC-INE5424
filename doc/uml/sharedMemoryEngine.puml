@@ -1,0 +1,38 @@
+@startuml
+
+class SharedMemoryEngine {
+  - _component_id: ComponentId
+  - _mac_address: Ethernet::Address
+  - _notify_fd: int
+  - _ep_fd: int
+  - _receive_thread: pthread_t
+  - _running: bool
+  - {static} _memory_initialized: std::atomic<bool>
+  - {static} _notify_fds: std::map<ComponentId, int>
+  - {static} _global_mutex: pthread_mutex_t
+  - {static} _component_queues: std::map<ComponentId, std::deque<SharedFrame>>
+  - {static} _queue_mutex: pthread_mutex_t
+  
+  + SharedMemoryEngine(id: ComponentId)
+  + ~SharedMemoryEngine()
+  + running(): bool
+  + send(frame: Ethernet::Frame*, size: unsigned int): int
+  + stop(): void
+  + getId(): ComponentId
+  + getMacAddress(): Ethernet::Address
+  + {static} run(arg: void*): void*
+  
+  # readFrame(frame: SharedFrame&): bool
+  # handleSignal(): void
+  
+  - setupSharedMemory(): void
+  - setupEpoll(): void
+  - {static} addFrameToQueue(component_id: ComponentId, frame: const SharedFrame&): void
+}
+
+class NIC {
+}
+
+NIC --> SharedMemoryEngine : uses
+
+@enduml 
