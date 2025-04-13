@@ -1,0 +1,65 @@
+@startuml communicator_test
+
+skinparam actor {
+    BackgroundColor #D0E0FF
+}
+skinparam participant {
+    BackgroundColor #FFE0D0 
+}
+
+title Communicator Test - Sequence Diagram
+
+actor "Test Harness" as Test
+participant "Initializer" as Initializer
+participant "NIC<SocketEngine" as NIC
+participant "Protocol<NIC<SocketEngine>>" as Protocol
+participant "Communicator<Protocol<NIC<SocketEngine>>>" as Communicator
+participant "Ethernet::Address" as Address
+participant "Message<1488>" as Message
+
+note over Test: Initialize test
+Test -> Initializer: create_nic(1)
+Initializer -> Address: create addr (02:00:00:00:00:01)
+Initializer -> NIC: create instance
+Initializer -> NIC: setAddress(addr)
+Test <-- Initializer: nic instance
+Test -> Initializer: create_protocol(nic)
+Initializer -> Protocol: create instance
+Test <-- Initializer: protocol instance
+Test -> Communicator: create instance
+Test -> Test: initialize atomic thread_done as false
+
+note over Test: Test 1: Communicator::close() test
+Test -> Test: create receiver thread
+Test -> Message: create instance
+Test -> Communicator: receive(&m1)
+note over Communicator: No message to be received so thread is blocked
+Test -> Communicator: close()
+note over Test: Ublocks thread calling close()
+Test -> Test: verifies test has been successfull through atomic boolean
+
+note over Test: Test 2: Communicator::send() test
+Test -> Message: create instance
+Test -> Communicator: send(&m2)
+Test -> Test: verify sent == true
+
+note over Test: Test 3: Communicator::receive() test
+Test -> Test: set thread_done to false
+Test -> Test: create receiver thread
+Test -> Message: create instance
+Test -> Communicator: receive(&m1)
+note over Communicator: This time there is a message so receive should return and not block the thread
+Test -> Test: sleep(1)
+Test -> Test: verify thread has finished only after receiving the message
+note over Test: calls close() just in case
+Test -> Communicator: close()
+
+note over Test: Cleanup
+Test -> Test: thread synchronization
+Test -> Test: delete communicator
+Test -> Test: delete protocol
+Test -> Test: delete nic
+
+note over Test: Test Completed
+
+@enduml
