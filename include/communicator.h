@@ -39,6 +39,8 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         Communicator& operator=(const Communicator&) = delete;
 
     private:
+
+        using Observer::update;
         // Update method for Observer pattern
         void update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition c, Buffer* buf);
 
