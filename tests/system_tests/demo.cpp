@@ -33,7 +33,7 @@ void run_vehicle(Vehicle* v, std::string log_prefix) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist_lifetime(10, 50);
+    std::uniform_int_distribution<> dist_lifetime(5, 20);
     int lifetime = dist_lifetime(gen); // Reduced lifetime range from 10-50 seconds
 
     // Create components based on vehicle ID
@@ -55,11 +55,20 @@ void run_vehicle(Vehicle* v, std::string log_prefix) {
     sleep(lifetime);
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] lifetime ended. Stopping vehicle.\n";
 
-    // Signal the vehicle logic to stop
-    v->stop();
-
-    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] terminated cleanly.\n";
-    // Vehicle and components are cleaned up in Vehicle's destructor
+    try {
+        // Signal the vehicle logic to stop
+        v->stop();
+        db<Vehicle>(INF) << "[Vehicle " << v->id() << "] stopped, about to delete\n";
+        
+        // Clean up vehicle (will delete components)
+        delete v;
+        
+        db<Vehicle>(INF) << "Vehicle deleted and terminated cleanly.\n";
+    } catch (const std::exception& e) {
+        db<Vehicle>(ERR) << "[Vehicle " << v->id() << "] Exception during cleanup: " << e.what() << "\n";
+    } catch (...) {
+        db<Vehicle>(ERR) << "[Vehicle " << v->id() << "] Unknown error during cleanup\n";
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -67,7 +76,7 @@ int main(int argc, char* argv[]) {
     
     TEST_LOG("Application started!");
 
-    unsigned int n_vehicles = 30;
+    unsigned int n_vehicles = 100;
 
     // Create logs directory if it doesn't exist
     mkdir("./logs", 0777);
@@ -94,7 +103,6 @@ int main(int argc, char* argv[]) {
             Vehicle* v = Initializer::create_vehicle(id);
             run_vehicle(v, "Vehicle_" + std::to_string(id));
             
-            delete v;
             Debug::close_log_file();
             
             log_message = "[Child " + std::to_string(getpid()) + "] vehicle " + std::to_string(id) + " finished execution";

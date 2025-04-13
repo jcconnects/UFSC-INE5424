@@ -82,30 +82,30 @@ struct Traits<SocketEngine> : public Traits<void>
 template<typename Channel>
 struct Traits<Communicator<Channel>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for Vehicle class
 template<>
 struct Traits<Vehicle> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 template <>
 struct Traits<Component> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 //traits para classe Debug
 template<>
 struct Traits<Debug> : public Traits<void>
 {
-    static const bool error = false;
-    static const bool warning = false;
+    static const bool error = true;
+    static const bool warning = true;
     static const bool info = true;
-    static const bool trace = false;
+    static const bool trace = true;
 };
 
 

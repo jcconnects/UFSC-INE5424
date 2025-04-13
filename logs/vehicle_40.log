@@ -1,0 +1,2816 @@
+Vehicle::Vehicle() called!
+Communicator<Channel>::Communicator() called!
+[Communicator] attached to Channel
+run_vehicle() called!
+[Vehicle 40] creating sender component
+[Vehicle 40] creating receiver component
+Vehicle::start() called!
+Vehicle::start_components() called!
+SenderComponent::start() called
+ReceiverComponent::start() called
+[Vehicle 40] starting. Lifetime: 5s
+[Vehicle 40] sleeping for lifetime: 5s
+SenderComponent::run() called!
+[SenderComponent 40] sending message 1: {Vehicle 40 message 1 at 249889138600}
+Vehicle::send() called!
+Communicator<Channel>::send() called!
+[Communicator] Channel::send() return value 36
+[Vehicle 40] message sent
+[SenderComponent 40] message 1 sent!
+ReceiverComponent::run() called!
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 34, msg_id = 1, latency = 2066μs (2.066ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 36, msg_id = 1, latency = 1808μs (1.808ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 62, msg_id = 1, latency = 7359μs (7.359ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 74, msg_id = 1, latency = 7545μs (7.545ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 70, msg_id = 1, latency = 7396μs (7.396ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 80, msg_id = 1, latency = 8405μs (8.405ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 50, msg_id = 1, latency = 8362μs (8.362ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 42, msg_id = 1, latency = 8495μs (8.495ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 84, msg_id = 1, latency = 8743μs (8.743ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 54, msg_id = 1, latency = 10085μs (10.085ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 32, msg_id = 1, latency = 10178μs (10.178ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 66, msg_id = 1, latency = 10306μs (10.306ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 64, msg_id = 1, latency = 11025μs (11.025ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 100, msg_id = 1, latency = 10984μs (10.984ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 76, msg_id = 1, latency = 10993μs (10.993ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 82, msg_id = 1, latency = 10756μs (10.756ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 96, msg_id = 1, latency = 10959μs (10.959ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 58, msg_id = 1, latency = 6739μs (6.739ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 88, msg_id = 1, latency = 6969μs (6.969ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 78, msg_id = 1, latency = 7255μs (7.255ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 72, msg_id = 1, latency = 14024μs (14.024ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 68, msg_id = 1, latency = 12683μs (12.683ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 94, msg_id = 1, latency = 15876μs (15.876ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 1, latency = 16022μs (16.022ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 44, msg_id = 1, latency = 14379μs (14.379ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 86, msg_id = 1, latency = 14721μs (14.721ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 92, msg_id = 1, latency = 14649μs (14.649ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 90, msg_id = 1, latency = 12372μs (12.372ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 98, msg_id = 1, latency = 12357μs (12.357ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 60, msg_id = 1, latency = 9450μs (9.45ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 20, msg_id = 1, latency = 10560μs (10.56ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 38, msg_id = 2, latency = 733μs (0.733ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 2, msg_id = 2, latency = 218μs (0.218ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 96, msg_id = 2, latency = 236μs (0.236ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 98, msg_id = 2, latency = 233μs (0.233ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 10, msg_id = 2, latency = 243μs (0.243ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 4, msg_id = 2, latency = 288μs (0.288ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 60, msg_id = 2, latency = 880μs (0.88ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 50, msg_id = 2, latency = 232μs (0.232ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 16, msg_id = 2, latency = 311μs (0.311ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 26, msg_id = 2, latency = 303μs (0.303ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 12, msg_id = 2, latency = 322μs (0.322ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 74, msg_id = 2, latency = 334μs (0.334ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 38, msg_id = 3, latency = 1096μs (1.096ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 88, msg_id = 2, latency = 280μs (0.28ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 28, msg_id = 2, latency = 593μs (0.593ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 42, msg_id = 2, latency = 1676μs (1.676ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 94, msg_id = 2, latency = 1463μs (1.463ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 60, msg_id = 3, latency = 2197μs (2.197ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 26, msg_id = 3, latency = 1056μs (1.056ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 16, msg_id = 3, latency = 578μs (0.578ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 50, msg_id = 3, latency = 2807μs (2.807ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 24, msg_id = 2, latency = 2327μs (2.327ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 68, msg_id = 2, latency = 2056μs (2.056ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 96, msg_id = 3, latency = 1418μs (1.418ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 62, msg_id = 2, latency = 2240μs (2.24ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 76, msg_id = 2, latency = 1116μs (1.116ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 2, msg_id = 3, latency = 1506μs (1.506ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 90, msg_id = 2, latency = 1429μs (1.429ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 98, msg_id = 3, latency = 1288μs (1.288ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 44, msg_id = 2, latency = 1308μs (1.308ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 2, msg_id = 4, latency = 1198μs (1.198ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 34, msg_id = 2, latency = 1384μs (1.384ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 84, msg_id = 2, latency = 2135μs (2.135ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 92, msg_id = 2, latency = 888μs (0.888ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 100, msg_id = 2, latency = 2190μs (2.19ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 24, msg_id = 3, latency = 917μs (0.917ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 20, msg_id = 2, latency = 1056μs (1.056ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 88, msg_id = 3, latency = 715μs (0.715ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 80, msg_id = 2, latency = 2253μs (2.253ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 18, msg_id = 2, latency = 302μs (0.302ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 94, msg_id = 3, latency = 3872μs (3.872ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 52, msg_id = 2, latency = 3674μs (3.674ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 70, msg_id = 2, latency = 282μs (0.282ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 66, msg_id = 2, latency = 252μs (0.252ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 86, msg_id = 2, latency = 144μs (0.144ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 34, msg_id = 3, latency = 216μs (0.216ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 2, latency = 201μs (0.201ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 72, msg_id = 2, latency = 181μs (0.181ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 48, msg_id = 2, latency = 222μs (0.222ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 36, msg_id = 2, latency = 224μs (0.224ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 14, msg_id = 2, latency = 1845μs (1.845ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 82, msg_id = 2, latency = 643μs (0.643ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 54, msg_id = 2, latency = 2952μs (2.952ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 32, msg_id = 2, latency = 284μs (0.284ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 4, msg_id = 3, latency = 1857μs (1.857ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 78, msg_id = 2, latency = 220μs (0.22ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 12, msg_id = 3, latency = 1840μs (1.84ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 6, msg_id = 2, latency = 220μs (0.22ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 58, msg_id = 2, latency = 1786μs (1.786ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 66, msg_id = 3, latency = 133μs (0.133ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 3, latency = 748μs (0.748ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 34, msg_id = 4, latency = 1326μs (1.326ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 56, msg_id = 2, latency = 274μs (0.274ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 50, msg_id = 4, latency = 228μs (0.228ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 64, msg_id = 2, latency = 147μs (0.147ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 44, msg_id = 3, latency = 200μs (0.2ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 8, msg_id = 2, latency = 219μs (0.219ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 60, msg_id = 4, latency = 192μs (0.192ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 22, msg_id = 2, latency = 478μs (0.478ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 92, msg_id = 3, latency = 211μs (0.211ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 62, msg_id = 3, latency = 236μs (0.236ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 30, msg_id = 2, latency = 243μs (0.243ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[SenderComponent 40] sending message 2: {Vehicle 40 message 2 at 249890107019}
+Vehicle::send() called!
+Communicator<Channel>::send() called!
+[Communicator] Channel::send() return value 36
+[Vehicle 40] message sent
+[SenderComponent 40] message 2 sent!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 42, msg_id = 3, latency = 495μs (0.495ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 56, msg_id = 3, latency = 297μs (0.297ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 84, msg_id = 3, latency = 1317μs (1.317ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 10, msg_id = 3, latency = 1623μs (1.623ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 68, msg_id = 3, latency = 908μs (0.908ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 74, msg_id = 3, latency = 851μs (0.851ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 24, msg_id = 4, latency = 1178μs (1.178ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 98, msg_id = 4, latency = 859μs (0.859ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 80, msg_id = 3, latency = 2029μs (2.029ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 54, msg_id = 3, latency = 731μs (0.731ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 26, msg_id = 4, latency = 1717μs (1.717ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 38, msg_id = 4, latency = 1301μs (1.301ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 14, msg_id = 3, latency = 1195μs (1.195ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 36, msg_id = 3, latency = 3226μs (3.226ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 12, msg_id = 4, latency = 1814μs (1.814ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 16, msg_id = 4, latency = 1364μs (1.364ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 42, msg_id = 4, latency = 1515μs (1.515ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 4, latency = 597μs (0.597ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 52, msg_id = 3, latency = 1347μs (1.347ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 74, msg_id = 4, latency = 1813μs (1.813ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 94, msg_id = 4, latency = 1793μs (1.793ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 14, msg_id = 4, latency = 597μs (0.597ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 76, msg_id = 3, latency = 1812μs (1.812ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[SenderComponent 40] sending message 3: {Vehicle 40 message 3 at 249890393014}
+Vehicle::send() called!
+Communicator<Channel>::send() called!
+[Communicator] Channel::send() return value 36
+[Vehicle 40] message sent
+[SenderComponent 40] message 3 sent!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 28, msg_id = 3, latency = 1485μs (1.485ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 32, msg_id = 3, latency = 1963μs (1.963ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 62, msg_id = 4, latency = 1173μs (1.173ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 96, msg_id = 4, latency = 1000μs (1ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 86, msg_id = 3, latency = 1438μs (1.438ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 2, msg_id = 5, latency = 1271μs (1.271ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 54, msg_id = 4, latency = 1275μs (1.275ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 78, msg_id = 3, latency = 1738μs (1.738ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 88, msg_id = 4, latency = 165μs (0.165ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 84, msg_id = 4, latency = 1700μs (1.7ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 58, msg_id = 3, latency = 1696μs (1.696ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 14, msg_id = 5, latency = 2118μs (2.118ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 8, msg_id = 3, latency = 2079μs (2.079ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 18, msg_id = 3, latency = 1766μs (1.766ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 48, msg_id = 3, latency = 1668μs (1.668ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 50, msg_id = 5, latency = 1196μs (1.196ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 68, msg_id = 4, latency = 1499μs (1.499ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 10, msg_id = 4, latency = 1265μs (1.265ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 92, msg_id = 4, latency = 2103μs (2.103ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 42, msg_id = 5, latency = 2017μs (2.017ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 36, msg_id = 4, latency = 1894μs (1.894ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 90, msg_id = 3, latency = 2088μs (2.088ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 96, msg_id = 5, latency = 199μs (0.199ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 62, msg_id = 5, latency = 2117μs (2.117ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[SenderComponent 40enderComponent ffer retrieved
+40] sending message nnel::receive() returned size 36sending message 46
+:[Ve[Vehicle 40hicle 40 message 4 at 249890636104}
+] ] message received
+Vehicle::send() called!
+Communicator<Channel>::send() called!
+[Communicator] Channel::send() return value 36
+[Vehicle 40] message sent
+[SenderComponent 40] message 4 sent!
+[ReceiverComponent 40] received message from Vehicle 28, msg_id = 4, latency = 1848μs (1.848ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 98, msg_id = 5, latency = 742μs (0.742ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 20, msg_id = 3, latency = 3111μs (3.111ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 100, msg_id = 3, latency = 703μs (0.703ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 66, msg_id = 4, latency = 751μs (0.751ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 8, msg_id = 4, latency = 171μs (0.171ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 22, msg_id = 3, latency = 1322μs (1.322ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 4, msg_id = 4, latency = 210μs (0.21ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 80, msg_id = 4, latency = 1350μs (1.35ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 18, msg_id = 4, latency = 224μs (0.224ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 54, msg_id = 5, latency = 1684μs (1.684ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 5, latency = 2116μs (2.116ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 94, msg_id = 5, latency = 193μs (0.193ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 6, msg_id = 3, latency = 1942μs (1.942ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 70, msg_id = 3, latency = 652μs (0.652ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 72, msg_id = 3, latency = 1947μs (1.947ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 20, msg_id = 4, latency = 964μs (0.964ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 66, msg_id = 5, latency = 1849μs (1.849ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 86, msg_id = 4, latency = 169μs (0.169ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 38, msg_id = 5, latency = 184μs (0.184ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 34, msg_id = 5, latency = 187μs (0.187ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 14, msg_id = 6, latency = 920μs (0.92ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 62, msg_id = 6, latency = 222μs (0.222ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 82, msg_id = 3, latency = 177μs (0.177ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 64, msg_id = 3, latency = 499μs (0.499ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 8, msg_id = 5, latency = 2126μs (2.126ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 96, msg_id = 6, latency = 267μs (0.267ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 44, msg_id = 4, latency = 2111μs (2.111ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 68, msg_id = 5, latency = 464μs (0.464ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 36, msg_id = 5, latency = 782μs (0.782ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 84, msg_id = 5, latency = 2369μs (2.369ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 70, msg_id = 4, latency = 1476μs (1.476ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 56, msg_id = 4, latency = 2440μs (2.44ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 30, msg_id = 3, latency = 1617μs (1.617ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 34, msg_id = 6, latency = 2236μs (2.236ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 60, msg_id = 5, latency = 326μs (0.326ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 98, msg_id = 6, latency = 2766μs (2.766ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 26, msg_id = 5, latency = 858μs (0.858ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 6, msg_id = 4, latency = 1540μs (1.54ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 54, msg_id = 6, latency = 1927μs (1.927ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 2, msg_id = 6, latency = 1275μs (1.275ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 38, msg_id = 6, latency = 2000μs (2ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 80, msg_id = 5, latency = 692μs (0.692ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 52, msg_id = 4, latency = 1275μs (1.275ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 12, msg_id = 5, latency = 803μs (0.803ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 50, msg_id = 6, latency = 167μs (0.167ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 76, msg_id = 4, latency = 1352μs (1.352ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 24, msg_id = 5, latency = 1641μs (1.641ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 88, msg_id = 5, latency = 304μs (0.304ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 14, msg_id = 7, latency = 1219μs (1.219ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 16, msg_id = 5, latency = 229μs (0.229ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 92, msg_id = 5, latency = 695μs (0.695ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 10, msg_id = 5, latency = 172μs (0.172ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 82, msg_id = 4, latency = 1164μs (1.164ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 84, msg_id = 6, latency = 1369μs (1.369ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 48, msg_id = 4, latency = 204μs (0.204ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 90, msg_id = 4, latency = 1539μs (1.539ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 58, msg_id = 4, latency = 538μs (0.538ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 86, msg_id = 5, latency = 206μs (0.206ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 2, msg_id = 7, latency = 195μs (0.195ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 70, msg_id = 5, latency = 248μs (0.248ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 74, msg_id = 5, latency = 757μs (0.757ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 20, msg_id = 5, latency = 784μs (0.784ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 78, msg_id = 4, latency = 134μs (0.134ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 66, msg_id = 6, latency = 156μs (0.156ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 100, msg_id = 4, latency = 160μs (0.16ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 32, msg_id = 4, latency = 501μs (0.501ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 68, msg_id = 6, latency = 204μs (0.204ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 52, msg_id = 5, latency = 951μs (0.951ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 4, msg_id = 5, latency = 143μs (0.143ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 22, msg_id = 4, latency = 563μs (0.563ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 18, msg_id = 5, latency = 1345μs (1.345ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 26, msg_id = 6, latency = 1841μs (1.841ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 8, msg_id = 6, latency = 165μs (0.165ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 42, msg_id = 6, latency = 558μs (0.558ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[SenderComponent 40] sending message 5: {Vehicle 40 message 5 at 249891467655}
+Vehicle::send() called!
+Communicator<Channel>::send() called!
+[Communicator] Channel::send() return value 36
+[Vehicle 40] message sent
+[SenderComponent 40] message 5 sent!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 72, msg_id = 4, latency = 1642μs (1.642ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 64, msg_id = 4, latency = 562μs (0.562ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 6, msg_id = 5, latency = 1217μs (1.217ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 56, msg_id = 5, latency = 1989μs (1.989ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 28, msg_id = 5, latency = 631μs (0.631ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 94, msg_id = 6, latency = 2702μs (2.702ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 12, msg_id = 6, latency = 255μs (0.255ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 52, msg_id = 6, latency = 832μs (0.832ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 58, msg_id = 5, latency = 2343μs (2.343ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 24, msg_id = 6, latency = 1474μs (1.474ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 16, msg_id = 6, latency = 1686μs (1.686ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 22, msg_id = 5, latency = 721μs (0.721ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 44, msg_id = 5, latency = 2285μs (2.285ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 6, latency = 2098μs (2.098ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 14, msg_id = 8, latency = 1773μs (1.773ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 100, msg_id = 5, latency = 1214μs (1.214ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 54, msg_id = 7, latency = 1204μs (1.204ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 62, msg_id = 7, latency = 1226μs (1.226ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 88, msg_id = 6, latency = 1180μs (1.18ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 56, msg_id = 6, latency = 1155μs (1.155ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 4, msg_id = 6, latency = 742μs (0.742ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 70, msg_id = 6, latency = 2092μs (2.092ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 78, msg_id = 5, latency = 520μs (0.52ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[SenderComponent 40] sending message 6: {Vehicle 40 message 6 at 249891803532}
+Vehicle::send() called!
+Communicator<Channel>::send() called!
+[Communicator] Channel::send() return value 36
+[Vehicle 40] message sent
+[SenderComponent 40] message 6 sent!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 64, msg_id = 5, latency = 2239μs (2.239ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 50, msg_id = 7, latency = 2535μs (2.535ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 38, msg_id = 7, latency = 1323μs (1.323ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 96, msg_id = 7, latency = 1557μs (1.557ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 34, msg_id = 7, latency = 919μs (0.919ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 8, msg_id = 7, latency = 1714μs (1.714ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 84, msg_id = 7, latency = 167μs (0.167ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 28, msg_id = 6, latency = 1576μs (1.576ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 36, msg_id = 6, latency = 2420μs (2.42ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 26, msg_id = 7, latency = 1920μs (1.92ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 60, msg_id = 6, latency = 1299μs (1.299ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 98, msg_id = 7, latency = 681μs (0.681ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 54, msg_id = 8, latency = 2566μs (2.566ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 74, msg_id = 6, latency = 294μs (0.294ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 30, msg_id = 4, latency = 1138μs (1.138ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 10, msg_id = 6, latency = 754μs (0.754ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 48, msg_id = 5, latency = 273μs (0.273ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 20, msg_id = 6, latency = 709μs (0.709ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 6, msg_id = 6, latency = 311μs (0.311ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 18, msg_id = 6, latency = 599μs (0.599ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 82, msg_id = 5, latency = 1713μs (1.713ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 70, msg_id = 7, latency = 4504μs (4.504ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 12, msg_id = 7, latency = 4091μs (4.091ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 80, msg_id = 6, latency = 1942μs (1.942ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 92, msg_id = 6, latency = 1120μs (1.12ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 14, msg_id = 9, latency = 1074μs (1.074ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 58, msg_id = 6, latency = 809μs (0.809ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 76, msg_id = 5, latency = 2831μs (2.831ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 56, msg_id = 7, latency = 1610μs (1.61ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 7, latency = 1684μs (1.684ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 86, msg_id = 6, latency = 309μs (0.309ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 32, msg_id = 5, latency = 726μs (0.726ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 60, msg_id = 7, latency = 1080μs (1.08ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 66, msg_id = 7, latency = 642μs (0.642ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 94, msg_id = 7, latency = 831μs (0.831ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 2, msg_id = 8, latency = 384μs (0.384ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 4, msg_id = 7, latency = 260μs (0.26ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 30, msg_id = 5, latency = 672μs (0.672ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 42, msg_id = 7, latency = 331μs (0.331ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 52, msg_id = 7, latency = 313μs (0.313ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 88, msg_id = 7, latency = 1196μs (1.196ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 12, msg_id = 8, latency = 289μs (0.289ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 90, msg_id = 5, latency = 1203μs (1.203ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 44, msg_id = 6, latency = 1077μs (1.077ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 68, msg_id = 7, latency = 1394μs (1.394ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 38, msg_id = 8, latency = 1479μs (1.479ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 8, msg_id = 8, latency = 1842μs (1.842ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 78, msg_id = 6, latency = 1333μs (1.333ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 86, msg_id = 7, latency = 287μs (0.287ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 76, msg_id = 6, latency = 1857μs (1.857ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 24, msg_id = 7, latency = 768μs (0.768ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 50, msg_id = 8, latency = 1956μs (1.956ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 44, msg_id = 7, latency = 1509μs (1.509ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 34, msg_id = 8, latency = 3513μs (3.513ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 28, msg_id = 7, latency = 2687μs (2.687ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 100, msg_id = 6, latency = 845μs (0.845ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 6, msg_id = 7, latency = 1115μs (1.115ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 72, msg_id = 5, latency = 1476μs (1.476ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 70, msg_id = 8, latency = 1278μs (1.278ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 66, msg_id = 8, latency = 681μs (0.681ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 74, msg_id = 7, latency = 1724μs (1.724ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 16, msg_id = 7, latency = 1052μs (1.052ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 42, msg_id = 8, latency = 1164μs (1.164ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 32, msg_id = 6, latency = 1413μs (1.413ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 96, msg_id = 8, latency = 1434μs (1.434ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 8, latency = 1348μs (1.348ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 22, msg_id = 6, latency = 1043μs (1.043ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 88, msg_id = 8, latency = 705μs (0.705ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 4, msg_id = 8, latency = 1606μs (1.606ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 74, msg_id = 8, latency = 1811μs (1.811ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 54, msg_id = 9, latency = 1477μs (1.477ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 30, msg_id = 6, latency = 1385μs (1.385ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 48, msg_id = 6, latency = 1945μs (1.945ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 62, msg_id = 8, latency = 1512μs (1.512ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 14, msg_id = 10, latency = 1254μs (1.254ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[SenderComponent 40] sending message 7: {Vehicle 40 message 7 at 249892636085}
+Vehicle::send() called!
+Communicator<Channel>::send() called!
+[Communicator] Channel::send() return value 36
+[Vehicle 40] message sent
+[SenderComponent 40] message 7 sent!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 98, msg_id = 8, latency = 182μs (0.182ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 84, msg_id = 8, latency = 661μs (0.661ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 60, msg_id = 8, latency = 1232μs (1.232ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 34, msg_id = 9, latency = 2167μs (2.167ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 36, msg_id = 7, latency = 1512μs (1.512ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 38, msg_id = 9, latency = 1181μs (1.181ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 6, msg_id = 8, latency = 1588μs (1.588ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 64, msg_id = 6, latency = 616μs (0.616ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 80, msg_id = 7, latency = 649μs (0.649ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 58, msg_id = 7, latency = 611μs (0.611ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 86, msg_id = 8, latency = 1043μs (1.043ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 42, msg_id = 9, latency = 1608μs (1.608ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 82, msg_id = 6, latency = 641μs (0.641ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 44, msg_id = 8, latency = 2110μs (2.11ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 52, msg_id = 8, latency = 941μs (0.941ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 18, msg_id = 7, latency = 1708μs (1.708ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 62, msg_id = 9, latency = 1302μs (1.302ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 94, msg_id = 8, latency = 597μs (0.597ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 16, msg_id = 8, latency = 363μs (0.363ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 86, msg_id = 9, latency = 1458μs (1.458ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 26, msg_id = 8, latency = 1714μs (1.714ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 24, msg_id = 8, latency = 950μs (0.95ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 20, msg_id = 7, latency = 1682μs (1.682ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 74, msg_id = 9, latency = 1357μs (1.357ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 4, msg_id = 9, latency = 1705μs (1.705ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 10, msg_id = 7, latency = 1439μs (1.439ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 90, msg_id = 6, latency = 1775μs (1.775ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 98, msg_id = 9, latency = 2129μs (2.129ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 92, msg_id = 7, latency = 209μs (0.209ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 100, msg_id = 7, latency = 1701μs (1.701ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 56, msg_id = 8, latency = 1012μs (1.012ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 58, msg_id = 8, latency = 1191μs (1.191ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 66, msg_id = 9, latency = 1018μs (1.018ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 2, msg_id = 9, latency = 1347μs (1.347ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 76, msg_id = 7, latency = 1340μs (1.34ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 9, latency = 677μs (0.677ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 60, msg_id = 9, latency = 1200μs (1.2ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 22, msg_id = 7, latency = 1798μs (1.798ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 12, msg_id = 9, latency = 1462μs (1.462ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 38, msg_id = 10, latency = 208μs (0.208ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 36, msg_id = 8, latency = 660μs (0.66ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 90, msg_id = 7, latency = 2538μs (2.538ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 70, msg_id = 9, latency = 1122μs (1.122ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 18, msg_id = 8, latency = 4014μs (4.014ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 94, msg_id = 9, latency = 2050μs (2.05ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 8, msg_id = 9, latency = 1769μs (1.769ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 80, msg_id = 8, latency = 1997μs (1.997ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 96, msg_id = 9, latency = 1563μs (1.563ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 78, msg_id = 7, latency = 2046μs (2.046ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 34, msg_id = 10, latency = 2712μs (2.712ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 14, msg_id = 11, latency = 15825μs (15.825ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 50, msg_id = 9, latency = 14377μs (14.377ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 92, msg_id = 8, latency = 7719μs (7.719ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 68, msg_id = 8, latency = 6771μs (6.771ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 28, msg_id = 8, latency = 2912μs (2.912ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 4, msg_id = 10, latency = 5902μs (5.902ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[SenderComponent 40] sending message 8: {Vehicle 40 message 8 at 249893293016}
+Vehicle::send() called!
+Communicator<Channel>::send() called!
+[Communicator] Channel::send() return value 36
+[Vehicle 40] message sent
+[SenderComponent 40] message 8 sent!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 42, msg_id = 10, latency = 4041μs (4.041ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 64, msg_id = 7, latency = 3051μs (3.051ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 82, msg_id = 7, latency = 5747μs (5.747ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 76, msg_id = 8, latency = 4213μs (4.213ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 54, msg_id = 10, latency = 6214μs (6.214ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 52, msg_id = 9, latency = 3416μs (3.416ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 2, msg_id = 10, latency = 4123μs (4.123ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 22, msg_id = 8, latency = 2554μs (2.554ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 88, msg_id = 9, latency = 6891μs (6.891ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 36, msg_id = 9, latency = 6182μs (6.182ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 48, msg_id = 7, latency = 2636μs (2.636ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 30, msg_id = 7, latency = 246μs (0.246ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 72, msg_id = 6, latency = 2111μs (2.111ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 84, msg_id = 9, latency = 2852μs (2.852ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 92, msg_id = 9, latency = 1512μs (1.512ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 28, msg_id = 9, latency = 1191μs (1.191ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 35
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 6, msg_id = 9, latency = 1422μs (1.422ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 98, msg_id = 10, latency = 262μs (0.262ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 58, msg_id = 9, latency = 821μs (0.821ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 60, msg_id = 10, latency = 210μs (0.21ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 86, msg_id = 10, latency = 145μs (0.145ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 32, msg_id = 7, latency = 225μs (0.225ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 26, msg_id = 9, latency = 201μs (0.201ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 66, msg_id = 10, latency = 193μs (0.193ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[SenderComponent 40] sending message 9: {Vehicle 40 message 9 at 249893546294}
+Vehicle::send() called!
+Communicator<Channel>::send() called!
+[Communicator] Channel::send() return value 36
+[Vehicle 40] message sent
+[SenderComponent 40] message 9 sent!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 70, msg_id = 10, latency = 154μs (0.154ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 44, msg_id = 9, latency = 149μs (0.149ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 78, msg_id = 8, latency = 201μs (0.201ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 58, msg_id = 10, latency = 1444μs (1.444ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 24, msg_id = 9, latency = 163μs (0.163ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 74, msg_id = 10, latency = 3083μs (3.083ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 12, msg_id = 10, latency = 159μs (0.159ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 16, msg_id = 9, latency = 3688μs (3.688ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 62, msg_id = 10, latency = 1304μs (1.304ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[SenderComponent 40] sending message 10: {Vehicle 40 message 10 at 249893693585}
+Vehicle::send() called!
+Communicator<Channel>::send() called!
+[Communicator] Channel::send() return value 37
+[Vehicle 40] message sent
+[SenderComponent 40] message 10 sent!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 38, msg_id = 11, latency = 178μs (0.178ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 24, msg_id = 10, latency = 705μs (0.705ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 56, msg_id = 9, latency = 643μs (0.643ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 20, msg_id = 8, latency = 153μs (0.153ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 34, msg_id = 11, latency = 2416μs (2.416ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 10, latency = 149μs (0.149ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 84, msg_id = 10, latency = 172μs (0.172ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 4, msg_id = 11, latency = 166μs (0.166ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 8, msg_id = 10, latency = 2181μs (2.181ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 94, msg_id = 10, latency = 246μs (0.246ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 76, msg_id = 9, latency = 224μs (0.224ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 42, msg_id = 11, latency = 232μs (0.232ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 50, msg_id = 10, latency = 317μs (0.317ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 58, msg_id = 11, latency = 159μs (0.159ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 100, msg_id = 8, latency = 162μs (0.162ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 92, msg_id = 10, latency = 1335μs (1.335ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 6, msg_id = 10, latency = 5138μs (5.138ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 96, msg_id = 10, latency = 247μs (0.247ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 18, msg_id = 9, latency = 1405μs (1.405ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 11, latency = 159μs (0.159ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 2, msg_id = 11, latency = 1778μs (1.778ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 12, msg_id = 11, latency = 1434μs (1.434ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 48, msg_id = 8, latency = 191μs (0.191ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 84, msg_id = 11, latency = 1636μs (1.636ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 10, msg_id = 8, latency = 751μs (0.751ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 62, msg_id = 11, latency = 2133μs (2.133ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 68, msg_id = 9, latency = 642μs (0.642ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 76, msg_id = 10, latency = 1385μs (1.385ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 90, msg_id = 8, latency = 1167μs (1.167ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 82, msg_id = 8, latency = 1949μs (1.949ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 60, msg_id = 11, latency = 275μs (0.275ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 6, msg_id = 11, latency = 997μs (0.997ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 30, msg_id = 8, latency = 1657μs (1.657ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 52, msg_id = 10, latency = 869μs (0.869ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 14, msg_id = 12, latency = 906μs (0.906ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 12, msg_id = 12, latency = 600μs (0.6ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 46, msg_id = 12, latency = 639μs (0.639ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 64, msg_id = 8, latency = 1255μs (1.255ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 76, msg_id = 11, latency = 2385μs (2.385ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 26, msg_id = 10, latency = 1499μs (1.499ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 38, msg_id = 12, latency = 1439μs (1.439ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 36
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 80, msg_id = 9, latency = 2230μs (2.23ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Communicator] buffer retrieved
+[Communicator] Channel::receive() returned size 37
+[Vehicle 40] message received
+[ReceiverComponent 40] received message from Vehicle 98, msg_id = 11, latency = 1338μs (1.338ms)
+Vehicle::receive() called!
+Communicator<Channel>::receive() called!
+[Vehicle 40] lifetime ended. Stopping vehicle.
+Vehicle::stop() called!
+[Vehicle 40] stop initiated, will close connections and stop components
+[Vehicle 40] closing connections to unblock receive calls
+Communicator<Channel>::close() called!
+Communicator<Channel>::update() called!
+[Vehicle 40] connections closed successfully
+[Vehicle ions closed successfully
+[Communicator] buffer retrieved
+[Vehicle 40] waiting for components to detect stop signal

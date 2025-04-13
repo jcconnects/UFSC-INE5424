@@ -74,8 +74,13 @@ Vehicle::Vehicle(unsigned int id, NIC<SocketEngine>* nic, Protocol<NIC<SocketEng
 Vehicle::~Vehicle() {
     db<Vehicle>(TRC) << "Vehicle::~Vehicle() called!\n";
     
-    stop_components();
-
+    // Make sure the vehicle is stopped before destruction
+    if (_running) {
+        stop();
+    }
+    
+    // Components are already stopped in Vehicle::stop()
+    // Now we can safely delete them
     for (auto component : _components) {
         delete component;
     }
@@ -83,6 +88,8 @@ Vehicle::~Vehicle() {
     delete _comms;
     delete _protocol;
     delete _nic;
+
+    db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] destroyed.\n";
 }
 
 const unsigned int Vehicle::id() const {
@@ -103,12 +110,33 @@ void Vehicle::start() {
 void Vehicle::stop() {
     db<Vehicle>(TRC) << "Vehicle::stop() called!\n";
     
+    // First mark as not running - new receive calls will fail quickly
     _running = false;
-
-    // Close connections to unblock receive calls
+    
+    // Log the stop intention to help with debugging
+    db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] stop initiated, will close connections and stop components\n";
+    
+    // Next, close the connections to unblock any blocked receive calls in component threads
     db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] closing connections to unblock receive calls\n";
-    _comms->close();
-    sleep(1);
+    
+    try {
+        _comms->close();
+        db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] connections closed successfully\n";
+    } catch (const std::exception& e) {
+        db<Vehicle>(ERR) << "[Vehicle " << std::to_string(_id) << "] error closing connections: " << e.what() << "\n";
+    } catch (...) {
+        db<Vehicle>(ERR) << "[Vehicle " << std::to_string(_id) << "] unknown error closing connections\n";
+    }
+    
+    // Allow a longer delay for receive calls to return with errors
+    db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] waiting for components to detect stop signal\n";
+    usleep(200000); // 200 milliseconds
+    
+    // Now it's safe to stop components - threads won't be blocked on receive anymore
+    db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] stopping all components\n";
+    stop_components();
+    
+    db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] all components stopped\n";
 }
 
 void Vehicle::add_component(Component* component) {
@@ -132,7 +160,18 @@ void Vehicle::stop_components() {
 int Vehicle::send(const void* data, unsigned int size) {
     db<Vehicle>(TRC) << "Vehicle::send() called!\n";
 
+    // Don't attempt to send if the vehicle is stopping
+    if (!_running) {
+        db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] send() called after vehicle stopped\n";
+        return 0;
+    }
+
     Message<MAX_MESSAGE_SIZE> msg = Message<MAX_MESSAGE_SIZE>(data, size);
+    
+    // Check again before sending
+    if (!_running) {
+        return 0;
+    }
     
     if (!_comms->send(&msg)) {
         db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message not sent\n";
@@ -157,20 +196,44 @@ int Vehicle::receive(void* data, unsigned int size) {
         return 0;
     }
 
+    // Create a message for receiving data
     Message<MAX_MESSAGE_SIZE> msg = Message<MAX_MESSAGE_SIZE>();
-    if (!_comms->receive(&msg)) {
-        db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message not received\n";
+    
+    // Check running state again right before receive call
+    if (!_running) {
+        return 0;
+    }
+    
+    // Attempt to receive a message
+    bool receive_result = _comms->receive(&msg);
+    
+    // Check if we've been stopped while receiving
+    if (!_running) {
+        db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] vehicle stopped during receive\n";
         return 0;
     }
 
-    // Copia os dados recebidos para o buffer fornecido
+    // If receive failed, return appropriately
+    if (!receive_result) {
+        // Only log if vehicle is still running and hasn't been stopped
+        if (_running) {
+            db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message not received\n";
+        }
+        return 0;
+    }
+
+    // Copy received data to provided buffer
     if (msg.size() > size) {
         db<Vehicle>(ERR) << "[Vehicle " << std::to_string(_id) << "] Received message size exceeds buffer size " << std::to_string(size) << "\n";
         return 0;
     }
 
     std::memcpy(data, msg.data(), msg.size());
-    db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message received\n";
+    
+    // Only log success if we're still running
+    if (_running) {
+        db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message received\n";
+    }
 
     return msg.size();
 }

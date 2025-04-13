@@ -5,14 +5,25 @@
 #include <fstream>
 #include <sstream>
 #include <memory>
+#include <pthread.h>
 #include "traits.h"
 
 class Debug
 {
     public:
+        Debug() { 
+            pthread_mutex_init(&_mutex, nullptr); 
+        }
+        
+        ~Debug() { 
+            pthread_mutex_destroy(&_mutex); 
+        }
+        
         template<typename T>
         Debug & operator<<(T p) {
+            pthread_mutex_lock(&_mutex); // Lock during output operation
             if (_stream) (*_stream) << p << std::flush;
+            pthread_mutex_unlock(&_mutex);
             return *this;
         }
 
@@ -24,18 +35,22 @@ class Debug
         Debug & operator<<(const Err & err) { _error = true; return *this; }
 
         static void set_log_file(const std::string &filename) {
+            pthread_mutex_lock(&_file_mutex); // Lock during file operations
             _file_stream = std::make_unique<std::ofstream>(filename, std::ios::out);
             if (!_file_stream->is_open()) {
                 std::cerr << "Erro ao abrir arquivo de log: " << filename << std::endl;
             } else {
                 _stream = _file_stream.get(); // Redireciona a saída para o arquivo
             }
+            pthread_mutex_unlock(&_file_mutex);
         }
 
         static void close_log_file() {
-            if (_file_stream->is_open()) {
+            pthread_mutex_lock(&_file_mutex); // Lock during file operations
+            if (_file_stream && _file_stream->is_open()) {
                 _file_stream->close();
             }
+            pthread_mutex_unlock(&_file_mutex);
         }
     
         static Debug & instance() {
@@ -43,10 +58,20 @@ class Debug
             return debug;
         }
 
+        static void init() {
+            pthread_mutex_init(&_file_mutex, nullptr);
+        }
+        
+        static void cleanup() {
+            pthread_mutex_destroy(&_file_mutex);
+        }
+
     private:
         static std::unique_ptr<std::ofstream> _file_stream;
         static std::ostream* _stream;
         volatile bool _error;
+        static pthread_mutex_t _file_mutex; // Mutex for file operations
+        pthread_mutex_t _mutex; // Mutex for output operations
 
     public:
         static Begl begl;
@@ -147,9 +172,24 @@ db(Debug_Trace l)
     return Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::trace)>();
 }
 
+// Initialize static members
 Debug::Begl Debug::begl;
 Debug::Err Debug::error;
 std::unique_ptr<std::ofstream> Debug::_file_stream;
 std::ostream* Debug::_stream = &std::cout;
+pthread_mutex_t Debug::_file_mutex = PTHREAD_MUTEX_INITIALIZER; // Initialize static mutex
+
+// Call this at program start
+class DebugInitializer {
+public:
+    DebugInitializer() {
+        Debug::init();
+    }
+    ~DebugInitializer() {
+        Debug::cleanup();
+    }
+};
+
+static DebugInitializer debugInitializer;
 
 #endif // DEBUG_H
