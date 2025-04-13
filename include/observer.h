@@ -23,7 +23,7 @@ class Conditional_Data_Observer {
         virtual ~Conditional_Data_Observer() = default;
 
         virtual void update(Condition c, Observed_Data* d);
-        T* updated();
+        virtual T* updated();
 
         const Condition rank() { return _rank; };
     
