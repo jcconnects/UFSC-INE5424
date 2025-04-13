@@ -74,7 +74,6 @@ int main() {
     // Send the message
     bool sent = comm1->send(&m2);
     TEST_ASSERT(sent, "Return value 'sent' should be true");
-    pthread_join(thread_id2, nullptr);
 
     // Test 3: Receive
     // Create a thread to run close in two seconds in case receive does not return until then
@@ -85,9 +84,9 @@ int main() {
     TEST_ASSERT(thread_done.load(), "Return value 'receive_successfull' should be true");
     comm2->close();
 
-
-    pthread_join(thread_id3, nullptr);
+    pthread_join(thread_id, nullptr);
     pthread_join(thread_id2, nullptr);
+    pthread_join(thread_id3, nullptr);
 
 
     // Deleting communicators
