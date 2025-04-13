@@ -177,7 +177,7 @@ SocketEngine::~SocketEngine()  {
 };
 
 const bool SocketEngine::running() {
-    return _running;
+    return _running.load(std::memory_order_acquire);
 }
 
 int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
@@ -264,8 +264,15 @@ void SocketEngine::stop() {
         return; // Return if it was already false
     }
 
+    if (!running())
+        db<SocketEngine>(TRC) << "[SocketEngine] _running set to false.\n";
+
     std::uint64_t u = 1;
-    write(_stop_ev, &u, sizeof(u));
+    ssize_t bytes_written;
+    for (int i = 0; i < 1000; i++)
+        bytes_written = write(_stop_ev, &u, sizeof(u));
+
+    db<SocketEngine>(TRC) << "[SocketEngine] " << bytes_written << " bytes written.\n";
 
     pthread_join(_receive_thread, nullptr);
     db<SocketEngine>(INF) << "[SocketEngine] sucessfully stopped!\n";
