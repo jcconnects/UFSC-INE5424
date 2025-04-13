@@ -12,8 +12,8 @@ Asserting: EngineB epoll file descriptor should be valid
 PASS: EngineB epoll file descriptor should be valid
 Asserting: EngineB interface index should be valid
 PASS: EngineB interface index should be valid
-EngineA MAC Address: 3A:01:80:31:A8:A2
-EngineB MAC Address: 3A:01:80:31:A8:A2
+EngineA MAC Address: 0E:4C:12:DC:02:2F
+EngineB MAC Address: 0E:4C:12:DC:02:2F
 Asserting: EngineA MAC address should not be empty
 PASS: EngineA MAC address should not be empty
 Asserting: EngineB MAC address should not be empty

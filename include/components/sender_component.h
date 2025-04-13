@@ -49,7 +49,7 @@ void* SenderComponent::run(void* arg) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> delay_dist(100, 200);
+    std::uniform_int_distribution<> delay_dist(0, 50);
 
     int counter = 1;
 

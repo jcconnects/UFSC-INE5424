@@ -5,7 +5,7 @@ import re
 from collections import Counter
 
 # Path to logs directory
-LOGS_DIR = "/home/enzo/Desktop/university/SO2/UFSC-INE5424/logs/"
+LOGS_DIR = "logs/"
 REPORT_FILE = "incomplete_logs_report.txt"
 
 def is_incomplete_log(log_content):

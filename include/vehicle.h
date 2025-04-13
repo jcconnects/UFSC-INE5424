@@ -120,7 +120,6 @@ void Vehicle::stop() {
     }
 
     db<Vehicle>(INF) << "[Vehicle " << _id << "] Signaling components to stop.\n";
-    _running = false;
 
     // *** Stop the Engine Thread FIRST ***
     // Ensure the background network processing stops before anything else
@@ -129,6 +128,7 @@ void Vehicle::stop() {
         _nic->stop(); // This calls SocketEngine::stop which should now block until the engine thread is joined
         db<Vehicle>(INF) << "[Vehicle " << _id << "] NIC engine thread stopped.\n";
     }
+
 
     // Close communicator connections to unblock any threads in receive()
     db<Vehicle>(INF) << "[Vehicle " << _id << "] Closing communicator connections.\n";
@@ -147,6 +147,8 @@ void Vehicle::stop() {
     db<Vehicle>(INF) << "[Vehicle " << _id << "] All components stopped and joined.\n";
 
     db<Vehicle>(INF) << "[Vehicle " << _id << "] Vehicle stop sequence complete.\n";
+    
+    _running = false;
 }
 
 void Vehicle::add_component(Component* component) {

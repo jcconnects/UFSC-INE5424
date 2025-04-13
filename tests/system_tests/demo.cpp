@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
     
     TEST_LOG("Application started!");
 
-    unsigned int n_vehicles = 100;
+    unsigned int n_vehicles = 1000;
 
     // Create logs directory if it doesn't exist
     mkdir("./logs", 0777);

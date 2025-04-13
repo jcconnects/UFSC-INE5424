@@ -54,11 +54,11 @@ class SocketEngine{
         virtual void handleSignal() = 0;
 
     protected:
-    int _sock_fd;
-    int _ep_fd;
-    int _if_index;
-    Ethernet::Address _mac_address;
-    
+        int _sock_fd;
+        int _ep_fd;
+        int _if_index;
+        Ethernet::Address _mac_address;
+        
     private:
         const int _stop_ev;
         pthread_t _receive_thread;
@@ -215,12 +215,11 @@ void* SocketEngine::run(void* arg)  {
     SocketEngine* engine = static_cast<SocketEngine*>(arg);
 
     struct epoll_event events[10];
-
-    while (engine->_running.load(std::memory_order_acquire)) {
+    while (engine->running()) {
         int n = epoll_wait(engine->_ep_fd, events, 10, -1);
         
         // Check if we should exit after epoll_wait returns
-        if (!engine->_running.load(std::memory_order_acquire)) {
+        if (!engine->running()) {
             db<SocketEngine>(TRC) << "[SocketEngine] running is false after epoll_wait, exiting loop.\n";
             break;
         }
@@ -233,7 +232,7 @@ void* SocketEngine::run(void* arg)  {
 
         for (int i = 0; i < n; ++i) {
             // Check running state again before handling any event
-            if (!engine->_running.load(std::memory_order_acquire)) {
+            if (!engine->running()) {
                 db<SocketEngine>(TRC) << "[SocketEngine] running is false during event processing, exiting loop.\n";
                 break; // Exit loop if stopped during or after epoll_wait
             }
@@ -268,9 +267,7 @@ void SocketEngine::stop() {
         db<SocketEngine>(TRC) << "[SocketEngine] _running set to false.\n";
 
     std::uint64_t u = 1;
-    ssize_t bytes_written;
-    for (int i = 0; i < 1000; i++)
-        bytes_written = write(_stop_ev, &u, sizeof(u));
+    ssize_t bytes_written = write(_stop_ev, &u, sizeof(u));
 
     db<SocketEngine>(TRC) << "[SocketEngine] " << bytes_written << " bytes written.\n";
 
