@@ -1,0 +1,134 @@
+@startuml protocol_test
+
+skinparam participant {
+    BackgroundColor #FFE0D0
+}
+skinparam actor {
+    BackgroundColor #D0E0FF
+}
+
+title Protocol Test - Sequence Diagram
+
+actor "Test Harness" as Test
+participant "Initializer" as Initializer
+participant "Protocol<NIC<ProtocolTestEngine>>" as Protocol1
+participant "Protocol<NIC<ProtocolTestEngine>>" as Protocol2
+participant "NIC<ProtocolTestEngine>" as NIC1
+participant "NIC<ProtocolTestEngine>" as NIC2
+participant "ProtocolObserver" as Observer1
+participant "ProtocolObserver" as Observer2
+participant "Protocol::Address" as Address
+
+note over Test: Initialize test
+
+Test -> Initializer: create_nic(1)
+Initializer -> NIC1: create instance
+Initializer -> NIC1: setAddress(MAC1)
+Test <-- Initializer: nic1 instance
+
+Test -> Initializer: create_nic(2)
+Initializer -> NIC2: create instance
+Initializer -> NIC2: setAddress(MAC2)
+Test <-- Initializer: nic2 instance
+
+Test -> Initializer: create_protocol(nic1)
+Initializer -> Protocol1: create instance
+Test <-- Initializer: proto1 instance
+
+Test -> Initializer: create_protocol(nic2)
+Initializer -> Protocol2: create instance
+Test <-- Initializer: proto2 instance
+
+note over Test: Test 1: Protocol::Address Class
+
+Test -> Test: create nullAddr with default constructor
+Test -> Test: verify nullAddr.port() == 0
+Test -> Test: verify nullAddr.paddr() == NULL_ADDRESS
+Test -> Test: verify !nullAddr (evaluates to false)
+
+Test -> NIC1: address()
+Test <-- NIC1: mac1
+Test -> Address: create addr1(mac1, port1)
+Test -> Test: verify addr1.port() == port1
+Test -> Test: verify addr1.paddr() == mac1
+Test -> Test: verify addr1 (evaluates to true)
+
+Test -> Address: create addr2(mac1, port1)
+Test -> Test: verify addr1 == addr2
+
+Test -> Address: create addr3(mac1, port1 + 1)
+Test -> Test: verify !(addr1 == addr3)
+
+note over Test: Test 2: Observer Pattern
+
+Test -> Observer1: create observer1(port1)
+Test -> Protocol1: attach(observer1, addr1)
+
+note over Test: Test 3: Send and Receive Functionality
+
+Test -> Test: create test message "Hello Protocol World!"
+Test -> NIC2: address()
+Test <-- NIC2: mac2
+Test -> Address: create src_addr(mac1, port1)
+Test -> Address: create dst_addr(mac2, port2)
+
+Test -> Protocol1: send(src_addr, dst_addr, test_message, msg_len)
+Test <-- Protocol1: bytes_sent
+
+Test -> Test: sleep for 100ms
+
+Test -> Observer2: create observer2(port2)
+Test -> Protocol2: attach(observer2, dst_addr)
+
+Test -> Protocol1: send(src_addr, dst_addr, test_message, msg_len)
+Test <-- Protocol1: bytes_sent
+
+Test -> Observer2: waitForData()
+Test <-- Observer2: received = true
+
+Test -> Protocol2: receive(observer2->last_buffer, src_addr, received_data, size)
+Test <-- Protocol2: bytes_received
+Test -> Test: verify received_data == test_message
+Test -> Test: verify src_addr.port() == port1
+Test -> Test: verify src_addr.paddr() == mac1
+
+note over Test: Test 4: Observer Detach
+
+Test -> Protocol2: detach(observer2, dst_addr)
+Test -> Observer2: resetData()
+Test -> Protocol1: send(src_addr, dst_addr, test_message, msg_len)
+Test <-- Protocol1: bytes_sent
+
+Test -> Test: sleep for 100ms
+Test -> Test: verify !observer2->data_received
+
+note over Test: Test 5: Large Data Handling
+
+Test -> Test: create large_data array (MTU - 10 bytes)
+Test -> Protocol2: attach(observer2, dst_addr)
+Test -> Observer2: resetData()
+
+Test -> Protocol1: send(src_addr, dst_addr, large_data, large_size)
+Test <-- Protocol1: bytes_sent
+
+Test -> Observer2: waitForData()
+Test <-- Observer2: received = true
+
+Test -> Protocol2: receive(observer2->last_buffer, src_addr, received_large, size)
+Test <-- Protocol2: bytes_received
+Test -> Test: verify data integrity
+
+note over Test: Test 6: BROADCAST Address
+
+Test -> Test: verify Protocol::Address::BROADCAST has broadcast MAC
+
+note over Test: Cleanup
+
+Test -> Protocol1: detach(observer1, addr1)
+Test -> Protocol2: detach(observer2, dst_addr)
+Test -> Test: delete observers and protocols
+Test -> Test: delete NICs
+
+note over Test: Test completed
+
+@enduml 

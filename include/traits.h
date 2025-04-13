@@ -1,6 +1,22 @@
 #ifndef TRAITS_H
 #define TRAITS_H
 
+#include <string>
+#include <fstream>
+
+// Helper function to get the interface name
+inline std::string get_interface_name() {
+    std::string interface_name = "test-dummy0"; // Default
+    std::ifstream iface_file("tests/logs/current_test_iface");
+    if (iface_file) {
+        std::getline(iface_file, interface_name);
+        if (!interface_name.empty()) {
+            return interface_name;
+        }
+    }
+    return interface_name;
+}
+
 // Foward Declarations
 template <typename NIC>
 class Protocol;
@@ -54,7 +70,12 @@ template<>
 struct Traits<SocketEngine> : public Traits<void>
 {
     static const bool debugged = false;
-    static constexpr const char* INTERFACE_NAME = "eth0";
+    static constexpr const char* DEFAULT_INTERFACE_NAME = "test-dummy0";
+    
+    static const char* INTERFACE_NAME() {
+        static std::string interface_name = get_interface_name();
+        return interface_name.c_str();
+    }
 };
 
 // Traits for Communicator class
@@ -68,13 +89,13 @@ struct Traits<Communicator<Channel>> : public Traits<void>
 template<>
 struct Traits<Vehicle> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 template <>
 struct Traits<Component> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 //traits para classe Debug

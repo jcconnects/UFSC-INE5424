@@ -4,11 +4,22 @@ This document describes the test suite for UFSC-INE5424 components. The tests ar
 
 ## Test Organization
 
-All component tests are organized in the `tests/components/` directory, following a modular approach to testing:
+Tests are organized in a hierarchical structure within the `tests/` directory:
 
-- Each component has its own dedicated test file
-- Tests use a common testing utility (`tests/components/test_utils.h`)
-- Test logs are stored in the `tests/logs/` directory
+```
+tests/
+├── logs/               # Log files from test execution
+├── unit_tests/         # Tests for individual components in isolation
+├── integration_tests/  # Tests for interactions between components
+├── system_tests/       # Tests for the entire system functioning together
+├── test_utils.h        # Common utilities for all tests
+└── CMakeLists.txt      # Build configuration for tests
+```
+
+This hierarchical approach ensures proper verification at all levels:
+1. **Unit level** - Testing individual components in isolation
+2. **Integration level** - Testing interactions between components
+3. **System level** - Testing the complete system functioning together
 
 ## Test Environment
 
@@ -17,29 +28,62 @@ All tests are executed through a Makefile-based system, which:
 1. Creates necessary directories for test binaries and logs
 2. Compiles the test code
 3. Sets up testing environment (e.g., creating dummy network interfaces)
-4. Executes the tests
+4. Executes the tests in order: unit → integration → system
 5. Cleans up resources afterward
 
-Tests log detailed output to the `tests/logs/` directory, while only showing success/failure status on the console.
+## Network Interface Configuration
+
+The tests use a dummy network interface for network communication:
+
+- Uses a unique interface name (`test-dummy0`) to avoid conflicts
+- Implements safety checks to avoid modifying real network interfaces:
+  - Verifies if an interface is a dummy interface before deletion
+  - Uses a fallback interface name if the primary name exists but isn't a dummy
+  - Tracks which interface was created to ensure only that one is removed
+- Interface name is stored in `tests/logs/current_test_iface` and read by tests
+- All tests dynamically use the interface name from this file for consistent testing
 
 ## Running Tests
 
-To run all tests:
+To run all tests in order (unit → integration → system):
 ```bash
-make test
+make
 ```
 
-To run a specific component test:
+To run a specific test level:
 ```bash
-make run_component_<component_name>_test
+make unit_tests
+make integration_tests
+make system_tests
+```
+
+To run a specific test:
+```bash
+make run_unit_<test_name>
+make run_integration_<test_name>
+make run_system_<test_name>
 ```
 
 For example:
 ```bash
-make run_component_socketEngine_test
+make run_unit_socketEngine
+make run_integration_vehicle
+make run_system_demo
 ```
 
-## Component Tests
+## Test Output
+
+Tests produce different types of output:
+
+- **Unit tests** and **integration tests** display output directly to the console
+- **System tests** redirect output to log files to keep the console clean
+  - Log files are stored in `tests/logs/<test_name>.log`
+  - Only success/failure status is shown on the console
+  - If a test fails, the log is displayed on the console
+
+## Unit Tests
+
+Unit tests verify the functionality of individual components in isolation.
 
 ### 1. Buffer Test (`components/buffer_test.cpp`)
 
@@ -143,8 +187,111 @@ Tests the functionality of the `NIC` template class, which provides a network in
   - Initial statistics verification
   - Error condition handling
   - Drop counter increment on failed operations
-  
-### 7. Observer Pattern Test (`components/observer_pattern_test.cpp`)
+
+### 7. Protocol Test (`components/protocol_test.cpp`)
+
+Tests the functionality of the `Protocol` template class, which provides a protocol layer on top of the network interface.
+
+**Test Cases:**
+- **Protocol::Address Class:**
+  - Default address construction and validation
+  - Address construction with specific MAC and port
+  - Address comparison (equality testing)
+  - Boolean evaluation of addresses (null vs. non-null)
+
+- **Observer Pattern:**
+  - Observer attachment to specific protocol ports
+  - Observer notification on message reception
+  - Observer detachment and verification
+
+- **Send and Receive:**
+  - Message transmission between protocol instances
+  - Source and destination address handling
+  - Message integrity verification after transmission
+  - Buffer management during send/receive operations
+
+- **Large Data Handling:**
+  - Sending data close to MTU size
+  - Data integrity verification for large messages
+
+- **Broadcast Address:**
+  - Verification of the broadcast address constants
+
+### 8. Initializer Test (`components/initializer_test.cpp`)
+
+Tests the functionality of the `Initializer` class, which is responsible for creating and initializing vehicle instances with their network components.
+
+**Test Cases:**
+- **Vehicle Creation:**
+  - Creating vehicles with specific IDs
+  - Verifying vehicle IDs are correctly set
+  - Validating that vehicles are initially not running
+  - Ensuring the proper initialization of all internal components (NIC, Protocol)
+
+- **Vehicle Identity:**
+  - Ensuring different vehicles have unique IDs
+  - Verifying multiple vehicles created with different IDs
+  - Testing creation of a batch of vehicles with sequential IDs
+
+- **Vehicle Lifecycle:**
+  - Starting vehicles and confirming running state
+  - Stopping vehicles and confirming non-running state
+  - Testing multiple start/stop cycles for stability
+
+- **MAC Address Assignment:**
+  - Verifying MAC addresses are correctly derived from vehicle IDs
+  - Checking MAC address format (02:00:00:00:HH:LL where HHLL is the 16-bit ID)
+  - Ensuring MAC address uniqueness between vehicles
+  - Validating the MAC address encoding matches the expected pattern
+
+- **Basic Functionality:**
+  - Testing send functionality of created vehicles
+  - Verifying send operations complete successfully
+  - Testing proper resource management and cleanup
+
+### 9. Vehicle Test (`components/vehicle_test.cpp`)
+
+Tests the functionality of the `Vehicle` class, which manages vehicle state, components, and communication.
+
+**Test Cases:**
+- **Creation and Basic Properties:**
+  - Creating vehicles with specific IDs
+  - Verifying correct ID retrieval
+  - Validating initial running state
+
+- **Lifecycle Management:**
+  - Starting and stopping vehicles
+  - Verifying running state changes correctly
+  - Testing multiple start/stop cycles
+
+- **Component Management:**
+  - Adding components to vehicles
+  - Starting components explicitly
+  - Stopping components explicitly
+  - Verifying component state transitions
+  - Ensuring correct component ownership (components reference correct vehicle)
+
+- **Component Lifecycle Integration:**
+  - Verifying components are started when vehicle starts
+  - Ensuring component lifecycle follows vehicle lifecycle
+  - Testing components across multiple vehicles
+
+- **Communication:**
+  - Testing send functionality with valid parameters
+  - Verifying successful message transmission
+  - Testing communication between different vehicles
+
+- **Error Handling:**
+  - Testing edge cases with empty data buffers
+  - Verifying receive fails when vehicle is stopped
+  - Ensuring proper error responses for invalid inputs
+  - Testing safe error handling for communication failures
+
+- **Resource Management:**
+  - Verifying vehicle destructor properly cleans up components
+  - Testing proper destruction order to avoid memory issues
+
+### 10. Observer Pattern Test (`components/observer_pattern_test.cpp`)
 
 Tests the functionality of the Observer pattern classes, which implement the Observer design pattern in both conditional and concurrent variants.
 
@@ -166,25 +313,21 @@ Tests the functionality of the Observer pattern classes, which implement the Obs
   - Reference counting for shared data
   - Observer detachment while concurrent operations are running
 
-## Test Architecture
+## Integration Tests
 
-The tests use a common testing utility (`test_utils.h`) that provides:
+Integration tests verify the interactions between multiple components.
 
-- Test initialization and logging
-- Assertion macros
-- Logging to both console and files
+## System Tests
 
-Each test follows a similar pattern:
-1. Initialize the test with a name
-2. Create instances of the component being tested
-3. Exercise component functionality through a series of test cases
-4. Assert expected behavior
-5. Clean up resources
+System tests verify the entire system functioning together.
 
-## Test Results
+### 1. Demo Test (`system_tests/demo.cpp`)
 
-Test results are logged to:
-- Console: summary information and success/failure status
-- Log files: detailed test execution information, assertions, and results
+Tests the complete system with multiple vehicles communicating with each other.
 
-Log files are located in the `tests/logs/` directory and named after the test (e.g., `socketEngine_test.log`).
+**Test Cases:**
+- Creating multiple vehicle processes
+- Inter-vehicle communication
+- Automatic component creation and management
+- Message sending between vehicles
+- Graceful process termination

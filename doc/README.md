@@ -154,3 +154,37 @@ For detailed usage examples of each component, refer to their respective README 
 3. **Process-Based Isolation**: Each vehicle runs in its own process
 4. **Dependency Injection**: Components are passed dependencies through constructors
 5. **Callback Pattern**: For asynchronous event handling in SocketEngine 
+
+## Testing Framework
+
+The system includes a comprehensive testing framework organized in a hierarchical structure to ensure robust verification at all levels:
+
+### Test Organization
+
+Tests are located in the `tests/` directory and organized into three levels:
+
+1. **Unit Tests** (`tests/unit_tests/`)
+   - Test individual components in isolation
+   - Verify core functionality of each class
+   - Run first in the test sequence
+
+2. **Integration Tests** (`tests/integration_tests/`)
+   - Test interactions between multiple components
+   - Verify correct communication between layers
+   - Run after unit tests pass
+
+3. **System Tests** (`tests/system_tests/`)
+   - Test the entire system functioning together
+   - Simulate real-world usage scenarios
+   - Run after integration tests pass
+
+### Network Interface Management
+
+The tests create a dummy network interface for simulation:
+
+- Uses a unique interface name (`test-dummy0`) to avoid conflicts with real interfaces
+- Implements safety checks to ensure real network interfaces are never modified
+- Interface is automatically created before tests and removed afterward
+- Tests verify that the interface is a dummy interface before attempting deletion
+
+For more details on the testing framework, see [README_tests.md](README_tests.md) and the testing directory's [README.md](../tests/README.md). 

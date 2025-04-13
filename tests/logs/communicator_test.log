@@ -1,0 +1,9 @@
+Test started: communicator_test
+Creating Communicator instance
+Asserting: Return value 'receive_successfull' should be false
+PASS: Return value 'receive_successfull' should be false
+Asserting: Return value 'sent' should be true
+PASS: Return value 'sent' should be true
+Asserting: Return value 'receive_successfull' should be true
+PASS: Return value 'receive_successfull' should be true
+Test completed: communicator_test

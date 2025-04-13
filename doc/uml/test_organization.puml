@@ -1,0 +1,105 @@
+@startuml Test_Organization
+!theme plain
+allowmixing
+
+title "Test Organization Structure"
+
+package "Test Utils" {
+  class "test_utils.h" as Utils {
+    + TEST_INIT(name)
+    + TEST_LOG(message)
+    + TEST_ASSERT(condition, message)
+  }
+}
+
+package "Unit Tests" as unit {
+  class "buffer_test.cpp" as BufferTest
+  class "ethernet_test.cpp" as EthernetTest
+  class "list_test.cpp" as ListTest
+  class "message_test.cpp" as MessageTest
+  class "observer_pattern_test.cpp" as ObserverTest
+  class "socketEngine_test.cpp" as SocketTest
+}
+
+package "Integration Tests" as integration {
+  class "vehicle_test.cpp" as VehicleTest
+  class "initializer_test.cpp" as InitializerTest
+  class "nic_test.cpp" as NicTest
+  class "protocol_test.cpp" as ProtocolTest
+}
+
+package "System Tests" as system {
+  class "demo.cpp" as DemoTest
+}
+
+package "Build System" {
+  class "Makefile" as Makefile {
+    + all: test
+    + test: dirs unit_tests integration_tests system_tests
+    + unit_tests: dirs $(UNIT_TEST_BINS) run_unit_tests
+    + integration_tests: dirs $(INTEGRATION_TEST_BINS) run_integration_tests
+    + system_tests: dirs $(SYSTEM_TEST_BINS) run_system_tests
+    + setup_dummy_iface
+    + clean_iface
+  }
+  
+  class "CMakeLists.txt" as CMake {
+    + find test sources
+    + create executables
+    + set test dependencies
+  }
+}
+
+package "Interface Management" {
+  class "test-dummy0" as Interface {
+    + Creates dummy network interface
+    + Used by tests for networking
+    + Safely managed with checks
+  }
+}
+
+package "Logging" {
+  folder "tests/logs/" as Logs {
+    file "test1.log"
+    file "test2.log"
+    file "current_test_iface"
+  }
+}
+
+' Relationships
+Utils <-- unit
+Utils <-- integration  
+Utils <-- system
+
+Makefile --> unit : compiles & runs
+Makefile --> integration : compiles & runs
+Makefile --> system : compiles & runs
+Makefile --> Interface : creates & manages
+Makefile --> Logs : creates directory
+
+CMake --> unit : defines
+CMake --> integration : defines
+CMake --> system : defines
+
+unit ..> Logs : writes logs
+integration ..> Logs : writes logs
+system ..> Logs : writes logs
+
+note "Run first" as N1
+note "Run second" as N2
+note "Run third" as N3
+
+N1 .. unit
+N2 .. integration
+N3 .. system
+
+Interface --> Logs : writes interface name
+
+note bottom of Makefile
+  Ensures tests run in order:
+  1. Unit Tests
+  2. Integration Tests 
+  3. System Tests
+end note
+
+@enduml 

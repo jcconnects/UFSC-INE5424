@@ -1,0 +1,73 @@
+Test started: protocol_test
+Creating NIC instances
+Creating Protocol instances
+Testing Protocol::Address class
+Asserting: Default address port should be 0
+PASS: Default address port should be 0
+Asserting: Default address paddr should be NULL_ADDRESS
+PASS: Default address paddr should be NULL_ADDRESS
+Asserting: Default address should evaluate to false
+PASS: Default address should evaluate to false
+Asserting: Address port should match the value set
+PASS: Address port should match the value set
+Asserting: Address paddr should match the value set
+PASS: Address paddr should match the value set
+Asserting: Non-null address should evaluate to true
+PASS: Non-null address should evaluate to true
+Asserting: Identical addresses should be equal
+PASS: Identical addresses should be equal
+Asserting: Addresses with different ports should not be equal
+PASS: Addresses with different ports should not be equal
+Testing Protocol observer pattern
+Observer attached to port 1234
+Testing send and receive functionality
+Sending message from proto1 to proto2
+Asserting: Send should return a positive number of bytes
+PASS: Send should return a positive number of bytes
+Sent 22 bytes
+Observer attached to proto2 with port 5678
+Sending second message from proto1 to proto2
+Asserting: Send should return a positive number of bytes
+PASS: Send should return a positive number of bytes
+Waiting for message to be received
+Asserting: Message should be received within timeout period
+PASS: Message should be received within timeout period
+Message received, checking buffer
+Asserting: Received buffer should not be null
+PASS: Received buffer should not be null
+Asserting: Received port should match destination port
+PASS: Received port should match destination port
+Asserting: Receive should return a positive number of bytes
+PASS: Receive should return a positive number of bytes
+Received 22 bytes
+Asserting: Received message should match sent message
+PASS: Received message should match sent message
+Received message: Hello Protocol World!
+Asserting: Received source port should match sender port
+PASS: Received source port should match sender port
+Asserting: Received source MAC should match sender MAC
+PASS: Received source MAC should match sender MAC
+Testing observer detach
+Sending message after observer detach
+Asserting: Send should still return a positive number of bytes
+PASS: Send should still return a positive number of bytes
+Asserting: Observer should not receive message after detach
+PASS: Observer should not receive message after detach
+Testing large data handling
+Sending large data (1478 bytes)
+Asserting: Send should return a positive number of bytes for large data
+PASS: Send should return a positive number of bytes for large data
+Asserting: Large message should be received within timeout period
+PASS: Large message should be received within timeout period
+Asserting: Receive should return a positive number of bytes for large data
+PASS: Receive should return a positive number of bytes for large data
+Asserting: Received bytes should not exceed sent bytes
+PASS: Received bytes should not exceed sent bytes
+Asserting: Large data should be received intact
+PASS: Large data should be received intact
+Testing BROADCAST address
+Asserting: BROADCAST address should have broadcast MAC (FF:FF:FF:FF:FF:FF)
+PASS: BROADCAST address should have broadcast MAC (FF:FF:FF:FF:FF:FF)
+Cleaning up
+Protocol test passed successfully!
+Test completed: protocol_test

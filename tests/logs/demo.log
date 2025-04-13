@@ -1,0 +1,61 @@
+Running test: system_demo
+[Child 879640] creating vehicle 1
+[Child 879641] creating vehicle 2
+[Child 879642] creating vehicle 3
+[Child 879643] creating vehicle 4
+[Child 879645] creating vehicle 6
+[Child 879644] creating vehicle 5
+[Child 879648] creating vehicle 9
+[Child 879646] creating vehicle 7
+[Child 879647] creating vehicle 8
+[Child 879649] creating vehicle 10
+[Child 879650] creating vehicle 11
+[Child 879651] creating vehicle 12
+[Child 879652] creating vehicle 13
+[Child 879653] creating vehicle 14
+[Child 879654] creating vehicle 15
+[Child 879656] creating vehicle 17
+[Child 879655] creating vehicle 16
+[Child 879657] creating vehicle 18
+[Child 879659] creating vehicle 20
+[Child 879658] creating vehicle 19
+[Child 879661] creating vehicle 22
+[Child 879660] creating vehicle 21
+[Child 879662] creating vehicle 23
+[Child 879663] creating vehicle 24
+[Child 879664] creating vehicle 25
+[Child 879665] creating vehicle 26
+[Child 879666] creating vehicle 27
+[Child 879668] creating vehicle 29
+[Child 879667] creating vehicle 28
+[Child 879669] creating vehicle 30
+[Child 879658] vehicle 19 finished execution
+[Child 879666] vehicle 27 finished execution
+[Child 879661] vehicle 22 finished execution
+[Child 879667] vehicle 28 finished execution
+[Child 879664] vehicle 25 finished execution
+[Child 879647] vehicle 8 finished execution
+[Child 879665] vehicle 26 finished execution
+[Child 879655] vehicle 16 finished execution
+[Child 879659] vehicle 20 finished execution
+[Child 879660] vehicle 21 finished execution
+[Child 879649] vehicle 10 finished execution
+[Child 879654] vehicle 15 finished execution
+[Child 879652] vehicle 13 finished execution
+[Child 879644] vehicle 5 finished execution
+[Child 879643] vehicle 4 finished execution
+[Child 879656] vehicle 17 finished execution
+[Child 879662] vehicle 23 finished execution
+[Child 879653] vehicle 14 finished execution
+[Child 879668] vehicle 29 finished execution
+[Child 879650] vehicle 11 finished execution
+[Child 879642] vehicle 3 finished execution
+[Child 879648] vehicle 9 finished execution
+[Child 879640] vehicle 1 finished execution
+[Child 879646] vehicle 7 finished execution
+[Child 879663] vehicle 24 finished execution
+[Child 879645] vehicle 6 finished execution
+[Child 879641] vehicle 2 finished execution
+[Child 879651] vehicle 12 finished execution
+[Child 879669] vehicle 30 finished execution
+[Child 879657] vehicle 18 finished execution

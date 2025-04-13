@@ -28,7 +28,7 @@ class Buffer;
 class SocketEngine{
     
     public:
-        static constexpr const char* INTERFACE = Traits<SocketEngine>::INTERFACE_NAME;
+        static const char* INTERFACE() { return Traits<SocketEngine>::INTERFACE_NAME(); }
 
     public:
         SocketEngine();
@@ -94,7 +94,7 @@ void SocketEngine::setUpSocket() {
     // 3. Getting interface index
     struct ifreq ifr;
     std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, INTERFACE, IFNAMSIZ);
+    std::strncpy(ifr.ifr_name, INTERFACE(), IFNAMSIZ);
 
     
     if (ioctl(_sock_fd, SIOCGIFINDEX, &ifr) < 0) {
@@ -107,7 +107,7 @@ void SocketEngine::setUpSocket() {
 
     // 4. Getting MAC address
     std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, INTERFACE, IFNAMSIZ);
+    std::strncpy(ifr.ifr_name, INTERFACE(), IFNAMSIZ);
 
     if (ioctl(_sock_fd, SIOCGIFHWADDR, &ifr) < 0) {
         perror("ioctl SIOCGIFHWADDR");
