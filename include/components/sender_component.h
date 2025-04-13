@@ -8,7 +8,6 @@
 #include <random>
 #include <unistd.h>
 #include <sstream>
-#include <time.h>
 
 class SenderComponent : public Component {
 public:
@@ -38,92 +37,68 @@ void SenderComponent::start() {
 }
 
 void SenderComponent::stop() {
-    db<Component>(TRC) << "SenderComponent::stop() called for vehicle " << vehicle()->id() << "\n";
-    
-    // Set running to false to signal the thread to exit
-    _running = false;
-    
-    // Try to join with a timeout
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    ts.tv_sec += 3; // 3 second timeout
-    
-    db<Component>(TRC) << "[SenderComponent " << vehicle()->id() << "] attempting to join thread\n";
-    
-    int join_result = pthread_timedjoin_np(_thread, nullptr, &ts);
-    if (join_result == 0) {
-        db<Component>(TRC) << "[SenderComponent " << vehicle()->id() << "] thread joined successfully\n";
-    } else if (join_result == ETIMEDOUT) {
-        db<Component>(ERR) << "[SenderComponent " << vehicle()->id() << "] thread join timed out, may have deadlocked\n";
-    } else {
-        db<Component>(ERR) << "[SenderComponent " << vehicle()->id() << "] thread join failed with error: " << join_result << "\n";
-    }
-    
-    db<Component>(INF) << "[SenderComponent " << vehicle()->id() << "] terminated.\n";
+    Component::stop();
 }
 
 void* SenderComponent::run(void* arg) {
     db<Component>(TRC) << "SenderComponent::run() called!\n";
 
     SenderComponent* c = static_cast<SenderComponent*>(arg);
+    Vehicle* vehicle = c->vehicle(); // Get vehicle pointer once
+    unsigned int vehicle_id = vehicle->id(); // Get ID once
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> delay_dist(100, 1000);
+    std::uniform_int_distribution<> delay_dist(100, 200);
 
     int counter = 1;
 
-    while (c->running() && c->vehicle()->running()) {
-        // Check running status at start of iteration
-        if (!c->running() || !c->vehicle()->running()) {
-            break;
-        }
-        
+    while (vehicle->running()) {
         auto now = std::chrono::steady_clock::now();
         auto time_us = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
         
-        std::string msg = "Vehicle " + std::to_string(c->vehicle()->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_us);
+        std::string msg = "Vehicle " + std::to_string(vehicle_id) + " message " + std::to_string(counter) + " at " + std::to_string(time_us);
         
-        db<Component>(INF) << "[SenderComponent " << c->vehicle()->id() << "] sending message " << counter << ": {" << msg << "}\n";
+        db<Component>(INF) << "[SenderComponent " << vehicle_id << "] sending message " << counter << ": {" << msg << "}\n";
         
-        // Check running again before sending
-        if (!c->running() || !c->vehicle()->running()) {
-            db<Component>(TRC) << "[SenderComponent " << c->vehicle()->id() << "] exiting due to stop signal before send\n";
-            break;
-        }
-        
-        if (c->vehicle()->send(msg.c_str(), msg.size())) {
-            db<Component>(INF) << "[SenderComponent " << c->vehicle()->id() << "] message " << counter << " sent!\n";
+        if (vehicle->send(msg.c_str(), msg.size())) {
+            db<Component>(INF) << "[SenderComponent " << vehicle_id << "] message " << counter << " sent!\n";
             
             // Thread-safe log to CSV using string stream
             std::stringstream log_line;
-            log_line << time_us << "," << c->vehicle()->id() << "," << counter << ",send\n";
+            log_line << time_us << "," << vehicle_id << "," << counter << ",send\n";
             c->write_to_log(log_line.str());
         } else {
-            db<Component>(INF) << "[SenderComponent " << c->vehicle()->id() << "] failed to send message " << counter << "!\n";
+            db<Component>(INF) << "[SenderComponent " << vehicle_id << "] failed to send message " << counter << "!\n";
         }
         
         counter++;
 
-        // Random wait between messages - using microseconds (1/1000 of a second)
+        // Random wait between messages - break it into smaller sleeps with status checks
         int wait_time_ms = delay_dist(gen);
         
-        // Check running status before sleeping
-        if (!c->running() || !c->vehicle()->running()) {
-            db<Component>(TRC) << "[SenderComponent " << c->vehicle()->id() << "] exiting due to stop signal before sleep\n";
-            break;
+        // Break the wait into 10ms segments to check running status more frequently
+        int remaining_ms = wait_time_ms;
+        while (remaining_ms > 0 && vehicle->running()) {
+            // Sleep in smaller chunks (10ms) to check running status more frequently
+            int sleep_this_time = std::min(remaining_ms, 10);
+            usleep(sleep_this_time * 1000); // Convert milliseconds to microseconds
+            remaining_ms -= sleep_this_time;
+            
+            // Check running status after each short sleep
+            if (!vehicle->running()) {
+                db<Component>(TRC) << "[SenderComponent " << vehicle_id << "] Detected vehicle stopped during sleep. Exiting loop.\n";
+                break;
+            }
         }
         
-        usleep(wait_time_ms * 1000); // Convert milliseconds to microseconds
-        
         // Check running status again after sleep
-        if (!c->running() || !c->vehicle()->running()) {
-            db<Component>(TRC) << "[SenderComponent " << c->vehicle()->id() << "] exiting due to stop signal after sleep\n";
+        if (!vehicle->running()) {
             break;
         }
     }
 
-    db<Component>(TRC) << "[SenderComponent " << c->vehicle()->id() << "] run loop exited\n";
+    db<Component>(INF) << "[SenderComponent " << vehicle_id << "] Run loop finished. Terminating thread.\n";
     return nullptr;
 }
 

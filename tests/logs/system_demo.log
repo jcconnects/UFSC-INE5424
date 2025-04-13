@@ -1,204 +1,204 @@
 Test started: system_demo
 Application started!
-Created child process 3082455 for vehicle 1
-Created child process 3082456 for vehicle 2
-Created child process 3082457 for vehicle 3
-Created child process 3082458 for vehicle 4
-Created child process 3082459 for vehicle 5
-Created child process 3082460 for vehicle 6
-Created child process 3082461 for vehicle 7
-Created child process 3082462 for vehicle 8
-Created child process 3082463 for vehicle 9
-Created child process 3082464 for vehicle 10
-Created child process 3082465 for vehicle 11
-Created child process 3082466 for vehicle 12
-Created child process 3082467 for vehicle 13
-Created child process 3082468 for vehicle 14
-Created child process 3082469 for vehicle 15
-Created child process 3082470 for vehicle 16
-Created child process 3082471 for vehicle 17
-Created child process 3082472 for vehicle 18
-Created child process 3082473 for vehicle 19
-Created child process 3082474 for vehicle 20
-Created child process 3082475 for vehicle 21
-Created child process 3082476 for vehicle 22
-Created child process 3082477 for vehicle 23
-Created child process 3082478 for vehicle 24
-Created child process 3082479 for vehicle 25
-Created child process 3082480 for vehicle 26
-Created child process 3082481 for vehicle 27
-Created child process 3082482 for vehicle 28
-Created child process 3082483 for vehicle 29
-Created child process 3082484 for vehicle 30
-Created child process 3082485 for vehicle 31
-Created child process 3082486 for vehicle 32
-Created child process 3082487 for vehicle 33
-Created child process 3082488 for vehicle 34
-Created child process 3082489 for vehicle 35
-Created child process 3082490 for vehicle 36
-Created child process 3082491 for vehicle 37
-Created child process 3082492 for vehicle 38
-Created child process 3082493 for vehicle 39
-Created child process 3082494 for vehicle 40
-Created child process 3082495 for vehicle 41
-Created child process 3082496 for vehicle 42
-Created child process 3082497 for vehicle 43
-Created child process 3082498 for vehicle 44
-Created child process 3082499 for vehicle 45
-Created child process 3082500 for vehicle 46
-Created child process 3082501 for vehicle 47
-Created child process 3082502 for vehicle 48
-Created child process 3082503 for vehicle 49
-Created child process 3082504 for vehicle 50
-Created child process 3082505 for vehicle 51
-Created child process 3082506 for vehicle 52
-Created child process 3082507 for vehicle 53
-Created child process 3082508 for vehicle 54
-Created child process 3082509 for vehicle 55
-Created child process 3082510 for vehicle 56
-Created child process 3082511 for vehicle 57
-Created child process 3082512 for vehicle 58
-Created child process 3082513 for vehicle 59
-Created child process 3082514 for vehicle 60
-Created child process 3082515 for vehicle 61
-Created child process 3082516 for vehicle 62
-Created child process 3082517 for vehicle 63
-Created child process 3082518 for vehicle 64
-Created child process 3082519 for vehicle 65
-Created child process 3082520 for vehicle 66
-Created child process 3082521 for vehicle 67
-Created child process 3082522 for vehicle 68
-Created child process 3082523 for vehicle 69
-Created child process 3082524 for vehicle 70
-Created child process 3082525 for vehicle 71
-Created child process 3082526 for vehicle 72
-Created child process 3082527 for vehicle 73
-Created child process 3082528 for vehicle 74
-Created child process 3082529 for vehicle 75
-Created child process 3082530 for vehicle 76
-Created child process 3082531 for vehicle 77
-Created child process 3082532 for vehicle 78
-Created child process 3082533 for vehicle 79
-Created child process 3082534 for vehicle 80
-Created child process 3082535 for vehicle 81
-Created child process 3082536 for vehicle 82
-Created child process 3082537 for vehicle 83
-Created child process 3082538 for vehicle 84
-Created child process 3082539 for vehicle 85
-Created child process 3082540 for vehicle 86
-Created child process 3082541 for vehicle 87
-Created child process 3082542 for vehicle 88
-Created child process 3082543 for vehicle 89
-Created child process 3082544 for vehicle 90
-Created child process 3082545 for vehicle 91
-Created child process 3082546 for vehicle 92
-Created child process 3082547 for vehicle 93
-Created child process 3082548 for vehicle 94
-Created child process 3082549 for vehicle 95
-Created child process 3082550 for vehicle 96
-Created child process 3082551 for vehicle 97
-Created child process 3082552 for vehicle 98
-Created child process 3082553 for vehicle 99
-Created child process 3082554 for vehicle 100
-[Parent] child 3082455 terminated with status 139
-[Parent] child 3082456 terminated with status 139
-[Parent] child 3082457 terminated with status 139
-[Parent] child 3082458 terminated with status 139
-[Parent] child 3082459 terminated with status 139
-[Parent] child 3082460 terminated with status 139
-[Parent] child 3082461 terminated with status 139
-[Parent] child 3082462 terminated with status 139
-[Parent] child 3082463 terminated with status 139
-[Parent] child 3082464 terminated with status 139
-[Parent] child 3082465 terminated with status 139
-[Parent] child 3082466 terminated with status 139
-[Parent] child 3082467 terminated with status 139
-[Parent] child 3082468 terminated with status 139
-[Parent] child 3082469 terminated with status 139
-[Parent] child 3082470 terminated with status 139
-[Parent] child 3082471 terminated with status 139
-[Parent] child 3082472 terminated with status 139
-[Parent] child 3082473 terminated with status 139
-[Parent] child 3082474 terminated with status 139
-[Parent] child 3082475 terminated with status 139
-[Parent] child 3082476 terminated with status 139
-[Parent] child 3082477 terminated with status 139
-[Parent] child 3082478 terminated with status 139
-[Parent] child 3082479 terminated with status 139
-[Parent] child 3082480 terminated with status 139
-[Parent] child 3082481 terminated with status 139
-[Parent] child 3082482 terminated with status 139
-[Parent] child 3082483 terminated with status 139
-[Parent] child 3082484 terminated with status 139
-[Parent] child 3082485 terminated with status 139
-[Parent] child 3082486 terminated with status 139
-[Parent] child 3082487 terminated with status 139
-[Parent] child 3082488 terminated with status 139
-[Parent] child 3082489 terminated with status 139
-[Parent] child 3082490 terminated with status 139
-[Parent] child 3082491 terminated with status 139
-[Parent] child 3082492 terminated with status 139
-[Parent] child 3082493 terminated with status 139
-[Parent] child 3082494 terminated with status 139
-[Parent] child 3082495 terminated with status 139
-[Parent] child 3082496 terminated with status 139
-[Parent] child 3082497 terminated with status 139
-[Parent] child 3082498 terminated with status 139
-[Parent] child 3082499 terminated with status 139
-[Parent] child 3082500 terminated with status 139
-[Parent] child 3082501 terminated with status 139
-[Parent] child 3082502 terminated with status 139
-[Parent] child 3082503 terminated with status 139
-[Parent] child 3082504 terminated with status 139
-[Parent] child 3082505 terminated with status 139
-[Parent] child 3082506 terminated with status 139
-[Parent] child 3082507 terminated with status 139
-[Parent] child 3082508 terminated with status 139
-[Parent] child 3082509 terminated with status 139
-[Parent] child 3082510 terminated with status 139
-[Parent] child 3082511 terminated with status 139
-[Parent] child 3082512 terminated with status 139
-[Parent] child 3082513 terminated with status 139
-[Parent] child 3082514 terminated with status 139
-[Parent] child 3082515 terminated with status 139
-[Parent] child 3082516 terminated with status 139
-[Parent] child 3082517 terminated with status 139
-[Parent] child 3082518 terminated with status 139
-[Parent] child 3082519 terminated with status 139
-[Parent] child 3082520 terminated with status 139
-[Parent] child 3082521 terminated with status 139
-[Parent] child 3082522 terminated with status 139
-[Parent] child 3082523 terminated with status 139
-[Parent] child 3082524 terminated with status 139
-[Parent] child 3082525 terminated with status 139
-[Parent] child 3082526 terminated with status 139
-[Parent] child 3082527 terminated with status 139
-[Parent] child 3082528 terminated with status 139
-[Parent] child 3082529 terminated with status 139
-[Parent] child 3082530 terminated with status 139
-[Parent] child 3082531 terminated with status 139
-[Parent] child 3082532 terminated with status 139
-[Parent] child 3082533 terminated with status 139
-[Parent] child 3082534 terminated with status 139
-[Parent] child 3082535 terminated with status 139
-[Parent] child 3082536 terminated with status 139
-[Parent] child 3082537 terminated with status 139
-[Parent] child 3082538 terminated with status 139
-[Parent] child 3082539 terminated with status 139
-[Parent] child 3082540 terminated with status 139
-[Parent] child 3082541 terminated with status 139
-[Parent] child 3082542 terminated with status 139
-[Parent] child 3082543 terminated with status 139
-[Parent] child 3082544 terminated with status 139
-[Parent] child 3082545 terminated with status 139
-[Parent] child 3082546 terminated with status 139
-[Parent] child 3082547 terminated with status 139
-[Parent] child 3082548 terminated with status 139
-[Parent] child 3082549 terminated with status 139
-[Parent] child 3082550 terminated with status 139
-[Parent] child 3082551 terminated with status 139
-[Parent] child 3082552 terminated with status 139
-[Parent] child 3082553 terminated with status 139
-[Parent] child 3082554 terminated with status 139
-Application terminated with errors!
+Created child process 237257 for vehicle 1
+Created child process 237258 for vehicle 2
+Created child process 237259 for vehicle 3
+Created child process 237260 for vehicle 4
+Created child process 237261 for vehicle 5
+Created child process 237262 for vehicle 6
+Created child process 237263 for vehicle 7
+Created child process 237264 for vehicle 8
+Created child process 237265 for vehicle 9
+Created child process 237266 for vehicle 10
+Created child process 237267 for vehicle 11
+Created child process 237268 for vehicle 12
+Created child process 237269 for vehicle 13
+Created child process 237270 for vehicle 14
+Created child process 237271 for vehicle 15
+Created child process 237272 for vehicle 16
+Created child process 237273 for vehicle 17
+Created child process 237274 for vehicle 18
+Created child process 237275 for vehicle 19
+Created child process 237276 for vehicle 20
+Created child process 237278 for vehicle 21
+Created child process 237279 for vehicle 22
+Created child process 237280 for vehicle 23
+Created child process 237281 for vehicle 24
+Created child process 237282 for vehicle 25
+Created child process 237283 for vehicle 26
+Created child process 237284 for vehicle 27
+Created child process 237285 for vehicle 28
+Created child process 237286 for vehicle 29
+Created child process 237287 for vehicle 30
+Created child process 237288 for vehicle 31
+Created child process 237289 for vehicle 32
+Created child process 237290 for vehicle 33
+Created child process 237291 for vehicle 34
+Created child process 237292 for vehicle 35
+Created child process 237293 for vehicle 36
+Created child process 237294 for vehicle 37
+Created child process 237295 for vehicle 38
+Created child process 237296 for vehicle 39
+Created child process 237297 for vehicle 40
+Created child process 237298 for vehicle 41
+Created child process 237299 for vehicle 42
+Created child process 237300 for vehicle 43
+Created child process 237301 for vehicle 44
+Created child process 237304 for vehicle 45
+Created child process 237310 for vehicle 46
+Created child process 237315 for vehicle 47
+Created child process 237322 for vehicle 48
+Created child process 237325 for vehicle 49
+Created child process 237327 for vehicle 50
+Created child process 237329 for vehicle 51
+Created child process 237330 for vehicle 52
+Created child process 237331 for vehicle 53
+Created child process 237332 for vehicle 54
+Created child process 237333 for vehicle 55
+Created child process 237334 for vehicle 56
+Created child process 237335 for vehicle 57
+Created child process 237336 for vehicle 58
+Created child process 237337 for vehicle 59
+Created child process 237338 for vehicle 60
+Created child process 237339 for vehicle 61
+Created child process 237340 for vehicle 62
+Created child process 237341 for vehicle 63
+Created child process 237342 for vehicle 64
+Created child process 237343 for vehicle 65
+Created child process 237344 for vehicle 66
+Created child process 237345 for vehicle 67
+Created child process 237346 for vehicle 68
+Created child process 237347 for vehicle 69
+Created child process 237348 for vehicle 70
+Created child process 237349 for vehicle 71
+Created child process 237350 for vehicle 72
+Created child process 237351 for vehicle 73
+Created child process 237352 for vehicle 74
+Created child process 237353 for vehicle 75
+Created child process 237354 for vehicle 76
+Created child process 237355 for vehicle 77
+Created child process 237356 for vehicle 78
+Created child process 237357 for vehicle 79
+Created child process 237358 for vehicle 80
+Created child process 237359 for vehicle 81
+Created child process 237360 for vehicle 82
+Created child process 237361 for vehicle 83
+Created child process 237362 for vehicle 84
+Created child process 237363 for vehicle 85
+Created child process 237364 for vehicle 86
+Created child process 237365 for vehicle 87
+Created child process 237366 for vehicle 88
+Created child process 237367 for vehicle 89
+Created child process 237368 for vehicle 90
+Created child process 237369 for vehicle 91
+Created child process 237370 for vehicle 92
+Created child process 237371 for vehicle 93
+Created child process 237372 for vehicle 94
+Created child process 237373 for vehicle 95
+Created child process 237374 for vehicle 96
+Created child process 237375 for vehicle 97
+Created child process 237376 for vehicle 98
+Created child process 237377 for vehicle 99
+Created child process 237378 for vehicle 100
+[Parent] child 237257 exited normally with status 0
+[Parent] child 237258 exited normally with status 0
+[Parent] child 237259 exited normally with status 0
+[Parent] child 237260 exited normally with status 0
+[Parent] child 237261 exited normally with status 0
+[Parent] child 237262 exited normally with status 0
+[Parent] child 237263 exited normally with status 0
+[Parent] child 237264 exited normally with status 0
+[Parent] child 237265 exited normally with status 0
+[Parent] child 237266 exited normally with status 0
+[Parent] child 237267 exited normally with status 0
+[Parent] child 237268 exited normally with status 0
+[Parent] child 237269 exited normally with status 0
+[Parent] child 237270 exited normally with status 0
+[Parent] child 237271 exited normally with status 0
+[Parent] child 237272 exited normally with status 0
+[Parent] child 237273 exited normally with status 0
+[Parent] child 237274 exited normally with status 0
+[Parent] child 237275 exited normally with status 0
+[Parent] child 237276 exited normally with status 0
+[Parent] child 237278 exited normally with status 0
+[Parent] child 237279 exited normally with status 0
+[Parent] child 237280 exited normally with status 0
+[Parent] child 237281 exited normally with status 0
+[Parent] child 237282 exited normally with status 0
+[Parent] child 237283 exited normally with status 0
+[Parent] child 237284 exited normally with status 0
+[Parent] child 237285 exited normally with status 0
+[Parent] child 237286 exited normally with status 0
+[Parent] child 237287 exited normally with status 0
+[Parent] child 237288 exited normally with status 0
+[Parent] child 237289 exited normally with status 0
+[Parent] child 237290 exited normally with status 0
+[Parent] child 237291 exited normally with status 0
+[Parent] child 237292 exited normally with status 0
+[Parent] child 237293 exited normally with status 0
+[Parent] child 237294 exited normally with status 0
+[Parent] child 237295 exited normally with status 0
+[Parent] child 237296 exited normally with status 0
+[Parent] child 237297 exited normally with status 0
+[Parent] child 237298 exited normally with status 0
+[Parent] child 237299 exited normally with status 0
+[Parent] child 237300 exited normally with status 0
+[Parent] child 237301 exited normally with status 0
+[Parent] child 237304 exited normally with status 0
+[Parent] child 237310 exited normally with status 0
+[Parent] child 237315 exited normally with status 0
+[Parent] child 237322 exited normally with status 0
+[Parent] child 237325 exited normally with status 0
+[Parent] child 237327 exited normally with status 0
+[Parent] child 237329 exited normally with status 0
+[Parent] child 237330 exited normally with status 0
+[Parent] child 237331 exited normally with status 0
+[Parent] child 237332 exited normally with status 0
+[Parent] child 237333 exited normally with status 0
+[Parent] child 237334 exited normally with status 0
+[Parent] child 237335 exited normally with status 0
+[Parent] child 237336 exited normally with status 0
+[Parent] child 237337 exited normally with status 0
+[Parent] child 237338 exited normally with status 0
+[Parent] child 237339 exited normally with status 0
+[Parent] child 237340 exited normally with status 0
+[Parent] child 237341 exited normally with status 0
+[Parent] child 237342 exited normally with status 0
+[Parent] child 237343 exited normally with status 0
+[Parent] child 237344 exited normally with status 0
+[Parent] child 237345 exited normally with status 0
+[Parent] child 237346 exited normally with status 0
+[Parent] child 237347 exited normally with status 0
+[Parent] child 237348 exited normally with status 0
+[Parent] child 237349 exited normally with status 0
+[Parent] child 237350 exited normally with status 0
+[Parent] child 237351 exited normally with status 0
+[Parent] child 237352 exited normally with status 0
+[Parent] child 237353 exited normally with status 0
+[Parent] child 237354 exited normally with status 0
+[Parent] child 237355 exited normally with status 0
+[Parent] child 237356 exited normally with status 0
+[Parent] child 237357 exited normally with status 0
+[Parent] child 237358 exited normally with status 0
+[Parent] child 237359 exited normally with status 0
+[Parent] child 237360 exited normally with status 0
+[Parent] child 237361 exited normally with status 0
+[Parent] child 237362 exited normally with status 0
+[Parent] child 237363 exited normally with status 0
+[Parent] child 237364 exited normally with status 0
+[Parent] child 237365 exited normally with status 0
+[Parent] child 237366 exited normally with status 0
+[Parent] child 237367 exited normally with status 0
+[Parent] child 237368 exited normally with status 0
+[Parent] child 237369 exited normally with status 0
+[Parent] child 237370 exited normally with status 0
+[Parent] child 237371 exited normally with status 0
+[Parent] child 237372 exited normally with status 0
+[Parent] child 237373 exited normally with status 0
+[Parent] child 237374 exited normally with status 0
+[Parent] child 237375 exited normally with status 0
+[Parent] child 237376 exited normally with status 0
+[Parent] child 237377 exited normally with status 0
+[Parent] child 237378 exited normally with status 0
+Application completed successfully!
 Test completed: system_demo

@@ -114,6 +114,12 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
     Buffer* buf = Observer::updated();
     db<Communicator>(INF) << "[Communicator] buffer retrieved\n";
 
+    // Check for nullptr buffer which indicates a close signal
+    if (!buf) {
+        db<Communicator>(INF) << "[Communicator] received close signal (nullptr buffer)! Returning false\n";
+        return false;
+    }
+
     if (buf->size() == 0) {
         db<Communicator>(INF) << "[Communicator] empty buffer! Returning false\n";
         return false;
@@ -146,10 +152,19 @@ void Communicator<Channel>::close() {
     db<Communicator>(TRC) << "Communicator<Channel>::close() called!\n";
     
     try {
-        // Signal any threads waiting on receive to wake up
-        Buffer buf = Buffer();
-        update(nullptr, _address.port(), &buf);
-        _closed = true;
+        _closed = true; // Set closed flag first
+        
+        // Force release of any threads waiting on receive
+        db<Communicator>(INF) << "[Communicator] Unblocking any threads waiting on receive()\n";
+        
+        // Call update multiple times to ensure it propagates
+        // Pass nullptr instead of a potentially dangling local buffer
+        for (int i = 0; i < 3; i++) {
+            update(nullptr, _address.port(), nullptr); // Signal with nullptr to indicate close
+            usleep(1000); // Short sleep to allow thread scheduling
+        }
+        
+        db<Communicator>(INF) << "[Communicator] Successfully closed\n";
     } catch (const std::exception& e) {
         std::cerr << "Error during communicator close: " << e.what() << std::endl;
     }

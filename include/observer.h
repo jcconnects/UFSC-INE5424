@@ -83,9 +83,13 @@ class Concurrent_Observer : public Conditional_Data_Observer<D, C> {
 /***************** CONCURRENT_OBSERVER IMPLEMENTATION *************************/
 template <typename D, typename C>
 void Concurrent_Observer<D, C>::update(C c, D* d) {
-    if (c == this->_rank && d != nullptr) {
-        // Store a copy of the pointer, don't modify ref_count here
-        this->_data.insert(d);
+    if (c == this->_rank) {
+        // Special case: if d is nullptr, it's a shutdown signal, still post the semaphore
+        // to unblock waiting threads, but don't add to the queue
+        if (d != nullptr) {
+            this->_data.insert(d);
+        }
+        // Post semaphore even for nullptr to unblock threads
         _semaphore.post();
     }
 }
@@ -93,6 +97,11 @@ void Concurrent_Observer<D, C>::update(C c, D* d) {
 template <typename D, typename C>
 D* Concurrent_Observer<D, C>::updated() {
     _semaphore.wait();
+    // If the queue is empty, it means we were signaled to unblock but with no data
+    // This happens during shutdown
+    if (this->_data.empty()) {
+        return nullptr;
+    }
     return this->_data.remove();
 }
 /*******************************************************************************/

@@ -62,10 +62,10 @@ Send operation completed successfully
 Testing invalid parameters for send/receive
 Asserting: Sending zero size should fail
 PASS: Sending zero size should fail
-Asserting: Receiving with null buffer should fail
-PASS: Receiving with null buffer should fail
-Asserting: Receiving with zero size should fail
-PASS: Receiving with zero size should fail
+Asserting: Receiving with null buffer should fail with negative value
+PASS: Receiving with null buffer should fail with negative value
+Asserting: Receiving with zero size should fail with negative value
+PASS: Receiving with zero size should fail with negative value
 Testing receive after vehicle has stopped
 Asserting: Vehicle 2 should not be running after stop()
 PASS: Vehicle 2 should not be running after stop()

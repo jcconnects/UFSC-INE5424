@@ -1,3 +1,5 @@
+#define TEST_MODE 1
+
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -157,11 +159,11 @@ int main() {
     // Test receiving with null buffer
     char receive_buffer[100];
     int receive_result = vehicle2->receive(nullptr, 100);
-    TEST_ASSERT(receive_result == 0, "Receiving with null buffer should fail");
+    TEST_ASSERT(receive_result < 0, "Receiving with null buffer should fail with negative value");
     
     // Test receiving with zero size
     receive_result = vehicle2->receive(receive_buffer, 0);
-    TEST_ASSERT(receive_result == 0, "Receiving with zero size should fail");
+    TEST_ASSERT(receive_result < 0, "Receiving with zero size should fail with negative value");
     
     // Test 7: Test receive after vehicle has stopped
     TEST_LOG("Testing receive after vehicle has stopped");

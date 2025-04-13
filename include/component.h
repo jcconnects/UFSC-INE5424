@@ -5,6 +5,7 @@
 #include <string>
 #include <pthread.h>
 #include <fstream>
+#include <cstring>
 #include <time.h>
 
 #include "traits.h"
@@ -65,19 +66,38 @@ void Component::stop() {
 
     _running = false;
     
-    // Try to join with a timeout - up to 3 seconds
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    ts.tv_sec += 3;
-    
-    int join_result = pthread_timedjoin_np(_thread, nullptr, &ts);
-    if (join_result == 0) {
-        db<Component>(TRC) << "[Component " << _name << "] thread joined successfully\n";
-    } else if (join_result == ETIMEDOUT) {
-        db<Component>(ERR) << "[Component " << _name << "] thread join timed out, may have deadlocked\n";
-        // If the join times out, we just continue - can't do much else
+    if (_thread != 0) { // Basic check if thread handle seems valid
+        db<Component>(TRC) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Attempting to join thread...\n";
+        
+        // Set a timeout for join (100ms) to avoid infinite waiting
+        struct timespec timeout;
+        clock_gettime(CLOCK_REALTIME, &timeout);
+        timeout.tv_sec += 0;  // 0 additional seconds
+        timeout.tv_nsec += 100000000; // 100ms in nanoseconds
+        
+        // Handle nanosecond overflow
+        if (timeout.tv_nsec >= 1000000000) {
+            timeout.tv_sec += 1;
+            timeout.tv_nsec -= 1000000000;
+        }
+        
+        // Try timed join first
+        int join_ret = pthread_timedjoin_np(_thread, nullptr, &timeout);
+        
+        if (join_ret == 0) {
+            db<Component>(TRC) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Thread successfully joined.\n";
+        } else if (join_ret == ETIMEDOUT) {
+            db<Component>(WRN) << "[Component " << _name << " on Vehicle " << _vehicle->id() 
+                            << "] Thread join timed out after 100ms. Thread may be blocked or leaking.\n";
+            // We continue without waiting for the thread
+        } else {
+            db<Component>(ERR) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Error joining thread! errno: " 
+                            << join_ret << " (" << strerror(join_ret) << ")\n";
+        }
+        
+        _thread = 0; // Invalidate thread handle after join attempt
     } else {
-        db<Component>(ERR) << "[Component " << _name << "] thread join failed with error: " << join_result << "\n";
+        db<Component>(WRN) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Stop called but thread handle was invalid (already stopped or never started?).\n";
     }
 }
 

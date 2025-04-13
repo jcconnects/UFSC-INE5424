@@ -7,8 +7,8 @@
 #include <csignal>
 #include <cerrno>
 #include <sstream>
-#include <pthread.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "component.h"
 #include "vehicle.h"
@@ -44,94 +44,120 @@ void ReceiverComponent::start() {
 }
 
 void ReceiverComponent::stop() {
-    db<Component>(TRC) << "ReceiverComponent::stop() called for vehicle " << vehicle()->id() << "\n";
-    
-    // Set running to false to signal the thread to exit
-    _running = false;
-    
-    // Try to join with a timeout
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    ts.tv_sec += 3; // 3 second timeout
-    
-    db<Component>(TRC) << "[ReceiverComponent " << vehicle()->id() << "] attempting to join thread\n";
-    
-    int join_result = pthread_timedjoin_np(_thread, nullptr, &ts);
-    if (join_result == 0) {
-        db<Component>(TRC) << "[ReceiverComponent " << vehicle()->id() << "] thread joined successfully\n";
-    } else if (join_result == ETIMEDOUT) {
-        db<Component>(ERR) << "[ReceiverComponent " << vehicle()->id() << "] thread join timed out, may have deadlocked\n";
-    } else {
-        db<Component>(ERR) << "[ReceiverComponent " << vehicle()->id() << "] thread join failed with error: " << join_result << "\n";
-    }
-    
-    db<Component>(INF) << "[ReceiverComponent " << vehicle()->id() << "] terminated.\n";
+    Component::stop();
 }
 
 void* ReceiverComponent::run(void* arg)  {
     db<Component>(TRC) << "ReceiverComponent::run() called!\n";
 
     ReceiverComponent* c = static_cast<ReceiverComponent*>(arg);
+    Vehicle* vehicle = c->vehicle(); // Get vehicle pointer once
+    unsigned int vehicle_id = vehicle->id(); // Get ID once
 
-    while (c->running() && c->vehicle()->running()) {
+    // Use a shorter processing cycle to check vehicle status more frequently
+    while (true) {
+        // Check running status before blocking receive call
+        if (!vehicle->running()) {
+            db<Component>(TRC) << "[ReceiverComponent " << vehicle_id << "] Detected vehicle stopped before receive(). Exiting loop.\n";
+            break;
+        }
+
         unsigned int size = Vehicle::MAX_MESSAGE_SIZE;
         char buf[size];
 
-        // Check running status right before receive call
-        if (!c->running() || !c->vehicle()->running()) {
-            break;
-        }
+        // Add timeout check for running status - check every 50ms
+        struct timespec start, now;
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        bool should_exit = false;
 
-        // Set a timeout for receive calls so we can check running state more frequently
-        int result = c->vehicle()->receive(buf, size);
+        // Set up a timeout loop to periodically check running status
+        while (vehicle->running()) {
+            // Try a non-blocking receive or one with a short timeout
+            int result = vehicle->receive(buf, size);
+            
+            // If receive returned due to a message or error, process it
+            if (result != 0) {
+                // Check running status immediately after receive returns
+                if (!vehicle->running()) {
+                    db<Component>(TRC) << "[ReceiverComponent " << vehicle_id << "] Detected vehicle stopped after receive() returned.\n";
+                    should_exit = true;
+                    break; // Exit inner loop
+                }
 
-        // Check if we're still supposed to be running after receive returns
-        if (!c->running() || !c->vehicle()->running()) {
-            db<Component>(TRC) << "[ReceiverComponent " << c->vehicle()->id() << "] exiting due to stop signal\n";
-            break;
-        }
-
-        // Only process result if we got data
-        if (result > 0) {
-            auto recv_time = std::chrono::steady_clock::now();
-            auto recv_time_us = std::chrono::duration_cast<std::chrono::microseconds>(recv_time.time_since_epoch()).count();
-            
-            std::string received_message(buf, result);
-            
-            // Extract information from the message using regex
-            std::regex pattern("Vehicle (\\d+) message (\\d+) at (\\d+)");
-            std::smatch matches;
-            
-            if (std::regex_search(received_message, matches, pattern) && matches.size() > 3) {
-                int source_vehicle = std::stoi(matches[1]);
-                int message_id = std::stoi(matches[2]);
-                long long send_time_us = std::stoll(matches[3]);
+                // Process the result if the vehicle is supposed to be running
+                if (result < 0) {
+                    // Negative result indicates an error (e.g., buffer too small)
+                    db<Component>(ERR) << "[ReceiverComponent " << vehicle_id << "] receive() returned error code: " << result << "\n";
+                    should_exit = true;
+                    break; // Break on errors
+                } else { // result > 0
+                    auto recv_time = std::chrono::steady_clock::now();
+                    auto recv_time_us = std::chrono::duration_cast<std::chrono::microseconds>(recv_time.time_since_epoch()).count();
+                    
+                    std::string received_message(buf, result);
+                    
+                    // Extract information from the message using regex
+                    std::regex pattern("Vehicle (\\d+) message (\\d+) at (\\d+)");
+                    std::smatch matches;
+                    
+                    if (std::regex_search(received_message, matches, pattern) && matches.size() > 3) {
+                        int source_vehicle = std::stoi(matches[1]);
+                        int message_id = std::stoi(matches[2]);
+                        long long send_time_us = std::stoll(matches[3]);
+                        
+                        // Calculate latency in microseconds
+                        long long latency_us = recv_time_us - send_time_us;
+                        
+                        // Thread-safe log to CSV with latency information
+                        std::stringstream log_line;
+                        log_line << recv_time_us << "," << source_vehicle << "," << message_id 
+                                << ",receive," << send_time_us << "," << latency_us << "\n";
+                        c->write_to_log(log_line.str());
+                        
+                        // Also log human-readable latency
+                        db<Component>(INF) << "[ReceiverComponent " << vehicle_id 
+                                << "] received message from Vehicle " << source_vehicle 
+                                << ", msg_id = " << message_id
+                                << ", latency = " << latency_us << "μs ("
+                                << (latency_us / 1000.0) << "ms)\n";
+                    } else {
+                        // Thread-safe log with unknown values if pattern matching fails
+                        std::stringstream log_line;
+                        log_line << recv_time_us << ",unknown,unknown,receive,unknown,unknown\n";
+                        c->write_to_log(log_line.str());
+                    }
+                    
+                    db<Component>(TRC) << "[ReceiverComponent " << vehicle_id << "] Successfully processed received message (" << result << " bytes).\n";
+                }
                 
-                // Calculate latency in microseconds
-                long long latency_us = recv_time_us - send_time_us;
-                
-                // Thread-safe log to CSV with latency information
-                std::stringstream log_line;
-                log_line << recv_time_us << "," << source_vehicle << "," << message_id 
-                         << ",receive," << send_time_us << "," << latency_us << "\n";
-                c->write_to_log(log_line.str());
-                
-                // Also log human-readable latency
-                db<Component>(INF) << "[ReceiverComponent " << c->vehicle()->id() 
-                        << "] received message from Vehicle " << source_vehicle 
-                        << ", msg_id = " << message_id
-                        << ", latency = " << latency_us << "μs ("
-                        << (latency_us / 1000.0) << "ms)\n";
-            } else {
-                // Thread-safe log with unknown values if pattern matching fails
-                std::stringstream log_line;
-                log_line << recv_time_us << ",unknown,unknown,receive,unknown,unknown\n";
-                c->write_to_log(log_line.str());
+                // Break inner loop after processing a message
+                break;
             }
+            
+            // Check if we've been waiting too long without receiving anything
+            clock_gettime(CLOCK_MONOTONIC, &now);
+            double elapsed_ms = (now.tv_sec - start.tv_sec) * 1000.0 + (now.tv_nsec - start.tv_nsec) / 1000000.0;
+            
+            // Check running status every 50ms if no message is received
+            if (elapsed_ms > 50.0) {
+                db<Component>(TRC) << "[ReceiverComponent " << vehicle_id << "] No message received for 50ms, checking running status.\n";
+                
+                // Update start time for next iteration
+                start = now;
+                
+                // No need to break - let the loop condition check vehicle->running()
+            } else {
+                // Short sleep to avoid tight spinning
+                usleep(5000); // 5ms
+            }
+        }
+        
+        if (should_exit || !vehicle->running()) {
+            break; // Exit outer loop
         }
     }
 
-    db<Component>(TRC) << "[ReceiverComponent " << c->vehicle()->id() << "] run loop exited\n";
+    db<Component>(INF) << "[ReceiverComponent " << vehicle_id << "] Run loop finished. Terminating thread.\n";
     return nullptr;
 }
 

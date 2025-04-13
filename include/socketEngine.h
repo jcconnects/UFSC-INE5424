@@ -16,6 +16,7 @@
 #include <sys/ioctl.h>
 #include <functional>
 #include <pthread.h>
+#include <atomic>
 
 
 #include "ethernet.h"
@@ -61,7 +62,7 @@ class SocketEngine{
     private:
         const int _stop_ev;
         pthread_t _receive_thread;
-        bool _running;
+        std::atomic<bool> _running;
 };
 
 
@@ -72,7 +73,7 @@ SocketEngine::SocketEngine() : _stop_ev(eventfd(0, EFD_NONBLOCK)){
     setUpSocket();
     setUpEpoll();
 
-    _running = true;
+    _running.store(true, std::memory_order_release);
     pthread_create(&_receive_thread, nullptr, SocketEngine::run, this);
     db<SocketEngine>(INF) << "[SocketEngine] receive thread started\n";
 };
@@ -167,8 +168,12 @@ void SocketEngine::setUpEpoll() {
 SocketEngine::~SocketEngine()  {
     db<SocketEngine>(TRC) << "SocketEngine::~SocketEngine() called!\n";
 
+    // Ensure the thread is stopped and joined before closing resources
+    stop();
+
     close(_sock_fd);
     close(_ep_fd);
+    close(_stop_ev); // Also close the eventfd
 };
 
 const bool SocketEngine::running() {
@@ -211,8 +216,15 @@ void* SocketEngine::run(void* arg)  {
 
     struct epoll_event events[10];
 
-    while (engine->running()) {
+    while (engine->_running.load(std::memory_order_acquire)) {
         int n = epoll_wait(engine->_ep_fd, events, 10, -1);
+        
+        // Check if we should exit after epoll_wait returns
+        if (!engine->_running.load(std::memory_order_acquire)) {
+            db<SocketEngine>(TRC) << "[SocketEngine] running is false after epoll_wait, exiting loop.\n";
+            break;
+        }
+        
         if (n < 0) {
             if (errno == EINTR) continue;
             perror("epoll_wait");
@@ -220,6 +232,12 @@ void* SocketEngine::run(void* arg)  {
         }
 
         for (int i = 0; i < n; ++i) {
+            // Check running state again before handling any event
+            if (!engine->_running.load(std::memory_order_acquire)) {
+                db<SocketEngine>(TRC) << "[SocketEngine] running is false during event processing, exiting loop.\n";
+                break; // Exit loop if stopped during or after epoll_wait
+            }
+            
             int fd = events[i].data.fd;
 
             if (fd == engine->_sock_fd) {
@@ -233,16 +251,18 @@ void* SocketEngine::run(void* arg)  {
         }
     }
 
+    db<SocketEngine>(INF) << "[SocketEngine] receive thread terminated!\n";
     return nullptr;
-    db<SocketEngine>(INF) << "[SocketEngine] << receive thread terminated!\n";
 };
 
 void SocketEngine::stop() {
-    db<SocketEngine>(TRC) << "SocketEngine::run() called!\n";
+    db<SocketEngine>(TRC) << "SocketEngine::stop() called!\n";
     
-    if (!_running) return;
-
-    _running = false;
+    // Atomically set flag to false and check if it was already false
+    if (!_running.exchange(false, std::memory_order_acq_rel)) {
+        db<SocketEngine>(TRC) << "[SocketEngine] Stop called but already stopped.\n";
+        return; // Return if it was already false
+    }
 
     std::uint64_t u = 1;
     write(_stop_ev, &u, sizeof(u));
