@@ -1,0 +1,91 @@
+@startuml nic_test
+
+skinparam participant {
+    BackgroundColor #FFE0D0
+}
+skinparam actor {
+    BackgroundColor #D0E0FF
+}
+
+title NIC Test - Sequence Diagram
+
+actor "Test Harness" as Test
+participant "Initializer" as Initializer
+participant "NIC<SocketEngine>" as NIC
+participant "StatsSnapshot" as Stats
+participant "Ethernet::Address" as Address
+participant "NIC::DataBuffer" as Buffer
+
+note over Test: Initialize test
+
+Test -> Initializer: create_nic(1)
+Initializer -> Address: create addr (02:00:00:00:00:01)
+Initializer -> NIC: create instance
+Initializer -> NIC: setAddress(addr)
+Test <-- Initializer: nic instance
+
+note over Test: Test 1: Address Functions
+
+Test -> NIC: address()
+Test <-- NIC: defaultAddr
+Test -> Test: verify defaultAddr != NULL_ADDRESS
+
+Test -> Address: create testAddr (00:11:22:33:44:55)
+Test -> NIC: setAddress(testAddr)
+Test -> NIC: address()
+Test <-- NIC: currentAddr
+Test -> Test: verify currentAddr == testAddr
+
+note over Test: Test 2: Buffer Allocation and Management
+
+Test -> Address: create dstAddr (66:77:88:99:AA:BB)
+Test -> Test: set protocol to 0x0800 (IPv4)
+Test -> Test: set size to 100 bytes
+
+Test -> NIC: alloc(dstAddr, prot, size)
+Test <-- NIC: buffer
+Test -> Test: verify buffer != nullptr
+
+Test -> Buffer: data()
+Test <-- Buffer: frame
+Test -> Test: verify frame.src == nic.address()
+Test -> Test: verify frame.dst == dstAddr
+Test -> Test: verify frame.prot == 0x0800
+Test -> Test: verify buffer.size() == size
+
+Test -> NIC: free(buffer)
+
+Test -> Test: allocate multiple buffers
+loop 5 times
+    Test -> NIC: alloc(dstAddr, prot, size)
+    Test <-- NIC: buffer
+    Test -> Test: store buffer in vector
+end
+
+Test -> Test: free all buffers
+loop for each buffer
+    Test -> NIC: free(buffer)
+end
+
+note over Test: Test 3: Statistics Tracking
+
+Test -> NIC: statistics()
+Test <-- NIC: stats
+Test -> Stats: create initial snapshot
+Test -> Test: verify all counters start at zero
+
+Test -> NIC: send(nullptr)
+Test <-- NIC: -1 (error)
+
+Test -> NIC: statistics()
+Test <-- NIC: updated stats
+Test -> Stats: create updated snapshot
+Test -> Test: verify tx_drops > 0
+
+note over Test: Cleanup
+
+Test -> Test: delete nic
+
+note over Test: Test completed
+
+@enduml

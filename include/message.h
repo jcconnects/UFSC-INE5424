@@ -2,41 +2,63 @@
 #define MESSAGE_H
 
 #include <cstring>
-#include "ethernet.h"
 
-template<typename T>
+template <unsigned int MaxSize>
 class Message {
-public:
-    static constexpr std::size_t MAX_SIZE = Ethernet::MTU;
+    public:
+        static constexpr const unsigned int MAX_SIZE = MaxSize;
 
-    Message();
-    Message(const T data, std::size_t size);
-    const T data() const;
-    const std::size_t size() const;
-    
-private:
-    T _data[MAX_SIZE];
-    std::size_t _size;
+        // Constructors
+        Message();
+        Message(const void* data, unsigned int size);
+        
+        // Copy constructor and assignment operator
+        Message(const Message& other);
+        Message& operator=(const Message& other);
+        
+        // Getters
+        const void* data() const;
+        const unsigned int size() const;
+        
+    private:
+        void* _data[MAX_SIZE];
+        unsigned int _size;
 };
 
-template<typename T>
-Message<T>::Message() : _size(0) { 
-    memset(_data, 0, MAX_SIZE); 
+
+/******** Message Implementation ********/
+template<unsigned int MaxSize>
+Message<MaxSize>::Message() : _size(0) { 
+    memset(_data, 0, MAX_SIZE * sizeof(void*)); 
 }
 
-template<typename T>
-Message<T>::Message(const T data, std::size_t size) { 
-    _size = (size > MAX_SIZE) ? MAX_SIZE : size; // Ensures that it does not exceed MTU
-    memcpy(_data, data, size);
+template<unsigned int MaxSize>
+Message<MaxSize>::Message(const void* data, unsigned int size) { 
+    _size = (size > MAX_SIZE) ? MAX_SIZE : size; // Ensures that it does not exceed Channel::MTU
+    memcpy(_data, data, _size);
 }
 
-template<typename T>
-const T Message<T>::data() const { 
+template<unsigned int MaxSize>
+Message<MaxSize>::Message(const Message& other) : _size(other._size) {
+    memcpy(_data, other._data, _size);
+}
+
+template<unsigned int MaxSize>
+Message<MaxSize>& Message<MaxSize>::operator=(const Message& other) {
+    if (this != &other) {
+        _size = other._size;
+        memcpy(_data, other._data, _size);
+    }
+    return *this;
+}
+
+template<unsigned int MaxSize>
+const void* Message<MaxSize>::data() const { 
     return _data; 
 }
 
-template<typename T>
-const std::size_t Message<T>::size() const { 
+template<unsigned int MaxSize>
+const unsigned int Message<MaxSize>::size() const { 
     return _size; 
 }
 

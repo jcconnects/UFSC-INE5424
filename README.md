@@ -35,16 +35,22 @@ project-root/
 │   ├── vehicle.h         # Vehicle implementation
 │   ├── stubs/            # Stub implementations for testing
 │── tests/                # Test implementations
-│   ├── test_communicator.cpp
-│   ├── test_initializer.cpp
-│   ├── test_observer.cpp
+│   ├── demo.cpp
 │── bin/                  # Compiled binaries
+│── doc/                  # Documentation
+│   ├── README.md         # System architecture overview
+│   ├── classes/          # Component-specific documentation
+│       ├── README-Communicator.md
+│       ├── README-Initializer.md
+│       ├── README-Observer.md
+│       ├── README-Protocol.md
+│       ├── README-Nic.md
+│       ├── README-Ethernet.md
+│       ├── README-SocketEngine.md
+│       ├── README-Message.md
+│       ├── README-Buffer.md
 │── Makefile              # Build and test automation
 │── README.md             # Project overview
-│── READMECommunicator.md # Detailed communicator documentation
-│── READMEInitializer.md  # Detailed initializer documentation
-│── READMEObserver.md     # Detailed observer pattern documentation
-│── READMESuperStubs.md   # Documentation for implemented stubs
 ```
 
 ## Getting Started
@@ -58,26 +64,46 @@ project-root/
 ### Building and Running Tests
 
 ```bash
-# Build all tests
-make all
-
-# Run individual tests
-make run_test_observer
-make run_test_communicator
-make run_test_initializer
+# Build and run tests
+make 
 
 # Clean build artifacts
 make clean
 ```
 
+### Demo Test Configuration
+
+The main demo test simulates a network of autonomous vehicles:
+- Creates 30 vehicles running in separate processes
+- Each vehicle has a random lifetime between 10-50 seconds
+- Even-numbered vehicles act as both senders and receivers
+- Odd-numbered vehicles act only as receivers
+- All log output is saved to the logs/ directory
+
+## System Architecture
+
+The complete system architecture and detailed component interactions are documented in [doc/README.md](doc/README.md). This document provides:
+
+- A layered architecture diagram of the communication system
+- Explanation of the Observer pattern implementations
+- Detailed documentation for each component
+- Information about communication flow and message handling
+- Memory management and thread safety details
+
 ## Documentation
 
 For detailed information about each component, please refer to the following documentation:
 
-- **READMECommunicator.md**: Details of the Communicator class implementation
-- **READMEInitializer.md**: Process management and vehicle lifecycle
-- **READMEObserver.md**: Observer pattern implementation details
-- **READMESuperStubs.md**: Implementation details of the components that replaced stubs
+- **doc/README.md**: Overview of the entire communication system architecture
+- **doc/classes/README-Communicator.md**: Details of the Communicator class implementation
+- **doc/classes/README-Initializer.md**: Process management and vehicle lifecycle
+- **doc/classes/README-Observer.md**: Observer pattern implementation details
+- **doc/classes/README-Protocol.md**: Communication protocol implementation
+- **doc/classes/README-Nic.md**: Network interface card implementation
+- **doc/classes/README-Ethernet.md**: Ethernet frame handling
+- **doc/classes/README-SocketEngine.md**: Low-level network access with raw sockets
+- **doc/classes/README-Message.md**: Message container implementation
+- **doc/classes/README-Buffer.md**: Memory management for network data
 
 ## Implementation Notes
 

@@ -1,0 +1,49 @@
+@startuml 01-system_sequence_diagram
+
+' Process flow
+participant "Vehicle <<Process>>" as Vehicle
+participant "Message" as Message
+participant "Communicator <<Concurrent_Observer>>" as Communicator
+participant "Protocol <<Conditional_Data_Observer>>" as Protocol
+participant "NIC" as NIC
+participant "SocketEngine <<Engine>>" as SocketEngine
+participant "NIC <<Physical>>" as NIC_Physical
+
+autonumber
+Vehicle -> Message: Create
+Message -> Vehicle: Message
+Vehicle -> Communicator: send(Message)
+Communicator -> Protocol: send(address, BROADCAST, data, size)
+activate Protocol
+Protocol -> NIC: alloc(address, PROTO, size)
+NIC --> Protocol: return buffer
+note right of Protocol: Copy data to buffer
+Protocol -> NIC: send(buf)
+NIC -> SocketEngine: send(buf->data(), buf->size())
+SocketEngine --> NIC_Physical: sendto(F)
+deactivate Protocol
+
+==== Network Layer Boundary ====
+
+' NIC receives data from the network
+NIC_Physical <-: F 
+NIC_Physical -> SocketEngine: handleSignal()
+SocketEngine -> NIC: receiveData(PROTO, buffer)
+activate NIC
+NIC -> NIC: notify(PROTO, buffer)
+NIC -> Protocol: update(&_observed, PROTO, buffer)
+activate Protocol
+Protocol -> Protocol: notify(condition, data)
+Protocol -> Communicator: update(condition, data)
+note right of Communicator: Calls update and releases the thread waiting for data
+deactivate Protocol
+deactivate NIC
+
+Vehicle -> Communicator: receive(Message)
+activate Communicator
+Communicator -> Communicator: updated()
+note right of Communicator: Method inherited from Observer pattern class that waits until data is returned
+deactivate Communicator
+note right of Vehicle: Updated that data is available
+
+@enduml 

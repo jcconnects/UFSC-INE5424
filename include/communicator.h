@@ -1,89 +1,97 @@
 #ifndef COMMUNICATOR_H
 #define COMMUNICATOR_H
 
-#include "observer.h"
-#include "stubs/communicator_stubs.h" // Include actual Message implementation
 #include <iostream>
 #include <cstring> // For memcpy
-#include <mutex>
 #include <stdexcept>
+#include <unistd.h> // For usleep
 
-// Forward declarations
-class Message;
+#include "protocol.h"
+#include "message.h"
+#include "traits.h"
+#include "debug.h"
 
 template <typename Channel>
-class Communicator: public Concurrent_Observer<typename Channel::Buffer, typename Channel::Port>
+class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data, typename Channel::Observer::Observing_Condition>
 {
-public:
-    typedef typename Channel::Buffer Buffer;
-    typedef typename Channel::Address Address;
-    typedef typename Channel::Port Port;
-    typedef Concurrent_Observer<Buffer, Port> Observer;
     
-    static constexpr size_t MAX_MESSAGE_SIZE = 1024; // Maximum message size in bytes
-    
-    // Constructor and Destructor
-    Communicator(Channel* channel, Address address);
-    ~Communicator();
-    
-    // Communication methods
-    bool send(const Message* message);
-    bool receive(Message* message);
-    
-    // Deleted copy constructor and assignment operator to prevent copying
-    Communicator(const Communicator&) = delete;
-    Communicator& operator=(const Communicator&) = delete;
+    public:
+        typedef Concurrent_Observer<typename Channel::Observer::Observed_Data, typename Channel::Observer::Observing_Condition> Observer;
+        typedef typename Channel::Buffer Buffer;
+        typedef typename Channel::Address Address;
+        typedef typename Channel::Port Port;
+        
+        static constexpr const unsigned int MAX_MESSAGE_SIZE = Channel::MTU; // Maximum message size in bytes
+        
+        // Constructor and Destructor
+        Communicator(Channel* channel, Address address);
+        ~Communicator();
+        
+        // Communication methods
+        bool send(const Message<MAX_MESSAGE_SIZE>* message);
+        bool receive(Message<MAX_MESSAGE_SIZE>* message);
+        
+        // Method to close the communicator and unblock any pending receive calls
+        void close();
+        
+        // Deleted copy constructor and assignment operator to prevent copying
+        Communicator(const Communicator&) = delete;
+        Communicator& operator=(const Communicator&) = delete;
 
-private:
-    Channel* _channel;
-    Address _address;
-    mutable std::mutex _mutex;
+    private:
+
+        using Observer::update;
+        // Update method for Observer pattern
+        void update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition c, Buffer* buf);
+
+    private:
+        Channel* _channel;
+        Address _address;
+        bool _closed;
 };
 
 // Template implementations
 template <typename Channel>
-Communicator<Channel>::Communicator(Channel* channel, Address address)
-    : Observer(address._port), _channel(channel), _address(address) {
+Communicator<Channel>::Communicator(Channel* channel, Address address) : Observer(address.port()), _channel(channel), _address(address) {
+    db<Communicator>(TRC) << "Communicator<Channel>::Communicator() called!\n";
     if (!channel) {
         throw std::invalid_argument("Channel pointer cannot be null");
     }
-    std::lock_guard<std::mutex> lock(_mutex);
+
     _channel->attach(this, address);
+    db<Communicator>(INF) << "[Communicator] attached to Channel\n";
 }
 
 template <typename Channel>
 Communicator<Channel>::~Communicator() {
-    std::lock_guard<std::mutex> lock(_mutex);
+    db<Communicator>(TRC) << "Communicator<Channel>::~Communicator() called!\n";
     if (_channel) {
         _channel->detach(this, _address);
+        db<Communicator>(INF) << "[Communicator] detached from Channel\n";
     }
+    
+    db<Communicator>(INF) << "[Communicator] closed!\n";
 }
 
 template <typename Channel>
-bool Communicator<Channel>::send(const Message* message) {
+bool Communicator<Channel>::send(const Message<MAX_MESSAGE_SIZE>* message) {
+    db<Communicator>(TRC) << "Communicator<Channel>::send() called!\n";
     if (!message) {
         std::cerr << "Error: Null message pointer in send" << std::endl;
         return false;
     }
-    
-    if (message->size() > MAX_MESSAGE_SIZE) {
-        std::cerr << "Error: Message size exceeds maximum allowed size" << std::endl;
-        return false;
-    }
-    
-    std::lock_guard<std::mutex> lock(_mutex);
-    if (!_channel) {
-        std::cerr << "Error: Channel not initialized" << std::endl;
-        return false;
-    }
-    
+
     try {
         int result = _channel->send(_address, Address::BROADCAST, message->data(), message->size());
+        db<Communicator>(INF) << "[Communicator] Channel::send() return value " << std::to_string(result) << "\n";
+
         if (result <= 0) {
             std::cerr << "Error: Failed to send message" << std::endl;
             return false;
         }
+
         return true;
+
     } catch (const std::exception& e) {
         std::cerr << "Error sending message: " << e.what() << std::endl;
         return false;
@@ -91,50 +99,68 @@ bool Communicator<Channel>::send(const Message* message) {
 }
 
 template <typename Channel>
-bool Communicator<Channel>::receive(Message* message) {
+bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
+    db<Communicator>(TRC) << "Communicator<Channel>::receive() called!\n";
+    
+    // If communicator is closed, doesn't even try to receive
+    if (_closed) {
+        db<Communicator>(INF) << "[Communicator] closed! Returning false\n";
+        return false;
+    }
+
     if (!message) {
         std::cerr << "Error: Null message pointer in receive" << std::endl;
         return false;
     }
     
-    Buffer* buf = nullptr;
+    Buffer* buf = Observer::updated();
+    db<Communicator>(INF) << "[Communicator] buffer retrieved\n";
+
+    if (buf->size() == 0) {
+        db<Communicator>(INF) << "[Communicator] empty buffer! Returning false\n";
+        return false;
+    }
+
     try {
-        buf = Observer::updated(); // Block until a notification is triggered
-        if (!buf) {
-            std::cerr << "Error: Null buffer received" << std::endl;
-            return false;
-        }
-        
-        std::lock_guard<std::mutex> lock(_mutex);
-        if (!_channel) {
-            std::cerr << "Error: Channel not initialized" << std::endl;
-            return false;
-        }
         
         Address from;
-        char temp_buffer[MAX_MESSAGE_SIZE] = {0};
-        int size = _channel->receive(buf, &from, temp_buffer, sizeof(temp_buffer));
+        std::uint8_t temp_data[MAX_MESSAGE_SIZE];
+
+        int size = _channel->receive(buf, from, temp_data, buf->size());
+        db<Communicator>(INF) << "[Communicator] Channel::receive() returned size " << std::to_string(size) << "\n";
         
         if (size > 0) {
             // Create a new message with the received data
-            std::string received_content(temp_buffer, size);
-            *message = Message(received_content);
+            *message = Message<MAX_MESSAGE_SIZE>(temp_data, static_cast<unsigned int>(size));
+            return true;
         }
-        
-        // Decrement reference count for buffer after use
-        if (buf->ref_count.fetch_sub(1) == 1) {
-            delete buf;
-        }
-        
-        return (size > 0);
+
+        return false;
+
     } catch (const std::exception& e) {
         std::cerr << "Error receiving message: " << e.what() << std::endl;
-        // Clean up buffer if an exception occurred
-        if (buf && buf->ref_count.fetch_sub(1) == 1) {
-            delete buf;
-        }
         return false;
     }
+}
+
+template <typename Channel>
+void Communicator<Channel>::close() {
+    db<Communicator>(TRC) << "Communicator<Channel>::close() called!\n";
+    
+    try {
+        // Signal any threads waiting on receive to wake up
+        Buffer buf = Buffer();
+        update(nullptr, _address.port(), &buf);
+        _closed = true;
+    } catch (const std::exception& e) {
+        std::cerr << "Error during communicator close: " << e.what() << std::endl;
+    }
+}
+
+template <typename Channel>
+void Communicator<Channel>::update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition c, Buffer* buf) {
+    db<Communicator>(TRC) << "Communicator<Channel>::update() called!\n";
+    Observer::update(c, buf); // releases the thread waiting for data
 }
 
 #endif // COMMUNICATOR_H

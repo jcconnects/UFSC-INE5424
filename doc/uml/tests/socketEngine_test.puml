@@ -1,0 +1,115 @@
+@startuml socketEngine_test
+
+skinparam participant {
+    BackgroundColor #FFE0D0
+}
+skinparam actor {
+    BackgroundColor #D0E0FF
+}
+skinparam database {
+    BackgroundColor #D0FFE0
+}
+
+title SocketEngine Test - Sequence Diagram
+
+actor "Test Harness" as Test
+participant "TestSocketEngine A" as EngineA
+participant "TestSocketEngine B" as EngineB
+database "Network Interface" as Network
+
+note over Test: Initialize test
+
+Test -> EngineA: create instance
+Test -> EngineB: create instance
+
+note over Test: Test 1: Initialization
+
+Test -> EngineA: getSocketFd()
+Test <-- EngineA: _sock_fd
+Test -> Test: verify socket file descriptor is valid
+
+Test -> EngineA: getEpollFd()
+Test <-- EngineA: _ep_fd
+Test -> Test: verify epoll file descriptor is valid
+
+Test -> EngineA: getIfIndex()
+Test <-- EngineA: _if_index
+Test -> Test: verify interface index is valid
+
+Test -> EngineB: getSocketFd(), getEpollFd(), getIfIndex()
+Test -> Test: verify EngineB descriptors are valid
+
+Test -> EngineA: getMacAddress()
+Test <-- EngineA: macA
+Test -> EngineB: getMacAddress()
+Test <-- EngineB: macB
+Test -> Test: verify MAC addresses are valid
+
+Test -> EngineA: running()
+Test <-- EngineA: true
+Test -> EngineB: running()
+Test <-- EngineB: true
+Test -> Test: verify both engines are running
+
+note over Test: Test 2: Broadcast Communication
+
+Test -> Test: create Ethernet frame with broadcast destination
+Test -> Test: set source to macA
+Test -> Test: fill payload with test pattern
+
+Test -> EngineA: resetCounters()
+Test -> EngineB: resetCounters()
+
+Test -> EngineA: send(frame, frame_size)
+EngineA -> Network: send broadcast frame
+Network -> EngineB: receive broadcast frame
+EngineB -> EngineB: handleSignal()
+EngineB -> EngineB: increment signal_count
+EngineB -> EngineB: increment received_frames
+
+Test -> EngineA: getSignalCount(), getReceivedFrames()
+Test <-- EngineA: counts
+Test -> EngineB: getSignalCount(), getReceivedFrames()
+Test <-- EngineB: counts
+Test -> Test: verify at least one engine received signal
+
+note over Test: Test 3: Direct Communication
+
+Test -> Test: modify frame (dst=macA, src=macB)
+Test -> EngineA: resetCounters()
+Test -> EngineB: resetCounters()
+
+Test -> EngineB: send(frame, frame_size)
+EngineB -> Network: send direct frame to A
+Network -> EngineA: receive frame
+EngineA -> EngineA: handleSignal()
+EngineA -> EngineA: increment signal_count
+EngineA -> EngineA: increment received_frames
+
+Test -> EngineA: getSignalCount(), getReceivedFrames()
+Test <-- EngineA: counts
+Test -> EngineB: getSignalCount(), getReceivedFrames()
+Test <-- EngineB: counts
+Test -> Test: verify frame reception
+
+note over Test: Test 4: Shutdown
+
+Test -> EngineA: stop()
+EngineA -> EngineA: _running = false
+EngineA -> EngineA: signal _stop_ev
+EngineA -> EngineA: join _receive_thread
+
+Test -> EngineB: stop()
+EngineB -> EngineB: _running = false
+EngineB -> EngineB: signal _stop_ev
+EngineB -> EngineB: join _receive_thread
+
+Test -> EngineA: running()
+Test <-- EngineA: false
+Test -> EngineB: running()
+Test <-- EngineB: false
+Test -> Test: verify both engines are stopped
+
+note over Test: Test completed
+
+@enduml 

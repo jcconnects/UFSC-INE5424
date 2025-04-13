@@ -3,79 +3,59 @@
 
 #include <cstdint>
 #include <cstring>
+#include <sstream>
+#include <iomanip>
 
 class Ethernet {
 
     public:
-        static constexpr std::size_t MTU = 1500; // Ethernet MTU = 1500 Bytes
+        static constexpr unsigned int MTU = 1500; // Ethernet MTU = 1500 Bytes
+        static constexpr unsigned int MAC_SIZE = 6; 
     
         // Defining MAC address
-        class Address {
-            public:
-                static constexpr std::size_t MAC_SIZE = 6; 
-
-            public:
-                Address();
-                Address(const std::uint8_t* addr);
-                ~Address() = default;
-
-                const std::uint8_t* bytes() const;
-                bool operator==(const Address& other) const;
-                bool operator!=(const Address& other) const;
-
-            private:
-                std::uint8_t _addr[MAC_SIZE];
+        struct Address {
+            std::uint8_t bytes[MAC_SIZE];
         };
+
+        static const Ethernet::Address NULL_ADDRESS;
         
         // Protocol Type
-        typedef std::uint16_t Protocol;
+        typedef unsigned int Protocol;
+        
+        static constexpr unsigned int HEADER_SIZE = sizeof(Address)*2 + sizeof(Protocol);
 
         // Defining Ethernet Frame
         struct Frame {
             Address dst;
             Address src;
-            unsigned char payload[MTU];
-        };
+            Protocol prot;
+            std::uint8_t payload[MTU];
+        } __attribute__((packed));
+
+        static std::string mac_to_string(Address addr) {
+            std::ostringstream oss;
+            for (unsigned int i = 0; i < MAC_SIZE; ++i) {
+                if (i != 0) oss << ":";
+                oss << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(addr.bytes[i]);
+            }
+            return oss.str();
+        }
 
         // Constructor / Destructor
-        Ethernet();
-        virtual ~Ethernet();
-
-        const Address address() const;
-
-    protected:
-        Address _address; // MAC address
+        Ethernet() = default;
+        ~Ethernet() = default;
 
 }; // all necessary definitions and formats
 
-// Address class implementations
-Ethernet::Address::Address() { 
-    std::memset(_addr, 0, MAC_SIZE); 
+const Ethernet::Address Ethernet::NULL_ADDRESS = {{0, 0, 0, 0, 0, 0}};
+
+
+inline bool operator==(const Ethernet::Address& a, const Ethernet::Address& b) {
+    return std::memcmp(a.bytes, b.bytes, Ethernet::MAC_SIZE) == 0;
 }
 
-Ethernet::Address::Address(const std::uint8_t* addr) {
-    std::memcpy(_addr, addr, MAC_SIZE);
-}
-
-const std::uint8_t* Ethernet::Address::bytes() const { 
-    return _addr; 
-}
-
-bool Ethernet::Address::operator==(const Address& other) const {
-    return std::memcmp(_addr, other._addr, MAC_SIZE) == 0;
-}
-
-bool Ethernet::Address::operator!=(const Address& other) const {
-    return !(*this == other);
-}
-
-// Ethernet class implementations
-Ethernet::Ethernet() = default;
-
-Ethernet::~Ethernet() = default;
-
-const Ethernet::Address Ethernet::address() const { 
-    return _address; 
+inline bool operator!=(const Ethernet::Address& a, const Ethernet::Address& b) {
+    return !(a == b);
 }
 
 #endif // ETHERNET_H
