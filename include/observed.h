@@ -81,6 +81,7 @@ class Concurrent_Observed : public Conditionally_Data_Observed<D, C>{
         
     private:
         pthread_mutex_t _mtx;
+        Observers _observers;
 };
 
 /************************* CONCURRENT_OBSERVED IMPLEMENTATION *****************************/
@@ -113,7 +114,7 @@ bool Concurrent_Observed<T, C>::notify(C c, T* d) {
     pthread_mutex_lock(&_mtx);
     bool notified = false;
     
-    for (typename Observers::Iterator obs = this->_observers.begin(); obs != this->_observers.end(); ++obs) {
+    for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
         if ((*obs)->rank() == c) {
             (*obs)->update(c, d);
             notified = true;
