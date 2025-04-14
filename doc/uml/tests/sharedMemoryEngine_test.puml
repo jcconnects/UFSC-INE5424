@@ -1,0 +1,164 @@
+@startuml sharedMemoryEngine_test
+
+skinparam participant {
+    BackgroundColor #FFE0D0
+}
+skinparam actor {
+    BackgroundColor #D0E0FF
+}
+skinparam database {
+    BackgroundColor #D0FFE0
+}
+skinparam note {
+    BackgroundColor #FFFFD0
+}
+
+title SharedMemoryEngine Test - Sequence Diagram
+
+actor "Test Harness" as Test
+participant "TestSharedMemoryEngine A" as EngineA
+participant "TestSharedMemoryEngine B" as EngineB
+database "Shared Memory\n(Component Queues)" as SharedMem
+
+note right of SharedMem
+  Producer-Consumer Model:
+  - Component Queues with Mutex Protection
+  - eventfd for Notification
+  - epoll for Efficient Waiting
+end note
+
+note over Test: Initialize test
+
+Test -> EngineA: create instance(id=1)
+EngineA -> EngineA: setupSharedMemory()
+EngineA -> EngineA: setupEpoll()
+EngineA -> EngineA: Start receive thread
+Test -> EngineB: create instance(id=2)
+EngineB -> EngineB: setupSharedMemory()
+EngineB -> EngineB: setupEpoll()
+EngineB -> EngineB: Start receive thread
+
+note over Test: Test 1: Component IDs
+
+Test -> EngineA: getId()
+Test <-- EngineA: 1
+Test -> EngineB: getId()
+Test <-- EngineB: 2
+Test -> Test: verify component IDs
+
+note over Test: Test 2: MAC Addresses
+
+Test -> EngineA: getMacAddress()
+Test <-- EngineA: macA (02:00:00:00:00:01)
+Test -> EngineB: getMacAddress()
+Test <-- EngineB: macB (02:00:00:00:00:02)
+Test -> Test: verify MAC addresses are different
+Test -> Test: verify MAC encoding of component IDs
+
+note over Test: Test 3: Running Status
+
+Test -> EngineA: running()
+Test <-- EngineA: true
+Test -> EngineB: running()
+Test <-- EngineB: true
+Test -> Test: verify both engines are running
+
+note over Test: Test 4: Direct Communication (Producer-Consumer Pattern)
+
+Test -> Test: create Ethernet frame (dst=macB, src=macA)
+Test -> Test: set protocol to 0x8888
+Test -> Test: fill payload with test pattern
+
+Test -> EngineA: resetCounters()
+Test -> EngineB: resetCounters()
+
+note over EngineA: Acts as Producer
+
+Test -> EngineA: send(frame, frame_size)
+EngineA -> EngineA: set frame.src = _mac_address
+EngineA -> EngineA: lock _queue_mutex
+EngineA -> SharedMem: addFrameToQueue(engineB.getId(), frame)
+EngineA -> EngineA: unlock _queue_mutex
+EngineA -> EngineB: notify via eventfd (write value)
+
+note over EngineB: Acts as Consumer
+
+EngineB -> EngineB: epoll_wait() wakes up
+EngineB -> EngineB: handleSignal()
+EngineB -> EngineB: increment signal_count
+EngineB -> EngineB: lock _queue_mutex
+EngineB -> EngineB: readFrame(frame)
+EngineB -> EngineB: unlock _queue_mutex
+EngineB -> EngineB: increment received_frames
+EngineB -> EngineB: log received frame details
+
+Test -> EngineA: getSignalCount(), getReceivedFrames()
+Test <-- EngineA: counts
+Test -> EngineB: getSignalCount(), getReceivedFrames()
+Test <-- EngineB: counts
+Test -> Test: verify engineB received signal and frame
+Test -> EngineB: getLogMessages()
+Test <-- EngineB: log messages
+Test -> Test: verify received frame details
+
+note over Test: Test 5: Broadcast Communication (Role Reversal)
+
+Test -> Test: modify frame (dst=broadcast, src=macB)
+Test -> EngineA: resetCounters()
+Test -> EngineB: resetCounters()
+
+note over EngineB: Now Acts as Producer
+
+Test -> EngineB: send(frame, frame_size)
+EngineB -> EngineB: set frame.src = _mac_address
+EngineB -> EngineB: lock _queue_mutex
+EngineB -> SharedMem: addFrameToQueue for all components except self
+EngineB -> EngineB: unlock _queue_mutex
+EngineB -> EngineA: notify via eventfd (write value)
+
+note over EngineA: Now Acts as Consumer
+
+EngineA -> EngineA: epoll_wait() wakes up
+EngineA -> EngineA: handleSignal()
+EngineA -> EngineA: increment signal_count
+EngineA -> EngineA: lock _queue_mutex
+EngineA -> EngineA: readFrame(frame)
+EngineA -> EngineA: unlock _queue_mutex
+EngineA -> EngineA: increment received_frames
+EngineA -> EngineA: log received frame details
+
+Test -> EngineA: getSignalCount(), getReceivedFrames()
+Test <-- EngineA: counts
+Test -> EngineB: getSignalCount(), getReceivedFrames()
+Test <-- EngineB: counts
+Test -> Test: verify engineA received broadcast signal and frame
+Test -> EngineA: getLogMessages()
+Test <-- EngineA: log messages
+
+Test -> EngineA: getLastReceivedFrame()
+Test <-- EngineA: last_frame
+Test -> Test: create properly aligned copy of Ethernet frame
+Test -> Test: verify protocol is 0x8888
+Test -> Test: verify source MAC is macB
+
+note over Test: Test 6: Shutdown
+
+Test -> EngineA: stop()
+EngineA -> EngineA: _running = false
+EngineA -> EngineA: signal via eventfd
+EngineA -> EngineA: join _receive_thread
+
+Test -> EngineB: stop()
+EngineB -> EngineB: _running = false
+EngineB -> EngineB: signal via eventfd
+EngineB -> EngineB: join _receive_thread
+
+Test -> EngineA: running()
+Test <-- EngineA: false
+Test -> EngineB: running()
+Test <-- EngineB: false
+Test -> Test: verify both engines are stopped
+
+note over Test: Clean up memory and exit
+
+@enduml 

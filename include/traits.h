@@ -38,14 +38,14 @@ class Component;
 // Traits definition
 template <typename T>
 struct Traits {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for NIC class
 template <typename Engine>
 struct Traits<NIC<Engine>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static const unsigned int SEND_BUFFERS = 16;
     static const unsigned int RECEIVE_BUFFERS = 16;
 };
@@ -54,14 +54,14 @@ struct Traits<NIC<Engine>> : public Traits<void>
 template <typename NIC>
 struct Traits<Protocol<NIC>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for Protocol<NIC<SocketEngine>> class
 template <>
 struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 888; // Example value
 };
 
@@ -69,7 +69,7 @@ struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
 template<>
 struct Traits<SocketEngine> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static constexpr const char* DEFAULT_INTERFACE_NAME = "test-dummy0";
     
     static const char* INTERFACE_NAME() {
@@ -82,30 +82,30 @@ struct Traits<SocketEngine> : public Traits<void>
 template<typename Channel>
 struct Traits<Communicator<Channel>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for Vehicle class
 template<>
 struct Traits<Vehicle> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 template <>
 struct Traits<Component> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 //traits para classe Debug
 template<>
 struct Traits<Debug> : public Traits<void>
 {
-    static const bool error = false;
-    static const bool warning = false;
+    static const bool error = true;
+    static const bool warning = true;
     static const bool info = true;
-    static const bool trace = false;
+    static const bool trace = true;
 };
 
 

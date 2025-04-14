@@ -1,3 +1,5 @@
+#define TEST_MODE 1
+
 #include <iostream>
 #include <string>
 #include <cassert>

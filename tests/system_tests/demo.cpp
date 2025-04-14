@@ -33,8 +33,9 @@ void run_vehicle(Vehicle* v, std::string log_prefix) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist_lifetime(10, 50);
+    std::uniform_int_distribution<> dist_lifetime(5, 10);
     int lifetime = dist_lifetime(gen); // Reduced lifetime range from 10-50 seconds
+    unsigned int vehicle_id = v->id(); // Store ID before deletion
 
     // Create components based on vehicle ID
     // Even ID vehicles will send and receive
@@ -55,11 +56,21 @@ void run_vehicle(Vehicle* v, std::string log_prefix) {
     sleep(lifetime);
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] lifetime ended. Stopping vehicle.\n";
 
-    // Signal the vehicle logic to stop
-    v->stop();
-
-    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] terminated cleanly.\n";
-    // Vehicle and components are cleaned up in Vehicle's destructor
+    try {
+        // Signal the vehicle logic to stop
+        v->stop(); // This now blocks until components are stopped and joined
+        db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] vehicle stop() returned, proceeding to delete.\n";
+        
+        // Clean up vehicle (will delete components)
+        delete v;
+        v = nullptr; // Good practice to null pointer after delete
+        
+        db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] Vehicle object deleted and terminated cleanly.\n";
+    } catch (const std::exception& e) {
+        db<Vehicle>(ERR) << "[Vehicle " << vehicle_id << "] Exception during cleanup: " << e.what() << "\n";
+    } catch (...) {
+        db<Vehicle>(ERR) << "[Vehicle " << vehicle_id << "] Unknown error during cleanup\n";
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -67,7 +78,7 @@ int main(int argc, char* argv[]) {
     
     TEST_LOG("Application started!");
 
-    unsigned int n_vehicles = 30;
+    unsigned int n_vehicles = 1000;
 
     // Create logs directory if it doesn't exist
     mkdir("./logs", 0777);
@@ -94,7 +105,6 @@ int main(int argc, char* argv[]) {
             Vehicle* v = Initializer::create_vehicle(id);
             run_vehicle(v, "Vehicle_" + std::to_string(id));
             
-            delete v;
             Debug::close_log_file();
             
             log_message = "[Child " + std::to_string(getpid()) + "] vehicle " + std::to_string(id) + " finished execution";
@@ -116,8 +126,19 @@ int main(int argc, char* argv[]) {
             TEST_LOG("Application terminated.");
             return -1;
         } else {
-            TEST_LOG("[Parent] child " + std::to_string(child_pid) + " terminated with status " + std::to_string(status));
-            if (status != 0) {
+            // Improved process status reporting
+            if (WIFEXITED(status)) {
+                int exit_status = WEXITSTATUS(status);
+                TEST_LOG("[Parent] child " + std::to_string(child_pid) + " exited normally with status " + std::to_string(exit_status));
+                if (exit_status != 0) {
+                    successful = false;
+                }
+            } else if (WIFSIGNALED(status)) {
+                int signal = WTERMSIG(status);
+                TEST_LOG("[Parent] child " + std::to_string(child_pid) + " terminated by signal " + std::to_string(signal));
+                successful = false;
+            } else {
+                TEST_LOG("[Parent] child " + std::to_string(child_pid) + " terminated with unknown status " + std::to_string(status));
                 successful = false;
             }
         }
