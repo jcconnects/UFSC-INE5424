@@ -16,7 +16,7 @@ class Vehicle;
 class Component {
     public:
         Component(Vehicle* vehicle, const std::string& name);
-        virtual ~Component() = default;
+        virtual ~Component();
 
         virtual void start() = 0;
         virtual void stop();
