@@ -64,7 +64,7 @@ Component::~Component() {
 void Component::stop() {
     db<Component>(TRC) << "Component::stop() called for component " << _name << "\n";
 
-    _running = false;
+    _running.store(false, std::memory_order_acquire);
     
     if (_thread != 0) { // Basic check if thread handle seems valid
         db<Component>(TRC) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Attempting to join thread...\n";

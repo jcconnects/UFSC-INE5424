@@ -54,6 +54,7 @@ void* SenderComponent::run(void* arg) {
     int counter = 1;
 
     while (vehicle->running()) {
+
         auto now = std::chrono::steady_clock::now();
         auto time_us = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
         

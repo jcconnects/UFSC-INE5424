@@ -42,6 +42,8 @@ class SocketEngine{
 
         static void* run(void* arg);
 
+        void start();
+
         void stop();
 
 
@@ -68,15 +70,18 @@ class SocketEngine{
 
 /********** SocketEngine Implementation **********/
 
-SocketEngine::SocketEngine() : _stop_ev(eventfd(0, EFD_NONBLOCK)){
-    db<SocketEngine>(TRC) << "SocketEngine::SocketEngine() called!\n";
+SocketEngine::SocketEngine() : _stop_ev(eventfd(0, EFD_NONBLOCK)) {};
+
+void SocketEngine::start() {
     setUpSocket();
     setUpEpoll();
-
     _running.store(true, std::memory_order_release);
     pthread_create(&_receive_thread, nullptr, SocketEngine::run, this);
     db<SocketEngine>(INF) << "[SocketEngine] receive thread started\n";
-};
+    _running.store(true, std::memory_order_release);
+    pthread_create(&_receive_thread, nullptr, SocketEngine::run, this);
+    db<SocketEngine>(INF) << "[SocketEngine] receive thread started\n";
+}
 
 void SocketEngine::setUpSocket() {
     db<SocketEngine>(TRC) << "SocketEngine::setUpSocket() called!\n";
@@ -214,8 +219,9 @@ void* SocketEngine::run(void* arg)  {
 
     SocketEngine* engine = static_cast<SocketEngine*>(arg);
 
-    struct epoll_event events[10];
+    struct epoll_event events[15];
     while (engine->running()) {
+        db<SocketEngine>(INF) << "[SocketEngine] Entering wait\n";
         int n = epoll_wait(engine->_ep_fd, events, 10, -1);
         
         // Check if we should exit after epoll_wait returns

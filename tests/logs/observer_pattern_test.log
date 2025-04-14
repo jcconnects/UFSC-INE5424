@@ -46,472 +46,484 @@ Verified observer1 didn't update after detach.
 --- Testing Concurrent Observer Pattern ---
 
 Attached concurrent observers.
-Notify Thread (Condition 1, Thread 140525395400256) started.
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1000
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1000
-Notify Thread (Condition 2, Thread 140525387007552) started.
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2000
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2000
+Notify Thread (Condition 1, Thread 140129508505152) started.
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1000
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1000
 Threads started, waiting for completion...
-Threads started, waiting for completion...
-Consume Thread (Observer Rank 1, Thread 140525290124864) started.
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1000
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1000 (1/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Consume Thread (Observer Rank 2, Thread 140525378614848) started.
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2000
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2000 (1/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1001
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1001
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1001
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1001 (2/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2001
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2001
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2001
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2001 (2/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1002
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1002
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1002
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1002 (3/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2002
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2002
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2002
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2002 (3/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1003
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1003
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1003
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1003 (4/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2003
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2003
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2003
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2003 (4/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1004
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1004
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1004
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1004 (5/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2004
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2004
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2004
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2004 (5/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1005
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1005
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1005
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1005 (6/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2005
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2005
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2005
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2005 (6/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2006
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2006
-1, Thread 140525395400256) notifying with data 1006
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2006
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1006
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1006
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2006
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2006 (7/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1006
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1006 (7/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2007
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2007
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2007
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2007 (8/40)
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2007 
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2007 
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1007
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1007
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1007 (8/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2008
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2008
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1008
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1008
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2008
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1008
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1008
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2008 (9/40)
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1008 (9/50)
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1008 (9/50)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2009
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2009
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2009
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2009 (10/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1009
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1009
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1009
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1009 (10/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2010
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2010
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2010
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2010 (11/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1010
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1010
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1010
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1010 (11/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2011
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2011
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2011
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2011 (12/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1011
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1011
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1011
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1011 (12/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2012
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2012
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2012
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2012 (13/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1012
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1012
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1012
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1012 (13/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2013
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2013
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1013
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1013
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2013
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1013
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2013 (14/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1013
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1013 (14/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2014
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2014
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1014
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1014
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2014
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2014 (15/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1014
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1014 (15/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2015
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2015
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1015
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1015
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2015
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2015 (16/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1015
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1015 (16/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2016
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2016
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1016
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1016
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2016
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2016 (17/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1016
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1016 (17/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2017
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2017
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1017
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2017 (18/40)
-yConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1017
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2017 (18/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1017
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1017 (18/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2018
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2018
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1018
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1018
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2018
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2018 (19/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1018
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1018 (19/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2019
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2019
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2019
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2019 (20/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1019
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1019
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1019
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1019 (20/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2020
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2020
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2020
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2020 (21/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1020
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1020
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1020
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1020 (21/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2021
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2021
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1021
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1021
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2021
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2021 (22/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1021
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1021 (22/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2022
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2022
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2022
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2022 (23/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1022
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1022
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1022
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1022 (23/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2023
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2023
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2023
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2023 (24/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1023
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1023
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1023
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1023 (24/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2024
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2024
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2024
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2024 (25/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1024
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1024
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1024
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1024 (25/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2025
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2025
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2025
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2025 (26/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1025
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1025
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1025
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1025 (26/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2026
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2026
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2026
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2026 (27/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1026
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1026
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1026
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1026 (27/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2027
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2027
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2027
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2027 (28/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1027
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1027
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1027
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1027 (28/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2028
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2028
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2028
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2028 (29/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1028
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1028
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1028
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1028 (29/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2029
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2029
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2029
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2029 (30/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1029
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1029
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1029
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1029 (30/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2030
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2030
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2030
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2030 (31/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1030
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1030
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1030
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1030 (31/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2031
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2031
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2031
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2031 (32/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1031
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1031
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1031
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1031 (32/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2032
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2032
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2032
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2032 (33/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1032
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1032
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1032
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1032 (33/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2033
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2033
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2033
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2033 (34/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1033
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1033
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1033
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1033 (34/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2034
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2034
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2034
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2034 (35/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1034
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1034
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1034
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1034 (35/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2035
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2035
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2035
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2035 (36/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1035
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1035
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1035
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1035 (36/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2036
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2036
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2036
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2036 (37/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1036
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1036
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1036
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1036 (37/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2037
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2037
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2037
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2037 (38/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1037
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1037
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1037
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1037 (38/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2038
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2038
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2038
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2038 (39/40)
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1038
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1038
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1038
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1038 (39/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) notifying with data 2039
-MyConcurrentObserver (Rank 2, Thread 140525387007552): Received update for condition 2 with data 2039
-MyConcurrentObserver (Rank 2, Thread 140525378614848): Retrieved data 2039
-Consume Thread (Observer Rank 2, Thread 140525378614848) consumed data 2039 (40/40)
-Consume Thread (Observer Rank 2, Thread 140525378614848) finished after consuming 40 items.
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1039
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1039
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1039
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1039 (40/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 2, Thread 140525387007552) finished.
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1040
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1040
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1040
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1040 (41/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1041
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1041
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1041
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1041 (42/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1042
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1042
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1042
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1042 (43/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1043
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1043
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1043
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1043 (44/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1044
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1044
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1044
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1044 (45/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1045
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1045
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1045
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1045 (46/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1046
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1046
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1046
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1046 (47/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1047
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1047
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1047
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1047 (48/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1048
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1048
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1048
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1048 (49/50)
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Waiting for data...
-Notify Thread (Condition 1, Thread 140525395400256) notifying with data 1049
-MyConcurrentObserver (Rank 1, Thread 140525395400256): Received update for condition 1 with data 1049
-MyConcurrentObserver (Rank 1, Thread 140525290124864): Retrieved data 1049
-Consume Thread (Observer Rank 1, Thread 140525290124864) consumed data 1049 (50/50)
-Consume Thread (Observer Rank 1, Thread 140525290124864) finished after consuming 50 items.
-Notify Thread (Condition 1, Thread 140525395400256) finished.
+Notify Thread (Condition 2, Thread 140129500112448) started.
+Consume Thread (Observer Rank 2, Thread 140129414936128) started.
+Consume Thread (Observer Rank 2, Thread 140129414936128) started.
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2000
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+read (Condition 2, Thread 140129500112448) notifying with data 2000
+Consume Thread (Observer Rank 1, Thread 140129491719744) started.
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2000
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1000
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1000 (1/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2000
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2000 (1/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1001
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1001
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1001
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1001 (2/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2001
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2001
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2001
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2001 (2/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1002
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1002
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1002
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1002 (3/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2002
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2002
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2002
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2002 (3/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1003
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1003
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1003
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1003 (4/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2003
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2003
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2003
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2003 (4/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1004
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1004
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1004
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1004 (5/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2004
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2004
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2004
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2004 (5/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1005
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1005
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1005
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1005 (6/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2005
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2005
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2005
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2005 (6/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1006
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1006
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1006
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1006 (7/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2006
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2006
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2006
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2006 (7/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1007
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1007
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1007
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1007 (8/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2007
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2007
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2007
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2007 (8/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1008
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1008
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1008
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1008 (9/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2008
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2008
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2008
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2008 (9/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1009
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1009
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2009
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2009
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1009
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1009 (10/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2009
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2009 (10/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1010
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1010
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2010
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2010
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1010
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1010 (11/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2010
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2010 (11/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1011
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1011
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2011
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1011
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1011
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2011
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1011 (12/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2011
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2011 (12/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2012
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2012
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1012
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2012
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1012
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2012
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2012
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2012 (13/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1012
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1012
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1012 (13/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2013
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2013
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1013
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1013
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1013
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2013
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2013 (14/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1013
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1013 (14/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2014
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2014
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1014
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1014
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2014
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2014 (15/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1014
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1014 (15/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2015
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2015
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1015
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2015 (16/40)
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1015
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2015 (16/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1015
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1015 (16/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2016
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2016
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1016
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1016
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2016
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2016 (17/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1016
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1016 (17/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2017
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2017
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2017
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2017 (18/40)
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2017 (18/40)
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1017
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1017
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1017
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1017 (18/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2018
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2018
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1018
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1018
+k 2, Thread 140129414936128): Retrieved data 2018
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1018
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2018 (19/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1018
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1018 (19/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2019
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2019
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1019
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1019
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2019
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1019
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1019
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2019 (20/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1019
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1019 (20/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2020
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2020
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1020
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1020
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2020
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2020 (21/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1020 (21/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1021
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1021
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2021
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2021
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1021
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1021 (22/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2021
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2021 (22/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1022
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1022
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2022
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1022
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1022
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1022 (23/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2022
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2022
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2022 (23/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1023
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1023
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1023
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1023 (24/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2023
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2023
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2023
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2023 (24/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1024
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1024
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1024
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1024 (25/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2024
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2024
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2024
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2024 (25/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1025
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1025
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1025
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1025
+Notif50)
+read (Condition 2, Thread 140129500112448) notifying with data 2025
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1025 (26/50)
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2025
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2025
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2025
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2025 (26/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1026
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1026
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1026
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1026 (27/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2026
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2026
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2026
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2026 (27/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1027
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1027
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1027
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1027 (28/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2027
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2027
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2027
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2027 (28/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1028
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1028
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1028
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1028 (29/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2028
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2028
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2028
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2028 (29/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1029
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1029
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1029
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1029 (30/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2029
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2029
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2029
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2029 (30/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1030
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1030
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1030
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1030
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2030
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1030 (31/50)
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2030
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2030
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2030
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2030 (31/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1031
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1031
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2031
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2031
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1031
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1031 (32/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2031
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2031 (32/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1032
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1032
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2032
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2032
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1032
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1032 (33/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2032
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2032 (33/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2033
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2033
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2033
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2033 (34/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1033
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1033
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1033
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1033 (34/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2034
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2034
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2034
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2034 (35/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1034
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1034
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1034
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1034 (35/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2035
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2035
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2035
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2035 (36/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1035
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1035
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1035
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1035 (36/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2036
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2036
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2036
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2036 (37/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1036
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1036
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1036
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1036 (37/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2037
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2037
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2037
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2037 (38/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1037
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1037
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1037
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1037 (38/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2038
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2038
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2038
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2038 (39/40)
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1038
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1038
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1038
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1038 (39/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) notifying with data 2039
+MyConcurrentObserver (Rank 2, Thread 140129500112448): Received update for condition 2 with data 2039
+MyConcurrentObserver (Rank 2, Thread 140129414936128): Retrieved data 2039
+Consume Thread (Observer Rank 2, Thread 140129414936128) consumed data 2039 (40/40)
+Consume Thread (Observer Rank 2, Thread 140129414936128) finished after consuming 40 items.
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1039
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1039
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1039
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1039 (40/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 2, Thread 140129500112448) finished.
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1040
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1040
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1040
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1040 (41/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1041
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1041
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1041
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1041 (42/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1042
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1042
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1042
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1042 (43/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1043
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1043
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1043
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1043 (44/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1044
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1044
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1044
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1044 (45/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1045
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1045
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1045
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1045 (46/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1046
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1046
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1046
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1046 (47/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1047
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1047
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1047
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1047 (48/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1048
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1048
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1048
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1048 (49/50)
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Waiting for data...
+Notify Thread (Condition 1, Thread 140129508505152) notifying with data 1049
+MyConcurrentObserver (Rank 1, Thread 140129508505152): Received update for condition 1 with data 1049
+MyConcurrentObserver (Rank 1, Thread 140129491719744): Retrieved data 1049
+Consume Thread (Observer Rank 1, Thread 140129491719744) consumed data 1049 (50/50)
+Consume Thread (Observer Rank 1, Thread 140129491719744) finished after consuming 50 items.
+Notify Thread (Condition 1, Thread 140129508505152) finished.
 Notifier threads joined.
 Consumer threads joined.
 Verifying results...

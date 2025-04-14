@@ -141,14 +141,14 @@ void Vehicle::stop() {
     } else {
         db<Vehicle>(WRN) << "[Vehicle " << _id << "] Communicator was null during stop.\n";
     }
-
+    // Stopping Vehicle and its components
+    _running = false;
     db<Vehicle>(INF) << "[Vehicle " << _id << "] Stopping components...\n";
     stop_components();
     db<Vehicle>(INF) << "[Vehicle " << _id << "] All components stopped and joined.\n";
 
     db<Vehicle>(INF) << "[Vehicle " << _id << "] Vehicle stop sequence complete.\n";
     
-    _running = false;
 }
 
 void Vehicle::add_component(Component* component) {

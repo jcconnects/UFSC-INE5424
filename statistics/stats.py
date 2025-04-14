@@ -65,7 +65,7 @@ Max: {max(latencies)}; Min: {min(latencies)}
                     linewidth=1.5,  
                     )
 
-    ax.set_title('Distribution and Quartiles Visualization', fontsize=16)
+    ax.set_title('Distribution and Quartiles Visualization with 64 buffers', fontsize=16)
     ax.set_ylabel(data_series.name, fontsize=12)
 
     plt.grid(axis='y', linestyle='--', alpha=0.7)
@@ -73,6 +73,7 @@ Max: {max(latencies)}; Min: {min(latencies)}
     image_filename = path.join('statistics','quartile_boxplot.png')
     plt.savefig(image_filename, dpi=300, bbox_inches='tight') 
     print(f"\nPlot saved as '{image_filename}'")
+    print(len(latencies))
 
     plt.show()
 

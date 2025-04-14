@@ -28,7 +28,7 @@ Asserting: Send operation from EngineA should succeed
 PASS: Send operation from EngineA should succeed
 EngineA Signal count: 0
 EngineA Received frames: 0
-EngineB Signal count: 1
+EngineB Signal count: 2
 EngineB Received frames: 1
 Asserting: At least one engine should receive a signal
 PASS: At least one engine should receive a signal

@@ -92,7 +92,6 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
             // Post to all semaphores to ensure no threads remain blocked on them
             // This is critical to allow component threads to completely terminate
             db<NIC>(TRC) << "[NIC] Unblocking any threads waiting on buffer semaphores\n";
-            
             // Determine how many threads might be blocked on the buffer semaphore
             // We post repeatedly to ensure any blocked threads are released
             int sem_value;
@@ -143,6 +142,8 @@ NIC<Engine>::NIC() {
         _free_buffers.push(&_buffer[i]);
     }
     db<NIC>(INF) << "[NIC] " << std::to_string(N_BUFFERS) << " buffers created\n";
+
+    Engine::start();
 
     sem_init(&_buffer_sem, 0, N_BUFFERS);
     sem_init(&_binary_sem, 0, 1);
@@ -281,7 +282,7 @@ void NIC<Engine>::handleSignal() {
     
     // Convert protocol from network to host byte order
     frame.prot = ntohs(frame.prot);
-    // Filters out messages from itself
+    // // Filters out messages from itself
     if (_address == frame.src) return;
     db<SocketEngine>(INF) << "[SocketEngine] received frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << frame.prot << ", size = " << bytes_received << "}\n";
     

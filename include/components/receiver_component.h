@@ -144,6 +144,10 @@ void* ReceiverComponent::run(void* arg)  {
                 
                 // Update start time for next iteration
                 start = now;
+                if (!vehicle->running()) {
+                    should_exit = true;
+                    break;
+                }
                 
                 // No need to break - let the loop condition check vehicle->running()
             } else {
