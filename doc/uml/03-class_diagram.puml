@@ -22,6 +22,7 @@ class Communicator<Channel> {
   + ~Communicator()
   + send(message: const Message<MAX_MESSAGE_SIZE>*): bool
   + receive(message: Message<MAX_MESSAGE_SIZE>*): bool
+  + close(): void
   - update(obs: Channel::Observed*, c: Channel::Observer::Observing_Condition, buf: Buffer*): void
   .. Typedefs ..
   + Observer: typedef
@@ -93,6 +94,7 @@ class "NIC<Engine>" as NIC {
   - _free_buffers: std::queue<DataBuffer*>
   - _buffer_sem: sem_t
   - _binary_sem: sem_t
+  - _address: Address
   # NIC()
   + ~NIC()
   + send(buf: DataBuffer*): int
@@ -102,6 +104,7 @@ class "NIC<Engine>" as NIC {
   + address(): const Address&
   + setAddress(address: Address): void
   + statistics(): const Statistics&
+  + stop(): void
   - receiveData(frame: Ethernet::Frame&, size: unsigned int): void
   .. Typedefs ..
   + Address: typedef Ethernet::Address
@@ -146,7 +149,7 @@ class "Conditional_Data_Observer<T, Condition>" as ConditionalDataObserver {
   + Conditional_Data_Observer(c: Condition)
   + ~Conditional_Data_Observer() = default
   + {virtual} update(c: Condition, d: Observed_Data*): void
-  + updated(): T*
+  + {virtual} updated(): T*
   + rank(): const Condition
 }
 
@@ -157,7 +160,7 @@ class "Conditionally_Data_Observed<T, Condition>" as ConditionallyDataObserved {
   + {typedef} Observer
   + {typedef} Observers
   + Conditionally_Data_Observed() = default
-  + ~Conditionally_Data_Observed() = default
+  + {virtual} ~Conditionally_Data_Observed() = default
   + attach(o: Observer*, c: Condition): void
   + detach(o: Observer*, c: Condition): void
   + notify(c: Condition, d: T*): bool
@@ -172,6 +175,7 @@ class "Concurrent_Observer<D, C>" as ConcurrentObserver {
   + ~Concurrent_Observer() = default
   + update(c: C, d: D*): void
   + updated(): D*
+  + notify(c: C, d: D*): void
 }
 
 note bottom of ConcurrentObserver
@@ -249,7 +253,7 @@ class SocketEngine {
   - _if_index: int
   - _callback: CallbackMethod
   - _receive_thread: pthread_t
-  # _address: Ethernet::Address
+  # _mac_address: Ethernet::Address
   - {static} _running: bool
   + SocketEngine()
   + ~SocketEngine()
@@ -271,6 +275,7 @@ class Vehicle {
   - _nic: NIC<SocketEngine>*
   - _comms: Communicator<Protocol<NIC<SocketEngine>>>*
   - _running: std::atomic<bool>
+  - _components: std::vector<Component*>
   + Vehicle(id: unsigned int, nic: NIC<SocketEngine>*, protocol: Protocol<NIC<SocketEngine>>*)
   + ~Vehicle()
   + id(): const unsigned int
@@ -279,6 +284,9 @@ class Vehicle {
   + stop(): void
   + send(data: const void*, size: unsigned int): int
   + receive(data: void*, size: unsigned int): int
+  + add_component(component: Component*): void
+  + start_components(): void
+  + stop_components(): void
 }
 
 class SemaphoreWrapper {
@@ -296,6 +304,40 @@ class SemaphoreWrapper {
   .. Deleted methods ..
   + SemaphoreWrapper(const SemaphoreWrapper&) = delete
   + operator=(const SemaphoreWrapper&): SemaphoreWrapper& = delete
+}
+
+class Component {
+  # _vehicle: Vehicle*
+  # _name: std::string
+  # _running: std::atomic<bool>
+  # _thread: pthread_t
+  # _log_file: std::ofstream
+  # _log_mutex: pthread_mutex_t
+  + Component(vehicle: Vehicle*, name: const std::string)
+  + {virtual} ~Component() = default
+  + {virtual} start(): void
+  + {virtual} stop(): void
+  + running(): bool
+  + name(): const std::string
+  + vehicle(): Vehicle*
+  + log_file(): std::ofstream*
+  # open_log_file(filename: const std::string): void
+  # close_log_file(): void
+  # write_to_log(line: const std::string): void
+}
+
+class SenderComponent {
+  + SenderComponent(vehicle: Vehicle*)
+  + start(): void
+  + stop(): void
+  - run(arg: void*): void*
+}
+
+class ReceiverComponent {
+  + ReceiverComponent(vehicle: Vehicle*)
+  + start(): void
+  + stop(): void
+  - run(arg: void*): void*
 }
 
 ' Communicator Relationships
