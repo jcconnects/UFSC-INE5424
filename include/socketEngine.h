@@ -70,14 +70,11 @@ class SocketEngine{
 
 /********** SocketEngine Implementation **********/
 
-SocketEngine::SocketEngine() : _stop_ev(eventfd(0, EFD_NONBLOCK)) {};
+SocketEngine::SocketEngine() : _stop_ev(eventfd(0, EFD_NONBLOCK)), _running(false) {};
 
 void SocketEngine::start() {
     setUpSocket();
     setUpEpoll();
-    _running.store(true, std::memory_order_release);
-    pthread_create(&_receive_thread, nullptr, SocketEngine::run, this);
-    db<SocketEngine>(INF) << "[SocketEngine] receive thread started\n";
     _running.store(true, std::memory_order_release);
     pthread_create(&_receive_thread, nullptr, SocketEngine::run, this);
     db<SocketEngine>(INF) << "[SocketEngine] receive thread started\n";
@@ -188,6 +185,12 @@ const bool SocketEngine::running() {
 int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
     db<SocketEngine>(TRC) << "SocketEngine::send() called!\n";
 
+    // Check if engine is running before sending
+    if (!running()) {
+        db<SocketEngine>(INF) << "[SocketEngine] Attempted to send while engine is stopping/stopped\n";
+        return -1;
+    }
+
     sockaddr_ll addr = {};
     addr.sll_family   = AF_PACKET;
     addr.sll_protocol = htons(frame->prot);
@@ -252,6 +255,12 @@ void* SocketEngine::run(void* arg)  {
                 db<SocketEngine>(INF) << "[SocketEngine] epoll stop event detected\n";
                 uint64_t u;
                 read(engine->_stop_ev, &u, sizeof(u)); // clears eventfd
+                
+                // If this is a stop event, check if we should exit the loop
+                if (!engine->running()) {
+                    db<SocketEngine>(INF) << "[SocketEngine] stop event confirmed, exiting loop\n";
+                    break;
+                }
             }
         }
     }
@@ -269,16 +278,29 @@ void SocketEngine::stop() {
         return; // Return if it was already false
     }
 
-    if (!running())
-        db<SocketEngine>(TRC) << "[SocketEngine] _running set to false.\n";
+    db<SocketEngine>(TRC) << "[SocketEngine] _running set to false.\n";
 
+    // Write to the eventfd to wake up the epoll_wait in the run thread
     std::uint64_t u = 1;
     ssize_t bytes_written = write(_stop_ev, &u, sizeof(u));
+    db<SocketEngine>(TRC) << "[SocketEngine] " << bytes_written << " bytes written to stop_ev.\n";
 
-    db<SocketEngine>(TRC) << "[SocketEngine] " << bytes_written << " bytes written.\n";
-
-    pthread_join(_receive_thread, nullptr);
-    db<SocketEngine>(INF) << "[SocketEngine] sucessfully stopped!\n";
+    // Join the thread - this guarantees the thread has exited
+    if (_receive_thread != 0) {
+        db<SocketEngine>(TRC) << "[SocketEngine] Joining receive thread...\n";
+        int join_ret = pthread_join(_receive_thread, nullptr);
+        if (join_ret == 0) {
+            db<SocketEngine>(INF) << "[SocketEngine] Thread successfully joined.\n";
+        } else {
+            db<SocketEngine>(ERR) << "[SocketEngine] Error joining thread! errno: " 
+                                << join_ret << " (" << strerror(join_ret) << ")\n";
+        }
+        _receive_thread = 0;
+    } else {
+        db<SocketEngine>(WRN) << "[SocketEngine] Stop called but thread handle was invalid (never started?).\n";
+    }
+    
+    db<SocketEngine>(INF) << "[SocketEngine] successfully stopped!\n";
 }
 
 #endif // SOCKETENGINE_H

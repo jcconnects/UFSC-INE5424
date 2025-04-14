@@ -1,0 +1,168 @@
+@startuml Robust Shutdown Sequence
+
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor LightYellow
+skinparam noteBorderColor DarkGray
+
+participant "Vehicle" as V
+participant "Component(s)" as C
+participant "Communicator" as COM
+participant "Protocol" as P
+participant "NIC" as N
+participant "SocketEngine" as SE
+
+note over V, SE
+  <b>Robust Shutdown Sequence</b>
+  This diagram illustrates the enhanced shutdown flow
+  that eliminates race conditions, prevents deadlocks,
+  and ensures proper resource cleanup.
+end note
+
+== Initiate Shutdown (Vehicle::stop) ==
+
+[-> V: stop()
+activate V
+
+note right of V
+  Setting the master running flag first
+  provides a single source of truth for
+  the shutdown state that all components
+  can check.
+end note
+V -> V: _running = false
+
+== Signal Components to Stop (Non-blocking) ==
+
+note over V, C
+  Signaling all components first (without joining)
+  prevents deadlocks and allows concurrent shutdown
+  initiation across all components.
+end note
+
+V -> V: signal_components()
+activate V #LightBlue
+loop for each component
+  V -> C: signal_stop()
+  activate C
+  note right of C
+    Non-blocking operation:
+    Only sets _running flag to false,
+    allowing thread to exit naturally
+    at next check point.
+  end note
+  C --> V
+  deactivate C
+end
+deactivate V
+
+== Unblock Communicator ==
+
+V -> COM: close()
+activate COM
+note right of COM
+  Closing the communicator unblocks any
+  threads waiting in communicator::receive().
+  This is done before stopping the NIC to
+  ensure components can exit cleanly.
+end note
+COM -> COM: _closed = true (atomic)
+COM -> COM: update(nullptr) multiple times
+COM --> V
+deactivate COM
+
+== Stop Network Input/Engine ==
+
+note over V, SE
+  Stopping the NIC and engine before joining
+  component threads is crucial because:
+  1. Prevents new incoming work
+  2. Ensures engine thread is joined 
+  3. Unblocks any semaphores threads are waiting on
+end note
+
+V -> N: stop()
+activate N
+N -> SE: stop()
+activate SE
+
+SE -> SE: _running = false (atomic)
+SE -> SE: write to _stop_ev (wake epoll_wait)
+SE -> SE: pthread_join(_receive_thread)
+note right of SE
+  Standard pthread_join ensures engine
+  thread is completely terminated before
+  returning, eliminating the need for
+  timeouts.
+end note
+SE --> N
+deactivate SE
+
+note over N
+  After engine thread is joined,
+  unblock any potentially waiting threads
+  by posting to semaphores
+end note
+N -> N: Unblock _buffer_sem (N_BUFFERS posts)
+N -> N: Unblock _binary_sem
+N --> V
+deactivate N
+
+== Signal Protocol to Stop ==
+
+V -> P: signal_stop()
+activate P
+P -> P: _active = false (atomic)
+note right of P
+  Ensuring protocol stops processing
+  prevents it from accessing the NIC
+  after shutdown
+end note
+P --> V
+deactivate P
+
+== Join Component Threads (Blocking) ==
+
+note over V, C
+  Joining threads only after all signaling
+  is complete and potential blockages are
+  removed ensures threads can exit cleanly.
+end note
+
+V -> V: join_components()
+activate V #LightBlue
+loop for each component
+  V -> C: join()
+  activate C
+  note right of C
+    Blocking operation:
+    Waits until thread completely exits.
+    Safe to block here because:
+    1. Component was already signaled to stop
+    2. All blocking points were unblocked
+    3. NIC/Engine are already stopped
+  end note
+  C --> V
+  deactivate C
+end
+deactivate V
+
+note over V, SE
+  The two-phase stop pattern (signal-then-join)
+  is key to preventing deadlocks by ensuring
+  all components are signaled to stop before
+  any are joined.
+end note
+
+[<-- V
+deactivate V
+
+note over V, SE
+  Resource cleanup happens in Vehicle destructor
+  in reverse dependency order:
+  1. Components
+  2. Communicator
+  3. Protocol
+  4. NIC
+end note
+
+@enduml

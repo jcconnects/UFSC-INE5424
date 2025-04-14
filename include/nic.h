@@ -92,8 +92,8 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
             // Post to all semaphores to ensure no threads remain blocked on them
             // This is critical to allow component threads to completely terminate
             db<NIC>(TRC) << "[NIC] Unblocking any threads waiting on buffer semaphores\n";
+            
             // Determine how many threads might be blocked on the buffer semaphore
-            // We post repeatedly to ensure any blocked threads are released
             int sem_value;
             sem_getvalue(&_buffer_sem, &sem_value);
             int posts_needed = N_BUFFERS - sem_value;
@@ -167,6 +167,14 @@ NIC<Engine>::~NIC() {
 template <typename Engine>
 int NIC<Engine>::send(DataBuffer* buf) {
     db<NIC>(TRC) << "NIC<Engine>::send() called!\n";
+
+    // Check if engine is running before trying to send
+    if (!Engine::running()) {
+        db<NIC>(INF) << "[NIC] send() called while engine is shutting down, dropping packet\n";
+        _statistics.tx_drops++;
+        free(buf); // Don't leak the buffer
+        return -1;
+    }
 
     if (!buf) {
         db<NIC>(INF) << "[NIC] send() requested with null buffer\n";
@@ -332,7 +340,26 @@ typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Numbe
         #endif
             // During normal operation, block until a buffer is available
             db<NIC>(TRC) << "[NIC] No buffers immediately available, waiting...\n";
-            sem_wait(&_buffer_sem);
+            
+            // Try the semaphore with a timeout to avoid deadlock during shutdown
+            struct timespec ts;
+            clock_gettime(CLOCK_REALTIME, &ts);
+            ts.tv_sec += 1; // 1 second timeout
+            
+            if (sem_timedwait(&_buffer_sem, &ts) != 0) {
+                // If we timeout or get interrupted, check if we're shutting down
+                if (!Engine::running()) {
+                    db<NIC>(INF) << "[NIC] Timed out waiting for buffer during shutdown\n";
+                    _statistics.tx_drops++;
+                    return nullptr;
+                }
+                // Otherwise it's a genuine error (should rarely happen)
+                if (errno != ETIMEDOUT) {
+                    db<NIC>(ERR) << "[NIC] Error waiting for buffer: " << strerror(errno) << "\n";
+                }
+                _statistics.tx_drops++;
+                return nullptr;
+            }
         #ifndef TEST_MODE
         } else {
             // During shutdown, don't block - just report failure
@@ -354,7 +381,18 @@ typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Numbe
     #endif
     
     // Now get a buffer from the queue with the binary semaphore
-    sem_wait(&_binary_sem);
+    if (sem_trywait(&_binary_sem) != 0) {
+        // If we can't get the binary semaphore immediately, check if we're in shutdown
+        if (!Engine::running()) {
+            db<NIC>(INF) << "[NIC] Unable to acquire binary semaphore during shutdown\n";
+            sem_post(&_buffer_sem); // Return the buffer semaphore
+            _statistics.tx_drops++;
+            return nullptr;
+        }
+        
+        // In normal operation, wait for the binary semaphore
+        sem_wait(&_binary_sem);
+    }
     
     // Final check - make sure we have buffers available
     if (_free_buffers.empty()) {

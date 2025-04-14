@@ -1,0 +1,194 @@
+void run_vehicle(Vehicle* v, std::string log_prefix) {
+    db<Vehicle>(TRC) << "run_vehicle() called!\n";
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist_lifetime(5, 10);
+    int lifetime = dist_lifetime(gen); // Reduced lifetime range from 10-50 seconds
+    unsigned int vehicle_id = v->id(); // Store ID before deletion
+
+    // Create components based on vehicle ID
+    // Even ID vehicles will send and receive
+    // Odd ID vehicles will only receive
+    if (v->id() % 2 == 0) {
+        db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating sender component\n";
+        v->add_component(new SenderComponent(v));
+    }
+    
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating receiver component\n";
+    v->add_component(new ReceiverComponent(v));
+
+    v->start();
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] starting. Lifetime: " << lifetime << "s\n";
+
+    // Wait for vehicle lifetime to end
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] sleeping for lifetime: " << lifetime << "s\n";
+    sleep(lifetime);
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] lifetime ended. Stopping vehicle.\n";
+
+    try {
+        // Signal the vehicle logic to stop
+        v->stop(); // This now blocks until components are stopped and joined
+        db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] vehicle stop() returned, proceeding to delete.\n";
+        
+        // Clean up vehicle (will delete components)
+        delete v;
+        v = nullptr; // Good practice to null pointer after delete
+        
+        db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] Vehicle object deleted and terminated cleanly.\n";
+    } catch (const std::exception& e) {
+        db<Vehicle>(ERR) << "[Vehicle " << vehicle_id << "] Exception during cleanup: " << e.what() << "\n";
+    } catch (...) {
+        db<Vehicle>(ERR) << "[Vehicle " << vehicle_id << "] Unknown error during cleanup\n";
+    }
+}
+
+void Vehicle::stop() {
+    db<Vehicle>(TRC) << "Vehicle::stop() called!\n";
+    
+    if (!_running) {
+        db<Vehicle>(TRC) << "[Vehicle " << _id << "] Vehicle already stopped or stopping.\n";
+        return;
+    }
+
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Signaling components to stop.\n";
+
+    // *** Stop the Engine Thread FIRST ***
+    // Ensure the background network processing stops before anything else
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Stopping NIC engine thread...\n";
+    if (_nic) {
+        _nic->stop(); // This calls SocketEngine::stop which should now block until the engine thread is joined
+        db<Vehicle>(INF) << "[Vehicle " << _id << "] NIC engine thread stopped.\n";
+    }
+
+
+    // Close communicator connections to unblock any threads in receive()
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Closing communicator connections.\n";
+    if (_comms) {
+        _comms->close();
+        
+        // Add a small delay to ensure the close signal propagates
+        db<Vehicle>(TRC) << "[Vehicle " << _id << "] Waiting briefly for close signal to propagate...\n";
+        usleep(10000); // 10ms delay
+    } else {
+        db<Vehicle>(WRN) << "[Vehicle " << _id << "] Communicator was null during stop.\n";
+    }
+    // Stopping Vehicle and its components
+    _running = false;
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Stopping components...\n";
+    stop_components();
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] All components stopped and joined.\n";
+
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Vehicle stop sequence complete.\n";
+    
+}
+
+void Vehicle::stop_components() {
+    db<Vehicle>(TRC) << "Vehicle::stop_components() called!\n";
+    for (auto component : _components) {
+        db<Vehicle>(TRC) << "[Vehicle " << _id << "] Stopping component " << component->name() << "\n";
+        component->stop();
+    }
+    db<Vehicle>(TRC) << "[Vehicle " << _id << "] Finished calling stop on all components.\n";
+}
+
+
+      // Explicitly stop the NIC and its underlying engine
+        void stop() {
+            db<NIC>(TRC) << "NIC<Engine>::stop() called! Stopping engine thread...\n";
+            
+            // First stop the engine thread
+            Engine::stop();
+            db<NIC>(INF) << "[NIC] Engine thread stopped\n";
+            
+            // Post to all semaphores to ensure no threads remain blocked on them
+            // This is critical to allow component threads to completely terminate
+            db<NIC>(TRC) << "[NIC] Unblocking any threads waiting on buffer semaphores\n";
+            // Determine how many threads might be blocked on the buffer semaphore
+            // We post repeatedly to ensure any blocked threads are released
+            int sem_value;
+            sem_getvalue(&_buffer_sem, &sem_value);
+            int posts_needed = N_BUFFERS - sem_value;
+            
+            if (posts_needed > 0) {
+                db<NIC>(INF) << "[NIC] Found " << posts_needed << " potentially blocked threads on buffer semaphore\n";
+                // Post to semaphores to unblock any waiting threads
+                for (int i = 0; i < posts_needed; i++) {
+                    sem_post(&_buffer_sem);
+                }
+            }
+            
+            // Also unblock any threads waiting on the binary semaphore
+            sem_getvalue(&_binary_sem, &sem_value);
+            if (sem_value == 0) {
+                db<NIC>(INF) << "[NIC] Unblocking binary semaphore\n";
+                sem_post(&_binary_sem);
+            }
+            
+            db<NIC>(INF) << "[NIC] All NIC semaphores unblocked\n";
+        }
+
+
+template <typename Channel>
+void Communicator<Channel>::close() {
+    db<Communicator>(TRC) << "Communicator<Channel>::close() called!\n";
+    
+    try {
+        _closed = true; // Set closed flag first
+        
+        // Force release of any threads waiting on receive
+        db<Communicator>(INF) << "[Communicator] Unblocking any threads waiting on receive()\n";
+        
+        // Call update multiple times to ensure it propagates
+        // Pass nullptr instead of a potentially dangling local buffer
+        for (int i = 0; i < 3; i++) {
+            update(nullptr, _address.port(), nullptr); // Signal with nullptr to indicate close
+            usleep(1000); // Short sleep to allow thread scheduling
+        }
+        
+        db<Communicator>(INF) << "[Communicator] Successfully closed\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Error during communicator close: " << e.what() << std::endl;
+    }
+}
+
+
+void Component::stop() {
+    db<Component>(TRC) << "Component::stop() called for component " << _name << "\n";
+
+    _running.store(false, std::memory_order_acquire);
+    
+    if (_thread != 0) { // Basic check if thread handle seems valid
+        db<Component>(TRC) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Attempting to join thread...\n";
+        
+        // Set a timeout for join (100ms) to avoid infinite waiting
+        struct timespec timeout;
+        clock_gettime(CLOCK_REALTIME, &timeout);
+        timeout.tv_sec += 0;  // 0 additional seconds
+        timeout.tv_nsec += 100000000; // 100ms in nanoseconds
+        
+        // Handle nanosecond overflow
+        if (timeout.tv_nsec >= 1000000000) {
+            timeout.tv_sec += 1;
+            timeout.tv_nsec -= 1000000000;
+        }
+        
+        // Try timed join first
+        int join_ret = pthread_timedjoin_np(_thread, nullptr, &timeout);
+        
+        if (join_ret == 0) {
+            db<Component>(TRC) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Thread successfully joined.\n";
+        } else if (join_ret == ETIMEDOUT) {
+            db<Component>(WRN) << "[Component " << _name << " on Vehicle " << _vehicle->id() 
+                            << "] Thread join timed out after 100ms. Thread may be blocked or leaking.\n";
+            // We continue without waiting for the thread
+        } else {
+            db<Component>(ERR) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Error joining thread! errno: " 
+                            << join_ret << " (" << strerror(join_ret) << ")\n";
+        }
+        
+        _thread = 0; // Invalidate thread handle after join attempt
+    } else {
+        db<Component>(WRN) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Stop called but thread handle was invalid (already stopped or never started?).\n";
+    }
+}

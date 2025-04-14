@@ -19,6 +19,15 @@ class Component {
         virtual ~Component();
 
         virtual void start() = 0;
+        
+        // Two-phase stop approach
+        // Signal component to stop (non-blocking)
+        virtual void signal_stop();
+        
+        // Join the component thread (blocking)
+        virtual void join();
+        
+        // Legacy stop method - now calls signal_stop() followed by join()
         virtual void stop();
         
         bool running() const { return _running; }
@@ -61,44 +70,34 @@ Component::~Component() {
     pthread_mutex_destroy(&_log_mutex);
 }
 
+void Component::signal_stop() {
+    db<Component>(TRC) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Setting running flag to false.\n";
+    _running.store(false, std::memory_order_release);
+}
+
+void Component::join() {
+    db<Component>(TRC) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Joining thread...\n";
+    if (_thread != 0) { // Check if thread was ever started
+        int join_ret = pthread_join(_thread, nullptr);
+        if (join_ret == 0) {
+            db<Component>(INF) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Thread successfully joined.\n";
+        } else {
+            // Log error - this indicates a deeper problem if join fails
+            db<Component>(ERR) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Error joining thread! errno: "
+                           << join_ret << " (" << strerror(join_ret) << ")\n";
+        }
+        _thread = 0; // Invalidate handle
+    } else {
+        db<Component>(WRN) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Join called but thread handle was invalid (never started?).\n";
+    }
+}
+
 void Component::stop() {
     db<Component>(TRC) << "Component::stop() called for component " << _name << "\n";
 
-    _running.store(false, std::memory_order_acquire);
-    
-    if (_thread != 0) { // Basic check if thread handle seems valid
-        db<Component>(TRC) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Attempting to join thread...\n";
-        
-        // Set a timeout for join (100ms) to avoid infinite waiting
-        struct timespec timeout;
-        clock_gettime(CLOCK_REALTIME, &timeout);
-        timeout.tv_sec += 0;  // 0 additional seconds
-        timeout.tv_nsec += 100000000; // 100ms in nanoseconds
-        
-        // Handle nanosecond overflow
-        if (timeout.tv_nsec >= 1000000000) {
-            timeout.tv_sec += 1;
-            timeout.tv_nsec -= 1000000000;
-        }
-        
-        // Try timed join first
-        int join_ret = pthread_timedjoin_np(_thread, nullptr, &timeout);
-        
-        if (join_ret == 0) {
-            db<Component>(TRC) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Thread successfully joined.\n";
-        } else if (join_ret == ETIMEDOUT) {
-            db<Component>(WRN) << "[Component " << _name << " on Vehicle " << _vehicle->id() 
-                            << "] Thread join timed out after 100ms. Thread may be blocked or leaking.\n";
-            // We continue without waiting for the thread
-        } else {
-            db<Component>(ERR) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Error joining thread! errno: " 
-                            << join_ret << " (" << strerror(join_ret) << ")\n";
-        }
-        
-        _thread = 0; // Invalidate thread handle after join attempt
-    } else {
-        db<Component>(WRN) << "[Component " << _name << " on Vehicle " << _vehicle->id() << "] Stop called but thread handle was invalid (already stopped or never started?).\n";
-    }
+    // Call the new two-phase stop methods
+    signal_stop();
+    join();
 }
 
 void Component::open_log_file(const std::string& filename) {

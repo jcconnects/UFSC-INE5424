@@ -12,8 +12,8 @@ Asserting: EngineB epoll file descriptor should be valid
 PASS: EngineB epoll file descriptor should be valid
 Asserting: EngineB interface index should be valid
 PASS: EngineB interface index should be valid
-EngineA MAC Address: 0E:4C:12:DC:02:2F
-EngineB MAC Address: 0E:4C:12:DC:02:2F
+EngineA MAC Address: 3A:01:80:31:A8:A2
+EngineB MAC Address: 3A:01:80:31:A8:A2
 Asserting: EngineA MAC address should not be empty
 PASS: EngineA MAC address should not be empty
 Asserting: EngineB MAC address should not be empty
@@ -28,7 +28,7 @@ Asserting: Send operation from EngineA should succeed
 PASS: Send operation from EngineA should succeed
 EngineA Signal count: 0
 EngineA Received frames: 0
-EngineB Signal count: 2
+EngineB Signal count: 1
 EngineB Received frames: 1
 Asserting: At least one engine should receive a signal
 PASS: At least one engine should receive a signal
