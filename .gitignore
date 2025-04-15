@@ -56,3 +56,6 @@ Thumbs.db
 # 
 *.csv
 *.log
+tests/logs/*
+termination_logs/*
+logs/*
