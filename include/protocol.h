@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <cstring>
+#include <atomic>
 
 #include "nic.h"
 #include "traits.h"
@@ -99,11 +100,27 @@ class Protocol: private NIC::Observer
         static void attach(Observer* obs, Address address);
         static void detach(Observer* obs, Address address);
         
+        // Check if protocol can still process messages
+        bool active() const { return _nic && _active.load(std::memory_order_acquire); }
+        
+        // Signal protocol to stop processing
+        void signal_stop() { 
+            db<Protocol>(TRC) << "Protocol::signal_stop() called!\n";
+            _active.store(false, std::memory_order_release); 
+        }
+        
+        // Reactivate protocol for processing
+        void reactivate() {
+            db<Protocol>(TRC) << "Protocol::reactivate() called!\n";
+            _active.store(true, std::memory_order_release);
+        }
+        
     private:
         void update(typename NIC::Protocol_Number prot, Buffer * buf) override;
 
     private:
         NIC* _nic;
+        std::atomic<bool> _active;
         static Observed _observed;
 };
 
@@ -150,7 +167,7 @@ bool Protocol<NIC>::Address::operator==(const Address& a) const {
 
 /********* Protocol Implementation *********/
 template <typename NIC>
-Protocol<NIC>::Protocol(NIC* nic) : NIC::Observer(PROTO),  _nic(nic) {
+Protocol<NIC>::Protocol(NIC* nic) : NIC::Observer(PROTO), _nic(nic), _active(true) {
     db<Protocol>(TRC) << "Protocol<NIC>::Protocol() called!\n";
     _nic->attach(this, PROTO);
 
@@ -160,14 +177,25 @@ Protocol<NIC>::Protocol(NIC* nic) : NIC::Observer(PROTO),  _nic(nic) {
 template <typename NIC>
 Protocol<NIC>::~Protocol() {
     db<Protocol>(TRC) << "Protocol<NIC>::~Protocol() called!\n";
-    _nic->detach(this, PROTO);
-
-    db<Protocol>(INF) << "[Protocol] detached from NIC\n";
+    
+    // Set active to false to prevent any further processing
+    signal_stop();
+    
+    if (_nic) {
+        _nic->detach(this, PROTO);
+        db<Protocol>(INF) << "[Protocol] detached from NIC\n";
+    }
 }
 
 template <typename NIC>
 int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int size) {
     db<Protocol>(TRC) << "Protocol<NIC>::send() called!\n";
+    
+    // Check if protocol is still active before sending
+    if (!active()) {
+        db<Protocol>(WRN) << "[Protocol] send() called while protocol is inactive\n";
+        return 0;
+    }
 
     db<Protocol>(INF) << "[Protocol] sending from port " << from.port() << " to port " << to.port() << "\n";
     
@@ -175,7 +203,17 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     unsigned int frame_size = sizeof(Header) + Ethernet::HEADER_SIZE + size;
 
     Buffer* buf = _nic->alloc(to.paddr(), PROTO, frame_size);
-    if (!buf) return 0;
+    if (!buf) {
+        db<Protocol>(ERR) << "[Protocol] Failed to allocate buffer for send\n";
+        return 0;
+    }
+    
+    // Check again if protocol is still active
+    if (!active()) {
+        db<Protocol>(WRN) << "[Protocol] Protocol became inactive during send, freeing buffer\n";
+        _nic->free(buf);
+        return 0;
+    }
     
     // Set up Packet
     Packet* packet = reinterpret_cast<Packet*>(buf->data()->payload);
@@ -187,7 +225,9 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     int result = _nic->send(buf);
     db<Protocol>(INF) << "[Protocol] NIC::send() returned value " << std::to_string(result) << "\n";
     
-   _nic->free(buf);
+    // NIC::send will handle freeing the buffer now, so we don't need to free it
+    // This avoids double-freeing if the NIC has taken ownership
+    // _nic->free(buf);
     
     return size;
 }
@@ -195,6 +235,18 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
 template <typename NIC>
 int Protocol<NIC>::receive(Buffer* buf, Address from, void* data, unsigned int size) {
     db<Protocol>(TRC) << "Protocol<NIC>::receive() called!\n";
+    
+    // Check if protocol is still active
+    if (!active()) {
+        db<Protocol>(WRN) << "[Protocol] receive() called while protocol is inactive\n";
+        if (buf) _nic->free(buf);
+        return 0;
+    }
+
+    if (!buf) {
+        db<Protocol>(WRN) << "[Protocol] receive() called with null buffer\n";
+        return 0;
+    }
 
     typename NIC::Address src_mac;
     typename NIC::Address dst_mac;
@@ -245,6 +297,19 @@ void Protocol<NIC>::detach(Observer* obs, Address address) {
 template <typename NIC>
 void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     db<Protocol>(TRC) << "Protocol<NIC>::update() called!\n";
+    
+    // Check if protocol is active before processing
+    if (!active()) {
+        db<Protocol>(WRN) << "[Protocol] update() called while protocol is inactive, freeing buffer\n";
+        if (buf) _nic->free(buf);
+        return;
+    }
+    
+    // Validate buffer before processing
+    if (!buf || !buf->data()) {
+        db<Protocol>(ERR) << "[Protocol] update() called with invalid buffer\n";
+        return;
+    }
 
     // Extracting packet from buffer
     Packet* packet = reinterpret_cast<Packet*>(buf->data()->payload);

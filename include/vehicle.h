@@ -41,6 +41,12 @@ class Vehicle {
         
         void add_component(Component* component);
         void start_components();
+        
+        // Two-phase stop methods for components
+        void signal_components();
+        void join_components();
+        
+        // Legacy stop method for components
         void stop_components();
 
         int send(const void* data, unsigned int size);
@@ -75,6 +81,11 @@ Vehicle::Vehicle(unsigned int id, NIC<SocketEngine>* nic, Protocol<NIC<SocketEng
 Vehicle::~Vehicle() {
     db<Vehicle>(TRC) << "Vehicle::~Vehicle() called!\n";
     
+    // Ensure we're stopped before destroying
+    if (_running) {
+        stop();
+    }
+    
     for (auto component : _components) {
         db<Vehicle>(TRC) << "[Vehicle " << _id << "] Deleting component " << component->name() << "\n";
         delete component;
@@ -107,6 +118,17 @@ void Vehicle::start() {
 
     if (!_running) {
         _running = true;
+        
+        // Reopen the communicator if it was previously closed
+        if (_comms) {
+            _comms->reopen();
+        }
+        
+        // Reactivate the protocol
+        if (_protocol) {
+            _protocol->reactivate();
+        }
+        
         start_components();
     }
 }
@@ -119,36 +141,41 @@ void Vehicle::stop() {
         return;
     }
 
+    // 1. Initiate shutdown sequence
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Initiating shutdown sequence.\n";
+    _running = false;
+    
+    // 2. Signal components to stop (non-blocking)
     db<Vehicle>(INF) << "[Vehicle " << _id << "] Signaling components to stop.\n";
+    signal_components();
 
-    // *** Stop the Engine Thread FIRST ***
-    // Ensure the background network processing stops before anything else
-    db<Vehicle>(INF) << "[Vehicle " << _id << "] Stopping NIC engine thread...\n";
-    if (_nic) {
-        _nic->stop(); // This calls SocketEngine::stop which should now block until the engine thread is joined
-        db<Vehicle>(INF) << "[Vehicle " << _id << "] NIC engine thread stopped.\n";
-    }
-
-
-    // Close communicator connections to unblock any threads in receive()
+    // 3. Unblock Communicator
     db<Vehicle>(INF) << "[Vehicle " << _id << "] Closing communicator connections.\n";
     if (_comms) {
         _comms->close();
-        
-        // Add a small delay to ensure the close signal propagates
-        db<Vehicle>(TRC) << "[Vehicle " << _id << "] Waiting briefly for close signal to propagate...\n";
-        usleep(10000); // 10ms delay
-    } else {
-        db<Vehicle>(WRN) << "[Vehicle " << _id << "] Communicator was null during stop.\n";
+        db<Vehicle>(INF) << "[Vehicle " << _id << "] Communicator closed.\n";
     }
 
-    db<Vehicle>(INF) << "[Vehicle " << _id << "] Stopping components...\n";
-    stop_components();
-    db<Vehicle>(INF) << "[Vehicle " << _id << "] All components stopped and joined.\n";
+    // 4. Stop Network Input/Engine
+    // This is crucial before joining component threads
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Stopping NIC engine thread...\n";
+    if (_nic) {
+        _nic->stop(); // This calls SocketEngine::stop which joins the engine thread
+        db<Vehicle>(INF) << "[Vehicle " << _id << "] NIC engine thread stopped.\n";
+    }
+    
+    // 5. Signal Protocol to stop processing
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Signaling protocol to stop.\n";
+    if (_protocol) {
+        _protocol->signal_stop();
+    }
+
+    // 6. Join component threads
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Joining component threads...\n";
+    join_components();
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] All component threads joined.\n";
 
     db<Vehicle>(INF) << "[Vehicle " << _id << "] Vehicle stop sequence complete.\n";
-    
-    _running = false;
 }
 
 void Vehicle::add_component(Component* component) {
@@ -163,17 +190,40 @@ void Vehicle::start_components() {
     }
 }
 
+void Vehicle::signal_components() {
+    db<Vehicle>(TRC) << "Vehicle::signal_components() called!\n";
+    for (auto component : _components) {
+        db<Vehicle>(TRC) << "[Vehicle " << _id << "] Signaling component " << component->name() << " to stop\n";
+        component->signal_stop();
+    }
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] All components signaled to stop.\n";
+}
+
+void Vehicle::join_components() {
+    db<Vehicle>(TRC) << "Vehicle::join_components() called!\n";
+    for (auto component : _components) {
+        db<Vehicle>(TRC) << "[Vehicle " << _id << "] Joining component " << component->name() << "\n";
+        component->join();
+    }
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] All component threads joined.\n";
+}
+
 void Vehicle::stop_components() {
     db<Vehicle>(TRC) << "Vehicle::stop_components() called!\n";
-    for (auto component : _components) {
-        db<Vehicle>(TRC) << "[Vehicle " << _id << "] Stopping component " << component->name() << "\n";
-        component->stop();
-    }
-    db<Vehicle>(TRC) << "[Vehicle " << _id << "] Finished calling stop on all components.\n";
+    
+    // Using two-phase stop instead of the combined stop()
+    signal_components();
+    join_components();
 }
 
 int Vehicle::send(const void* data, unsigned int size) {
     db<Vehicle>(TRC) << "Vehicle::send() called!\n";
+    
+    // Check if vehicle is still running
+    if (!_running) {
+        db<Vehicle>(WRN) << "[Vehicle " << _id << "] send() called while vehicle stopping/stopped\n";
+        return 0;
+    }
 
     Message<MAX_MESSAGE_SIZE> msg = Message<MAX_MESSAGE_SIZE>(data, size);
     
