@@ -1,8 +1,6 @@
 #ifndef INITIALIZER_H
 #define INITIALIZER_H
 
-#include <string>
-
 #include "communicator.h"
 #include "nic.h"
 #include "protocol.h"

@@ -34,9 +34,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         
         // Method to close the communicator and unblock any pending receive calls
         void close();
-        
-        // Method to reopen a previously closed communicator
-        void reopen();
+
         
         // Check if communicator is closed
         bool is_closed() const { 
@@ -59,13 +57,9 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         std::atomic<bool> _closed;
 };
 
-// Template implementations
+/*************** Communicator Implementation *****************/
 template <typename Channel>
-Communicator<Channel>::Communicator(Channel* channel, Address address) 
-    : Observer(address.port()), 
-      _channel(channel), 
-      _address(address),
-      _closed(false) {
+Communicator<Channel>::Communicator(Channel* channel, Address address) : Observer(address.port()), _channel(channel), _address(address), _closed(false) {
     db<Communicator>(TRC) << "Communicator<Channel>::Communicator() called!\n";
     if (!channel) {
         throw std::invalid_argument("Channel pointer cannot be null");
@@ -79,14 +73,9 @@ template <typename Channel>
 Communicator<Channel>::~Communicator() {
     db<Communicator>(TRC) << "Communicator<Channel>::~Communicator() called!\n";
     
-    // Ensure communicator is closed before destructing
-    close();
-    
-    // Then detach from channel
-    if (_channel) {
-        _channel->detach(this, _address);
-        db<Communicator>(INF) << "[Communicator] detached from Channel\n";
-    }
+    // Detach from channel
+    _channel->detach(this, _address);
+    db<Communicator>(INF) << "[Communicator] detached from Channel\n";
     
     db<Communicator>(INF) << "[Communicator] destroyed!\n";
 }
@@ -97,7 +86,7 @@ bool Communicator<Channel>::send(const Message<MAX_MESSAGE_SIZE>* message) {
     
     // Check if communicator is closed before attempting to send
     if (is_closed()) {
-        db<Communicator>(WRN) << "[Communicator] send() called while communicator is closed\n";
+        db<Communicator>(WRN) << "[Communicator] send() called while communicator is closed! Returning False\n";
         return false;
     }
     
@@ -105,27 +94,21 @@ bool Communicator<Channel>::send(const Message<MAX_MESSAGE_SIZE>* message) {
         std::cerr << "Error: Null message pointer in send" << std::endl;
         return false;
     }
-
+    
     try {
-        // Check if the channel is still active
-        if (_channel && !is_closed()) {
-            int result = _channel->send(_address, Address::BROADCAST, message->data(), message->size());
-            db<Communicator>(INF) << "[Communicator] Channel::send() return value " << std::to_string(result) << "\n";
-
-            if (result <= 0) {
-                db<Communicator>(ERR) << "[Communicator] Failed to send message\n";
-                return false;
-            }
-
-            return true;
-        } else {
-            db<Communicator>(WRN) << "[Communicator] Channel inactive or communicator closed during send\n";
+        int result = _channel->send(_address, Address::BROADCAST, message->data(), message->size());
+        db<Communicator>(INF) << "[Communicator] Channel::send() return value " << std::to_string(result) << "\n";
+        
+        if (result <= 0) {
+            db<Communicator>(ERR) << "[Communicator] Failed to send message\n";
             return false;
         }
     } catch (const std::exception& e) {
         db<Communicator>(ERR) << "[Communicator] Error sending message: " << e.what() << "\n";
         return false;
     }
+
+    return true;
 }
 
 template <typename Channel>
@@ -134,7 +117,7 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
     
     // If communicator is closed, doesn't even try to receive
     if (is_closed()) {
-        db<Communicator>(INF) << "[Communicator] closed! Returning false\n";
+        db<Communicator>(INF) << "[Communicator] receive() called while communicator is closed! Returning false\n";
         return false;
     }
 
@@ -143,44 +126,41 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
         return false;
     }
     
-    Buffer* buf = Observer::updated();
+    Buffer* buf = Observer::updated(); // Blocks until a message is received
     db<Communicator>(INF) << "[Communicator] buffer retrieved\n";
 
-    // Check if communicator was closed during wait
-    if (is_closed()) {
-        db<Communicator>(INF) << "[Communicator] closed during wait! Returning false\n";
-        return false;
-    }
-
-    // Check for nullptr buffer which indicates a close signal
     if (!buf) {
-        db<Communicator>(INF) << "[Communicator] received close signal (nullptr buffer)! Returning false\n";
+        db<Communicator>(ERR) << "[Communicator] buffer pointer is null\n";
         return false;
     }
 
+    // If buffer size == 0
     if (buf->size() == 0) {
-        db<Communicator>(INF) << "[Communicator] empty buffer! Returning false\n";
+        // Check weather the communicator was closed (only for log purposes)
+        if (is_closed()) {
+            db<Communicator>(INF) << "[Communicator] empty buffer, but communicator was closed\n";
+        } else {
+            db<Communicator>(INF) << "[Communicator] empty buffer! Returning false\n";
+        }
+        
         return false;
     }
 
     try {
-        // Check again if communicator is still open and channel is valid
-        if (!is_closed() && _channel) {
-            Address from;
-            std::uint8_t temp_data[MAX_MESSAGE_SIZE];
+        Address from;
+        std::uint8_t temp_data[MAX_MESSAGE_SIZE];
 
-            int size = _channel->receive(buf, from, temp_data, buf->size());
-            db<Communicator>(INF) << "[Communicator] Channel::receive() returned size " << std::to_string(size) << "\n";
-            
-            if (size > 0) {
-                // Create a new message with the received data
-                *message = Message<MAX_MESSAGE_SIZE>(temp_data, static_cast<unsigned int>(size));
-                return true;
-            }
-        }
+        int size = _channel->receive(buf, from, temp_data, buf->size());
+        db<Communicator>(INF) << "[Communicator] Channel::receive() returned size " << std::to_string(size) << "\n";
         
-        return false;
+        if (size > 0) {
+            // Create a new message with the received data
+            *message = Message<MAX_MESSAGE_SIZE>(temp_data, static_cast<unsigned int>(size));
+            return true;
+        }
 
+        return false;
+    
     } catch (const std::exception& e) {
         db<Communicator>(ERR) << "[Communicator] Error receiving message: " << e.what() << "\n";
         return false;
@@ -191,41 +171,15 @@ template <typename Channel>
 void Communicator<Channel>::close() {
     db<Communicator>(TRC) << "Communicator<Channel>::close() called!\n";
     
-    // Use atomic compare_exchange to ensure we only close once
-    bool expected = false;
-    if (!_closed.compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
-        db<Communicator>(INF) << "[Communicator] Already closed, skipping\n";
-        return;
-    }
-    
-    try {
-        db<Communicator>(INF) << "[Communicator] Unblocking any threads waiting on receive()\n";
-        
-        // Call update multiple times to ensure it propagates
-        for (int i = 0; i < 5; i++) {
-            // Pass nullptr instead of a potentially dangling local buffer
-            update(nullptr, _address.port(), nullptr); // Signal with nullptr to indicate close
-            usleep(1000); // Short sleep to allow thread scheduling
-        }
-        
-        db<Communicator>(INF) << "[Communicator] Successfully closed\n";
-    } catch (const std::exception& e) {
-        db<Communicator>(ERR) << "[Communicator] Error during communicator close: " << e.what() << "\n";
-    }
-}
+    _closed.store(true, std::memory_order_release);
 
-template <typename Channel>
-void Communicator<Channel>::reopen() {
-    db<Communicator>(TRC) << "Communicator<Channel>::reopen() called!\n";
-    
-    // Only attempt to reopen if currently closed
-    bool expected = true;
-    if (!_closed.compare_exchange_strong(expected, false, std::memory_order_acq_rel)) {
-        db<Communicator>(INF) << "[Communicator] Already open, skipping reopen\n";
-        return;
+    try {
+        // Signal any threads waiting on receive to wake up
+        Buffer buf = Buffer();
+        update(nullptr, _address.port(), &buf);
+    } catch (const std::exception& e) {
+        std::cerr << "Error during communicator close: " << e.what() << std::endl;
     }
-    
-    db<Communicator>(INF) << "[Communicator] Successfully reopened\n";
 }
 
 template <typename Channel>

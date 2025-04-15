@@ -24,7 +24,6 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
     friend class Initializer;
 
     public:
-        static const unsigned int BUFFER_SIZE = Traits<NIC<Engine>>::SEND_BUFFERS * sizeof(Buffer<Ethernet::Frame>) + Traits<NIC<Engine>>::RECEIVE_BUFFERS * sizeof(Buffer<Ethernet::Frame>);
         static const unsigned int N_BUFFERS = Traits<NIC<Engine>>::SEND_BUFFERS + Traits<NIC<Engine>>::RECEIVE_BUFFERS;
 
         typedef Ethernet::Address Address;
@@ -82,43 +81,11 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         const Statistics& statistics();
         
         // Explicitly stop the NIC and its underlying engine
-        void stop() {
-            db<NIC>(TRC) << "NIC<Engine>::stop() called! Stopping engine thread...\n";
-            
-            // First stop the engine thread
-            Engine::stop();
-            db<NIC>(INF) << "[NIC] Engine thread stopped\n";
-            
-            // Post to all semaphores to ensure no threads remain blocked on them
-            // This is critical to allow component threads to completely terminate
-            db<NIC>(TRC) << "[NIC] Unblocking any threads waiting on buffer semaphores\n";
-            
-            // Determine how many threads might be blocked on the buffer semaphore
-            int sem_value;
-            sem_getvalue(&_buffer_sem, &sem_value);
-            int posts_needed = N_BUFFERS - sem_value;
-            
-            if (posts_needed > 0) {
-                db<NIC>(INF) << "[NIC] Found " << posts_needed << " potentially blocked threads on buffer semaphore\n";
-                // Post to semaphores to unblock any waiting threads
-                for (int i = 0; i < posts_needed; i++) {
-                    sem_post(&_buffer_sem);
-                }
-            }
-            
-            // Also unblock any threads waiting on the binary semaphore
-            sem_getvalue(&_binary_sem, &sem_value);
-            if (sem_value == 0) {
-                db<NIC>(INF) << "[NIC] Unblocking binary semaphore\n";
-                sem_post(&_binary_sem);
-            }
-            
-            db<NIC>(INF) << "[NIC] All NIC semaphores unblocked\n";
-        }
+        void stop();
         
         // Attach/detach observers
-        // void attach(Observer* obs, Protocol_Number prot);
-        // void detach(Observer* obs, Protocol_Number prot);
+        // void attach(Observer* obs, Protocol_Number prot); // inherited
+        // void detach(Observer* obs, Protocol_Number prot); // inherited
 
     private:
         void handleSignal() override;
@@ -143,13 +110,15 @@ NIC<Engine>::NIC() {
     }
     db<NIC>(INF) << "[NIC] " << std::to_string(N_BUFFERS) << " buffers created\n";
 
-    Engine::start();
-
+    
     sem_init(&_buffer_sem, 0, N_BUFFERS);
     sem_init(&_binary_sem, 0, 1);
-
+    
     // Setting default address
     _address = this->_mac_address;
+    
+    // Starting Engine
+    Engine::start();
 }
 
 template <typename Engine>
@@ -172,7 +141,6 @@ int NIC<Engine>::send(DataBuffer* buf) {
     if (!Engine::running()) {
         db<NIC>(INF) << "[NIC] send() called while engine is shutting down, dropping packet\n";
         _statistics.tx_drops++;
-        free(buf); // Don't leak the buffer
         return -1;
     }
 
@@ -275,13 +243,7 @@ void NIC<Engine>::handleSignal() {
         }
         return;
     }
-    
-    // Check again - if engine was stopped during recvfrom, don't continue processing
-    if (!Engine::running()) {
-        db<SocketEngine>(TRC) << "[SocketEngine] Engine stopped during receive, discarding frame\n";
-        return;
-    }
-    
+
     // Check for valid Ethernet frame size (at least header size)
     if (static_cast<unsigned int>(bytes_received) < Ethernet::HEADER_SIZE) {
         db<SocketEngine>(ERR) << "[SocketEngine] Received undersized frame (" << bytes_received << " bytes)\n";
@@ -317,92 +279,15 @@ template <typename Engine>
 typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Number prot, unsigned int size) {
     db<NIC>(TRC) << "NIC<Engine>::alloc() called!\n";
 
-    // Special handling for test environment
-    #ifdef TEST_MODE
-    // In test mode, we still allow allocation even when engine is stopped
-    if (!Engine::running()) {
-        db<NIC>(INF) << "[NIC] Test mode: Allowing allocation despite engine being stopped\n";
-    }
-    #else
-    // For normal operation, check if engine is still running before trying to allocate
-    if (!Engine::running()) {
-        db<NIC>(INF) << "[NIC] alloc() called while engine is shutting down, returning nullptr\n";
-        _statistics.tx_drops++;
-        return nullptr;
-    }
-    #endif
+    sem_wait(&_buffer_sem);
 
-    // Non-blocking attempt to get a buffer semaphore
-    if (sem_trywait(&_buffer_sem) != 0) {
-        // If we can't get a buffer immediately during normal operation
-        #ifndef TEST_MODE
-        if (Engine::running()) {
-        #endif
-            // During normal operation, block until a buffer is available
-            db<NIC>(TRC) << "[NIC] No buffers immediately available, waiting...\n";
-            
-            // Try the semaphore with a timeout to avoid deadlock during shutdown
-            struct timespec ts;
-            clock_gettime(CLOCK_REALTIME, &ts);
-            ts.tv_sec += 1; // 1 second timeout
-            
-            if (sem_timedwait(&_buffer_sem, &ts) != 0) {
-                // If we timeout or get interrupted, check if we're shutting down
-                if (!Engine::running()) {
-                    db<NIC>(INF) << "[NIC] Timed out waiting for buffer during shutdown\n";
-                    _statistics.tx_drops++;
-                    return nullptr;
-                }
-                // Otherwise it's a genuine error (should rarely happen)
-                if (errno != ETIMEDOUT) {
-                    db<NIC>(ERR) << "[NIC] Error waiting for buffer: " << strerror(errno) << "\n";
-                }
-                _statistics.tx_drops++;
-                return nullptr;
-            }
-        #ifndef TEST_MODE
-        } else {
-            // During shutdown, don't block - just report failure
-            db<NIC>(INF) << "[NIC] No buffers available during shutdown, returning nullptr\n";
-            _statistics.tx_drops++;
-            return nullptr;
-        }
-        #endif
-    }
-    
-    #ifndef TEST_MODE
-    // Check again if engine is still running after we got the semaphore
     if (!Engine::running()) {
-        db<NIC>(INF) << "[NIC] Engine stopped after buffer allocation started, releasing semaphore\n";
-        sem_post(&_buffer_sem); // Return the semaphore back to the pool
-        _statistics.tx_drops++;
-        return nullptr;
-    }
-    #endif
-    
-    // Now get a buffer from the queue with the binary semaphore
-    if (sem_trywait(&_binary_sem) != 0) {
-        // If we can't get the binary semaphore immediately, check if we're in shutdown
-        if (!Engine::running()) {
-            db<NIC>(INF) << "[NIC] Unable to acquire binary semaphore during shutdown\n";
-            sem_post(&_buffer_sem); // Return the buffer semaphore
-            _statistics.tx_drops++;
-            return nullptr;
-        }
-        
-        // In normal operation, wait for the binary semaphore
-        sem_wait(&_binary_sem);
-    }
-    
-    // Final check - make sure we have buffers available
-    if (_free_buffers.empty()) {
-        db<NIC>(ERR) << "[NIC] Buffer queue empty despite semaphore, inconsistent state\n";
-        sem_post(&_binary_sem);
+        db<NIC>(WRN) << "[NIC] alloc() called when NIC has finished\n";
         sem_post(&_buffer_sem);
-        _statistics.tx_drops++;
         return nullptr;
     }
     
+    sem_wait(&_binary_sem);
     DataBuffer* buf = _free_buffers.front();
     _free_buffers.pop();
     sem_post(&_binary_sem);
@@ -421,42 +306,16 @@ template <typename Engine>
 void NIC<Engine>::free(DataBuffer* buf) {
     db<NIC>(TRC) << "NIC<Engine>::free() called!\n";
 
-    if (!buf) {
-        db<NIC>(WRN) << "[NIC] Attempted to free null buffer\n";
-        return;
-    }
+    if (!buf) return;
 
     buf->clear();
     db<NIC>(INF) << "[NIC] buffer released\n";
 
-    // Special handling for test environment
-    #ifdef TEST_MODE
-    // In test mode, we always use the blocking semaphore operations
     sem_wait(&_binary_sem);
     _free_buffers.push(buf);
     sem_post(&_binary_sem);
+
     sem_post(&_buffer_sem);
-    #else
-    // For normal operation, use try-wait to avoid potential deadlocks during shutdown
-    if (sem_trywait(&_binary_sem) == 0) {
-        _free_buffers.push(buf);
-        sem_post(&_binary_sem);
-        sem_post(&_buffer_sem);
-    } else {
-        // If we can't get the binary semaphore immediately, check if we're shutting down
-        if (!Engine::running()) {
-            db<NIC>(WRN) << "[NIC] Unable to return buffer to pool during shutdown\n";
-            // Don't wait for semaphore during shutdown - just accept the leak
-            return;
-        }
-        
-        // During normal operation, we should still block to ensure proper buffer management
-        sem_wait(&_binary_sem);
-        _free_buffers.push(buf);
-        sem_post(&_binary_sem);
-        sem_post(&_buffer_sem);
-    }
-    #endif
 }
 
 template <typename Engine>
@@ -481,4 +340,13 @@ const typename NIC<Engine>::Statistics& NIC<Engine>::statistics() {
     return _statistics;
 }
 
+
+template <typename Engine>
+void NIC<Engine>::stop() {
+    db<NIC>(TRC) << "NIC<Engine>::stop() called!\n";
+
+    // Stops the engine execution
+    Engine::stop();
+    db<NIC>(INF) << "[NIC] Engine stopped\n";
+}
 #endif // NIC_H
