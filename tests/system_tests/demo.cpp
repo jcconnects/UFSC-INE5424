@@ -23,8 +23,8 @@ void run_vehicle(Vehicle* v) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist_lifetime(5, 10);
-    int lifetime = dist_lifetime(gen); // Reduced lifetime range from 10-50 seconds
+    std::uniform_int_distribution<> dist_lifetime(60, 90); // Lifetime from 60 to 90 seconds
+    int lifetime = dist_lifetime(gen);
     unsigned int vehicle_id = v->id(); // Store ID before deletion
 
     // Create components based on vehicle ID
