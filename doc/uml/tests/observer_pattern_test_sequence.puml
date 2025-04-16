@@ -1,0 +1,166 @@
+@startuml observer_pattern_test_sequence
+
+skinparam participant {
+    BackgroundColor #D0FFE0
+}
+skinparam actor {
+    BackgroundColor #D0E0FF
+}
+skinparam collections {
+    BackgroundColor #FFD0E0
+}
+skinparam control {
+    BackgroundColor #E0D0FF
+}
+
+title Observer Pattern Test - Sequence Diagram
+
+actor "Test Harness" as Test
+participant "Conditionally_Data_Observed" as CDObs
+participant "MyConditionalObserver1" as Obs1
+participant "MyConditionalObserver2" as Obs2
+participant "MyConditionalObserver1_too" as Obs1Too
+collections "Concurrent_Observed" as CObs
+participant "MyConcurrentObserver1" as ConcObs1
+participant "MyConcurrentObserver2" as ConcObs2
+control "Producer Threads" as Producers
+control "Consumer Threads" as Consumers
+
+note over Test: Initialize test
+
+group Conditional Observer Pattern Test
+    Test -> Test: Set up test data
+    Test -> CDObs: create()
+    Test -> Obs1: create(1) // Condition 1
+    Test -> Obs2: create(2) // Condition 2
+    Test -> Obs1Too: create(1) // Also Condition 1
+    
+    Test -> CDObs: attach(observer1, 1)
+    Test -> CDObs: attach(observer2, 2)
+    Test -> CDObs: attach(observer1_too, 1)
+    
+    note over Test: Test notification for condition 1
+    
+    Test -> CDObs: notify(1, &data1)
+    CDObs -> Obs1: update(1, &data1)
+    Obs1 -> Obs1: increment update_count
+    CDObs -> Obs1Too: update(1, &data1)
+    Obs1Too -> Obs1Too: increment update_count
+    Test -> Test: verify notify returned true
+    Test -> Test: verify observer1.update_count == 1
+    Test -> Test: verify observer1_too.update_count == 1
+    Test -> Test: verify observer2.update_count == 0
+    
+    Test -> Obs1: updated()
+    Test <-- Obs1: &data1
+    Test -> Obs1Too: updated()
+    Test <-- Obs1Too: &data1
+    Test -> Obs2: updated()
+    Test <-- Obs2: nullptr
+    Test -> Test: verify data retrieval
+    
+    note over Test: Test notification for condition 2
+    
+    Test -> CDObs: notify(2, &data2)
+    CDObs -> Obs2: update(2, &data2)
+    Obs2 -> Obs2: increment update_count
+    Test -> Test: verify notify returned true
+    Test -> Test: verify observer1.update_count == 1 (unchanged)
+    Test -> Test: verify observer1_too.update_count == 1 (unchanged)
+    Test -> Test: verify observer2.update_count == 1
+    
+    Test -> Obs1: updated()
+    Test <-- Obs1: nullptr
+    Test -> Obs1Too: updated()
+    Test <-- Obs1Too: nullptr
+    Test -> Obs2: updated()
+    Test <-- Obs2: &data2
+    Test -> Test: verify data retrieval
+    
+    note over Test: Test notification with no observers
+    
+    Test -> CDObs: notify(3, &data3)
+    Test -> Test: verify notify returned false
+    Test -> Test: verify no observer counts changed
+    
+    note over Test: Test detach functionality
+    
+    Test -> CDObs: detach(observer1, 1)
+    Test -> CDObs: notify(1, &data1)
+    CDObs -> Obs1Too: update(1, &data1)
+    Obs1Too -> Obs1Too: increment update_count
+    Test -> Test: verify notify returned true
+    Test -> Test: verify observer1.update_count == 1 (unchanged)
+    Test -> Test: verify observer1_too.update_count == 2
+    Test -> Test: verify observer2.update_count == 1 (unchanged)
+    
+    Test -> Obs1: updated()
+    Test <-- Obs1: nullptr
+    Test -> Obs1Too: updated()
+    Test <-- Obs1Too: &data1
+    Test -> Test: verify observer1 didn't get data
+end
+
+group Concurrent Observer Pattern Test
+    Test -> CObs: create()
+    Test -> ConcObs1: create(1) // Condition 1
+    Test -> ConcObs2: create(2) // Condition 2
+    
+    Test -> CObs: attach(concurrent_observer1, 1)
+    Test -> CObs: attach(concurrent_observer2, 2)
+    
+    Test -> Producers: create notifier1(condition=1, start=1000, count=50)
+    Test -> Producers: create notifier2(condition=2, start=2000, count=40)
+    Test -> Consumers: create consumer1(observer1, expected=50)
+    Test -> Consumers: create consumer2(observer2, expected=40)
+    
+    loop for each notification in notifier1
+        Producers -> Producers: create data = new TestData
+        Producers -> CObs: notify(1, data)
+        CObs -> ConcObs1: update(1, data)
+        ConcObs1 -> ConcObs1: increment update_count
+        ConcObs1 -> ConcObs1: semaphore.v() // Signal data available
+    end
+    
+    loop for each notification in notifier2
+        Producers -> Producers: create data = new TestData
+        Producers -> CObs: notify(2, data)
+        CObs -> ConcObs2: update(2, data)
+        ConcObs2 -> ConcObs2: increment update_count
+        ConcObs2 -> ConcObs2: semaphore.v() // Signal data available
+    end
+    
+    loop for each expected data in consumer1
+        Consumers -> ConcObs1: updated()
+        ConcObs1 -> ConcObs1: semaphore.p() // Wait for data
+        Consumers <-- ConcObs1: data
+        Consumers -> Consumers: increment retrieved_count
+        Consumers -> Consumers: delete data // Cleanup
+    end
+    
+    loop for each expected data in consumer2
+        Consumers -> ConcObs2: updated()
+        ConcObs2 -> ConcObs2: semaphore.p() // Wait for data
+        Consumers <-- ConcObs2: data
+        Consumers -> Consumers: increment retrieved_count
+        Consumers -> Consumers: delete data // Cleanup
+    end
+    
+    Test -> Producers: join()
+    Test -> Consumers: join()
+    
+    Test -> Test: verify concurrent_observer1.update_count == 50
+    Test -> Test: verify concurrent_observer1.retrieved_count == 50
+    Test -> Test: verify concurrent_observer2.update_count == 40
+    Test -> Test: verify concurrent_observer2.retrieved_count == 40
+    
+    note over Test: Test detach in concurrent scenario
+    
+    Test -> CObs: detach(concurrent_observer1, 1)
+    Test -> CObs: notify(1, &final_data)
+    Test -> Test: verify concurrent_observer1.update_count unchanged
+end
+
+note over Test: Test completed
+
+@enduml 

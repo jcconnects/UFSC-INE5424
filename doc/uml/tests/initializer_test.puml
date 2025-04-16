@@ -1,0 +1,132 @@
+@startuml initializer_test
+
+skinparam participant {
+    BackgroundColor #FFE0D0
+}
+skinparam actor {
+    BackgroundColor #D0E0FF
+}
+
+title Initializer Test - Sequence Diagram
+
+actor "Test Harness" as Test
+participant "Initializer" as Initializer
+participant "Vehicle" as Vehicle1
+participant "Vehicle" as Vehicle2
+participant "NIC<SocketEngine>" as NIC
+participant "Protocol<NIC<SocketEngine>>" as Protocol
+participant "Ethernet::Address" as Address
+
+note over Test: Initialize test
+
+note over Test: Test 1: Create vehicle with ID 1
+Test -> Initializer: create_vehicle(1)
+Initializer -> Address: create MAC address with ID 1 (02:00:00:00:00:01)
+Initializer -> NIC: create instance
+Initializer -> NIC: setAddress(MAC address)
+Initializer -> Protocol: create instance(NIC)
+Initializer -> Vehicle1: create instance(1, NIC, Protocol)
+Test <-- Initializer: vehicle1
+
+Test -> Vehicle1: id()
+Test <-- Vehicle1: 1
+Test -> Vehicle1: running()
+Test <-- Vehicle1: false
+
+note over Test: Test 2: Create vehicle with ID 2
+Test -> Initializer: create_vehicle(2)
+Initializer -> Address: create MAC address with ID 2 (02:00:00:00:00:02)
+Initializer -> NIC: create instance
+Initializer -> NIC: setAddress(MAC address)
+Initializer -> Protocol: create instance(NIC)
+Initializer -> Vehicle2: create instance(2, NIC, Protocol)
+Test <-- Initializer: vehicle2
+
+Test -> Vehicle2: id()
+Test <-- Vehicle2: 2
+Test -> Vehicle2: running()
+Test <-- Vehicle2: false
+
+note over Test: Test 3: Verify different IDs
+Test -> Vehicle1: id()
+Test <-- Vehicle1: 1
+Test -> Vehicle2: id()
+Test <-- Vehicle2: 2
+Test -> Test: verify vehicle1.id() != vehicle2.id()
+
+note over Test: Test 4: Start vehicles
+Test -> Vehicle1: start()
+Vehicle1 -> Vehicle1: _running = true
+Test <-- Vehicle1: void
+Test -> Vehicle1: running()
+Test <-- Vehicle1: true
+
+Test -> Vehicle2: start()
+Vehicle2 -> Vehicle2: _running = true
+Test <-- Vehicle2: void
+Test -> Vehicle2: running()
+Test <-- Vehicle2: true
+
+note over Test: Test 5: Stop vehicles
+Test -> Vehicle1: stop()
+Vehicle1 -> Vehicle1: _running = false
+Test <-- Vehicle1: void
+Test -> Vehicle1: running()
+Test <-- Vehicle1: false
+
+Test -> Vehicle2: stop()
+Vehicle2 -> Vehicle2: _running = false
+Test <-- Vehicle2: void
+Test -> Vehicle2: running()
+Test <-- Vehicle2: false
+
+note over Test: Test 6: Create multiple vehicles
+loop 5 times with ID from 10 to 14
+    Test -> Initializer: create_vehicle(ID)
+    Initializer -> Address: create MAC with ID
+    Initializer -> NIC: create instance
+    Initializer -> NIC: setAddress(MAC)
+    Initializer -> Protocol: create instance(NIC)
+    Initializer -> Vehicle: create instance(ID, NIC, Protocol)
+    Test <-- Initializer: vehicle
+    Test -> Test: store vehicle in vector
+    Test -> Vehicle: id()
+    Test <-- Vehicle: ID
+    Test -> Test: verify ID matches expected
+end
+
+note over Test: Verify all vehicles have unique IDs
+loop nested comparison of all vehicles
+    Test -> Test: verify vehicles[i].id() != vehicles[j].id()
+end
+
+note over Test: Test 7: Verify MAC addresses
+Test -> Test: Define getNicMacAddress helper function
+
+Test -> Test: compute expectedMac1 for vehicle1
+loop for each vehicle in vehicles
+    Test -> Test: compute expectedMac for vehicle
+    Test -> Test: verify MAC format (02:00:00:00:HH:LL where HHLL is the ID)
+end
+
+note over Test: Test 8: Test send and receive
+Test -> Vehicle1: start()
+Test -> Vehicle2: start()
+
+Test -> Vehicle1: send("Hello from Vehicle 1", size)
+Test <-- Vehicle1: sendResult
+Test -> Test: verify sendResult > 0
+
+Test -> Vehicle1: stop()
+Test -> Vehicle2: stop()
+
+note over Test: Cleanup
+Test -> Test: delete vehicle1
+Test -> Test: delete vehicle2
+loop for each vehicle in vehicles
+    Test -> Test: delete vehicle
+end
+
+note over Test: Test completed
+
+@enduml 

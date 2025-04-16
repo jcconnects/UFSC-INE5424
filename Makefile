@@ -2,85 +2,201 @@ CXX = g++
 CXXFLAGS = -std=c++14 -Wall -I./include -g
 LDFLAGS = -pthread
 
-# Diretórios
+# Directories
 SRCDIR = src
 TESTDIR = tests
 BINDIR = bin
 
-# Todos os testes encontrados
-TEST_SRCS := $(wildcard $(TESTDIR)/*.cpp)
-TEST_BINS := $(patsubst $(TESTDIR)/%.cpp, $(BINDIR)/%, $(TEST_SRCS))
+# Test directories
+UNIT_TESTDIR = $(TESTDIR)/unit_tests
+INTEGRATION_TESTDIR = $(TESTDIR)/integration_tests
+SYSTEM_TESTDIR = $(TESTDIR)/system_tests
 
-# Fontes principais
+# Find all test sources
+UNIT_TEST_SRCS := $(wildcard $(UNIT_TESTDIR)/*.cpp)
+INTEGRATION_TEST_SRCS := $(wildcard $(INTEGRATION_TESTDIR)/*.cpp)
+SYSTEM_TEST_SRCS := $(wildcard $(SYSTEM_TESTDIR)/*.cpp)
+
+# Generate binary paths
+UNIT_TEST_BINS := $(patsubst $(UNIT_TESTDIR)/%.cpp, $(BINDIR)/unit_tests/%, $(UNIT_TEST_SRCS))
+INTEGRATION_TEST_BINS := $(patsubst $(INTEGRATION_TESTDIR)/%.cpp, $(BINDIR)/integration_tests/%, $(INTEGRATION_TEST_SRCS))
+SYSTEM_TEST_BINS := $(patsubst $(SYSTEM_TESTDIR)/%.cpp, $(BINDIR)/system_tests/%, $(SYSTEM_TEST_SRCS))
+
+# Main sources
 SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/core/*.cpp)
 
-# Alvo padrão: compilar e executar todos os testes
+# Use a unique interface name to avoid conflicts
+TEST_IFACE_NAME = test-dummy0
+
+# Default target: compile and run all tests
 .PHONY: all
 all: test
 
-# Compilar e executar todos os testes
+# Compile and run all tests in the correct order
 .PHONY: test
-test: dirs $(TEST_BINS) run_all_tests
+test: dirs unit_tests integration_tests system_tests
 
-# Alvo para compilar todos os testes
+# Compile all tests
 .PHONY: compile_tests
-compile_tests: dirs $(TEST_BINS)
+compile_tests: dirs $(UNIT_TEST_BINS) $(INTEGRATION_TEST_BINS) $(SYSTEM_TEST_BINS)
 
-# Criar diretórios necessários
+# Create necessary directories
 dirs:
-	mkdir -p $(BINDIR)
+	mkdir -p $(BINDIR)/unit_tests
+	mkdir -p $(BINDIR)/integration_tests
+	mkdir -p $(BINDIR)/system_tests
+	mkdir -p $(TESTDIR)/logs
 
-tests/%: dirs $(BINDIR)/%
-	@true
+# Test targets
+.PHONY: unit_tests
+unit_tests: dirs $(UNIT_TEST_BINS) run_unit_tests
 
-# Regra genérica para compilar cada teste
-$(BINDIR)/%: $(TESTDIR)/%.cpp
+.PHONY: integration_tests
+integration_tests: dirs $(INTEGRATION_TEST_BINS) run_integration_tests
+
+.PHONY: system_tests
+system_tests: dirs $(SYSTEM_TEST_BINS) run_system_tests
+
+# Compile test rules
+$(BINDIR)/unit_tests/%: $(UNIT_TESTDIR)/%.cpp
+	@mkdir -p $(BINDIR)/unit_tests
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
-# Executar todos os testes
-.PHONY: run_all_tests
-run_all_tests: setup_dummy_iface
-	@echo "Running all tests..."
-	@for test in $(TEST_BINS); do \
-		echo "\n=== Running test $$test ==="; \
+$(BINDIR)/integration_tests/%: $(INTEGRATION_TESTDIR)/%.cpp
+	@mkdir -p $(BINDIR)/integration_tests
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+
+$(BINDIR)/system_tests/%: $(SYSTEM_TESTDIR)/%.cpp
+	@mkdir -p $(BINDIR)/system_tests
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+
+# Run test groups
+.PHONY: run_unit_tests
+run_unit_tests: setup_dummy_iface
+	@echo "Running unit tests..."
+	@for test in $(UNIT_TEST_BINS); do \
+		echo "\n=== Running unit test $$test ==="; \
 		sudo ./$$test $(ARGS); \
 		if [ $$? -ne 0 ]; then \
-			echo "Test $$test failed!"; \
+			echo "Unit test $$test failed!"; \
 			make clean_iface; \
 			exit 1; \
 		fi; \
 	done
-	@make clean_iface
-	@echo "All tests completed successfully!"
+	@echo "All unit tests completed successfully!"
 
-# Executar teste específico
-.PHONY: run_%
-run_%: $(BINDIR)/%
+.PHONY: run_integration_tests
+run_integration_tests: setup_dummy_iface
+	@echo "Running integration tests..."
+	@for test in $(INTEGRATION_TEST_BINS); do \
+		echo "\n=== Running integration test $$test ==="; \
+		sudo ./$$test $(ARGS); \
+		if [ $$? -ne 0 ]; then \
+			echo "Integration test $$test failed!"; \
+			make clean_iface; \
+			exit 1; \
+		fi; \
+	done
+	@echo "All integration tests completed successfully!"
+
+.PHONY: run_system_tests
+run_system_tests: setup_dummy_iface
+	@echo "Running system tests..."
+	@for test in $(SYSTEM_TEST_BINS); do \
+		echo "\n=== Running system test $$test ==="; \
+		TEST_LOG_FILE="tests/logs/`basename $$test`.log"; \
+		sudo ./$$test $(ARGS) > $$TEST_LOG_FILE 2>&1; \
+		if [ $$? -ne 0 ]; then \
+			echo "System test $$test failed! Check $$TEST_LOG_FILE for details"; \
+			cat $$TEST_LOG_FILE; \
+			make clean_iface; \
+			exit 1; \
+		else \
+			echo "System test `basename $$test` completed successfully. Log saved to $$TEST_LOG_FILE"; \
+		fi; \
+	done
+	@make clean_iface
+	@echo "All system tests completed successfully!"
+
+# Run specific test
+.PHONY: run_unit_%
+run_unit_%: $(BINDIR)/unit_tests/%
 	make setup_dummy_iface
 	sudo ./$< $(ARGS)
 	make clean_iface
 
-# Limpeza
+.PHONY: run_integration_%
+run_integration_%: $(BINDIR)/integration_tests/%
+	make setup_dummy_iface
+	sudo ./$< $(ARGS)
+	make clean_iface
+
+.PHONY: run_system_%
+run_system_%: $(BINDIR)/system_tests/%
+	make setup_dummy_iface
+	TEST_LOG_FILE="tests/logs/$*.log"
+	sudo ./$< $(ARGS) > $$TEST_LOG_FILE 2>&1
+	RESULT=$$?
+	if [ $$RESULT -ne 0 ]; then \
+		echo "System test $* failed! Check $$TEST_LOG_FILE for details"; \
+		cat $$TEST_LOG_FILE; \
+	else \
+		echo "System test $* completed successfully. Log saved to $$TEST_LOG_FILE"; \
+	fi
+	make clean_iface
+	exit $$RESULT
+
+# Cleanup
 .PHONY: clean
 clean:
 	rm -rf $(BINDIR)
+	rm -rf $(TESTDIR)/logs
 
 .PHONY: setup_dummy_iface
 setup_dummy_iface:
-	@if ! ip link show eth0 > /dev/null 2>&1; then \
-		echo "Criando interface dummy eth0..."; \
-		sudo ip link add eth0 type dummy; \
-		sudo ip link set eth0 up; \
+	@if ip link show $(TEST_IFACE_NAME) > /dev/null 2>&1; then \
+		echo "Interface $(TEST_IFACE_NAME) already exists, checking type..."; \
+		if ip link show $(TEST_IFACE_NAME) | grep -q "dummy"; then \
+			echo "Existing $(TEST_IFACE_NAME) is a dummy interface, reusing it."; \
+		else \
+			echo "WARNING: $(TEST_IFACE_NAME) exists but is NOT a dummy interface. Using a different name."; \
+			export TEST_IFACE_NAME="test-dummy1"; \
+			if ip link show $$TEST_IFACE_NAME > /dev/null 2>&1; then \
+				echo "Interface $$TEST_IFACE_NAME also exists. Please clean up interfaces manually."; \
+				exit 1; \
+			fi; \
+			echo "Creating interface $$TEST_IFACE_NAME..."; \
+			sudo ip link add $$TEST_IFACE_NAME type dummy; \
+			sudo ip link set $$TEST_IFACE_NAME up; \
+		fi; \
 	else \
-		echo "Interface dummy eth0 já existe."; \
-	fi
+		echo "Creating interface $(TEST_IFACE_NAME)..."; \
+		sudo ip link add $(TEST_IFACE_NAME) type dummy; \
+		sudo ip link set $(TEST_IFACE_NAME) up; \
+	fi; \
+	# Export the interface name for tests to use
+	echo "$(TEST_IFACE_NAME)" > $(TESTDIR)/logs/current_test_iface
 
 .PHONY: clean_iface
 clean_iface:
-	@if ip link show eth0 > /dev/null 2>&1; then \
-		echo "Removendo interface dummy eth0..."; \
-		sudo ip link delete eth0 type dummy; \
+	@if [ -f $(TESTDIR)/logs/current_test_iface ]; then \
+		TEST_IFACE=$$(cat $(TESTDIR)/logs/current_test_iface); \
+		if ip link show $$TEST_IFACE > /dev/null 2>&1; then \
+			if ip link show $$TEST_IFACE | grep -q "dummy"; then \
+				echo "Removing dummy interface $$TEST_IFACE..."; \
+				sudo ip link delete $$TEST_IFACE type dummy; \
+			else \
+				echo "WARNING: $$TEST_IFACE exists but is NOT a dummy interface. Not removing."; \
+			fi; \
+		fi; \
+		rm -f $(TESTDIR)/logs/current_test_iface; \
 	fi
 
-.PHONY: dirs
+# Docker commands
+.PHONY: docker-build
+docker-build:
+	docker build -t cpp-vehicle-app .
 
+.PHONY: docker-run
+docker-run:
+	docker run -it --privileged -v $(PWD):/app cpp-vehicle-app

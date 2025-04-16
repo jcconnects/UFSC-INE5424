@@ -16,6 +16,11 @@ This document describes the implementation of the Observer pattern in a thread-s
    - Manages registration and notification of observers
    - Contains the reference counting mechanism
 
+3. **observer_pattern_test.cpp**:
+   - Implements comprehensive tests for both Conditional and Concurrent Observer patterns
+   - Validates thread-safety and correct notification behavior
+   - Serves as a usage example for implementing the Observer pattern
+
 ## Class Relationships
 
 The implementation consists of several related classes organized in a hierarchy:
@@ -202,6 +207,61 @@ The test suite demonstrates and validates the implementation through:
    - Runs multiple producer threads sending notifications
    - Verifies thread safety and correct message delivery
    - Confirms reference counting works correctly
+
+## Test Implementation and Updates
+
+### Observer Pattern Test Implementation
+
+The `observer_pattern_test.cpp` file provides a comprehensive test suite for both the Conditional and Concurrent Observer patterns. The test includes:
+
+1. **Test Structure**:
+   - Two main test classes: `MyConditionalObserver` and `MyConcurrentObserver`
+   - Two main test functions: `test_conditional_observer()` and `test_concurrent_observer()`
+   - Thread functions for concurrent testing: `notify_thread_func()` and `consume_thread_func()`
+
+2. **Test Scenarios**:
+   - Single/multiple observers for the same condition
+   - Observer notification filtering based on condition
+   - Attaching and detaching observers
+   - Concurrent notification and consumption
+   - Thread-safety in a multi-threaded environment
+   - Memory management through reference counting
+
+3. **Test Assertions**:
+   - Verification of successful notification
+   - Correct counting of updates received
+   - Validation of data integrity
+   - Proper memory management
+
+### Recent Improvements
+
+The observer pattern implementation has been improved with the following fixes:
+
+1. **Test Framework Integration**:
+   - Changed from custom logging to the standardized test_utils.h framework
+   - Implemented proper test assertions instead of asserts
+   - Structured logging consistent with other component tests
+
+2. **Thread-Safe Logging**:
+   - Added a global test logger accessible to all threads
+   - Implemented thread-safe logging macros (OBS_TEST_LOG, OBS_TEST_ASSERT)
+   - Added proper thread ID handling for logging thread operations
+
+3. **Safe Thread Identification**:
+   - Replaced direct access to thread::id internals with a string-based representation
+   - Implemented thread_id_to_string() utility function to safely convert thread IDs to strings
+
+4. **Testing Enhancements**:
+   - Improved test case clarity with better assertions and messages
+   - Added checks for edge cases like detaching observers during concurrent operations
+   - Enhanced documentation of test expectations
+
+5. **Error Handling**:
+   - Added safety checks for null loggers
+   - Implemented graceful behavior when logger is not available
+   - Maintained compatibility with both test framework and standalone usage
+
+These improvements ensure the observer pattern test is robust, maintainable, and integrated with the project's testing framework.
 
 ## Alignment with Project Requirements
 

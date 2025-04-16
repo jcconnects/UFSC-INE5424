@@ -1,0 +1,53 @@
+@startuml ethernet_test
+
+skinparam actor {
+    BackgroundColor #D0E0FF
+}
+skinparam participant {
+    BackgroundColor #FFE0D0 
+}
+
+title Ethernet Test - Sequence Diagram
+
+actor "Test Harness" as Test
+participant "Ethernet" as Ethernet
+participant "Ethernet::Address" as Address
+participant "Ethernet::Frame" as Frame
+
+note over Test: Initialize test
+
+Test -> Address: create addr1 = {00:11:22:33:44:55}
+Test -> Address: create addr2 = {00:11:22:33:44:55}
+Test -> Address: create addr3 = {AA:BB:CC:DD:EE:FF}
+
+Test -> Test: check addr1 == addr2
+Test -> Test: check addr1 != addr3
+Test -> Test: check addr2 != addr3
+
+Test -> Ethernet: NULL_ADDRESS
+Test -> Test: verify all bytes are zero
+
+Test -> Ethernet: mac_to_string(addr1)
+Test <-- Ethernet: "00:11:22:33:44:55"
+Test -> Test: verify MAC string is correct
+
+Test -> Ethernet: mac_to_string(addr3)
+Test <-- Ethernet: "AA:BB:CC:DD:EE:FF"
+Test -> Test: verify MAC string is correct
+
+Test -> Test: verify sizeof(Frame) == HEADER_SIZE + MTU
+
+Test -> Frame: create frame
+Test -> Frame: set dst = addr1
+Test -> Frame: set src = addr3
+Test -> Frame: set prot = 0x0800 (IPv4)
+Test -> Frame: fill payload with test pattern
+
+Test -> Test: verify frame.dst == addr1
+Test -> Test: verify frame.src == addr3 
+Test -> Test: verify frame.prot == 0x0800
+Test -> Test: verify payload matches pattern
+
+note over Test: Test completed
+
+@enduml 

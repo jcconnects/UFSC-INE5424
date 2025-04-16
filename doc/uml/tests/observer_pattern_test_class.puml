@@ -1,0 +1,107 @@
+@startuml observer_pattern_test_class
+!theme plain
+
+title "Observer Pattern Test - Class Structure"
+
+' Define classes from the observer pattern test
+class "Conditional_Data_Observer<T,C>" as CDO {
+  #_rank : Condition
+  +rank() : Condition
+  +update(c: Condition, d: T*) : void
+}
+
+class "Conditionally_Data_Observed<T,C>" as CDObs {
+  +attach(obs: CDO*, c: Condition) : void
+  +detach(obs: CDO*, c: Condition) : void
+  +notify(c: Condition, d: T*) : bool
+}
+
+class "Concurrent_Observer<T,C>" as CO {
+  +updated() : T*
+  +update(c: Condition, d: T*) : void
+}
+
+class "Concurrent_Observed<T,C>" as CObs {
+  +attach(obs: CO*, c: Condition) : void
+  +detach(obs: CO*, c: Condition) : void
+  +notify(c: Condition, d: T*) : bool
+}
+
+class "MyConditionalObserver" as MCO {
+  +update_count : atomic<int>
+  +update(c: TestCondition, d: TestData*) : void
+}
+
+class "MyConcurrentObserver" as MCCO {
+  +update_count : atomic<int>
+  +retrieved_count : atomic<int>
+  +update(c: TestCondition, d: TestData*) : void
+  +updated() : TestData*
+}
+
+CDO <|-- CO : extends
+CDObs <|-- CObs : extends
+
+CDO <|-- MCO : extends
+CO <|-- MCCO : extends
+
+' Test functions
+package "Test Functions" {
+  class "test_conditional_observer()" as TCO {
+    -observed : Conditionally_Data_Observed
+    -observer1, observer2, observer1_too : MyConditionalObserver
+    +Tests attach/detach/notify
+    +Tests multiple observers per condition
+    +Tests condition filtering
+  }
+
+  class "test_concurrent_observer()" as TCOn {
+    -concurrent_observed : Concurrent_Observed
+    -concurrent_observer1, concurrent_observer2 : MyConcurrentObserver
+    +Tests concurrent notification
+    +Tests thread-safe observer pattern
+    +Uses separate producer/consumer threads
+  }
+}
+
+' Thread functions
+package "Thread Functions" {
+  class "notify_thread_func()" as NTF {
+    +Sends notifications for a condition
+    +Creates test data dynamically
+    +Records produced data
+  }
+
+  class "consume_thread_func()" as CTF {
+    +Waits for and processes notifications
+    +Verifies received data count
+    +Manages memory cleanup
+  }
+}
+
+' Relationships
+TCO ..> CDObs : uses
+TCO ..> MCO : uses
+TCOn ..> CObs : uses
+TCOn ..> MCCO : uses
+TCOn ..> NTF : spawns
+TCOn ..> CTF : spawns
+NTF ..> CObs : notifies
+CTF ..> MCCO : consumes from
+
+' Test data
+note bottom of TCO
+  Test data:
+  - TestData = int
+  - TestCondition = int
+end note
+
+note bottom of TCOn
+  Tests concurrent access with:
+  - Multiple producer threads
+  - Multiple consumer threads
+  - Different conditions
+  - Reference counting
+end note
+
+@enduml 

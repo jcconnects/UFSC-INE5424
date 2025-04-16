@@ -2,6 +2,7 @@
 #define OBSERVED_H
 
 #include <pthread.h>
+#include <iostream>
 #include "list.h"
 
 // Forward declarations for Conditional Observer class
@@ -19,7 +20,7 @@ class Conditionally_Data_Observed {
 
     public:
         Conditionally_Data_Observed() = default;
-        ~Conditionally_Data_Observed() = default;
+        virtual ~Conditionally_Data_Observed() = default;
 
         void attach(Observer* o, Condition c);
         void detach(Observer* o, Condition c);
@@ -62,7 +63,7 @@ class Concurrent_Observer;
 
 // Concurrent Observed
 template<typename D, typename C>
-class Concurrent_Observed {
+class Concurrent_Observed : public Conditionally_Data_Observed<D, C>{
     friend class Concurrent_Observer<D, C>;
     
     public:
@@ -74,10 +75,10 @@ class Concurrent_Observed {
         Concurrent_Observed();
         ~Concurrent_Observed();
         
-        void attach(Concurrent_Observer<D, C>* o, C c);
-        void detach(Concurrent_Observer<D, C>* o, C c);
+        void attach(Concurrent_Observer<D, C>* o, C c) ;
+        void detach(Concurrent_Observer<D, C>* o, C c) ;
         bool notify(C c, D* d);
-    
+        
     private:
         pthread_mutex_t _mtx;
         Observers _observers;
@@ -110,19 +111,20 @@ void Concurrent_Observed<T, C>::detach(Concurrent_Observer<T, C>* o, C c) {
 
 template <typename T, typename C>
 bool Concurrent_Observed<T, C>::notify(C c, T* d) {
+    pthread_mutex_lock(&_mtx);
     bool notified = false;
     
-    pthread_mutex_lock(&_mtx);
     for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
         if ((*obs)->rank() == c) {
             (*obs)->update(c, d);
             notified = true;
         }
     }
-    pthread_mutex_unlock(&_mtx);
     
+    pthread_mutex_unlock(&_mtx);
     return notified;
 }
+
 /*********************************************************************************************/
 
 #endif // OBSERVED_H

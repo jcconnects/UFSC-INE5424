@@ -51,3 +51,11 @@ install_manifest.txt
 # OS specific files
 .DS_Store
 Thumbs.db
+
+
+# 
+*.csv
+*.log
+tests/logs/*
+termination_logs/*
+logs/*

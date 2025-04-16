@@ -1,0 +1,69 @@
+@startuml message_test
+
+skinparam actor {
+    BackgroundColor #D0E0FF
+}
+
+skinparam participant {
+    BackgroundColor #FFE0D0
+}
+
+title Message Test - Sequence Diagram
+
+actor "Test Harness" as Test
+participant "Message<MAX_MSG_SIZE>" as Message
+participant "Message<MAX_MSG_SIZE> (copy)" as MessageCopy
+participant "Message<MAX_MSG_SIZE> (assigned)" as MessageAssigned
+
+note over Test: Initialize test with MAX_MSG_SIZE = 128
+
+Test -> Message: create empty message
+Test -> Test: check emptyMsg.size() == 0
+
+Test -> Test: create testData = "Hello, World!"
+Test -> Message: create dataMsg(testData, testDataSize)
+Test -> Test: check dataMsg.size() == testDataSize
+
+Test -> Message: data()
+Test <-- Message: retrievedData
+Test -> Test: check retrievedData != nullptr
+Test -> Test: check strcmp(retrievedData, testData) == 0
+
+note over Test: Test Copy Constructor
+
+Test -> MessageCopy: create copiedMsg(dataMsg)
+Test -> Test: check copiedMsg.size() == dataMsg.size()
+
+Test -> MessageCopy: data()
+Test <-- MessageCopy: copiedData
+Test -> Test: check copiedData != nullptr
+Test -> Test: check strcmp(copiedData, testData) == 0
+
+note over Test: Test Assignment Operator
+
+Test -> MessageAssigned: create assignedMsg
+Test -> MessageAssigned: assignedMsg = dataMsg
+Test -> Test: check assignedMsg.size() == dataMsg.size()
+
+Test -> MessageAssigned: data()
+Test <-- MessageAssigned: assignedData
+Test -> Test: check assignedData != nullptr
+Test -> Test: check strcmp(assignedData, testData) == 0
+
+note over Test: Test Size Limits
+
+Test -> Test: create largeData[MAX_MSG_SIZE * 2]
+Test -> Message: create largeMsg(largeData, MAX_MSG_SIZE * 2)
+Test -> Test: check largeMsg.size() == MAX_MSG_SIZE
+
+note over Test: Test Self-assignment
+
+Test -> Message: dataMsg = dataMsg
+Test -> Test: check dataMsg.size() == testDataSize
+Test -> Message: data()
+Test <-- Message: selfAssignedData
+Test -> Test: check strcmp(selfAssignedData, testData) == 0
+
+note over Test: Test completed
+
+@enduml 

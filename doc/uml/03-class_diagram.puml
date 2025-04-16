@@ -14,14 +14,40 @@ class Buffer<T> {
   + clear(): void
 }
 
+class Component {
+  # _vehicle: Vehicle*
+  # _name: std::string
+  # _running: std::atomic<bool>
+  # _thread: pthread_t
+  # _log_file: std::ofstream
+  # _log_mutex: pthread_mutex_t
+  + Component(vehicle: Vehicle*, name: const std::string&)
+  + {virtual} ~Component()
+  + {virtual} start() = 0
+  + {virtual} signal_stop()
+  + {virtual} join()
+  + {virtual} stop()
+  + running(): const bool
+  + name(): const std::string&
+  + vehicle(): Vehicle*
+  + log_file(): std::ofstream*
+  # open_log_file(filename: const std::string&): void
+  # close_log_file(): void
+  # write_to_log(line: const std::string&): void
+}
+
 class Communicator<Channel> {
   + {static} MAX_MESSAGE_SIZE: unsigned int
   - _channel: Channel*
   - _address: Address
+  - _closed: bool
   + Communicator(channel: Channel*, address: Address)
   + ~Communicator()
   + send(message: const Message<MAX_MESSAGE_SIZE>*): bool
   + receive(message: Message<MAX_MESSAGE_SIZE>*): bool
+  + close(): void
+  + reopen(): void
+  + is_closed(): bool
   - update(obs: Channel::Observed*, c: Channel::Observer::Observing_Condition, buf: Buffer*): void
   .. Typedefs ..
   + Observer: typedef
@@ -198,12 +224,16 @@ class "Protocol<NIC>" as ProtocolNIC {
   + {static} MTU: unsigned int
   - _nic: NIC*
   - {static} _observed: Observed
+  - _active: bool
   + Protocol(nic: NIC*)
   + ~Protocol()
   + send(from: Address, to: Address, data: const void*, size: unsigned int): int
   + receive(buf: Buffer*, from: Address, data: void*, size: unsigned int): int
   + {static} attach(obs: Observer*, address: Address): void
   + {static} detach(obs: Observer*, address: Address): void
+  + active(): bool
+  + signal_stop(): void
+  + reactive(): bool
   - update(prot: NIC::Protocol_Number, buf: Buffer*): void
   .. Typedefs ..
   + Buffer: typedef
@@ -277,6 +307,10 @@ class Vehicle {
   + running(): const bool
   + start(): void
   + stop(): void
+  + add_component(component: Component*): void
+  + start_components(): void
+  + signal_components(): void
+  + join_components(): void
   + send(data: const void*, size: unsigned int): int
   + receive(data: void*, size: unsigned int): int
 }
@@ -296,6 +330,22 @@ class SemaphoreWrapper {
   .. Deleted methods ..
   + SemaphoreWrapper(const SemaphoreWrapper&) = delete
   + operator=(const SemaphoreWrapper&): SemaphoreWrapper& = delete
+}
+
+class ReceiverComponent {
+  + ReceiverComponent(vehicle: Vehicle*)
+  + {override} start(): void
+  + {override} signal_stop(): void
+  + {override} stop(): void
+  - {static} run(arg: void*): void*
+}
+
+class SenderComponent {
+  + SenderComponent(vehicle: Vehicle*)
+  + {override} start(): void
+  + {override} signal_stop(): void
+  + {override} stop(): void
+  - {static} run(arg: void*): void*
 }
 
 ' Communicator Relationships
@@ -344,5 +394,10 @@ ConcurrentObserver -- ConcurrentObserved : <<observes>>
 ' Observed Relationships
 ConditionallyDataObserved <|-- ConcurrentObserved
 ConditionalDataObserver -- ConditionallyDataObserved : <<observes>>
+
+' Component Relationships
+Component o-- "1" Vehicle : _vehicle
+Component <|-- ReceiverComponent
+Component <|-- SenderComponent
 
 @enduml

@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
+#include <sys/eventfd.h>
 #include <netinet/in.h>
 #include <linux/if_packet.h>
 #include <net/ethernet.h>
@@ -15,6 +16,7 @@
 #include <sys/ioctl.h>
 #include <functional>
 #include <pthread.h>
+#include <atomic>
 
 
 #include "ethernet.h"
@@ -27,21 +29,23 @@ class Buffer;
 class SocketEngine{
     
     public:
-        static constexpr const char* INTERFACE = Traits<SocketEngine>::INTERFACE_NAME;
-        using CallbackMethod = std::function<void(Ethernet::Frame&, unsigned int)>;
+        static const char* INTERFACE() { return Traits<SocketEngine>::INTERFACE_NAME(); }
 
     public:
         SocketEngine();
 
-        ~SocketEngine();
+        virtual ~SocketEngine();
 
-        void setCallback(CallbackMethod callback);
-
+        const bool running();
+        
         int send(Ethernet::Frame* frame, unsigned int size);
 
         static void* run(void* arg);
 
+        void start();
+
         void stop();
+
 
     private:
         void setUpSocket();
@@ -49,32 +53,32 @@ class SocketEngine{
         void setUpEpoll();
 
         // Signal handler
-        void handleSignal();
+        virtual void handleSignal() = 0;
 
     protected:
-        Ethernet::Address _address;
-    
-    private:
         int _sock_fd;
         int _ep_fd;
         int _if_index;
-
-        CallbackMethod _callback;
+        Ethernet::Address _mac_address;
+        
+    private:
+        const int _stop_ev;
         pthread_t _receive_thread;
-        static bool _running;
+        std::atomic<bool> _running;
 };
 
 
 /********** SocketEngine Implementation **********/
 
-SocketEngine::SocketEngine()  {
-    db<SocketEngine>(TRC) << "SocketEngine::SocketEngine() called!\n";
+SocketEngine::SocketEngine() : _stop_ev(eventfd(0, EFD_NONBLOCK)), _running(false) {};
+
+void SocketEngine::start() {
     setUpSocket();
     setUpEpoll();
-
+    _running.store(true, std::memory_order_release);
     pthread_create(&_receive_thread, nullptr, SocketEngine::run, this);
     db<SocketEngine>(INF) << "[SocketEngine] receive thread started\n";
-};
+}
 
 void SocketEngine::setUpSocket() {
     db<SocketEngine>(TRC) << "SocketEngine::setUpSocket() called!\n";
@@ -93,7 +97,7 @@ void SocketEngine::setUpSocket() {
     // 3. Getting interface index
     struct ifreq ifr;
     std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, INTERFACE, IFNAMSIZ);
+    std::strncpy(ifr.ifr_name, INTERFACE(), IFNAMSIZ);
 
     
     if (ioctl(_sock_fd, SIOCGIFINDEX, &ifr) < 0) {
@@ -106,15 +110,15 @@ void SocketEngine::setUpSocket() {
 
     // 4. Getting MAC address
     std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, INTERFACE, IFNAMSIZ);
+    std::strncpy(ifr.ifr_name, INTERFACE(), IFNAMSIZ);
 
     if (ioctl(_sock_fd, SIOCGIFHWADDR, &ifr) < 0) {
         perror("ioctl SIOCGIFHWADDR");
         throw std::runtime_error("Failed to retrieve MAC address!");
     }
 
-    std::memcpy(_address.bytes, ifr.ifr_hwaddr.sa_data, Ethernet::MAC_SIZE);
-    db<SocketEngine>(INF) << "[SocketEngine] MAC address setted: " << Ethernet::mac_to_string(_address) << "\n";
+    std::memcpy(_mac_address.bytes, ifr.ifr_hwaddr.sa_data, Ethernet::MAC_SIZE);
+    db<SocketEngine>(INF) << "[SocketEngine] MAC address setted: " << Ethernet::mac_to_string(_mac_address) << "\n";
 
     // 5. Bind socket to interface
     struct sockaddr_ll sll;
@@ -148,7 +152,16 @@ void SocketEngine::setUpEpoll() {
 
     if (epoll_ctl(_ep_fd, EPOLL_CTL_ADD, _sock_fd, &ev) < 0) {
         perror("epoll_ctl");
-        throw std::runtime_error("Failed to bind SocketEngine::_sock_fd to SocketEngine::_ep_fd!");
+        throw std::runtime_error("Failed to bind SocketEngine::_sock_fd to epoll!");
+    }
+
+    // 3. Binding stop event on epoll
+    struct epoll_event stop_ev = {};
+    stop_ev.events = EPOLLIN;
+    stop_ev.data.fd = _stop_ev;
+    if (epoll_ctl(_ep_fd, EPOLL_CTL_ADD, _stop_ev, &stop_ev) < 0) {
+        perror("epoll_ctl stop_ev");
+        throw std::runtime_error("Failed to bind SocketEngine::_stop_ev to epoll!");
     }
 
     db<SocketEngine>(INF) << "[SocketEngine] epoll setted\n";
@@ -157,22 +170,33 @@ void SocketEngine::setUpEpoll() {
 SocketEngine::~SocketEngine()  {
     db<SocketEngine>(TRC) << "SocketEngine::~SocketEngine() called!\n";
 
+    // Ensure the thread is stopped and joined before closing resources
+    stop();
+
     close(_sock_fd);
     close(_ep_fd);
-
-    pthread_join(_receive_thread, nullptr);
-    db<SocketEngine>(INF) << "[SocketEngine] receive thread finished\n";
+    close(_stop_ev); // Also close the eventfd
 };
+
+const bool SocketEngine::running() {
+    return _running.load(std::memory_order_acquire);
+}
 
 int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
     db<SocketEngine>(TRC) << "SocketEngine::send() called!\n";
+
+    // Check if engine is running before sending
+    if (!running()) {
+        db<SocketEngine>(INF) << "[SocketEngine] Attempted to send while engine is stopping/stopped\n";
+        return -1;
+    }
 
     sockaddr_ll addr = {};
     addr.sll_family   = AF_PACKET;
     addr.sll_protocol = htons(frame->prot);
     addr.sll_ifindex  = _if_index;
     addr.sll_halen    = Ethernet::MAC_SIZE;
-    std::memcpy(addr.sll_addr, frame->dst.bytes, Ethernet::MAC_SIZE);
+    std::memcpy(addr.sll_addr, _mac_address.bytes, Ethernet::MAC_SIZE);
 
     // Make sure protocol field is in network byte order before sending
     frame->prot = htons(frame->prot);
@@ -193,53 +217,22 @@ int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
     return result;
 }
 
-void SocketEngine::setCallback(CallbackMethod callback) {
-    db<SocketEngine>(TRC) << "SocketEngine::setCallback() called!\n";
-    _callback = callback;
-}
-
-void SocketEngine::handleSignal() {
-    db<SocketEngine>(TRC) << "SocketEngine::handleSignal() called!\n";
-    
-    Ethernet::Frame frame;
-    struct sockaddr_ll src_addr;
-    socklen_t addr_len = sizeof(src_addr);
-    
-    int bytes_received = recvfrom(_sock_fd, &frame, sizeof(frame), 0, reinterpret_cast<sockaddr*>(&src_addr), &addr_len);
-                               
-    if (bytes_received < 0) {
-        db<SocketEngine>(INF) << "[SocketEngine] No data received\n";
-        if (errno != EAGAIN && errno != EWOULDBLOCK) {
-            perror("recvfrom");
-        }
-        return;
-    }
-    
-    // Check for valid Ethernet frame size (at least header size)
-    if (static_cast<unsigned int>(bytes_received) < Ethernet::HEADER_SIZE) {
-        db<SocketEngine>(ERR) << "[SocketEngine] Received undersized frame (" << bytes_received << " bytes)\n";
-        return;
-    }
-    
-    // Convert protocol from network to host byte order
-    frame.prot = ntohs(frame.prot);
-    db<SocketEngine>(INF) << "[SocketEngine] received frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << frame.prot << ", size = " << bytes_received << "}\n";
-    
-    // Process the frame if callback is set
-    if (_callback) {
-        _callback(frame, bytes_received);
-    }
-}
-
 void* SocketEngine::run(void* arg)  {
     db<SocketEngine>(TRC) << "SocketEngine::run() called!\n";
 
     SocketEngine* engine = static_cast<SocketEngine*>(arg);
 
-    struct epoll_event events[10];
-
-    while (_running) {
-        int n = epoll_wait(engine->_ep_fd, events, 10, 100); // 100ms timeout for check running
+    struct epoll_event events[15];
+    while (engine->running()) {
+        db<SocketEngine>(INF) << "[SocketEngine] Entering wait\n";
+        int n = epoll_wait(engine->_ep_fd, events, 10, -1);
+        
+        // Check if we should exit after epoll_wait returns
+        if (!engine->running()) {
+            db<SocketEngine>(TRC) << "[SocketEngine] running is false after epoll_wait, exiting loop.\n";
+            break;
+        }
+        
         if (n < 0) {
             if (errno == EINTR) continue;
             perror("epoll_wait");
@@ -247,21 +240,67 @@ void* SocketEngine::run(void* arg)  {
         }
 
         for (int i = 0; i < n; ++i) {
-            if (events[i].data.fd == engine->_sock_fd) {
-                db<SocketEngine>(INF) << "[SocketEngine] epoll event detected\n";
+            // Check running state again before handling any event
+            if (!engine->running()) {
+                db<SocketEngine>(TRC) << "[SocketEngine] running is false during event processing, exiting loop.\n";
+                break; // Exit loop if stopped during or after epoll_wait
+            }
+            
+            int fd = events[i].data.fd;
+
+            if (fd == engine->_sock_fd) {
+                db<SocketEngine>(INF) << "[SocketEngine] epoll socket event detected\n";
                 engine->handleSignal();
+            } else if (fd == engine->_stop_ev) {
+                db<SocketEngine>(INF) << "[SocketEngine] epoll stop event detected\n";
+                uint64_t u;
+                read(engine->_stop_ev, &u, sizeof(u)); // clears eventfd
+                
+                // If this is a stop event, check if we should exit the loop
+                if (!engine->running()) {
+                    db<SocketEngine>(INF) << "[SocketEngine] stop event confirmed, exiting loop\n";
+                    break;
+                }
             }
         }
     }
 
+    db<SocketEngine>(INF) << "[SocketEngine] receive thread terminated!\n";
     return nullptr;
 };
 
 void SocketEngine::stop() {
-    db<SocketEngine>(TRC) << "SocketEngine::run() called!\n";
-    SocketEngine::_running = false;
-}
+    db<SocketEngine>(TRC) << "SocketEngine::stop() called!\n";
+    
+    // Atomically set flag to false and check if it was already false
+    if (!_running.exchange(false, std::memory_order_acq_rel)) {
+        db<SocketEngine>(TRC) << "[SocketEngine] Stop called but already stopped.\n";
+        return; // Return if it was already false
+    }
 
-bool SocketEngine::_running = true;
+    db<SocketEngine>(TRC) << "[SocketEngine] _running set to false.\n";
+
+    // Write to the eventfd to wake up the epoll_wait in the run thread
+    std::uint64_t u = 1;
+    ssize_t bytes_written = write(_stop_ev, &u, sizeof(u));
+    db<SocketEngine>(TRC) << "[SocketEngine] " << bytes_written << " bytes written to stop_ev.\n";
+
+    // Join the thread - this guarantees the thread has exited
+    if (_receive_thread != 0) {
+        db<SocketEngine>(TRC) << "[SocketEngine] Joining receive thread...\n";
+        int join_ret = pthread_join(_receive_thread, nullptr);
+        if (join_ret == 0) {
+            db<SocketEngine>(INF) << "[SocketEngine] Thread successfully joined.\n";
+        } else {
+            db<SocketEngine>(ERR) << "[SocketEngine] Error joining thread! errno: " 
+                                << join_ret << " (" << strerror(join_ret) << ")\n";
+        }
+        _receive_thread = 0;
+    } else {
+        db<SocketEngine>(WRN) << "[SocketEngine] Stop called but thread handle was invalid (never started?).\n";
+    }
+    
+    db<SocketEngine>(INF) << "[SocketEngine] successfully stopped!\n";
+}
 
 #endif // SOCKETENGINE_H

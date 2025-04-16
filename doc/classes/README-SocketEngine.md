@@ -38,7 +38,7 @@ The `SocketEngine` class provides a comprehensive interface for raw socket opera
 ```cpp
 class SocketEngine {
 public:
-    static constexpr const char* INTERFACE = Traits<SocketEngine>::INTERFACE_NAME;
+    static const char* INTERFACE() { return Traits<SocketEngine>::INTERFACE_NAME(); }
     using CallbackMethod = std::function<void(Ethernet::Frame&, unsigned int)>;
 
     SocketEngine();
@@ -132,6 +132,46 @@ The `setCallback` method enables external components to process received frames:
 2. **Invocation**:
    - `handleSignal` method calls the callback when frames arrive
    - Passes the received frame and its size to the callback
+
+### Socket Setup
+
+The socket setup process includes:
+
+1. **Network Interface Selection**:
+   - Uses `INTERFACE()` method to determine the network interface name
+   - Dynamically reads interface name from configuration or environment
+   - Defaults to "test-dummy0" if no other interface is specified
+
+2. **Interface Validation**:
+   - Gets interface index using `SIOCGIFINDEX` ioctl
+   - Verifies interface exists and is accessible
+   - Retrieves MAC address using `SIOCGIFHWADDR` ioctl
+
+3. **Socket Configuration**:
+   - Creates a raw socket with `AF_PACKET` domain
+   - Sets the socket to non-blocking mode
+   - Binds the socket to the specified interface
+
+## Network Interface Management
+
+For testing purposes, the `SocketEngine` uses a special dummy interface configuration:
+
+1. **Interface Naming**:
+   - Uses a unique interface name ("test-dummy0") to avoid conflicts with real interfaces
+   - Interface name is determined dynamically at runtime
+   - The actual interface name is stored in a file and read by SocketEngine
+
+2. **Safe Interface Handling**:
+   - Tests verify an interface is a dummy interface before removal
+   - Implements fallback mechanisms for interface naming conflicts
+   - Avoids accidentally modifying real network interfaces
+
+3. **Dynamic Interface Selection**:
+   - Interface name is accessed via a method call rather than a constant
+   - Allows for runtime configuration of interface
+   - Reads interface name from configuration sources if available
+
+This approach ensures that the SocketEngine can be safely used in both development and testing environments without risking changes to system network configuration.
 
 ## Alignment with Project Requirements
 

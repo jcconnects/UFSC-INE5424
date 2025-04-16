@@ -1,2 +1,0 @@
-receive_timestamp,source_vehicle,message_id,event_type,send_timestamp,latency_us
-409182598332,24,1,receive,409182598229,103
