@@ -2,6 +2,7 @@
 #define BUFFER_H
 
 #include <cstring>
+#include <cstdint>
 
 template <typename T>
 class Buffer{
