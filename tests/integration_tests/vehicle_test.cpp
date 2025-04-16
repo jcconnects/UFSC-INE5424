@@ -28,9 +28,9 @@ public:
         _running = true;
     }
     
-    void signal_stop() override {
+    void stop() override {
         stop_called = true;  // Track signal_stop instead of stop
-        Component::signal_stop();  // Call base implementation
+        _running = false;
     }
     
     bool was_start_called() const { return start_called; }
