@@ -47,14 +47,16 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         Communicator(const Communicator&) = delete;
         Communicator& operator=(const Communicator&) = delete;
 
-    private:
-        // Update method for Observer pattern
-        void update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition c, Buffer* buf);
+        // Make base class update method visible
+        using Observer::update;
 
     private:
         Channel* _channel;
         Address _address;
         std::atomic<bool> _closed;
+
+        // Update method for Observer pattern
+        void update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition c, Buffer* buf);
 };
 
 // Template implementations
