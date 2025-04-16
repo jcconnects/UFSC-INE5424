@@ -29,11 +29,6 @@ The communication system implements a layered architecture for network communica
 +------------------+    +------------------+
          |                       |
          v                       v
-+------------------+    +------------------+
-|   SocketEngine   |    |   SocketEngine   |
-+------------------+    +------------------+
-         |                       |
-         v                       v
 +------------------+----+------------------+
 |              Network                     |
 +------------------------------------------+

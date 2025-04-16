@@ -1,6 +1,6 @@
 # Component Tests Documentation
 
-This document describes the test suite for UFSC-INE5424 components. The tests are designed to verify the functionality of individual components in isolation, treating related components as stubs when necessary.
+This document describes the test suite for UFSC-INE5424 components. The tests are designed to verify the functionality of individual components in isolation, interactions between components, and the entire system functioning together.
 
 ## Test Organization
 
@@ -10,8 +10,23 @@ Tests are organized in a hierarchical structure within the `tests/` directory:
 tests/
 ├── logs/               # Log files from test execution
 ├── unit_tests/         # Tests for individual components in isolation
+│   ├── buffer_test.cpp
+│   ├── ethernet_test.cpp
+│   ├── list_test.cpp
+│   ├── message_test.cpp
+│   ├── observer_pattern_test.cpp
+│   ├── sharedMemoryEngine_test.cpp
+│   ├── socketEngine_test.cpp
+│   └── test_utils.h
 ├── integration_tests/  # Tests for interactions between components
+│   ├── initializer_test.cpp
+│   ├── nic_test.cpp
+│   ├── protocol_test.cpp
+│   ├── vehicle_test.cpp
+│   └── test_utils.h
 ├── system_tests/       # Tests for the entire system functioning together
+│   ├── demo.cpp
+│   └── test_utils.h
 ├── test_utils.h        # Common utilities for all tests
 └── CMakeLists.txt      # Build configuration for tests
 ```
@@ -81,11 +96,91 @@ Tests produce different types of output:
   - Only success/failure status is shown on the console
   - If a test fails, the log is displayed on the console
 
+## Customizing Debug Output and Logging
+
+The system provides a flexible logging mechanism through `traits.h` and `debug.h` that allows customization of log output:
+
+### Using traits.h to Control Debug Output
+
+The `traits.h` file defines debug settings for different components through template specialization:
+
+```cpp
+// Basic trait for all classes
+template <typename T>
+struct Traits {
+    static const bool debugged = true;
+};
+
+// Class-specific trait specialization
+template<>
+struct Traits<SpecificComponent> : public Traits<void>
+{
+    static const bool debugged = true;  // Enable/disable debugging for this component
+};
+```
+
+To control debugging output for a specific component:
+1. Create a specialized trait for your component in `traits.h`
+2. Set `debugged` to `true` or `false` to enable/disable debug output
+3. For fine-grained control, you can also define component-specific debug settings
+
+### Debug Level Control
+
+The Debug class in `debug.h` provides four levels of debug output that can be enabled/disabled in the `Traits<Debug>` specialization:
+
+```cpp
+template<>
+struct Traits<Debug> : public Traits<void>
+{
+    static const bool error = true;    // Error messages
+    static const bool warning = true;  // Warning messages
+    static const bool info = true;     // Informational messages
+    static const bool trace = true;    // Detailed trace messages
+};
+```
+
+### Using Debug Logging in Code
+
+To add debug output in code, use the `db()` function with appropriate template parameters:
+
+```cpp
+// For a single component
+db<Component>(ERR) << "This is an error message" << std::endl;
+db<Component>(WRN) << "This is a warning message" << std::endl;
+db<Component>(INF) << "This is an info message" << std::endl;
+db<Component>(TRC) << "This is a trace message" << std::endl;
+
+// For multiple components
+db<Component1, Component2>(INF) << "This affects both components" << std::endl;
+```
+
+The message will only be displayed if:
+1. The component's `debugged` trait is set to `true`
+2. The corresponding debug level is enabled in `Traits<Debug>`
+
+### Redirecting Debug Output to Files
+
+To redirect debug output to a file instead of the console:
+
+```cpp
+// In your initialization code:
+Debug::set_log_file("your_log_file.log");
+
+// To close the log file:
+Debug::close_log_file();
+```
+
+This flexibility allows you to:
+- Enable detailed debugging only for components you're testing
+- Silence debug output from stable components
+- Focus debug output on specific message types (errors only, for example)
+- Save debug output to files for later analysis
+
 ## Unit Tests
 
 Unit tests verify the functionality of individual components in isolation.
 
-### 1. Buffer Test (`components/buffer_test.cpp`)
+### 1. Buffer Test (`unit_tests/buffer_test.cpp`)
 
 Tests the functionality of the `Buffer` template class, which provides a generic buffer for storing data.
 
@@ -97,7 +192,7 @@ Tests the functionality of the `Buffer` template class, which provides a generic
 - Clearing the buffer and verifying size
 - Verifying data is zeroed after clear
 
-### 2. Ethernet Test (`components/ethernet_test.cpp`)
+### 2. Ethernet Test (`unit_tests/ethernet_test.cpp`)
 
 Tests the functionality of the `Ethernet` class, which handles Ethernet frame operations.
 
@@ -109,7 +204,7 @@ Tests the functionality of the `Ethernet` class, which handles Ethernet frame op
 - Creating and validating frame fields
 - Setting and validating payload data
 
-### 3. List Test (`components/list_test.cpp`)
+### 3. List Test (`unit_tests/list_test.cpp`)
 
 Tests the functionality of the `List` and `Ordered_List` classes for managing collections of objects.
 
@@ -132,7 +227,7 @@ Tests the functionality of the `List` and `Ordered_List` classes for managing co
   - Integrity of list after concurrent operations
   - Retrieval of all inserted items
 
-### 4. Message Test (`components/message_test.cpp`)
+### 4. Message Test (`unit_tests/message_test.cpp`)
 
 Tests the functionality of the `Message` template class, which represents a message with a maximum size.
 
@@ -145,7 +240,29 @@ Tests the functionality of the `Message` template class, which represents a mess
 - Message with size larger than MAX_SIZE (should be capped)
 - Self-assignment
 
-### 5. SocketEngine Test (`components/socketEngine_test.cpp`)
+### 5. Observer Pattern Test (`unit_tests/observer_pattern_test.cpp`)
+
+Tests the functionality of the Observer pattern classes, which implement the Observer design pattern in both conditional and concurrent variants.
+
+**Test Cases:**
+- **Conditional Observer Pattern:**
+  - Observer registration (attach) to specific conditions
+  - Observer detachment (detach) from observed entities
+  - Notification filtering based on conditions
+  - Multiple observers for the same condition
+  - Behavior when notifying with no observers for a condition
+  - Data retrieval after notification
+
+- **Concurrent Observer Pattern:**
+  - Thread-safe observer registration and notification
+  - Concurrent data production and consumption
+  - Multiple producer threads sending notifications
+  - Multiple consumer threads receiving notifications
+  - Blocking behavior when waiting for notifications
+  - Reference counting for shared data
+  - Observer detachment while concurrent operations are running
+
+### 6. SocketEngine Test (`unit_tests/socketEngine_test.cpp`)
 
 Tests the functionality of the `SocketEngine` class, which manages raw socket communication.
 
@@ -167,7 +284,22 @@ Tests the functionality of the `SocketEngine` class, which manages raw socket co
   - Engine stopping
   - Running status after stop
 
-### 6. NIC Test (`components/nic_test.cpp`)
+### 7. SharedMemoryEngine Test (`unit_tests/sharedMemoryEngine_test.cpp`)
+
+Tests the functionality of the `SharedMemoryEngine` class, which manages communication through shared memory.
+
+**Test Cases:**
+- Memory segment creation and attachment
+- Proper synchronization between processes
+- Message sending and receiving through shared memory
+- Error handling for invalid operations
+- Memory cleanup on engine shutdown
+
+## Integration Tests
+
+Integration tests verify the interactions between multiple components.
+
+### 1. NIC Test (`integration_tests/nic_test.cpp`)
 
 Tests the functionality of the `NIC` template class, which provides a network interface controller implementation.
 
@@ -188,7 +320,7 @@ Tests the functionality of the `NIC` template class, which provides a network in
   - Error condition handling
   - Drop counter increment on failed operations
 
-### 7. Protocol Test (`components/protocol_test.cpp`)
+### 2. Protocol Test (`integration_tests/protocol_test.cpp`)
 
 Tests the functionality of the `Protocol` template class, which provides a protocol layer on top of the network interface.
 
@@ -217,7 +349,7 @@ Tests the functionality of the `Protocol` template class, which provides a proto
 - **Broadcast Address:**
   - Verification of the broadcast address constants
 
-### 8. Initializer Test (`components/initializer_test.cpp`)
+### 3. Initializer Test (`integration_tests/initializer_test.cpp`)
 
 Tests the functionality of the `Initializer` class, which is responsible for creating and initializing vehicle instances with their network components.
 
@@ -249,7 +381,7 @@ Tests the functionality of the `Initializer` class, which is responsible for cre
   - Verifying send operations complete successfully
   - Testing proper resource management and cleanup
 
-### 9. Vehicle Test (`components/vehicle_test.cpp`)
+### 4. Vehicle Test (`integration_tests/vehicle_test.cpp`)
 
 Tests the functionality of the `Vehicle` class, which manages vehicle state, components, and communication.
 
@@ -295,35 +427,6 @@ Tests the functionality of the `Vehicle` class, which manages vehicle state, com
 - **Resource Management:**
   - Verifying vehicle destructor properly cleans up components
   - Testing proper destruction order to avoid memory issues
-
-**Note on Test Implementation:**
-The test uses a specialized `TestComponent` class that overrides the `signal_stop()` method instead of the legacy `stop()` method to align with the robust two-phase shutdown approach implemented in the system.
-
-### 10. Observer Pattern Test (`components/observer_pattern_test.cpp`)
-
-Tests the functionality of the Observer pattern classes, which implement the Observer design pattern in both conditional and concurrent variants.
-
-**Test Cases:**
-- **Conditional Observer Pattern:**
-  - Observer registration (attach) to specific conditions
-  - Observer detachment (detach) from observed entities
-  - Notification filtering based on conditions
-  - Multiple observers for the same condition
-  - Behavior when notifying with no observers for a condition
-  - Data retrieval after notification
-
-- **Concurrent Observer Pattern:**
-  - Thread-safe observer registration and notification
-  - Concurrent data production and consumption
-  - Multiple producer threads sending notifications
-  - Multiple consumer threads receiving notifications
-  - Blocking behavior when waiting for notifications
-  - Reference counting for shared data
-  - Observer detachment while concurrent operations are running
-
-## Integration Tests
-
-Integration tests verify the interactions between multiple components.
 
 ## System Tests
 
