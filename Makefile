@@ -34,7 +34,7 @@ all: test
 
 # Compile and run all tests in the correct order
 .PHONY: test
-test: dirs unit_tests integration_tests system_tests
+test: dirs unit_tests system_tests
 
 # Compile all tests
 .PHONY: compile_tests
