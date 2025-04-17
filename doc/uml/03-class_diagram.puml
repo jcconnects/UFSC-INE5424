@@ -175,7 +175,6 @@ class "Concurrent_Observer<D, C>" as ConcurrentObserver {
   + ~Concurrent_Observer() = default
   + update(c: C, d: D*): void
   + updated(): D*
-  + notify(c: C, d: D*): void
 }
 
 note bottom of ConcurrentObserver
@@ -191,6 +190,7 @@ class "Concurrent_Observed<D, C>" as ConcurrentObserved {
   + ~Concurrent_Observed()
   + attach(o: Concurrent_Observer<D, C>*, c: C): void
   + detach(o: Concurrent_Observer<D, C>*, c: C): void
+  + notify(c: C, d: D*): void
 }
 
 note bottom of ConcurrentObserved

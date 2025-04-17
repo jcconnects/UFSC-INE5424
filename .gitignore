@@ -52,7 +52,8 @@ install_manifest.txt
 .DS_Store
 Thumbs.db
 
-
-# 
+# Ignore test logs files
 *.csv
 *.log
+tests/logs/*
+termination_logs/*

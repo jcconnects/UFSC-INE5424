@@ -1,7 +1,0 @@
-[Vehicle 15] lifetime ended. Stopping vehicle.
-Vehicle::stop() called!
-[Vehicle 15] Signaling components to stop.
-[Vehicle 15] Stopping components...
-Vehicle::stop_components() called!
-[Vehicle 15] Stopping component Receiver
-Component::stop() called for component Receiver

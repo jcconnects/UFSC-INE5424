@@ -7,24 +7,28 @@ skinparam linetype ortho
 
 ' Process Components
 package "Process" {
-  component [Comm] as comm1
+  package "Component" {
+    component [Comm] as comm1
+  }
   component [Prot.] as prot1
   component [NIC] as nic1
   component [SocketEngine] as SocketEngine1
   
   comm1 --> prot1
   prot1 --> nic1
-  nic1 --> SocketEngine1
+  nic1 -|> SocketEngine1
 }
 
 ' Second Process with Threads
 package "Process'" {
-  component [Comm] as comm2
-  component [Prot.] as prot2
-  component [NIC] as nic2
-  component [SocketEngine] as SocketEngine2
-  
-  nic2 <-- SocketEngine2
+  package "Component'" {
+    component [Comm] as comm2
+  }
+    component [Prot.] as prot2
+    component [NIC] as nic2
+    component [SocketEngine] as SocketEngine2
+    
+  nic2 -|> SocketEngine2
   prot2 <-- nic2 
   comm2 <-- prot2 
 }
@@ -34,7 +38,7 @@ package "Kernel" {
   component [Socket] as socket
   
   SocketEngine1 --> socket
-  SocketEngine2 <-- socket
+  nic2 <-- socket
 }
 
 @enduml 
