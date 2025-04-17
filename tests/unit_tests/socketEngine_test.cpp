@@ -53,6 +53,8 @@ int main() {
     TEST_LOG("Creating two TestSocketEngine instances");
     TestSocketEngine engineA;
     TestSocketEngine engineB;
+    engineA.start();
+    engineB.start();
     
     // Test 1: Initialization
     TEST_ASSERT(engineA.getSocketFd() > 0, "EngineA socket file descriptor should be valid");

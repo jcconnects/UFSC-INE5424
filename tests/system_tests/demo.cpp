@@ -17,24 +17,14 @@
 #include "components/receiver_component.h"
 #include "test_utils.h"
 
-// Helper function to get the test interface name
-std::string get_test_interface() {
-    std::string interface_name = "test-dummy0"; // Default
-    std::ifstream iface_file("tests/logs/current_test_iface");
-    if (iface_file) {
-        std::getline(iface_file, interface_name);
-        iface_file.close();
-    }
-    return interface_name;
-}
 
-void run_vehicle(Vehicle* v, std::string log_prefix) {
+void run_vehicle(Vehicle* v) {
     db<Vehicle>(TRC) << "run_vehicle() called!\n";
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist_lifetime(5, 10);
-    int lifetime = dist_lifetime(gen); // Reduced lifetime range from 10-50 seconds
+    std::uniform_int_distribution<> dist_lifetime(60, 90); // Lifetime from 60 to 90 seconds
+    int lifetime = dist_lifetime(gen);
     unsigned int vehicle_id = v->id(); // Store ID before deletion
 
     // Create components based on vehicle ID
@@ -78,7 +68,7 @@ int main(int argc, char* argv[]) {
     
     TEST_LOG("Application started!");
 
-    unsigned int n_vehicles = 1000;
+    unsigned int n_vehicles = 200;
 
     // Create logs directory if it doesn't exist
     mkdir("./logs", 0777);
@@ -99,11 +89,12 @@ int main(int argc, char* argv[]) {
             Debug::set_log_file(log_file);
 
             std::string log_message = "[Child " + std::to_string(getpid()) + "] creating vehicle " + std::to_string(id);
+            
             // Child processes don't share logger, so we still need to use cout here
             std::cout << log_message << std::endl;
             
             Vehicle* v = Initializer::create_vehicle(id);
-            run_vehicle(v, "Vehicle_" + std::to_string(id));
+            run_vehicle(v);
             
             Debug::close_log_file();
             

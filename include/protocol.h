@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <cstring>
+#include <atomic>
 
 #include "nic.h"
 #include "traits.h"
@@ -150,24 +151,29 @@ bool Protocol<NIC>::Address::operator==(const Address& a) const {
 
 /********* Protocol Implementation *********/
 template <typename NIC>
-Protocol<NIC>::Protocol(NIC* nic) : NIC::Observer(PROTO),  _nic(nic) {
+Protocol<NIC>::Protocol(NIC* nic) : NIC::Observer(PROTO), _nic(nic) {
     db<Protocol>(TRC) << "Protocol<NIC>::Protocol() called!\n";
-    _nic->attach(this, PROTO);
+    
+    if (!nic) {
+        throw std::invalid_argument("NIC pointer cannot be null");
+    }
 
+    _nic->attach(this, PROTO);
     db<Protocol>(INF) << "[Protocol] attached to NIC\n";
 }
 
 template <typename NIC>
 Protocol<NIC>::~Protocol() {
     db<Protocol>(TRC) << "Protocol<NIC>::~Protocol() called!\n";
+    
     _nic->detach(this, PROTO);
-
     db<Protocol>(INF) << "[Protocol] detached from NIC\n";
 }
 
 template <typename NIC>
 int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int size) {
     db<Protocol>(TRC) << "Protocol<NIC>::send() called!\n";
+    
 
     db<Protocol>(INF) << "[Protocol] sending from port " << from.port() << " to port " << to.port() << "\n";
     
@@ -175,7 +181,10 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     unsigned int frame_size = sizeof(Header) + Ethernet::HEADER_SIZE + size;
 
     Buffer* buf = _nic->alloc(to.paddr(), PROTO, frame_size);
-    if (!buf) return 0;
+    if (!buf) {
+        db<Protocol>(ERR) << "[Protocol] Failed to allocate buffer for send\n";
+        return 0;
+    }
     
     // Set up Packet
     Packet* packet = reinterpret_cast<Packet*>(buf->data()->payload);
@@ -186,9 +195,10 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     // Send the packet
     int result = _nic->send(buf);
     db<Protocol>(INF) << "[Protocol] NIC::send() returned value " << std::to_string(result) << "\n";
-    
-   _nic->free(buf);
-    
+
+    // Releasing buffer
+    _nic->free(buf);
+
     return size;
 }
 
@@ -245,7 +255,7 @@ void Protocol<NIC>::detach(Observer* obs, Address address) {
 template <typename NIC>
 void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     db<Protocol>(TRC) << "Protocol<NIC>::update() called!\n";
-
+    
     // Extracting packet from buffer
     Packet* packet = reinterpret_cast<Packet*>(buf->data()->payload);
     

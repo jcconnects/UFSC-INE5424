@@ -276,6 +276,11 @@ Tests the functionality of the `Vehicle` class, which manages vehicle state, com
   - Ensuring component lifecycle follows vehicle lifecycle
   - Testing components across multiple vehicles
 
+- **Two-Phase Shutdown:**
+  - Testing the `signal_stop()` method on components
+  - Verifying components properly respond to shutdown signals
+  - Ensuring correct shutdown sequence is followed
+
 - **Communication:**
   - Testing send functionality with valid parameters
   - Verifying successful message transmission
@@ -290,6 +295,9 @@ Tests the functionality of the `Vehicle` class, which manages vehicle state, com
 - **Resource Management:**
   - Verifying vehicle destructor properly cleans up components
   - Testing proper destruction order to avoid memory issues
+
+**Note on Test Implementation:**
+The test uses a specialized `TestComponent` class that overrides the `signal_stop()` method instead of the legacy `stop()` method to align with the robust two-phase shutdown approach implemented in the system.
 
 ### 10. Observer Pattern Test (`components/observer_pattern_test.cpp`)
 

@@ -5,6 +5,7 @@
 #include <cstring> // For memcpy
 #include <stdexcept>
 #include <unistd.h> // For usleep
+#include <atomic>
 
 #include "protocol.h"
 #include "message.h"
@@ -33,6 +34,12 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         
         // Method to close the communicator and unblock any pending receive calls
         void close();
+
+        
+        // Check if communicator is closed
+        bool is_closed() const { 
+            return _closed.load(std::memory_order_acquire); 
+        }
         
         // Deleted copy constructor and assignment operator to prevent copying
         Communicator(const Communicator&) = delete;
@@ -47,12 +54,12 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
     private:
         Channel* _channel;
         Address _address;
-        bool _closed;
+        std::atomic<bool> _closed;
 };
 
-// Template implementations
+/*************** Communicator Implementation *****************/
 template <typename Channel>
-Communicator<Channel>::Communicator(Channel* channel, Address address) : Observer(address.port()), _channel(channel), _address(address) {
+Communicator<Channel>::Communicator(Channel* channel, Address address) : Observer(address.port()), _channel(channel), _address(address), _closed(false) {
     db<Communicator>(TRC) << "Communicator<Channel>::Communicator() called!\n";
     if (!channel) {
         throw std::invalid_argument("Channel pointer cannot be null");
@@ -65,37 +72,43 @@ Communicator<Channel>::Communicator(Channel* channel, Address address) : Observe
 template <typename Channel>
 Communicator<Channel>::~Communicator() {
     db<Communicator>(TRC) << "Communicator<Channel>::~Communicator() called!\n";
-    if (_channel) {
-        _channel->detach(this, _address);
-        db<Communicator>(INF) << "[Communicator] detached from Channel\n";
-    }
     
-    db<Communicator>(INF) << "[Communicator] closed!\n";
+    // Detach from channel
+    _channel->detach(this, _address);
+    db<Communicator>(INF) << "[Communicator] detached from Channel\n";
+    
+    db<Communicator>(INF) << "[Communicator] destroyed!\n";
 }
 
 template <typename Channel>
 bool Communicator<Channel>::send(const Message<MAX_MESSAGE_SIZE>* message) {
     db<Communicator>(TRC) << "Communicator<Channel>::send() called!\n";
+    
+    // Check if communicator is closed before attempting to send
+    if (is_closed()) {
+        db<Communicator>(WRN) << "[Communicator] send() called while communicator is closed! Returning False\n";
+        return false;
+    }
+    
     if (!message) {
         std::cerr << "Error: Null message pointer in send" << std::endl;
         return false;
     }
-
+    
     try {
         int result = _channel->send(_address, Address::BROADCAST, message->data(), message->size());
         db<Communicator>(INF) << "[Communicator] Channel::send() return value " << std::to_string(result) << "\n";
-
+        
         if (result <= 0) {
-            std::cerr << "Error: Failed to send message" << std::endl;
+            db<Communicator>(ERR) << "[Communicator] Failed to send message\n";
             return false;
         }
-
-        return true;
-
     } catch (const std::exception& e) {
-        std::cerr << "Error sending message: " << e.what() << std::endl;
+        db<Communicator>(ERR) << "[Communicator] Error sending message: " << e.what() << "\n";
         return false;
     }
+
+    return true;
 }
 
 template <typename Channel>
@@ -103,32 +116,37 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
     db<Communicator>(TRC) << "Communicator<Channel>::receive() called!\n";
     
     // If communicator is closed, doesn't even try to receive
-    if (_closed) {
-        db<Communicator>(INF) << "[Communicator] closed! Returning false\n";
+    if (is_closed()) {
+        db<Communicator>(INF) << "[Communicator] receive() called while communicator is closed! Returning false\n";
         return false;
     }
 
     if (!message) {
-        std::cerr << "Error: Null message pointer in receive" << std::endl;
+        db<Communicator>(ERR) << "[Communicator] Null message pointer in receive\n";
         return false;
     }
     
-    Buffer* buf = Observer::updated();
+    Buffer* buf = Observer::updated(); // Blocks until a message is received
     db<Communicator>(INF) << "[Communicator] buffer retrieved\n";
 
-    // Check for nullptr buffer which indicates a close signal
     if (!buf) {
-        db<Communicator>(INF) << "[Communicator] received close signal (nullptr buffer)! Returning false\n";
+        db<Communicator>(ERR) << "[Communicator] buffer pointer is null\n";
         return false;
     }
 
+    // If buffer size == 0
     if (buf->size() == 0) {
-        db<Communicator>(INF) << "[Communicator] empty buffer! Returning false\n";
+        // Check weather the communicator was closed (only for log purposes)
+        if (is_closed()) {
+            db<Communicator>(INF) << "[Communicator] empty buffer, but communicator was closed\n";
+        } else {
+            db<Communicator>(INF) << "[Communicator] empty buffer! Returning false\n";
+        }
+        
         return false;
     }
 
     try {
-        
         Address from;
         std::uint8_t temp_data[MAX_MESSAGE_SIZE];
 
@@ -142,9 +160,9 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
         }
 
         return false;
-
+    
     } catch (const std::exception& e) {
-        std::cerr << "Error receiving message: " << e.what() << std::endl;
+        db<Communicator>(ERR) << "[Communicator] Error receiving message: " << e.what() << "\n";
         return false;
     }
 }
@@ -153,20 +171,12 @@ template <typename Channel>
 void Communicator<Channel>::close() {
     db<Communicator>(TRC) << "Communicator<Channel>::close() called!\n";
     
+    _closed.store(true, std::memory_order_release);
+
     try {
-        _closed = true; // Set closed flag first
-        
-        // Force release of any threads waiting on receive
-        db<Communicator>(INF) << "[Communicator] Unblocking any threads waiting on receive()\n";
-        
-        // Call update multiple times to ensure it propagates
-        // Pass nullptr instead of a potentially dangling local buffer
-        for (int i = 0; i < 3; i++) {
-            update(nullptr, _address.port(), nullptr); // Signal with nullptr to indicate close
-            usleep(1000); // Short sleep to allow thread scheduling
-        }
-        
-        db<Communicator>(INF) << "[Communicator] Successfully closed\n";
+        // Signal any threads waiting on receive to wake up
+        Buffer buf = Buffer();
+        update(nullptr, _address.port(), &buf);
     } catch (const std::exception& e) {
         std::cerr << "Error during communicator close: " << e.what() << std::endl;
     }

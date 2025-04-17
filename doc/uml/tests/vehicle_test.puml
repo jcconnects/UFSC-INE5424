@@ -89,12 +89,15 @@ Test -> TC3: running()
 Test <-- TC3: true
 
 Test -> Vehicle1: stop_components()
-Vehicle1 -> TC1: stop()
-TC1 -> TC1: stop_called = true\n_running = false
-Vehicle1 -> TC2: stop()
-TC2 -> TC2: stop_called = true\n_running = false
-Vehicle1 -> TC3: stop()
-TC3 -> TC3: stop_called = true\n_running = false
+Vehicle1 -> TC1: signal_stop()
+TC1 -> TC1: stop_called = true
+Vehicle1 -> TC2: signal_stop()
+TC2 -> TC2: stop_called = true
+Vehicle1 -> TC3: signal_stop()
+TC3 -> TC3: stop_called = true
+Vehicle1 -> TC1: join()
+Vehicle1 -> TC2: join()
+Vehicle1 -> TC3: join()
 
 Test -> TC1: was_stop_called()
 Test <-- TC1: true

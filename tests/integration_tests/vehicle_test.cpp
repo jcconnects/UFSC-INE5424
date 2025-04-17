@@ -29,7 +29,7 @@ public:
     }
     
     void stop() override {
-        stop_called = true;
+        stop_called = true;  // Track signal_stop instead of stop
         _running = false;
     }
     

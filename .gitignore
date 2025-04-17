@@ -53,5 +53,7 @@ install_manifest.txt
 Thumbs.db
 
 # Ignore test logs files
+*.csv
+*.log
 tests/logs/*
 termination_logs/*
