@@ -11,19 +11,33 @@
 
 // Initializer class responsible for creating and managing a single vehicle process
 class Initializer {
+
     public:
         typedef NIC<SocketEngine> VehicleNIC;
         typedef Protocol<VehicleNIC> CProtocol;
-
+    
         Initializer() = default;
 
         ~Initializer() = default;
 
         // Start the vehicle process
         static Vehicle* create_vehicle(unsigned int id);
+    
+        static VehicleNIC* create_nic();
+
+        static CProtocol* create_protocol(VehicleNIC* nic);
 };
 
 /********** Initializer Implementation ***********/
+
+Initializer::VehicleNIC* Initializer::create_nic() {
+    return new VehicleNIC();
+}
+
+Initializer::CProtocol* Initializer::create_protocol(VehicleNIC* nic) {
+    return new CProtocol(nic);
+}
+
 Vehicle* Initializer::create_vehicle(unsigned int id) {
     // Setting Vehicle virtual MAC Address
     Ethernet::Address addr;
