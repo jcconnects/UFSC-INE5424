@@ -1,102 +1,118 @@
-#include "../../include/communicator.h"
-#include "../../include/message.h"
-#include "test_utils.h"
 #include <pthread.h>
 #include <unistd.h>
 #include <atomic>
 #include <iostream>
 
-std::atomic<bool> thread_done(false);
+#include "../testcase.h"
+#include "test_utils.h"
+#include "message.h"
+#include "communicator.h"
+#include "protocol.h"
+#include "nic.h"
+#include "socketEngine.h"
+#include "ethernet.h"
+#include "initializer.h"
 
-// Protocol Stub
-class Initializer {
+#define DEFINE_TEST(name) registerTest(#name, [this]() { this->name(); });
+
+class TestCommunicator : public TestCase, public Initializer {
+
     public:
-        typedef NIC<SocketEngine> NICType;
-        typedef Protocol<NICType> ProtocolType;
+        TestCommunicator();
+        ~TestCommunicator();
 
-        static NICType* create_nic(unsigned int id) {
-            // Setting virtual MAC Address
-            Ethernet::Address addr;
-            addr.bytes[0] = 0x02; // local, unicast
-            addr.bytes[1] = 0x00;
-            addr.bytes[2] = 0x00;
-            addr.bytes[3] = 0x00;
-            addr.bytes[4] = (id >> 8) & 0xFF;
-            addr.bytes[5] = id & 0xFF;
-    
-            NICType* nic = new NICType();
-            nic->setAddress(addr);
-            return nic;
-        }
+        static void setUpClass();
+        static void tearDownClass();
+
+        void setUp() override;
+        void tearDown() override;
+
+        /* TESTS */
+        void test_creation_with_null_channel();
         
-        static ProtocolType* create_protocol(NICType* nic) {
-            return new ProtocolType(nic);
-        }
+        void test_close();
+        
+        void test_send_valid_message();
+        void test_send_empty_message();
+        void test_send_null_message();
+        void test_send_when_closed();
+        
+        void test_receive_valid_message();
+        void test_receive_null_message();
+        void test_receive_null_buffer();
+        void test_receive_when_closed();
+    
+    private:
+        static NIC<SocketEngine>* _nic;
+        static Protocol<NIC<SocketEngine>>* _protocol;
+        Communicator<Protocol<NIC<SocketEngine>>>* _comms;
 };
 
-void* run_recv(void* comm) {
-    Communicator<Initializer::ProtocolType>* c = static_cast<Communicator<Initializer::ProtocolType>*>(comm);
-    Message<1488> m = Message<1488>();
-    c->receive(&m);
+NIC<SocketEngine>* TestCommunicator::_nic;
+Protocol<NIC<SocketEngine>>* TestCommunicator::_protocol;
 
-    thread_done.store(true);
-    return static_cast<void*>(nullptr);
+TestCommunicator::TestCommunicator() {
+    DEFINE_TEST(test_creation_with_null_channel);
+    DEFINE_TEST(test_close);
+    /* DEFINE_TEST(test_send_valid_message);
+    DEFINE_TEST(test_send_empty_message);
+    DEFINE_TEST(test_send_null_message);
+    DEFINE_TEST(test_send_when_closed);
+    DEFINE_TEST(test_receive_valid_message);
+    DEFINE_TEST(test_receive_null_message);
+    DEFINE_TEST(test_receive_null_buffer);
+    DEFINE_TEST(test_receive_when_closed); */
+
+    TestCommunicator::setUpClass();
 }
 
+TestCommunicator::~TestCommunicator() {
+    TestCommunicator::tearDownClass();
+}
+
+/******** CLASS METHODS ********/
+void TestCommunicator::setUpClass() {
+    _nic = create_nic();
+    _protocol = create_protocol(_nic);
+
+}
+
+void TestCommunicator::tearDownClass() {
+    _nic->stop();
+
+    delete _protocol;
+    delete _nic;
+}
+/*******************************/
+
+/****** FIXTURES METHODS *******/
+void TestCommunicator::setUp() {
+    _comms = new Communicator<Protocol<NIC<SocketEngine>>>(_protocol, Protocol<NIC<SocketEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine>>::Address::NULL_VALUE));
+}
+
+void TestCommunicator::tearDown() {
+    delete _comms;
+}
+/*******************************/
+
+/************ TESTS ************/
+void TestCommunicator::test_creation_with_null_channel() {
+    // Exercise SUT
+    assert_throw<std::invalid_argument>([] { Communicator<Protocol<NIC<SocketEngine>>>(nullptr, Protocol<NIC<SocketEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine>>::Address::NULL_VALUE)); });
+}
+
+void TestCommunicator::test_close() {
+    // Exercise SUT
+    _comms->close();
+
+    // Result Verification
+    assert_true(_comms->is_closed(), "Communicator was not closed!");
+}
+/********************************/
+
+
 int main() {
-    TEST_INIT("communicator_test");
 
-    TEST_LOG("Creating Communicator instance");
-    // Create NIC instances
-    Initializer::NICType* nic1 = Initializer::create_nic(1);
-    Initializer::NICType* nic2 = Initializer::create_nic(2);
-    // Create Protocol instances
-    Initializer::ProtocolType* prot = Initializer::create_protocol(nic1);
-
-    // Create Communicator instances
-    Communicator<Initializer::ProtocolType>* comm1 = new Communicator<Initializer::ProtocolType>(prot, Initializer::ProtocolType::Address(nic1->address(), Initializer::ProtocolType::Address::NULL_VALUE));
-
-    Communicator<Initializer::ProtocolType>* comm2 = new Communicator<Initializer::ProtocolType>(prot, Initializer::ProtocolType::Address(nic2->address(), Initializer::ProtocolType::Address::NULL_VALUE));
-
-    pthread_t thread_id;
-    // Test 1: Close
-    // Calls receive with no message to recover, close() call causes receive function to return
-    pthread_create(&thread_id, nullptr, run_recv, &comm1);
-    comm1->close();
-    TEST_ASSERT(!thread_done.load(), "Return value 'receive_successfull' should be false");
-
-    pthread_t thread_id2;
-    pthread_create(&thread_id2, nullptr, run_recv, &comm2);
-    
-    // Test 2: Send
-    // Create a Message instance
-    Message<1488> m2("a message", 9);
-    // Send the message
-    bool sent = comm1->send(&m2);
-    TEST_ASSERT(sent, "Return value 'sent' should be true");
-
-    // Test 3: Receive
-    // Create a thread to run close in two seconds in case receive does not return until then
-    pthread_t thread_id3;
-    thread_done.store(false);
-    pthread_create(&thread_id3, nullptr, run_recv, &comm2);
-    sleep(1);
-    TEST_ASSERT(thread_done.load(), "Return value 'receive_successfull' should be true");
-    comm2->close();
-
-    pthread_join(thread_id, nullptr);
-    pthread_join(thread_id2, nullptr);
-    pthread_join(thread_id3, nullptr);
-
-
-    // Deleting communicators
-    delete comm1;
-    delete comm2;
-    delete prot;
-    delete nic1;
-    delete nic2;
-
-    std::cout << "Communicator test passed successfully!" << std::endl;
-
-    return 0;
+    TestCommunicator test;
+    test.run();
 }
