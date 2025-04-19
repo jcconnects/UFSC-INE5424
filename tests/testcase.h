@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <functional>
 #include <string>
@@ -53,7 +54,9 @@ template<typename T, typename U>
 void TestCase::assert_equal(const T& expected, const U& actual, const std::string& msg) {
     if (!(expected == actual)) {
         
-        std::string full_msg = "Assertion failed: expected [" << expected << "] but got [" << actual << "]";
+        std::ostringstream oss;
+        oss << "Assertion failed: expected [" << expected << "] but got [" << actual << "]";
+        std::string full_msg = oss.str();
         if (!msg.empty()) full_msg += " - " + msg;
         throw std::runtime_error(full_msg);
     }
