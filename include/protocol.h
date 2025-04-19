@@ -199,7 +199,7 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     // Releasing buffer
     _nic->free(buf);
 
-    return size;
+    return result;
 }
 
 template <typename NIC>
