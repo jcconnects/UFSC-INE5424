@@ -91,7 +91,7 @@ bool Communicator<Channel>::send(const Message<MAX_MESSAGE_SIZE>* message) {
     }
     
     if (!message) {
-        std::cerr << "Error: Null message pointer in send" << std::endl;
+        db<Communicator>(ERR) << "[Communicator] Null message pointer in send\n";
         return false;
     }
     
@@ -138,7 +138,8 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message) {
     if (buf->size() == 0) {
         // Check weather the communicator was closed (only for log purposes)
         if (is_closed()) {
-            db<Communicator>(INF) << "[Communicator] empty buffer, but communicator was closed\n";
+            delete buf;
+            db<Communicator>(INF) << "[Communicator] empty buffer, but communicator was closed. Deleting buffer.\n";
         } else {
             db<Communicator>(INF) << "[Communicator] empty buffer! Returning false\n";
         }
@@ -175,8 +176,8 @@ void Communicator<Channel>::close() {
 
     try {
         // Signal any threads waiting on receive to wake up
-        Buffer buf = Buffer();
-        update(nullptr, _address.port(), &buf);
+        Buffer* buf = new Buffer();
+        update(nullptr, _address.port(), buf);
     } catch (const std::exception& e) {
         std::cerr << "Error during communicator close: " << e.what() << std::endl;
     }
