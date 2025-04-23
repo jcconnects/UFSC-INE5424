@@ -13,6 +13,17 @@
 #include "../../include/socketEngine.h"
 #include "test_utils.h"
 
+// Include new component headers
+#include "../../include/components/ecu_component.h"
+#include "../../include/components/camera_component.h"
+#include "../../include/components/lidar_component.h"
+#include "../../include/components/ins_component.h"
+#include "../../include/components/battery_component.h"
+
+// Define the port constants used by components (as they are marked extern in headers)
+const unsigned short ECU1_PORT = 0;
+const unsigned short ECU2_PORT = 1;
+
 int main() {
     TEST_INIT("initializer_test");
     
@@ -144,8 +155,58 @@ int main() {
     vehicle1->stop();
     vehicle2->stop();
     
-    // Clean up
-    TEST_LOG("Cleaning up vehicles");
+    // Test 9: Test Component Creation
+    TEST_LOG("--- Starting Test 9: Component Creation ---");
+    Vehicle* vehicle_comp_test = Initializer::create_vehicle(99); // Use a unique ID
+    TEST_ASSERT(vehicle_comp_test != nullptr, "Test vehicle for components should not be null");
+    TEST_ASSERT(vehicle_comp_test->components().empty(), "New vehicle should have 0 components initially");
+
+    // Test creating ECU1
+    TEST_LOG("Creating ECUComponent (ECU1)");
+    Component* ecu1 = Initializer::create_component<ECUComponent>(vehicle_comp_test, "TestECU1");
+    TEST_ASSERT(ecu1 != nullptr, "ECU1 component should not be null");
+    TEST_ASSERT(vehicle_comp_test->components().size() == 1, "Vehicle should have 1 component after ECU1 creation");
+    TEST_ASSERT(vehicle_comp_test->components()[0]->name() == "TestECU1", "First component should be named TestECU1");
+
+
+    // Test creating ECU2
+    TEST_LOG("Creating ECUComponent (ECU2)");
+    Component* ecu2 = Initializer::create_component<ECUComponent>(vehicle_comp_test, "TestECU2");
+    TEST_ASSERT(ecu2 != nullptr, "ECU2 component should not be null");
+    TEST_ASSERT(vehicle_comp_test->components().size() == 2, "Vehicle should have 2 components after ECU2 creation");
+    // Optionally check name of second component if needed
+    TEST_ASSERT(vehicle_comp_test->components()[1]->name() == "TestECU2", "Second component should be named TestECU2");
+
+    // Test creating CameraComponent
+    TEST_LOG("Creating CameraComponent");
+    Component* cam = Initializer::create_component<CameraComponent>(vehicle_comp_test, "TestCamera");
+    TEST_ASSERT(cam != nullptr, "Camera component should not be null");
+    TEST_ASSERT(vehicle_comp_test->components().size() == 3, "Vehicle should have 3 components after Camera creation");
+
+    // Test creating LidarComponent
+    TEST_LOG("Creating LidarComponent");
+    Component* lidar = Initializer::create_component<LidarComponent>(vehicle_comp_test, "TestLidar");
+    TEST_ASSERT(lidar != nullptr, "Lidar component should not be null");
+    TEST_ASSERT(vehicle_comp_test->components().size() == 4, "Vehicle should have 4 components after Lidar creation");
+
+    // Test creating INSComponent
+    TEST_LOG("Creating INSComponent");
+    Component* ins = Initializer::create_component<INSComponent>(vehicle_comp_test, "TestINS");
+    TEST_ASSERT(ins != nullptr, "INS component should not be null");
+    TEST_ASSERT(vehicle_comp_test->components().size() == 5, "Vehicle should have 5 components after INS creation");
+
+    // Test creating BatteryComponent
+    TEST_LOG("Creating BatteryComponent");
+    Component* battery = Initializer::create_component<BatteryComponent>(vehicle_comp_test, "TestBattery");
+    TEST_ASSERT(battery != nullptr, "Battery component should not be null");
+    TEST_ASSERT(vehicle_comp_test->components().size() == 6, "Vehicle should have 6 components after Battery creation");
+
+    TEST_LOG("Component creation tests finished. Cleaning up component test vehicle.");
+    delete vehicle_comp_test; // This should also delete all components created
+
+
+    // Clean up remaining vehicles from previous tests
+    TEST_LOG("Cleaning up vehicles from earlier tests");
     delete vehicle1;
     delete vehicle2;
     

@@ -39,7 +39,7 @@ class Vehicle {
         void start();
         void stop();
         
-        void add_component(Component* component);
+        void add_component(std::unique_ptr<Component> component);
         void start_components();
         void stop_components();
 
@@ -61,7 +61,7 @@ class Vehicle {
         unsigned int _next_component_id;
 
         std::atomic<bool> _running;
-        std::vector<Component*> _components;
+        std::vector<std::unique_ptr<Component>> _components;
 };
 
 /******** Vehicle Implementation *********/
@@ -86,10 +86,6 @@ Vehicle::~Vehicle() {
     
     stop_components();
 
-    for (auto component : _components) {
-        delete component;
-    }
-    
     delete _protocol;
     delete _nic;
 }
@@ -104,7 +100,7 @@ const bool Vehicle::running() const {
 
 void Vehicle::start() {
     db<Vehicle>(TRC) << "Vehicle::start() called!\n";
-    std::cout << "[Vehicle " << _id << "] starting." << "s\n";
+    std::cout << "[Vehicle " << _id << "] starting." << "\n";
     _running = true;
     start_components();
 }
@@ -112,29 +108,36 @@ void Vehicle::start() {
 void Vehicle::stop() {
     db<Vehicle>(TRC) << "Vehicle::stop() called!\n";
     
-    // Stopping NIC
-    _nic->stop();
-    
     stop_components();
 
+    if (_nic) {
+        _nic->stop();
+    }
+    
     _running = false;
 }
 
-void Vehicle::add_component(Component* component) {
-    _components.push_back(component);
+void Vehicle::add_component(std::unique_ptr<Component> component) {
+    if(component) {
+        _components.push_back(std::move(component));
+    }
 }
 
 void Vehicle::start_components() {
     db<Vehicle>(TRC) << "Vehicle::start_components() called!\n";
-    for (auto component : _components) {
-        component->start();
+    for (const auto& component_ptr : _components) {
+        if (component_ptr) {
+            component_ptr->start();
+        }
     }
 }
 
 void Vehicle::stop_components() {
     db<Vehicle>(TRC) << "Vehicle::stop_components() called!\n";
-    for (auto component : _components) {
-        component->stop();
+    for (auto it = _components.rbegin(); it != _components.rend(); ++it) {
+        if (*it) {
+            (*it)->stop();
+        }
     }
 }
 
