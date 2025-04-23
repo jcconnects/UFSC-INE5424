@@ -161,3 +161,17 @@ While the component structure aligns with the type-safety goals, analysis reveal
 6.  **Vehicle State Flag Timing:** The main `Vehicle::_running` flag is set to `false` late in the `Vehicle::stop()` sequence, after attempting to stop components.
 
 **Recommendation:** The shutdown logic in `Vehicle`, `Component`, `Communicator`, and `NIC` needs refactoring to implement the two-phase stop pattern and correct the order of operations as detailed in `RobustShutdownSequence.puml` to ensure reliable and deadlock-free termination. 
+
+## Validation
+
+The successful implementation of the refactoring described above was confirmed through unit and integration testing:
+
+-   **Unit Tests (`tests/unit_tests/component_test.cpp`):** Verified correct component creation via `Initializer`, proper start/stop lifecycle management by the base `Component` class, and implicit successful initialization of the `TheCommunicator` within the `Component` constructor.
+    -   `test_component_creation()`: See [Sequence_test_component_creation.puml](Sequence_test_component_creation.puml)
+    -   `test_component_lifecycle()`: See [Sequence_test_component_lifecycle.puml](Sequence_test_component_lifecycle.puml)
+    -   `test_communicator_initialization()`: See [Sequence_test_communicator_initialization.puml](Sequence_test_communicator_initialization.puml)
+-   **Integration Tests (`tests/integration_tests/memory_management_test.cpp`):** Demonstrated correct creation, operation, and destruction of multiple components within a vehicle context. The tests involved memory allocation within components and repeated cycles of vehicle/component creation and destruction, confirming that the RAII pattern (using `std::unique_ptr` for `TheCommunicator` and component storage in `Vehicle`) prevents memory leaks under basic scenarios.
+    -   `test_component_memory_management()`: See [Sequence_test_component_memory_management.puml](Sequence_test_component_memory_management.puml)
+    -   `test_vehicle_component_ownership()`: See [Sequence_test_vehicle_component_ownership.puml](Sequence_test_vehicle_component_ownership.puml)
+
+The test runs confirmed that the core goals of type safety, memory management via RAII, and alignment with the per-component communicator architecture were achieved. The previously noted redundancy in `Vehicle::stop_components` being called during destruction even after an explicit `stop()` was observed but does not prevent the correct functioning of the refactored components themselves. 

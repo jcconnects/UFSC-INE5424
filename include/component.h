@@ -10,15 +10,22 @@
 #include <cstring> // For std::memcpy
 #include <chrono> // Required by some derived components - TODO: Move time logic later?
 #include <unistd.h> // Required by some derived components - TODO: Move sleep logic later?
+#include <iostream> // For std::cerr
+#include <vector>
+#include <functional> // For std::function
+#include <sstream> // For std::stringstream
 
 // Assuming these are the correct includes for the concrete types
 #include "protocol.h"
 #include "nic.h"
-#include "socket_engine.h" // Assuming SocketEngine is the concrete Engine type used by NIC
+#include "socketEngine.h" // Corrected filename
 #include "communicator.h"
 #include "message.h"
-#include "vehicle.h" // Include Vehicle definition for Vehicle* member
+// #include "vehicle.h" // REMOVED to break circular dependency
 #include "debug.h" // Include for db<> logging
+
+// Forward declare Vehicle instead of including the full header
+class Vehicle;
 
 // --- Concrete Type Definitions ---
 // TODO: Consider moving these to a central "types.h"
@@ -99,12 +106,12 @@ Component::Component(Vehicle* vehicle, const std::string& name, TheProtocol* pro
     }
     // Create the communicator for this component instance
     _communicator = std::make_unique<TheCommunicator>(_protocol, address);
-    db<Component>(INF) << "Component '" << _name << "' created for Vehicle " << _vehicle->id() << " with address " << address << "\n";
+    db<Component>(INF) << "Component '" << _name << "' created with address " << address << "\n";
 }
 
 // Start method
 void Component::start() {
-    db<Component>(TRC) << "Component::start() called for " << name() << " in Vehicle " << vehicle()->id() << "\n";
+    db<Component>(TRC) << "Component::start() called for " << name() << "\n";
     if (running()) {
         db<Component>(WRN) << "Component " << name() << " already running.\n";
         return;
@@ -121,7 +128,7 @@ void Component::start() {
 
 // Stop method
 void Component::stop() {
-    db<Component>(TRC) << "Component::stop() called for component " << _name << " in Vehicle " << vehicle()->id() << "\n";
+    db<Component>(TRC) << "Component::stop() called for component " << _name << "\n";
     if (running()) {
         _running.store(false, std::memory_order_release);
         // Optionally: Signal the communicator to interrupt blocking calls if implemented
@@ -151,10 +158,9 @@ void* Component::thread_entry_point(void* arg) {
     try {
         self->run(); // Call the derived class's implementation
     } catch (const std::exception& e) {
-        db<Component>(FTL) << "Component '" << self->name() << "' thread caught exception: " << e.what() << "\n";
-        // Optionally rethrow or handle more gracefully
+        db<Component>(ERR) << "Component '" << self->name() << "' thread caught exception: " << e.what() << "\n";
     } catch (...) {
-        db<Component>(FTL) << "Component '" << self->name() << "' thread caught unknown exception.\n";
+        db<Component>(ERR) << "Component '" << self->name() << "' thread caught unknown exception.\n";
     }
     db<Component>(INF) << "Component '" << self->name() << "' thread finished execution.\n";
     self->_running.store(false, std::memory_order_relaxed); // Ensure running is false on exit
@@ -164,35 +170,26 @@ void* Component::thread_entry_point(void* arg) {
 
 // Send method
 int Component::send(const TheAddress& destination, const void* data, unsigned int size) {
-    // Removed the running() check here, as sending might be needed even if the main loop isn't active,
-    // or the check might be better placed within the derived run() method if needed.
-    // Consider the component's lifecycle requirements. If send should ONLY happen while running, add the check back.
-    if (!_communicator) {
-        db<Component>(ERR) << name() << "::send called but communicator is null!\n";
-        return 0; // Or throw
-    }
-
-    // Ensure message fits within the communicator's defined max size
     if (size > TheCommunicator::MAX_MESSAGE_SIZE) {
-         db<Component>(ERR) << name() << "::send message size (" << size << ") exceeds maximum (" << TheCommunicator::MAX_MESSAGE_SIZE << ").\n";
-         return 0;
+        db<Component>(ERR) << name() << "::send error: message size (" << size << ") exceeds MAX_MESSAGE_SIZE (" << TheCommunicator::MAX_MESSAGE_SIZE << ").\n";
+        return -1; // Indicate error
     }
 
+    // Construct message directly with data
     TheMessage msg(data, size);
-    db<Component>(TRC) << name() << "::send preparing to send " << msg.size() << " bytes to " << destination << "\n";
+    // msg.set_data(data, size); // REMOVED: Use constructor instead
 
-    // Assuming Communicator::send now takes destination address
-    // bool send(const AddressType& destination, const MessageType* message);
+    // Assuming Communicator::send is modified to take destination
     if (_communicator->send(destination, &msg)) {
-         db<Component>(DEB) << name() << "::send successful (" << msg.size() << " bytes to " << destination << ").\n";
+        // Use INF log level from debug.h
+        db<Component>(INF) << name() << "::send successful (" << msg.size() << " bytes to " << destination << ").\n";
         return size; // Return bytes sent on success
     } else {
-         // Only log error if the component thinks it should still be running
-         if (running()) {
-            db<Component>(ERR) << name() << "::send failed to send message to " << destination << ".\n";
-         }
-        return 0; // Indicate failure
+        db<Component>(ERR) << name() << "::send failed.\n";
+        return -1; // Indicate error
     }
+    // Added default return path for safety, though above logic should cover it.
+    // return -1; // Can be removed if the if/else guarantees a return
 }
 
 // Receive method
@@ -230,7 +227,8 @@ int Component::receive(void* data, unsigned int max_size, TheAddress* source_add
     }
 
     std::memcpy(data, msg.data(), msg.size());
-    db<Component>(DEB) << name() << "::receive successfully processed message (" << msg.size() << " bytes copied).\n";
+    // Use TRC level and fix DEB typo
+    db<Component>(TRC) << name() << "::receive successfully processed message (" << msg.size() << " bytes copied).\n";
     return msg.size(); // Return bytes received
 }
 
@@ -239,7 +237,7 @@ void Component::open_log_file(const std::string& filename_prefix) {
     close_log_file(); // Ensure any previous file is closed
     std::string log_dir = "./logs"; // TODO: Make configurable?
     // Potential improvement: Create logs directory if it doesn't exist
-    std::string filename = log_dir + "/" + filename_prefix + "_vehicle_" + std::to_string(vehicle()->id()) + "_" + name() + ".csv";
+    std::string filename = log_dir + "/" + filename_prefix + "_" + name() + ".csv";
     _log_file.open(filename);
     if (!_log_file.is_open()) {
          db<Component>(ERR) << name() << " failed to open log file: " << filename << "\n";

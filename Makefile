@@ -22,8 +22,11 @@ UNIT_TEST_BINS := $(patsubst $(UNIT_TESTDIR)/%.cpp, $(BINDIR)/unit_tests/%, $(UN
 INTEGRATION_TEST_BINS := $(patsubst $(INTEGRATION_TESTDIR)/%.cpp, $(BINDIR)/integration_tests/%, $(INTEGRATION_TEST_SRCS))
 SYSTEM_TEST_BINS := $(patsubst $(SYSTEM_TESTDIR)/%.cpp, $(BINDIR)/system_tests/%, $(SYSTEM_TEST_SRCS))
 
-# Main sources
-SRCS := $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/core/*.cpp)
+# Main sources needed by tests
+SRCS = $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/core/*.cpp)
+
+# Filter out main.cpp if it exists, as tests have their own main
+SRCS := $(filter-out $(SRCDIR)/main.cpp, $(SRCS))
 
 # Use a unique interface name to avoid conflicts
 TEST_IFACE_NAME = test-dummy0
@@ -58,17 +61,17 @@ integration_tests: dirs $(INTEGRATION_TEST_BINS) run_integration_tests
 system_tests: dirs $(SYSTEM_TEST_BINS) run_system_tests
 
 # Compile test rules
-$(BINDIR)/unit_tests/%: $(UNIT_TESTDIR)/%.cpp
+$(BINDIR)/unit_tests/%: $(UNIT_TESTDIR)/%.cpp $(SRCS)
 	@mkdir -p $(BINDIR)/unit_tests
-	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(filter-out $<, $(filter %.cpp, $^)) $(LDFLAGS)
 
-$(BINDIR)/integration_tests/%: $(INTEGRATION_TESTDIR)/%.cpp
+$(BINDIR)/integration_tests/%: $(INTEGRATION_TESTDIR)/%.cpp $(SRCS)
 	@mkdir -p $(BINDIR)/integration_tests
-	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(filter-out $<, $(filter %.cpp, $^)) $(LDFLAGS)
 
-$(BINDIR)/system_tests/%: $(SYSTEM_TESTDIR)/%.cpp
+$(BINDIR)/system_tests/%: $(SYSTEM_TESTDIR)/%.cpp $(SRCS)
 	@mkdir -p $(BINDIR)/system_tests
-	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(filter-out $<, $(filter %.cpp, $^)) $(LDFLAGS)
 
 # Run test groups
 .PHONY: run_unit_tests
@@ -129,6 +132,14 @@ run_unit_%: $(BINDIR)/unit_tests/%
 run_integration_%: $(BINDIR)/integration_tests/%
 	make setup_dummy_iface
 	sudo ./$< $(ARGS)
+	make clean_iface
+
+# Run a test with Valgrind memory check
+.PHONY: run_integration_%_valgrind
+run_integration_%_valgrind: $(BINDIR)/integration_tests/%
+	make setup_dummy_iface
+	@echo "Running Valgrind memory check on $<..."
+	sudo valgrind --leak-check=full --show-leak-kinds=all ./$< $(ARGS)
 	make clean_iface
 
 .PHONY: run_system_%

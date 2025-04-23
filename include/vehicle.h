@@ -7,10 +7,13 @@
 #include <memory>
 #include <chrono>
 #include <unistd.h>
+#include <thread>
+#include <stdexcept>
 
 #include "communicator.h"
 #include "message.h"
 #include "debug.h"
+#include "component.h"
 
 // Forward declarations
 template <typename NIC>
@@ -76,10 +79,6 @@ Vehicle::Vehicle(unsigned int id, NIC<SocketEngine>* nic, Protocol<NIC<SocketEng
     // Initialize base address with vehicle's NIC address
     _base_address = Protocol<NIC<SocketEngine>>::Address(nic->address(), 0);
 }
-
-// Include Component definition here, after Vehicle is defined
-// but before we use component methods
-#include "component.h"
 
 Vehicle::~Vehicle() {
     db<Vehicle>(TRC) << "Vehicle::~Vehicle() called!\n";
