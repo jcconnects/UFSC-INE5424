@@ -134,6 +134,14 @@ static SpecificComponentType* create_component(Vehicle* vehicle, const std::stri
 - **Constructor:** Updated to call the non-templated `Component` base constructor.
 - **Communication:** Updated to use the non-templated `this->send(...)` and `this->receive(...)` methods inherited from `Component`.
 
+### 5. Derived Component Implementations (`include/components/`)
+
+- **Inheritance:** All specific component implementations (e.g., `BatteryComponent`, `CameraComponent`, `ECUComponent`, `INSComponent`, `LidarComponent`) were updated to inherit directly from the non-templated `Component` base class.
+- **Constructor:** Their constructors were modified to call the `Component` base class constructor, passing the `Vehicle*`, name, `TheProtocol*`, and `TheAddress`.
+- **`run()` Method:** Each derived component implements the pure virtual `run()` method, containing its specific operational logic (e.g., simulating sensor readings, processing data, sending messages).
+- **Communication:** Components that perform network communication now use the inherited, non-templated `send()` and `receive()` methods provided by the `Component` base class, which interact with their dedicated `TheCommunicator` instance.
+- **Logging:** Components utilize the `_log_file` member and `open_log_file()` method inherited from the base class for CSV logging.
+
 ## Benefits
 - **Type Safety:** Eliminates `void*` communicator storage and unsafe `static_cast`.
 - **Memory Safety:** Uses `std::unique_ptr` for automatic `Communicator` lifetime management, preventing leaks.
