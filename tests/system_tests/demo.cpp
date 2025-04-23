@@ -32,11 +32,11 @@ void run_vehicle(Vehicle* v) {
     // Odd ID vehicles will only receive
     if (v->id() % 2 == 0) {
         db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating sender component\n";
-        v->add_component(new SenderComponent(v));
+        Initializer::create_component<SenderComponent>(v, "Sender");
     }
-    
+
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating receiver component\n";
-    v->add_component(new ReceiverComponent(v));
+    Initializer::create_component<ReceiverComponent>(v, "Receiver");
 
     v->start();
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] starting. Lifetime: " << lifetime << "s\n";

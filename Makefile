@@ -133,18 +133,18 @@ run_integration_%: $(BINDIR)/integration_tests/%
 
 .PHONY: run_system_%
 run_system_%: $(BINDIR)/system_tests/%
-	make setup_dummy_iface
-	TEST_LOG_FILE="tests/logs/$*.log"
-	sudo ./$< $(ARGS) > $$TEST_LOG_FILE 2>&1
-	RESULT=$$?
+	@make setup_dummy_iface
+	@mkdir -p $(TESTDIR)/logs
+	@(sudo ./$< $(ARGS) > $(TESTDIR)/logs/$*.log 2>&1; \
+	RESULT=$$?; \
 	if [ $$RESULT -ne 0 ]; then \
-		echo "System test $* failed! Check $$TEST_LOG_FILE for details"; \
-		cat $$TEST_LOG_FILE; \
+		echo "System test $* failed! Check $(TESTDIR)/logs/$*.log for details"; \
+		cat $(TESTDIR)/logs/$*.log; \
 	else \
-		echo "System test $* completed successfully. Log saved to $$TEST_LOG_FILE"; \
-	fi
-	make clean_iface
-	exit $$RESULT
+		echo "System test $* completed successfully. Log saved to $(TESTDIR)/logs/$*.log"; \
+	fi; \
+	make clean_iface; \
+	exit $$RESULT)
 
 # Cleanup
 .PHONY: clean
@@ -174,6 +174,7 @@ setup_dummy_iface:
 		sudo ip link add $(TEST_IFACE_NAME) type dummy; \
 		sudo ip link set $(TEST_IFACE_NAME) up; \
 	fi; \
+	mkdir -p $(TESTDIR)/logs
 	# Export the interface name for tests to use
 	echo "$(TEST_IFACE_NAME)" > $(TESTDIR)/logs/current_test_iface
 

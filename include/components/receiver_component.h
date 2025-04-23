@@ -14,7 +14,8 @@
 
 class ReceiverComponent : public Component {
     public:
-        ReceiverComponent(Vehicle* vehicle);
+        template <typename Protocol>
+        ReceiverComponent(Vehicle* vehicle, const std::string& name, Protocol* protocol, typename Protocol::Address address);
 
         void start() override;
         void stop() override;
@@ -25,7 +26,10 @@ class ReceiverComponent : public Component {
 
 /***************** Receiver Component Implementation ********************/
 
-ReceiverComponent::ReceiverComponent(Vehicle* vehicle) : Component(vehicle, "Receiver") {
+template <typename Protocol>
+ReceiverComponent::ReceiverComponent(Vehicle* vehicle, const std::string& name, Protocol* protocol, typename Protocol::Address address)
+    : Component(vehicle, name, protocol, address) {
+    
     std::string log_file = "./logs/vehicle_" + std::to_string(vehicle->id()) + "_receiver.csv";
     open_log_file(log_file);
     
@@ -48,7 +52,7 @@ void ReceiverComponent::stop() {
     Component::stop();
 }
 
-void* ReceiverComponent::run(void* arg)  {
+void* ReceiverComponent::run(void* arg) {
     db<Component>(TRC) << "ReceiverComponent::run() called!\n";
 
     ReceiverComponent* c = static_cast<ReceiverComponent*>(arg);
@@ -57,7 +61,8 @@ void* ReceiverComponent::run(void* arg)  {
         unsigned int size = Vehicle::MAX_MESSAGE_SIZE;
         char buf[size];
 
-        int result = c->vehicle()->receive(buf, size);
+        // Use the component's receive method that delegates to its communicator
+        int result = c->template receive<Protocol<NIC<SocketEngine>>>(buf, size);
 
         if (result <= 0) {
             db<Component>(INF) << "[ReceiverComponent " << c->vehicle()->id() << "] failed to receive message\n";
@@ -105,4 +110,5 @@ void* ReceiverComponent::run(void* arg)  {
     return nullptr;
 }
 
-#endif // RECEIVER_COMPONENT_H 
+#endif // RECEIVER_COMPONENT_H
+       

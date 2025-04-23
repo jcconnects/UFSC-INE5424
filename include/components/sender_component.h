@@ -11,7 +11,8 @@
 
 class SenderComponent : public Component {
 public:
-    SenderComponent(Vehicle* vehicle);
+    template <typename Protocol>
+    SenderComponent(Vehicle* vehicle, const std::string& name, Protocol* protocol, typename Protocol::Address address);
 
     void start() override;
     
@@ -20,7 +21,10 @@ private:
 };
 
 /*************** Sender Component Implementation ******************/
-SenderComponent::SenderComponent(Vehicle* vehicle) : Component(vehicle, "Sender") {
+template <typename Protocol>
+SenderComponent::SenderComponent(Vehicle* vehicle, const std::string& name, Protocol* protocol, typename Protocol::Address address) 
+    : Component(vehicle, name, protocol, address) {
+    
     std::string log_file = "./logs/vehicle_" + std::to_string(vehicle->id()) + "_sender.csv";
     open_log_file(log_file);
         
@@ -58,7 +62,8 @@ void* SenderComponent::run(void* arg) {
         
         db<Component>(INF) << "[SenderComponent " << c->vehicle()->id() << "] sending message " << counter << ": {" << msg << "}\n";
         
-        if (c->vehicle()->send(msg.c_str(), msg.size())) {
+        // Use the component's send method that delegates to its own communicator
+        if (c->template send<Protocol<NIC<SocketEngine>>>(msg.c_str(), msg.size())) {
             db<Component>(INF) << "[SenderComponent " << c->vehicle()->id() << "] message " << counter << " sent!\n";
             
             // Log to CSV
