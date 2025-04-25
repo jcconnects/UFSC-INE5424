@@ -204,12 +204,10 @@ db<CameraComponent>(INF) << "[" << name() << "] msg " << counter << " sent local
 
 ### Error 5:
 ```cpp
-In file included from tests/system_tests/virtual_dst_address_test.cpp:10:
-./include/components/camera_component.h:6:10: fatal error: INFug.h: No such file or directory
-    6 | #include "INFug.h"
-      |          ^~~~~~~~~
-compilation terminated.
-make: *** [<builtin>: tests/system_tests/virtual_dst_address_test] Error 1
+tests/system_tests/virtual_dst_address_test.cpp: In function ‘int main()’:
+tests/system_tests/virtual_dst_address_test.cpp:39:63: error: no matching function for call to ‘Protocol<NIC<SocketEngine> >::Address::Address(Protocol<NIC<SocketEngine> >::Address, const short unsigned int&)’
+   39 |     TheAddress dest_addr = TheAddress(v2->address(), ECU2_PORT); // Assuming ECU2_PORT is defined in the component header
+      |    
 ```
 
 ### Fix:
@@ -219,7 +217,5 @@ make: *** [<builtin>: tests/system_tests/virtual_dst_address_test] Error 1
     - Develop the test to better demonstrate the correction of the communication using virtual destination addresses
     - Fix pending errors/warnings
     - iface dummy creation error: 
-    ```
     /bin/sh: 1: cannot create tests/logs/current_test_iface: Permission denied
     make: *** [Makefile:170: setup_dummy_iface] Error 2
-    ```

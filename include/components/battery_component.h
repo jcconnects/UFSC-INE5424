@@ -3,7 +3,7 @@
 
 #include "component.h"
 #include "vehicle.h"
-#include "INFug.h"
+#include "debug.h"
 #include "ethernet.h"
 #include <chrono>
 #include <random>
@@ -12,6 +12,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip> // For std::fixed, std::setprecision
+
 
 // Assuming ECU2 will have port 1 based on creation order
 // Note: If lidar_component.h is also included, this might be a redefinition.
@@ -38,15 +39,15 @@ public:
 
         // Determine the local address for ECU2
         _ecu2_address = TheAddress(address.paddr(), ECU2_PORT);
-         db<BatteryComponent>(INF) << name() << " targeting local ECU2 at: " << _ecu2_address << "\n";
+         db<BatteryComponent>(INF) << Component::getName() << " targeting local ECU2 at: " << _ecu2_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::BROADCAST.bytes, 0);
-         db<BatteryComponent>(INF) << name() << " targeting broadcast at: " << _broadcast_address << "\n";
+        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0);
+         db<BatteryComponent>(INF) << Component::getName() << " targeting broadcast at: " << _broadcast_address << "\n";
     }
 
     void run() override {
-         db<BatteryComponent>(INF) << "[" << name() << "] thread running.\n";
+         db<BatteryComponent>(INF) << "[" << Component::getName() << "] thread running.\n";
         int counter = 1;
 
         while (running()) {
@@ -70,37 +71,37 @@ public:
             std::string payload = payload_ss.str();
 
             // Construct the full message string
-            std::string msg = "[" + name() + "] Vehicle " + std::to_string(vehicle()->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_us_system) + ": " + payload;
+            std::string msg = "[" + Component::getName() + "] Vehicle " + std::to_string(vehicle()->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_us_system) + ": " + payload;
 
              // Ensure message isn't too large
               if (msg.size() >= TheCommunicator::MAX_MESSAGE_SIZE) {
-                   db<BatteryComponent>(ERR) << "[" << name() << "] Message " << counter << " exceeds MAX_MESSAGE_SIZE (" << msg.size() << "), skipping send.\n";
+                   db<BatteryComponent>(ERR) << "[" << Component::getName() << "] Message " << counter << " exceeds MAX_MESSAGE_SIZE (" << msg.size() << "), skipping send.\n";
                   continue;
               }
 
             // 1. Send to local ECU2
-             db<BatteryComponent>(TRC) << "[" << name() << "] sending msg " << counter << " to ECU2: " << _ecu2_address << "\n";
+             db<BatteryComponent>(TRC) << "[" << Component::getName() << "] sending msg " << counter << " to ECU2: " << _ecu2_address << "\n";
             int bytes_sent_local = send(_ecu2_address, msg.c_str(), msg.size());
              if (bytes_sent_local > 0) {
-                  db<BatteryComponent>(INF) << "[" << name() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
+                  db<BatteryComponent>(INF) << "[" << Component::getName() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
                  if (_log_file.is_open()) {
                       _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_local," << _ecu2_address << ","
                                 << std::fixed << std::setprecision(2) << voltage << "," << current << "," << temp << "," << soc << "\n";
                       _log_file.flush();
                  }
              } else if(running()) {
-                  db<BatteryComponent>(ERR) << "[" << name() << "] failed to send msg " << counter << " locally to " << _ecu2_address << "!\n";
+                  db<BatteryComponent>(ERR) << "[" << Component::getName() << "] failed to send msg " << counter << " locally to " << _ecu2_address << "!\n";
              }
 
 
             // 2. Send to broadcast address
-             db<BatteryComponent>(TRC) << "[" << name() << "] broadcasting msg " << counter << " to " << _broadcast_address << "\n";
+             db<BatteryComponent>(TRC) << "[" << Component::getName() << "] broadcasting msg " << counter << " to " << _broadcast_address << "\n";
             int bytes_sent_bcast = send(_broadcast_address, msg.c_str(), msg.size());
              if (bytes_sent_bcast > 0) {
-                  db<BatteryComponent>(INF) << "[" << name() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
+                  db<BatteryComponent>(INF) << "[" << Component::getName() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
                  // Optional: Log broadcast send
              } else if(running()) {
-                  db<BatteryComponent>(ERR) << "[" << name() << "] failed to broadcast msg " << counter << "!\n";
+                  db<BatteryComponent>(ERR) << "[" << Component::getName() << "] failed to broadcast msg " << counter << "!\n";
              }
 
             counter++;
@@ -110,7 +111,7 @@ public:
             std::this_thread::sleep_for(std::chrono::milliseconds(wait_time_ms));
         }
 
-         db<BatteryComponent>(INF) << "[" << name() << "] thread terminated.\n";
+         db<BatteryComponent>(INF) << "[" << Component::getName() << "] thread terminated.\n";
     }
 
 private:

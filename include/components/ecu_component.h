@@ -30,7 +30,7 @@ public:
 
     // The main loop for the ECU component thread
     void run() override {
-        db<ECUComponent>(INF) << "[ECU " << name() << "] thread running.\n";
+        db<ECUComponent>(INF) << "[ECU " << Component::getName() << "] thread running.\n";
 
         std::array<char, TheCommunicator::MAX_MESSAGE_SIZE> buf;
         TheAddress source_addr;
@@ -40,11 +40,11 @@ public:
 
             if (bytes_received < 0) {
                 // Receive was interrupted, likely by stop()
-                 db<ECUComponent>(INF) << "[ECU " << name() << "] receive interrupted.\n";
+                 db<ECUComponent>(INF) << "[ECU " << Component::getName() << "] receive interrupted.\n";
                 break; // Exit the loop
             } else if (bytes_received == 0) {
                 // Receive failed or timed out, but we're still running
-                // db<ECUComponent>(WRN) << "[ECU " << name() << "] receive failed or timed out.\n"; // Potentially noisy
+                // db<ECUComponent>(WRN) << "[ECU " << Component::getName() << "] receive failed or timed out.\n"; // Potentially noisy
                 continue; // Try receiving again
             } else {
                 // Message received successfully
@@ -52,7 +52,7 @@ public:
                 auto recv_time_us = std::chrono::duration_cast<std::chrono::microseconds>(recv_time_system.time_since_epoch()).count();
 
                 std::string received_message(buf.data(), bytes_received);
-                db<ECUComponent>(TRC) << "[ECU " << name() << "] Received " << bytes_received << " bytes from " << source_addr << ": " << received_message << "\n";
+                db<ECUComponent>(TRC) << "[ECU " << Component::getName() << "] Received " << bytes_received << " bytes from " << source_addr << ": " << received_message << "\n";
 
                 // Attempt to parse the message (assuming a common format for now)
                 // Example format: "[SourceType] Vehicle [ID] message [MsgID] at [Timestamp]: [Payload]"
@@ -75,13 +75,13 @@ public:
                         payload = matches[5].str(); // The actual data part
                         latency_us = recv_time_us - send_time_us;
 
-                         db<ECUComponent>(INF) << "[ECU " << name()
+                         db<ECUComponent>(INF) << "[ECU " << Component::getName()
                                               << "] Parsed [" << source_component_type << "] msg from Vehicle " << source_vehicle_id
                                               << ", msg_id=" << message_id
                                               << ", latency=" << latency_us << "us"
                                               << ", Payload: " << payload << "\n";
                     } catch (const std::exception& e) {
-                         db<ECUComponent>(ERR) << "[ECU " << name() << "] Exception parsing message: " << e.what() << " | Original: " << received_message << "\n";
+                         db<ECUComponent>(ERR) << "[ECU " << Component::getName() << "] Exception parsing message: " << e.what() << " | Original: " << received_message << "\n";
                          source_component_type = "parse_error"; // Mark as parse error
                          source_vehicle_id = -1;
                          message_id = -1;
@@ -89,7 +89,7 @@ public:
                          latency_us = -1;
                     }
                 } else {
-                     db<ECUComponent>(WRN) << "[ECU " << name() << "] Failed to parse message format: " << received_message << "\n";
+                     db<ECUComponent>(WRN) << "[ECU " << Component::getName() << "] Failed to parse message format: " << received_message << "\n";
                      source_component_type = "unknown_format"; // Mark as unknown format
                 }
 
@@ -113,7 +113,7 @@ public:
             }
         }
 
-         db<ECUComponent>(INF) << "[ECUComponent " << name() << "] thread terminated.\n";
+         db<ECUComponent>(INF) << "[ECUComponent " << Component::getName() << "] thread terminated.\n";
     }
 
 private:

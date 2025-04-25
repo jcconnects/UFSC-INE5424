@@ -55,7 +55,7 @@ public:
 
     // Accessors
     bool running() const { return _running.load(std::memory_order_acquire); }
-    const std::string& name() { return _name; }
+    const std::string& getName() { return _name; }
     Vehicle* vehicle() const { return _vehicle; };
     std::ofstream* log_file() { return &_log_file; };
 
@@ -111,19 +111,19 @@ Component::Component(Vehicle* vehicle, const std::string& name, TheProtocol* pro
 
 // Start method
 void Component::start() {
-    db<Component>(TRC) << "Component::start() called for " << name() << "\n";
+    db<Component>(TRC) << "Component::start() called for " << getName() << "\n";
     if (running()) {
-        db<Component>(WRN) << "Component " << name() << " already running.\n";
+        db<Component>(WRN) << "Component " << getName() << " already running.\n";
         return;
     }
     _running.store(true, std::memory_order_release);
     int rc = pthread_create(&_thread, nullptr, Component::thread_entry_point, this);
     if (rc) {
-        db<Component>(ERR) << "ERROR; return code from pthread_create() is " << rc << " for " << name() << "\n";
+        db<Component>(ERR) << "ERROR; return code from pthread_create() is " << rc << " for " << getName() << "\n";
         _running.store(false);
-        throw std::runtime_error("Failed to create component thread for " + name());
+        throw std::runtime_error("Failed to create component thread for " + getName());
     }
-     db<Component>(INF) << "Component " << name() << " thread created successfully.\n";
+     db<Component>(INF) << "Component " << getName() << " thread created successfully.\n";
 }
 
 // Stop method
@@ -154,15 +154,15 @@ void Component::stop() {
 // Static thread entry point
 void* Component::thread_entry_point(void* arg) {
     Component* self = static_cast<Component*>(arg);
-    db<Component>(INF) << "Component '" << self->name() << "' thread starting execution.\n";
+    db<Component>(INF) << "Component '" << self->getName() << "' thread starting execution.\n";
     try {
         self->run(); // Call the derived class's implementation
     } catch (const std::exception& e) {
-        db<Component>(ERR) << "Component '" << self->name() << "' thread caught exception: " << e.what() << "\n";
+        db<Component>(ERR) << "Component '" << self->getName() << "' thread caught exception: " << e.what() << "\n";
     } catch (...) {
-        db<Component>(ERR) << "Component '" << self->name() << "' thread caught unknown exception.\n";
+        db<Component>(ERR) << "Component '" << self->getName() << "' thread caught unknown exception.\n";
     }
-    db<Component>(INF) << "Component '" << self->name() << "' thread finished execution.\n";
+    db<Component>(INF) << "Component '" << self->getName() << "' thread finished execution.\n";
     self->_running.store(false, std::memory_order_relaxed); // Ensure running is false on exit
     return nullptr;
 }
@@ -171,7 +171,7 @@ void* Component::thread_entry_point(void* arg) {
 // Send method
 int Component::send(const TheAddress& destination, const void* data, unsigned int size) {
     if (size > TheCommunicator::MAX_MESSAGE_SIZE) {
-        db<Component>(ERR) << name() << "::send error: message size (" << size << ") exceeds MAX_MESSAGE_SIZE (" << TheCommunicator::MAX_MESSAGE_SIZE << ").\n";
+        db<Component>(ERR) << getName() << "::send error: message size (" << size << ") exceeds MAX_MESSAGE_SIZE (" << TheCommunicator::MAX_MESSAGE_SIZE << ").\n";
         return -1; // Indicate error
     }
 
@@ -182,10 +182,10 @@ int Component::send(const TheAddress& destination, const void* data, unsigned in
     // Assuming Communicator::send is modified to take destination
     if (_communicator->send(destination, &msg)) {
         // Use INF log level from debug.h
-        db<Component>(INF) << name() << "::send successful (" << msg.size() << " bytes to " << destination << ").\n";
+        db<Component>(INF) << getName() << "::send successful (" << msg.size() << " bytes to " << destination << ").\n";
         return size; // Return bytes sent on success
     } else {
-        db<Component>(ERR) << name() << "::send failed.\n";
+        db<Component>(ERR) << getName() << "::send failed.\n";
         return -1; // Indicate error
     }
     // Added default return path for safety, though above logic should cover it.
@@ -197,38 +197,38 @@ int Component::receive(void* data, unsigned int max_size, TheAddress* source_add
      // Removed the initial running() check. The loop in the derived run() method should handle this.
      // The check after the blocking call remains important.
     if (!_communicator) {
-        db<Component>(ERR) << name() << "::receive called but communicator is null!\n";
+        db<Component>(ERR) << getName() << "::receive called but communicator is null!\n";
         return 0; // Or throw
     }
 
     TheMessage msg;
-    db<Component>(TRC) << name() << "::receive waiting for message...\n";
+    db<Component>(TRC) << getName() << "::receive waiting for message...\n";
 
     // Assuming Communicator::receive signature is:
     // bool receive(MessageType* message, AddressType* source = nullptr);
     if (!_communicator->receive(&msg, source_address)) {
         // Check if we stopped while waiting
         if (!running()) {
-            db<Component>(INF) << name() << "::receive interrupted by stop().\n";
+            db<Component>(INF) << getName() << "::receive interrupted by stop().\n";
             return -1; // Indicate stopped
         }
         // Only log warning if the component thinks it should still be running
-        db<Component>(WRN) << name() << "::receive failed or timed out.\n";
+        db<Component>(WRN) << getName() << "::receive failed or timed out.\n";
         return 0; // Indicate receive error/timeout
     }
 
-    db<Component>(TRC) << name() << "::receive received message of size " << msg.size() << (source_address ? " from " + std::string(source_address->to_string()) : "") << "\n";
+    db<Component>(TRC) << getName() << "::receive received message of size " << msg.size() << (source_address ? " from " + std::string(source_address->to_string()) : "") << "\n";
 
 
     if (msg.size() > max_size) {
-        db<Component>(ERR) << name() << "::receive buffer too small (" << max_size << " bytes) for received message (" << msg.size() << " bytes).\n";
+        db<Component>(ERR) << getName() << "::receive buffer too small (" << max_size << " bytes) for received message (" << msg.size() << " bytes).\n";
         // Data is lost here! Consider alternatives if partial data is useful.
         return 0; // Indicate error (buffer overflow)
     }
 
     std::memcpy(data, msg.data(), msg.size());
     // Use TRC level and fix DEB typo
-    db<Component>(TRC) << name() << "::receive successfully processed message (" << msg.size() << " bytes copied).\n";
+    db<Component>(TRC) << getName() << "::receive successfully processed message (" << msg.size() << " bytes copied).\n";
     return msg.size(); // Return bytes received
 }
 
@@ -237,19 +237,19 @@ void Component::open_log_file(const std::string& filename_prefix) {
     close_log_file(); // Ensure any previous file is closed
     std::string log_dir = "./logs"; // TODO: Make configurable?
     // Potential improvement: Create logs directory if it doesn't exist
-    std::string filename = log_dir + "/" + filename_prefix + "_" + name() + ".csv";
+    std::string filename = log_dir + "/" + filename_prefix + "_" + getName() + ".csv";
     _log_file.open(filename);
     if (!_log_file.is_open()) {
-         db<Component>(ERR) << name() << " failed to open log file: " << filename << "\n";
+         db<Component>(ERR) << getName() << " failed to open log file: " << filename << "\n";
     } else {
-         db<Component>(INF) << name() << " opened log file: " << filename << "\n";
+         db<Component>(INF) << getName() << " opened log file: " << filename << "\n";
          // Derived classes should write headers immediately after calling this in their constructor
     }
 }
 
 void Component::close_log_file() {
     if (_log_file.is_open()) {
-         db<Component>(INF) << name() << " closing log file.\n";
+         db<Component>(INF) << getName() << " closing log file.\n";
         _log_file.close();
     }
 }

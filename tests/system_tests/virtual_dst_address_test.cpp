@@ -5,6 +5,8 @@
 #include "initializer.h"
 #include "ethernet.h"
 #include "vehicle.h"
+#include "debug.h"
+#include "protocol.h"
 #include "component.h"
 #include "components/ecu_component.h"
 #include "components/camera_component.h"
@@ -34,7 +36,7 @@ int main() {
     v2->start();
 
     // 4. Compose the destination address for v2's ECU2 (vehicle 2's MAC, port 1)
-    TheAddress dest_addr = TheAddress(v2->address(), ECU2_PORT);
+    TheAddress dest_addr = TheAddress(v2->address(), ECU2_PORT); // Assuming ECU2_PORT is defined in the component header
 
     // 5. Compose a test message
     std::string test_msg = "[Test] Vehicle 101 to Vehicle 202 ECU2";
