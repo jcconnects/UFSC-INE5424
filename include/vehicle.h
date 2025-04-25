@@ -7,10 +7,13 @@
 #include <memory>
 #include <chrono>
 #include <unistd.h>
+#include <thread>
+#include <stdexcept>
 
 #include "communicator.h"
 #include "message.h"
 #include "debug.h"
+#include "component.h"
 
 // Forward declarations
 template <typename NIC>
@@ -39,22 +42,29 @@ class Vehicle {
         void start();
         void stop();
         
-        void add_component(Component* component);
+        void add_component(std::unique_ptr<Component> component);
         void start_components();
         void stop_components();
 
-        int send(const void* data, unsigned int size);
-        int receive(void* data, unsigned int size); 
+        // Get protocol for component to create its communicator
+        Protocol<NIC<SocketEngine>>* protocol() const { return _protocol; }
+        
+        // Get next component address
+        typename Protocol<NIC<SocketEngine>>::Address next_component_address();
     
     private:
-
         unsigned int _id;
         Protocol<NIC<SocketEngine>>* _protocol;
         NIC<SocketEngine>* _nic;
-        Communicator<Protocol<NIC<SocketEngine>>>* _comms;
+        
+        // Base address for this vehicle
+        typename Protocol<NIC<SocketEngine>>::Address _base_address;
+        
+        // Counter for assigning component addresses
+        unsigned int _next_component_id;
 
         std::atomic<bool> _running;
-        std::vector<Component*> _components;
+        std::vector<std::unique_ptr<Component>> _components;
 };
 
 /******** Vehicle Implementation *********/
@@ -64,23 +74,17 @@ Vehicle::Vehicle(unsigned int id, NIC<SocketEngine>* nic, Protocol<NIC<SocketEng
     _id = id;
     _nic = nic;
     _protocol = protocol;
-    _comms = new Communicator<Protocol<NIC<SocketEngine>>>(protocol, Protocol<NIC<SocketEngine>>::Address(nic->address(), Protocol<NIC<SocketEngine>>::Address::NULL_VALUE));
+    _next_component_id = 1; // Start component IDs from 1
+    
+    // Initialize base address with vehicle's NIC address
+    _base_address = Protocol<NIC<SocketEngine>>::Address(nic->address(), 0);
 }
-
-// Include Component definition here, after Vehicle is defined
-// but before we use component methods
-#include "component.h"
 
 Vehicle::~Vehicle() {
     db<Vehicle>(TRC) << "Vehicle::~Vehicle() called!\n";
     
     stop_components();
 
-    for (auto component : _components) {
-        delete component;
-    }
-    
-    delete _comms;
     delete _protocol;
     delete _nic;
 }
@@ -95,7 +99,7 @@ const bool Vehicle::running() const {
 
 void Vehicle::start() {
     db<Vehicle>(TRC) << "Vehicle::start() called!\n";
-
+    std::cout << "[Vehicle " << _id << "] starting." << "\n";
     _running = true;
     start_components();
 }
@@ -103,81 +107,44 @@ void Vehicle::start() {
 void Vehicle::stop() {
     db<Vehicle>(TRC) << "Vehicle::stop() called!\n";
     
-    // Stopping NIC
-    _nic->stop();
-    
-    // Close connections to unblock receive calls
-    db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] closing connections to unblock receive calls\n";
-    _comms->close();
-
     stop_components();
 
+    if (_nic) {
+        _nic->stop();
+    }
+    
     _running = false;
 }
 
-void Vehicle::add_component(Component* component) {
-    _components.push_back(component);
+void Vehicle::add_component(std::unique_ptr<Component> component) {
+    if(component) {
+        _components.push_back(std::move(component));
+    }
 }
 
 void Vehicle::start_components() {
     db<Vehicle>(TRC) << "Vehicle::start_components() called!\n";
-    for (auto component : _components) {
-        component->start();
+    for (const auto& component_ptr : _components) {
+        if (component_ptr) {
+            component_ptr->start();
+        }
     }
 }
 
 void Vehicle::stop_components() {
     db<Vehicle>(TRC) << "Vehicle::stop_components() called!\n";
-    for (auto component : _components) {
-        component->stop();
+    for (auto it = _components.rbegin(); it != _components.rend(); ++it) {
+        if (*it) {
+            (*it)->stop();
+        }
     }
 }
 
-int Vehicle::send(const void* data, unsigned int size) {
-    db<Vehicle>(TRC) << "Vehicle::send() called!\n";
-
-    Message<MAX_MESSAGE_SIZE> msg = Message<MAX_MESSAGE_SIZE>(data, size);
-    
-    if (!_comms->send(&msg)) {
-        db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message not sent\n";
-        return 0;
-    }
-    
-    db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message sent\n";
-    return 1;
+typename Protocol<NIC<SocketEngine>>::Address Vehicle::next_component_address() {
+    // Create an address with the vehicle's physical address and next component ID as port
+    typename Protocol<NIC<SocketEngine>>::Address addr = _base_address;
+    addr.port(_next_component_id++);
+    return addr;
 }
-
-int Vehicle::receive(void* data, unsigned int size) {
-    db<Vehicle>(TRC) << "Vehicle::receive() called!\n";
-
-    if (!data || size == 0) {
-        db<Vehicle>(ERR) << "Error: Invalid data buffer in receive\n";
-        return 0;
-    }
-    
-    // Check if we're still running before attempting to receive
-    if (!_running) {
-        db<Vehicle>(TRC) << "[Vehicle " << std::to_string(_id) << "] receive() called after vehicle stopped\n";
-        return 0;
-    }
-
-    Message<MAX_MESSAGE_SIZE> msg = Message<MAX_MESSAGE_SIZE>();
-    if (!_comms->receive(&msg)) {
-        db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message not received\n";
-        return 0;
-    }
-
-    // Copia os dados recebidos para o buffer fornecido
-    if (msg.size() > size) {
-        db<Vehicle>(ERR) << "[Vehicle " << std::to_string(_id) << "] Received message size exceeds buffer size " << std::to_string(size) << "\n";
-        return 0;
-    }
-
-    std::memcpy(data, msg.data(), msg.size());
-    db<Vehicle>(INF) << "[Vehicle " << std::to_string(_id) << "] message received\n";
-
-    return msg.size();
-}
-
 
 #endif // VEHICLE_H

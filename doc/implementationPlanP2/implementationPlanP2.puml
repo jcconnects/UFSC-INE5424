@@ -1,0 +1,157 @@
+@startuml ImplementationPlanP2
+!theme vibrant
+
+' Forward Declarations and Base Classes
+interface Observer<T, C>
+interface Observed<T, C>
+
+abstract class Component {
+  + {abstract} run()
+  + _address: Protocol::Address
+  + _communicator: Communicator ' Component owns its Communicator
+}
+
+class Thread
+class Ethernet
+
+' Protocol and related classes
+class "Protocol::Address" as ProtocolAddress {
+  + _paddr: Ethernet.Address ' System ID (MAC)
+  + _port: unsigned int     ' Component ID
+}
+
+class "Protocol::Header" as ProtocolHeader {
+  + _source_address: Protocol::Address
+  + _destination_address: Protocol::Address
+  + _size: unsigned int
+}
+
+class "Protocol::Packet" as ProtocolPacket {
+  + header: Protocol::Header
+  + data[]: byte
+}
+
+class Protocol {
+  + PROTO: static const Ethernet.Protocol
+  - _nic: NIC
+  - _observed: Observed<DataBuffer, Port> ' Notifies Communicators
+  + send(from: Protocol::Address, to: Protocol::Address, data, size): int
+  + receive(buf: DataBuffer*, from: Protocol::Address&, data, size): int
+  + update(proto: Ethernet.Protocol, buf: DataBuffer*) ' From NIC
+  + attach(obs: Observer*, addr: Protocol::Address)
+  + detach(obs: Observer*, addr: Protocol::Address)
+}
+
+' Message and Buffer classes
+class Message<SIZE> {
+  + data[]: byte
+  + size: unsigned int
+}
+
+class DataBuffer {
+  + frame: Ethernet.Frame ' or Protocol::Packet data
+  + size: unsigned int
+}
+
+' Communication Engines
+class SocketEngine {
+  # _sock_fd: int
+  # _ep_fd: int
+  + start()
+  + stop()
+  + send(frame, size)
+  + run() ' Contains epoll loop
+  ' Method called by run loop - implemented by NIC
+  + {abstract} handleNetworkPacket()
+  ' Method called by run loop - implemented by NIC
+  + {abstract} handleSharedMemoryPacket()
+}
+
+class SharedMemoryEngine {
+  + shm_fd: int
+  + queues/semaphores
+  + event_fd: int ' For signaling NIC/epoll
+  + initialize()
+  + shutdown()
+  + attach_component(Component*): Port
+  + send_local(src, dest, packet)
+  + receive_local(port, packet, src_addr)
+  + signal_nic() ' Writes to event_fd
+}
+
+' Core Communication Stack
+class NIC {
+  ' Inherits SocketEngine privately/protectedly
+  ' Provides implementations for handle*Packet methods
+  - _sm_engine: SharedMemoryEngine
+  - _buffers: DataBuffer[]
+  + address(): Ethernet.Address ' Own MAC
+  + alloc(): DataBuffer*
+  + free(DataBuffer*)
+  + send(dest: Protocol::Address, buf: DataBuffer*): int ' Routes here
+  # handleNetworkPacket() ' Implementation
+  # handleSharedMemoryPacket() ' Implementation
+}
+NIC --|> Observed : <DataBuffer, Ethernet.Protocol>
+NIC --|> SocketEngine : inherits/implements >
+NIC o-- SharedMemoryEngine : contains >
+
+Protocol --|> Observer : <DataBuffer, Ethernet.Protocol> ' Observes NIC
+Protocol *-- NIC : uses >
+
+' Show nesting relationship
+Protocol *-- ProtocolAddress
+Protocol *-- ProtocolHeader
+Protocol *-- ProtocolPacket
+
+class Communicator<Channel=Protocol> {
+  - _channel: Protocol
+  - _address: Protocol::Address ' Own Address (MAC + Port/CompID)
+  + send(dest: Protocol::Address, msg: Message*): bool
+  + receive(msg: Message*): bool ' Optionally return source Addr
+  + update(cond: Port, buf: DataBuffer*) ' From Protocol
+}
+Communicator --|> Observer : <DataBuffer, Port> ' Observes Protocol
+Communicator *-- Protocol : uses >
+
+' Application Layer
+class Vehicle {
+  - _id: unsigned int
+  - _nic: NIC
+  - _protocol: Protocol
+  - _components: List<Component*>
+  + add_component(Component*)
+}
+Vehicle o-- NIC
+Vehicle o-- Protocol
+Vehicle *-- "*" Component : contains >
+' Note: Vehicle no longer directly uses or creates Communicator
+
+class Initializer {
+  + create_vehicle(): Vehicle*
+}
+Initializer ..> Vehicle : creates
+Initializer ..> NIC : creates
+Initializer ..> Protocol : creates
+Initializer ..> SharedMemoryEngine : creates for NIC >
+Initializer ..> Communicator : creates (per component)
+
+Component <|-- SenderComponent
+Component <|-- ReceiverComponent
+Component *-- Communicator : owns >
+Component <|-- Thread
+
+' Relationships Summary
+' NIC inherits SocketEngine, contains SharedMemoryEngine
+' Protocol uses NIC
+' Communicator uses Protocol
+' Component owns and uses Communicator
+' Vehicle orchestrates creation and holds components
+
+' Event Flow / Calls
+SocketEngine -[#blue]-> NIC : run() calls handleNetworkPacket()
+SocketEngine -[#blue]-> NIC : run() calls handleSharedMemoryPacket()
+NIC -[#red]-> Protocol : notify(proto, buf)
+Protocol -[#red]-> Communicator : notify(port, buf)
+
+@enduml 

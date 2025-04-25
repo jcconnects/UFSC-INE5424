@@ -1,0 +1,81 @@
+@startuml test_component_memory_management
+title Sequence Diagram: test_component_memory_management()
+
+actor User as "Test Function"
+participant Initializer
+participant Vehicle
+participant MemoryTestComponent as Comp
+participant "std::thread" as Thread
+
+loop 3 times : Iteration i
+
+    User -> Initializer ++ : create_vehicle(i)
+    Initializer -> Vehicle ++ : new Vehicle(i)
+    Vehicle -> Vehicle : Constructor logs
+    return Vehicle*
+    return vehicle
+
+    User -> User : TEST_ASSERT(vehicle != nullptr)
+
+    loop 3 times : Component j (0 to 2)
+        User -> Initializer ++ : create_component<MemoryTestComponent>(vehicle, "MemTest" + j)
+        Initializer -> Vehicle : get_protocol()
+        Initializer -> Vehicle : next_component_address()
+        Initializer -> Comp ++ : new MemoryTestComponent(vehicle, name, protocol, address)
+        Comp -> Comp : Constructor logs allocation
+        Comp -> Comp : Store protocol, address
+        return component_ptr (unique_ptr)
+        Initializer -> Vehicle : add_component(std::move(component_ptr))
+        return raw_ptr (comp)
+        User -> User : TEST_ASSERT(comp != nullptr)
+
+        User -> Comp ++ : start()
+        Comp -> Comp : Set _running = true
+        Comp -> Thread ++ : pthread_create(&_thread, ..., run_wrapper, this)
+        Comp -> Comp : Log thread creation
+        return
+        Comp -> Comp : Log "thread starting execution"
+        Thread -> Comp : run()
+        Comp -> Comp : Log "running"
+        ... Component runs (sleeps in loop) ...
+    end
+
+    User -> std::this_thread ++ : sleep_for(500ms)
+    return
+
+    User -> Vehicle ++ : stop()
+    Vehicle -> Vehicle : Log "stop() called"
+    Vehicle -> Vehicle ++ : stop_components()
+    Vehicle -> Vehicle : Log "stop_components() called"
+    loop 3 times : Reverse order (j = 2 down to 0)
+        Vehicle -> Comp ++ : stop()
+        Comp -> Comp : Log "stop() called"
+        Comp -> Comp : Set _running = false
+        Comp -> Thread : run() loop terminates
+        Comp -> Comp : Log "stopped"
+        Comp -> Comp : Log "thread finished execution"
+        Comp -> Thread ++ : pthread_join(_thread)
+        return
+        Comp -> Comp : Log "thread joined"
+        return
+    end
+    return
+    return
+
+    User -> Vehicle -- : delete vehicle
+    Vehicle -> Vehicle : Log "~Vehicle() called!"
+    Vehicle -> Vehicle ++ : stop_components() [Redundant Call]
+    Vehicle -> Vehicle : Log "stop_components() called"
+    loop 3 times : Reverse order (j = 2 down to 0)
+        Vehicle -> Comp ++ : stop()
+        Comp -> Comp : Log "stop() called"
+        Comp -> Comp : _running is already false
+        Comp -> Thread : Thread already joined, join ignored/returns immediately
+        return
+    end
+    return
+    Vehicle -> Comp --: unique_ptr destructor calls ~MemoryTestComponent()
+    Comp -> Comp : unique_ptr members (_communicator, data_blocks) destroyed
+end
+
+@enduml 

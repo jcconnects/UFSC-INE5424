@@ -5,11 +5,14 @@
 #include <iostream>
 #include <cstring>
 #include <atomic>
+#include <sstream>
+#include <iomanip> // For std::setfill, std::setw, std::hex
 
 #include "nic.h"
 #include "traits.h"
 #include "debug.h"
 #include "observed.h"
+#include "ethernet.h" // Assuming Ethernet namespace is included
 
 // Protocol implementation that works with the real Communicator
 template <typename NIC>
@@ -80,6 +83,8 @@ class Protocol: private NIC::Observer
                 void port(Port port);
                 const Port& port() const;
 
+                std::string to_string() const;
+
                 static const Address BROADCAST;
                 
                 operator bool() const;
@@ -148,6 +153,24 @@ bool Protocol<NIC>::Address::operator==(const Address& a) const {
     return (_paddr == a._paddr) && (_port == a._port); 
 }
 
+template <typename NIC>
+std::string Protocol<NIC>::Address::to_string() const {
+    std::stringstream ss;
+    std::string mac_str;
+    try {
+        // Use the utility function from Ethernet namespace (likely in ethernet.h)
+        mac_str = Ethernet::mac_to_string(_paddr);
+        // Check if the conversion resulted in an empty string
+        if (mac_str.empty()) {
+            mac_str = "[MAC:?]"; // Use placeholder if MAC string is empty
+        }
+    } catch (...) {
+        // Fallback if Ethernet::mac_to_string throws an exception
+        mac_str = "[MAC:ERR]"; // Use different placeholder for exception case
+    }
+    ss << mac_str << ":" << _port; // Combine MAC string and port
+    return ss.str();
+}
 
 /********* Protocol Implementation *********/
 template <typename NIC>

@@ -1,0 +1,58 @@
+@startuml test_component_creation
+title Sequence Diagram: test_component_creation()
+
+actor User as "Test Function"
+participant Initializer
+participant Vehicle
+participant TestComponent as Comp
+
+User -> Initializer ++ : create_vehicle(1)
+Initializer -> Vehicle ++ : new Vehicle(1)
+Vehicle -> Vehicle : Constructor logs
+return Vehicle*
+return vehicle
+
+User -> User : TEST_ASSERT(vehicle != nullptr)
+
+User -> Initializer ++ : create_component<TestComponent>(vehicle, "Component1")
+Initializer -> Vehicle : get_protocol()
+Initializer -> Vehicle : next_component_address()
+Initializer -> Comp ++ : new TestComponent(vehicle, "Component1", protocol, address)
+Comp -> Comp : Constructor logs
+Comp -> Comp : Store protocol, address
+return component_ptr (unique_ptr)
+Initializer -> Vehicle : add_component(std::move(component_ptr))
+return raw_ptr (comp1)
+
+User -> Initializer ++ : create_component<TestComponent>(vehicle, "Component2")
+Initializer -> Vehicle : get_protocol()
+Initializer -> Vehicle : next_component_address()
+Initializer -> Comp ++ : new TestComponent(vehicle, "Component2", protocol, address)
+Comp -> Comp : Constructor logs
+Comp -> Comp : Store protocol, address
+return component_ptr (unique_ptr)
+Initializer -> Vehicle : add_component(std::move(component_ptr))
+return raw_ptr (comp2)
+
+User -> User : Log components created
+
+User -> Vehicle -- : delete vehicle
+Vehicle -> Vehicle : Log "~Vehicle() called!"
+Vehicle -> Vehicle ++ : stop_components() [Called by destructor]
+Vehicle -> Comp ++ : stop() for Component2
+Comp -> Comp : Log "stop() called"
+Comp -> Comp : Set _running = false
+Comp -> Comp : Log "stopped" (run() loop never started)
+Comp -> Comp : Join thread (thread never started)
+return
+Vehicle -> Comp ++ : stop() for Component1
+Comp -> Comp : Log "stop() called"
+Comp -> Comp : Set _running = false
+Comp -> Comp : Log "stopped" (run() loop never started)
+Comp -> Comp : Join thread (thread never started)
+return
+return
+Vehicle -> Comp --: unique_ptr destructor calls ~TestComponent()
+Vehicle -> Comp --: unique_ptr destructor calls ~TestComponent()
+
+@enduml 
