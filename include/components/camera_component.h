@@ -37,11 +37,11 @@ public:
 
         // Determine the local address for ECU1
         // We assume the base address is the vehicle's MAC and ECU1 gets port ECU1_PORT
-        _ecu1_address = TheAddress(address.PADDR(), ECU1_PORT);
+        _ecu1_address = TheAddress(address.paddr(), ECU1_PORT);
         db<CameraComponent>(INF) << name() << " targeting local ECU1 at: " << _ecu1_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0); // Target port 0 for broadcast for simplicity
+        _broadcast_address = TheAddress(Ethernet::BROADCAST.bytes, 0); // Target port 0 for broadcast for simplicity
          db<CameraComponent>(INF) << name() << " targeting broadcast at: " << _broadcast_address << "\n";
 
     }

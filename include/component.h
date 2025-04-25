@@ -53,11 +53,9 @@ public:
     // Pure virtual run method - must be implemented by derived classes with the component's main loop
     virtual void run() = 0;
 
-    std::string name() const { return _name; }
-
     // Accessors
     bool running() const { return _running.load(std::memory_order_acquire); }
-    const std::string& name() const { return _name; }
+    const std::string& name() { return _name; }
     Vehicle* vehicle() const { return _vehicle; };
     std::ofstream* log_file() { return &_log_file; };
 

@@ -48,7 +48,7 @@ const Ethernet::Address Ethernet::BROADCAST = {{0xff, 0xff, 0xff, 0xff, 0xff, 0x
 
 ### Before
 ```cpp
-addr.sll_halen    = Ethernet::MAC_SIZE;
+addr.sll_halen = Ethernet::MAC_SIZE;
 std::memcpy(addr.sll_addr, _mac_adress, Ethernet::MAC_SIZE);
 
 // Make sure protocol field is in network byte order before sending
@@ -59,9 +59,8 @@ int result = sendto(_sock_fd, frame, size, 0, reinterpret_cast<sockaddr*>(&addr)
 
 ### After
 ```cpp
-addr.sll_halen    = Ethernet::MAC_SIZE;
-std::memcpy(addr.sll_addr, Ethernet::BROADCAST, Ethernet::MAC_SIZE);
-
+addr.sll_halen = Ethernet::MAC_SIZE;
+std::memcpy(addr.sll_addr, Ethernet::BROADCAST.bytes, Ethernet::MAC_SIZE);
 
 // Make sure protocol field is in network byte order before sending
 frame->prot = htons(frame->prot);
@@ -152,9 +151,8 @@ In file included from tests/system_tests/virtual_dst_address_test.cpp:10:
 
 ### Fix:
 ```cpp
-_ecu1_address = TheAddress(address.PADDR(), ECU1_PORT);
+_ecu1_address = TheAddress(address.padrr(), ECU1_PORT);
 ```
-**New Getter** Defined getter method PADDR in the Protocol<>::Address Class
 
 ### Other Possible Solutions:
     - Just copy the address instanced passed to the constructor
@@ -178,7 +176,7 @@ _ecu1_address = TheAddress(address.PADDR(), ECU1_PORT);
 ```cpp
 // Determine the local address for ECU1
 // We assume the base address is the vehicle's MAC and ECU1 gets port ECU1_PORT
-_ecu1_address = TheAddress(address.PADDR(), ECU1_PORT);
+_ecu1_address = TheAddress(address.paddr(), ECU1_PORT);
 db<CameraComponent>(INF) << name() << " targeting local ECU1 at: " << _ecu1_address << "\n";
 
 // Define the broadcast address
@@ -220,4 +218,8 @@ make: *** [<builtin>: tests/system_tests/virtual_dst_address_test] Error 1
 ### TODO:
     - Develop the test to better demonstrate the correction of the communication using virtual destination addresses
     - Fix pending errors/warnings
-    
+    - iface dummy creation error: 
+    ```
+    /bin/sh: 1: cannot create tests/logs/current_test_iface: Permission denied
+    make: *** [Makefile:170: setup_dummy_iface] Error 2
+    ```

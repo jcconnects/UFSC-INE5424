@@ -48,11 +48,11 @@ public:
         }
 
         // Determine the local address for ECU1
-        _ecu1_address = TheAddress(address.PADDR(), ECU1_PORT);
+        _ecu1_address = TheAddress(address.paddr(), ECU1_PORT);
          db<INSComponent>(INF) << name() << " targeting local ECU1 at: " << _ecu1_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0);
+        _broadcast_address = TheAddress(Ethernet::BROADCAST.bytes, 0);
          db<INSComponent>(INF) << name() << " targeting broadcast at: " << _broadcast_address << "\n";
     }
 

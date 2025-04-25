@@ -78,7 +78,6 @@ class Protocol: private NIC::Observer
                 Address(Physical_Address paddr, Port port);
                 
                 void paddr(Physical_Address addr);
-                Physical_Address& paddr();
                 const Physical_Address& paddr() const;
 
                 void port(Port port);
@@ -127,11 +126,6 @@ Protocol<NIC>::Address::Address(Physical_Address paddr, Port port) : _port(port)
 template <typename NIC>
 void Protocol<NIC>::Address::paddr(Physical_Address addr){
     _paddr = addr;
-}
-
-template <typename NIC>
-Physical_Address Protocol<NIC>::Address::PADDR(){
-    return _paddr;
 }
 
 template <typename NIC>

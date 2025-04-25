@@ -35,11 +35,11 @@ public:
         }
 
         // Determine the local address for ECU2
-        _ecu2_address = TheAddress(address.PADDR(), ECU2_PORT);
+        _ecu2_address = TheAddress(address.paddr(), ECU2_PORT);
          db<LidarComponent>(INF) << name() << " targeting local ECU2 at: " << _ecu2_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0);
+        _broadcast_address = TheAddress(Ethernet::BROADCAST.bytes, 0);
          db<LidarComponent>(INF) << name() << " targeting broadcast at: " << _broadcast_address << "\n";
     }
 
