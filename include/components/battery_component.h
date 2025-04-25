@@ -3,7 +3,7 @@
 
 #include "component.h"
 #include "vehicle.h"
-#include "debug.h"
+#include "INFug.h"
 #include "ethernet.h"
 #include <chrono>
 #include <random>
@@ -37,11 +37,11 @@ public:
         }
 
         // Determine the local address for ECU2
-        _ecu2_address = TheAddress(address.mac(), ECU2_PORT);
+        _ecu2_address = TheAddress(address.PADDR(), ECU2_PORT);
          db<BatteryComponent>(INF) << name() << " targeting local ECU2 at: " << _ecu2_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::Address::BROADCAST, 0);
+        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0);
          db<BatteryComponent>(INF) << name() << " targeting broadcast at: " << _broadcast_address << "\n";
     }
 
@@ -82,7 +82,7 @@ public:
              db<BatteryComponent>(TRC) << "[" << name() << "] sending msg " << counter << " to ECU2: " << _ecu2_address << "\n";
             int bytes_sent_local = send(_ecu2_address, msg.c_str(), msg.size());
              if (bytes_sent_local > 0) {
-                  db<BatteryComponent>(DEB) << "[" << name() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
+                  db<BatteryComponent>(INF) << "[" << name() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
                  if (_log_file.is_open()) {
                       _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_local," << _ecu2_address << ","
                                 << std::fixed << std::setprecision(2) << voltage << "," << current << "," << temp << "," << soc << "\n";
@@ -97,7 +97,7 @@ public:
              db<BatteryComponent>(TRC) << "[" << name() << "] broadcasting msg " << counter << " to " << _broadcast_address << "\n";
             int bytes_sent_bcast = send(_broadcast_address, msg.c_str(), msg.size());
              if (bytes_sent_bcast > 0) {
-                  db<BatteryComponent>(DEB) << "[" << name() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
+                  db<BatteryComponent>(INF) << "[" << name() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
                  // Optional: Log broadcast send
              } else if(running()) {
                   db<BatteryComponent>(ERR) << "[" << name() << "] failed to broadcast msg " << counter << "!\n";

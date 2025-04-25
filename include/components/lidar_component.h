@@ -3,7 +3,7 @@
 
 #include "component.h"
 #include "vehicle.h"
-#include "debug.h"
+#include "INFug.h"
 #include "ethernet.h"
 #include <chrono>
 #include <random>
@@ -35,11 +35,11 @@ public:
         }
 
         // Determine the local address for ECU2
-        _ecu2_address = TheAddress(address.mac(), ECU2_PORT);
+        _ecu2_address = TheAddress(address.PADDR(), ECU2_PORT);
          db<LidarComponent>(INF) << name() << " targeting local ECU2 at: " << _ecu2_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::Address::BROADCAST, 0);
+        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0);
          db<LidarComponent>(INF) << name() << " targeting broadcast at: " << _broadcast_address << "\n";
     }
 
@@ -86,7 +86,7 @@ public:
              db<LidarComponent>(TRC) << "[" << name() << "] sending msg " << counter << " to ECU2: " << _ecu2_address << "\n";
             int bytes_sent_local = send(_ecu2_address, msg.c_str(), msg.size());
              if (bytes_sent_local > 0) {
-                  db<LidarComponent>(DEB) << "[" << name() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
+                  db<LidarComponent>(INF) << "[" << name() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
                  if (_log_file.is_open()) {
                       _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_local," << _ecu2_address << ",\"" << "PointCloud: " << num_points << " points" << "\"\n"; // Log summary
                       _log_file.flush();
@@ -100,7 +100,7 @@ public:
              db<LidarComponent>(TRC) << "[" << name() << "] broadcasting msg " << counter << " to " << _broadcast_address << "\n";
             int bytes_sent_bcast = send(_broadcast_address, msg.c_str(), msg.size());
              if (bytes_sent_bcast > 0) {
-                  db<LidarComponent>(DEB) << "[" << name() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
+                  db<LidarComponent>(INF) << "[" << name() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
                  if (_log_file.is_open()) {
                       _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_broadcast," << _broadcast_address << ",\"" << "PointCloud: " << num_points << " points" << "\"\n"; // Log summary
                       _log_file.flush();

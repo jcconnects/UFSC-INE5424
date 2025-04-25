@@ -45,6 +45,8 @@ class Vehicle {
         void add_component(std::unique_ptr<Component> component);
         void start_components();
         void stop_components();
+        // Get Address of this vehicle
+        typename Protocol<NIC<SocketEngine>>::Address address() const { return _base_address; }
 
         // Get protocol for component to create its communicator
         Protocol<NIC<SocketEngine>>* protocol() const { return _protocol; }

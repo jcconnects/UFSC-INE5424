@@ -48,11 +48,11 @@ public:
         }
 
         // Determine the local address for ECU1
-        _ecu1_address = TheAddress(address.mac(), ECU1_PORT);
+        _ecu1_address = TheAddress(address.PADDR(), ECU1_PORT);
          db<INSComponent>(INF) << name() << " targeting local ECU1 at: " << _ecu1_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::Address::BROADCAST, 0);
+        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0);
          db<INSComponent>(INF) << name() << " targeting broadcast at: " << _broadcast_address << "\n";
     }
 
@@ -101,7 +101,7 @@ public:
              db<INSComponent>(TRC) << "[" << name() << "] sending msg " << counter << " to ECU1: " << _ecu1_address << "\n";
             int bytes_sent_local = send(_ecu1_address, msg.c_str(), msg.size());
              if (bytes_sent_local > 0) {
-                  db<INSComponent>(DEB) << "[" << name() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
+                  db<INSComponent>(INF) << "[" << name() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
                  if (_log_file.is_open()) {
                       _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_local," << _ecu1_address << ","
                                 << std::fixed << std::setprecision(8) << lat << "," << lon << "," << std::setprecision(3) << alt << "," << vel << ","
@@ -116,12 +116,11 @@ public:
             // 2. Send to broadcast address
              db<INSComponent>(TRC) << "[" << name() << "] broadcasting msg " << counter << " to " << _broadcast_address << "\n";
             int bytes_sent_bcast = send(_broadcast_address, msg.c_str(), msg.size());
-             if (bytes_sent_bcast > 0) {
-                  db<INSComponent>(DEB) << "[" << name() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
+            if (bytes_sent_bcast > 0) {
+                db<INSComponent>(INF) << "[" << name() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
                  if (_log_file.is_open()) {
                      // Could log broadcast sends too, but might be redundant with local send log
-                      // _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_broadcast," << _broadcast_address << ",...
-";
+                      // _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_broadcast," << _broadcast_address << ",...";
                       // _log_file.flush();
                  }
              } else if(running()) {
