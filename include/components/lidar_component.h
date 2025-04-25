@@ -14,8 +14,8 @@
 #include <vector>
 #include <iomanip> // For std::fixed, std::setprecision
 
-// Assuming ECU2 will have port 1 based on creation order
-const unsigned short ECU2_PORT = 1;
+// Assuming ECU2 will have port 2 based on creation order
+const unsigned short ECU2_PORT = 2;
 
 class LidarComponent : public Component {
 public:

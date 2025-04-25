@@ -15,8 +15,8 @@
 #include <iomanip> // For std::fixed, std::setprecision
 
 // Forward declaration if necessary, or include the relevant header
-// Assuming ECU1 will have port 0 based on creation order
-const unsigned short ECU1_PORT = 0;
+// Assuming ECU1 will have port 1 based on creation order
+const unsigned short ECU1_PORT = 1;
 
 class CameraComponent : public Component {
 public:
