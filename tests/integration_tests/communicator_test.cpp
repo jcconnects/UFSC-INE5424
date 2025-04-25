@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <atomic>
 #include <iostream>
+#include <chrono> // For sleep_for
+#include <cstring> // For strlen
 
 #include "../testcase.h"
 #include "test_utils.h"

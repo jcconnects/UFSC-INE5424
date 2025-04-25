@@ -1,0 +1,136 @@
+@startuml ImplementationPlanP2_Sequence
+!theme vibrant
+
+' Define participants
+participant "ComponentA\nVehicle1" as CompA
+participant "CommunicatorA\nVehicle1" as CommA
+participant "Protocol\nVehicle1" as ProtocolV1
+participant "NIC\nVehicle1" as NICV1
+participant "SharedMemoryEngine\nVehicle1" as SMEngineV1
+participant "SocketEngine\nVehicle1" as SockEngineV1 #lightgray
+participant "Network" as Network #pink
+
+' For intra-vehicle communication
+participant "ComponentB\nVehicle1" as CompB
+participant "CommunicatorB\nVehicle1" as CommB
+
+' For inter-vehicle communication
+participant "SocketEngine\nVehicle2" as SockEngineV2 #lightgray
+participant "NIC\nVehicle2" as NICV2
+participant "Protocol\nVehicle2" as ProtocolV2
+participant "CommunicatorC\nVehicle2" as CommC
+participant "ComponentC\nVehicle2" as CompC
+
+' Title
+title Message Flow in P2 Implementation
+
+' Group for intra-vehicle sending
+group Send: Component A to Component B (same vehicle)
+  CompA -> CommA: send(destB_address, message)
+  note right: destB_address contains\nVehicle1 MAC + ComponentB ID
+  
+  CommA -> ProtocolV1: send(sourceA_address, destB_address, data, size)
+  note right: Full addresses include\nsource and destination\ncomponent identifiers
+  
+  ProtocolV1 -> NICV1: alloc(destB_address, PROTO, size)
+  NICV1 --> ProtocolV1: buffer 
+  
+  ProtocolV1 -> ProtocolV1: Create Packet\nwith headers
+  note right: Packet includes:\n- source_address (A)\n- destination_address (B)\n- payload
+  
+  ProtocolV1 -> NICV1: send(destB_address, buffer)
+  
+  NICV1 -> NICV1: Check destination\ndestB_addr.paddr() == own_MAC
+  note right: Detects local delivery\nsince destination MAC\nmatches Vehicle1
+  
+  NICV1 -> SMEngineV1: send_local(sourceA_address, destB_address, packet)
+  
+  SMEngineV1 -> SMEngineV1: Find ComponentB's queue\nbased on destB_address.port()
+  SMEngineV1 -> SMEngineV1: Place packet in queue
+  SMEngineV1 -> SMEngineV1: Signal ComponentB
+  
+  NICV1 -> NICV1: free(buffer)
+end
+
+' Group for inter-vehicle sending
+group Send: Component A to Component C (different vehicle)
+  CompA -> CommA: send(destC_address, message)
+  note right: destC_address contains\nVehicle2 MAC + ComponentC ID
+  
+  CommA -> ProtocolV1: send(sourceA_address, destC_address, data, size)
+  
+  ProtocolV1 -> NICV1: alloc(destC_address, PROTO, size)
+  NICV1 --> ProtocolV1: buffer
+  
+  ProtocolV1 -> ProtocolV1: Create Packet\nwith headers
+  note right: Packet includes:\n- source_address (A)\n- destination_address (C)\n- payload
+  
+  ProtocolV1 -> NICV1: send(destC_address, buffer)
+  
+  NICV1 -> NICV1: Check destination\ndestC_addr.paddr() != own_MAC
+  note right: Detects network delivery\nsince destination MAC\ndiffers from Vehicle1
+  
+  NICV1 -> SockEngineV1: send(buffer->data(), buffer->size())
+  note right: NIC inherits from SocketEngine\nand calls its send method
+  
+  SockEngineV1 -> Network: sendto(socket_fd, frame, size)
+  
+  NICV1 -> NICV1: free(buffer)
+end
+
+' Divider to separate send from receive
+== Receiving Messages ==
+
+' Group for intra-vehicle receiving
+group Receive: Component B from Component A (same vehicle)
+  SMEngineV1 -> CommB: Signal/wake up thread
+  note right: Through semaphore/condition\nvariable in shared memory
+  
+  CommB -> CommB: Wait on internal\nsemaphore [blocking]
+  
+  CommB -> SMEngineV1: receive message from queue
+  SMEngineV1 --> CommB: packet
+  
+  CommB -> CommB: Extract payload from packet
+  
+  CommB --> CompB: message
+  note right: CompB now has the\npayload only (no headers)
+end
+
+' Group for inter-vehicle receiving via network
+group Receive: Component C from Component A (different vehicle)
+  Network -> SockEngineV2: Data on socket_fd
+  
+  SockEngineV2 -> SockEngineV2: epoll_wait detects data
+  SockEngineV2 -> NICV2: handleNetworkPacket()
+  
+  NICV2 -> NICV2: recvfrom(socket_fd)
+  NICV2 -> NICV2: alloc buffer
+  NICV2 -> NICV2: Copy frame to buffer
+  
+  NICV2 -> ProtocolV2: notify(PROTO, buffer)
+  
+  ProtocolV2 -> ProtocolV2: Parse packet from buffer
+  ProtocolV2 -> ProtocolV2: Extract destination\ncomponent ID (C)
+  
+  ProtocolV2 -> CommC: notify(componentC_ID, buffer)
+  note right: Using Observer pattern\nkeyed on component ID
+  
+  CommC -> CommC: Signal internal thread
+  
+  CommC -> ProtocolV2: receive(buffer, source_addr, data, size)
+  
+  ProtocolV2 -> ProtocolV2: Extract source address\nfrom packet
+  ProtocolV2 -> ProtocolV2: Copy payload to data
+  
+  ProtocolV2 --> CommC: payload size, source_addr 
+  
+  CommC -> CommC: Create message from payload
+  
+  CommC --> CompC: message
+  note right: CompC now has the\npayload only (no headers)
+  
+  NICV2 -> NICV2: free(buffer)
+end
+
+@enduml 

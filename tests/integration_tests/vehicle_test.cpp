@@ -6,7 +6,8 @@
 #include <cstring>
 #include <thread>
 #include <chrono>
-#include "initializer.h"
+#include <atomic> // For std::atomic in TestComponent
+#include "initializer.h" // Include Initializer
 #include "vehicle.h"
 #include "nic.h"
 #include "protocol.h"
@@ -15,45 +16,62 @@
 #include "component.h"
 #include "test_utils.h"
 
+// Define port constants (needed if components require them, even TestComponent needs constructor args)
+// Note: These might be defined elsewhere if other test files are compiled together.
+// Consider a shared test constants header.
+const unsigned short ECU1_PORT = 0;
+const unsigned short ECU2_PORT = 1;
+
+
 // Define a test component that tracks its lifecycle events
 class TestComponent : public Component {
 public:
-    TestComponent(Vehicle* vehicle, const std::string& name) 
-        : Component(vehicle, name), 
-          start_called(false), 
-          stop_called(false) {}
-    
-    void start() override {
-        start_called = true;
-        _running = true;
+    // Updated constructor matching the new base class signature
+    TestComponent(Vehicle* vehicle, const std::string& name, TheProtocol* protocol, TheAddress address)
+        : Component(vehicle, name, protocol, address),
+          run_entered(false) // Initialize run_entered flag
+    {
+        // Base constructor now handles communicator creation
+        // No need for _running = false; base class handles it
     }
-    
-    void stop() override {
-        stop_called = true;  // Track signal_stop instead of stop
-        _running = false;
+
+    // Implement the pure virtual run method
+    void run() override {
+        run_entered.store(true, std::memory_order_release);
+        db<TestComponent>(INF) << name() << " run() method entered." << std::endl;
+        // Simple loop that respects the running flag
+        while (running()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+         db<TestComponent>(INF) << name() << " run() method exiting." << std::endl;
     }
-    
-    bool was_start_called() const { return start_called; }
-    bool was_stop_called() const { return stop_called; }
-    
+
+    // Removed start() override - Handled by base Component::start() which calls run() via thread
+    // Removed stop() override - Handled by base Component::stop() which sets running() flag and joins thread
+
+    bool was_run_entered() const { return run_entered.load(std::memory_order_acquire); }
+    // Removed was_start_called()
+    // Removed was_stop_called()
+
 private:
-    bool start_called;
-    bool stop_called;
+    // Removed start_called and stop_called flags
+    std::atomic<bool> run_entered;
 };
 
 int main() {
     TEST_INIT("vehicle_test");
     
-    // Test 1: Vehicle creation and basic properties
-    TEST_LOG("Creating vehicle with Initializer");
+    // Test 1: Vehicle creation and basic properties (remains the same)
+    TEST_LOG("--- Starting Test 1: Vehicle Creation & Properties ---");
     Vehicle* vehicle = Initializer::create_vehicle(42);
     
     TEST_ASSERT(vehicle != nullptr, "Vehicle should not be null");
     TEST_ASSERT(vehicle->id() == 42, "Vehicle ID should be 42");
     TEST_ASSERT(vehicle->running() == false, "Vehicle should not be running initially");
+    TEST_LOG("Test 1 Passed.");
     
-    // Test 2: Vehicle lifecycle management
-    TEST_LOG("Testing vehicle lifecycle management");
+    // Test 2: Vehicle lifecycle management (remains the same)
+    TEST_LOG("--- Starting Test 2: Vehicle Lifecycle ---");
     
     // Test starting the vehicle
     vehicle->start();
@@ -71,121 +89,115 @@ int main() {
         vehicle->stop();
         TEST_ASSERT(vehicle->running() == false, "Vehicle should not be running after stop()");
     }
+    TEST_LOG("Test 2 Passed.");
     
-    // Test 3: Component management
-    TEST_LOG("Testing component management");
+    // Test 3: Component management (Adapted)
+    TEST_LOG("--- Starting Test 3: Component Management Lifecycle ---");
     
-    // Create test components
-    TestComponent* component1 = new TestComponent(vehicle, "TestComponent1");
-    TestComponent* component2 = new TestComponent(vehicle, "TestComponent2");
-    TestComponent* component3 = new TestComponent(vehicle, "TestComponent3");
+    // Create test components using Initializer
+    TEST_LOG("Creating TestComponents using Initializer");
+    // Ensure vehicle is stopped before adding components if start/stop cycles affect this
+    if(vehicle->running()) vehicle->stop(); 
+    // Clear existing components if necessary, or use a fresh vehicle.
+    // Assuming Vehicle destructor called by Initializer::create_vehicle in Test 1 handled cleanup.
+    // Let's re-create vehicle for clarity in this test section.
+    delete vehicle; 
+    vehicle = Initializer::create_vehicle(42); 
     
-    // Add components to vehicle
-    vehicle->add_component(component1);
-    vehicle->add_component(component2);
-    vehicle->add_component(component3);
+    TestComponent* component1 = Initializer::create_component<TestComponent>(vehicle, "TestComponent1");
+    TestComponent* component2 = Initializer::create_component<TestComponent>(vehicle, "TestComponent2");
+    TestComponent* component3 = Initializer::create_component<TestComponent>(vehicle, "TestComponent3");
     
-    // Test starting components explicitly
-    vehicle->start_components();
+    TEST_ASSERT(component1 != nullptr, "Component 1 should be created");
+    TEST_ASSERT(component2 != nullptr, "Component 2 should be created");
+    TEST_ASSERT(component3 != nullptr, "Component 3 should be created");
+    TEST_ASSERT(vehicle->components().size() == 3, "Vehicle should have 3 components");
+
+    // Start the vehicle, which should start its components
+    TEST_LOG("Starting vehicle to start components");
+    vehicle->start();
+    TEST_ASSERT(vehicle->running() == true, "Vehicle should be running after start()");
+
+    // Allow some time for threads to start and enter run()
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    // Test component running state and run method entry
+    TEST_ASSERT(component1->running(), "Component 1 should be running after vehicle start");
+    TEST_ASSERT(component2->running(), "Component 2 should be running after vehicle start");
+    TEST_ASSERT(component3->running(), "Component 3 should be running after vehicle start");
+
+    TEST_ASSERT(component1->was_run_entered(), "Component 1 run() should have been entered");
+    TEST_ASSERT(component2->was_run_entered(), "Component 2 run() should have been entered");
+    TEST_ASSERT(component3->was_run_entered(), "Component 3 run() should have been entered");
+
+    // Stop the vehicle, which should stop its components
+    TEST_LOG("Stopping vehicle to stop components");
+    vehicle->stop();
+    TEST_ASSERT(vehicle->running() == false, "Vehicle should not be running after stop()");
+
+    // Test component stopped state
+    // Note: Base::stop joins threads, so running() should be false immediately after stop returns
+    TEST_ASSERT(!component1->running(), "Component 1 should not be running after vehicle stop");
+    TEST_ASSERT(!component2->running(), "Component 2 should not be running after vehicle stop");
+    TEST_ASSERT(!component3->running(), "Component 3 should not be running after vehicle stop");
+    TEST_LOG("Test 3 Passed.");
+
     
-    TEST_ASSERT(component1->was_start_called(), "Component 1 start() should have been called");
-    TEST_ASSERT(component2->was_start_called(), "Component 2 start() should have been called");
-    TEST_ASSERT(component3->was_start_called(), "Component 3 start() should have been called");
+    // Test 4: Verify components added before vehicle starts are started (Adapted)
+    TEST_LOG("--- Starting Test 4: Components Started with Vehicle ---");
     
-    TEST_ASSERT(component1->running(), "Component 1 should be running");
-    TEST_ASSERT(component2->running(), "Component 2 should be running");
-    TEST_ASSERT(component3->running(), "Component 3 should be running");
-    
-    // Test stopping components explicitly
-    vehicle->stop_components();
-    
-    TEST_ASSERT(component1->was_stop_called(), "Component 1 stop() should have been called");
-    TEST_ASSERT(component2->was_stop_called(), "Component 2 stop() should have been called");
-    TEST_ASSERT(component3->was_stop_called(), "Component 3 stop() should have been called");
-    
-    TEST_ASSERT(!component1->running(), "Component 1 should not be running");
-    TEST_ASSERT(!component2->running(), "Component 2 should not be running");
-    TEST_ASSERT(!component3->running(), "Component 3 should not be running");
-    
-    // Test 4: Verify components are started when vehicle starts
-    TEST_LOG("Testing components are started when vehicle starts");
-    
-    // Create a new vehicle for this test to avoid interference from previous components
     Vehicle* vehicle2 = Initializer::create_vehicle(43);
+    TEST_ASSERT(vehicle2 != nullptr, "Vehicle 2 should be created");
     
-    // Create new components specifically for vehicle2
-    TestComponent* component4 = new TestComponent(vehicle2, "TestComponent4");
-    TestComponent* component5 = new TestComponent(vehicle2, "TestComponent5");
+    // Create components using Initializer for vehicle2
+    TEST_LOG("Creating TestComponents for Vehicle 2");
+    TestComponent* component4 = Initializer::create_component<TestComponent>(vehicle2, "TestComponent4");
+    TestComponent* component5 = Initializer::create_component<TestComponent>(vehicle2, "TestComponent5");
     
-    // Add components to new vehicle
-    vehicle2->add_component(component4);
-    vehicle2->add_component(component5);
+    TEST_ASSERT(component4 != nullptr, "Component 4 should be created");
+    TEST_ASSERT(component5 != nullptr, "Component 5 should be created");
+    TEST_ASSERT(vehicle2->components().size() == 2, "Vehicle 2 should have 2 components");
     
-    // Start vehicle and check if components were started
+    // Start vehicle and check if components were started and run() entered
+    TEST_LOG("Starting Vehicle 2");
     vehicle2->start();
-    
     TEST_ASSERT(vehicle2->running(), "Vehicle 2 should be running after start()");
-    TEST_ASSERT(component4->was_start_called(), "Component 4 start() should have been called when vehicle starts");
-    TEST_ASSERT(component5->was_start_called(), "Component 5 start() should have been called when vehicle starts");
     
-    // Test 5: Communication functionality
-    TEST_LOG("Testing communication functionality");
+    // Allow time for threads
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    TEST_ASSERT(component4->running(), "Component 4 should be running after vehicle start");
+    TEST_ASSERT(component5->running(), "Component 5 should be running after vehicle start");
+    TEST_ASSERT(component4->was_run_entered(), "Component 4 run() should have been called when vehicle starts");
+    TEST_ASSERT(component5->was_run_entered(), "Component 5 run() should have been called when vehicle starts");
+    TEST_LOG("Test 4 Passed.");
+
+    // Test 5: Communication functionality (Removed)
+    // Test 6: Test invalid parameters for send/receive (Removed)
+    // Test 7: Test receive after vehicle has stopped (Removed)
+    TEST_LOG("--- Skipping Tests 5, 6, 7 (Vehicle Send/Receive Removed) ---");
     
-    // Create another vehicle to potentially receive messages
-    Vehicle* vehicle3 = Initializer::create_vehicle(44);
+    // Test 8 -> Renamed Test 5: Make sure vehicle destructor properly cleans up components
+    TEST_LOG("--- Starting Test 5: Vehicle Destructor Cleanup ---");
     
-    // Start both vehicles
-    vehicle2->start();
-    vehicle3->start();
-    
-    // Test sending a message from vehicle2
-    std::string test_message = "Hello from Vehicle Test!";
-    int send_result = vehicle2->send(test_message.c_str(), test_message.size());
-    
-    // Due to the nature of this test environment, we can only verify the message was sent
-    // not that it was actually received by vehicle3
-    TEST_ASSERT(send_result > 0, "Send should return success value");
-    TEST_LOG("Send operation completed successfully");
-    
-    // Test 6: Test invalid parameters for send/receive
-    TEST_LOG("Testing invalid parameters for send/receive");
-    
-    // Instead of directly sending null data (which causes segfault),
-    // we'll test with empty data which should be handled more safely
-    char empty_data[1] = {0};
-    send_result = vehicle2->send(empty_data, 0);
-    TEST_ASSERT(send_result == 0, "Sending zero size should fail");
-    
-    // Test receiving with null buffer
-    char receive_buffer[100];
-    int receive_result = vehicle2->receive(nullptr, 100);
-    TEST_ASSERT(receive_result < 0, "Receiving with null buffer should fail with negative value");
-    
-    // Test receiving with zero size
-    receive_result = vehicle2->receive(receive_buffer, 0);
-    TEST_ASSERT(receive_result < 0, "Receiving with zero size should fail with negative value");
-    
-    // Test 7: Test receive after vehicle has stopped
-    TEST_LOG("Testing receive after vehicle has stopped");
-    
+    // Stop vehicle before deleting if it's running (it is from Test 4)
+    TEST_LOG("Stopping Vehicle 2 before deletion");
     vehicle2->stop();
     TEST_ASSERT(!vehicle2->running(), "Vehicle 2 should not be running after stop()");
-    
-    receive_result = vehicle2->receive(receive_buffer, sizeof(receive_buffer));
-    TEST_ASSERT(receive_result == 0, "Receive should fail when vehicle is not running");
-    
-    // Test 8: Make sure vehicle destructor properly cleans up components
-    TEST_LOG("Testing vehicle destructor and component cleanup");
-    
-    // vehicle2's destructor should delete all its components
-    delete vehicle2;
+
+    TEST_LOG("Deleting Vehicle 2");
+    delete vehicle2; // vehicle2's destructor should delete component4 and component5
+    vehicle2 = nullptr; // Avoid dangling pointer
     TEST_LOG("Vehicle 2 deleted successfully");
     
-    // We can't test component1 and component2 after this point as they've been deleted
+    // We can't test component4 and component5 after this point as they've been deleted
     
-    // Clean up remaining vehicles
+    // Clean up remaining vehicle from Test 1-3
+    TEST_LOG("Cleaning up Vehicle 1");
+    // Ensure vehicle 1 is stopped (it was stopped in Test 3)
+    if(vehicle->running()) vehicle->stop(); 
     delete vehicle;
-    delete vehicle3;
+    vehicle = nullptr;
     
     TEST_LOG("Vehicle test passed successfully!");
     return 0;

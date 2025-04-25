@@ -1,0 +1,54 @@
+@startuml Component Creation Sequence
+
+skinparam sequenceMessageAlign center
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 12
+
+participant "Caller" as Caller
+participant "Initializer" as Init <<static>>
+participant "vehicle:Vehicle" as V
+participant "protocol:TheProtocol" as P
+participant "component_ptr:unique_ptr<SpecificComponentType>" as CompPtr
+participant "SpecificComponentType" as Comp <<SpecificComponentType>>
+
+Caller -> Init: create_component<SpecificComponentType>(vehicle, name, ...)
+activate Init
+
+Init -> V: protocol()
+activate V
+V --> Init: protocol_ptr (TheProtocol*)
+deactivate V
+
+Init -> V: next_component_address()
+activate V
+V --> Init: address (TheAddress)
+deactivate V
+
+Init -> CompPtr**: create(vehicle, name, protocol_ptr, address, ...)
+activate CompPtr
+CompPtr -> Comp**: create
+activate Comp
+note right of Comp : Constructor called:
+Comp -> Comp: Initialize members (_vehicle, _name, _protocol)
+Comp -> Comp: Create _communicator (std::make_unique<TheCommunicator>)
+Comp --> CompPtr
+deactivate Comp
+CompPtr --> Init: component_ptr (std::unique_ptr)
+deactivate CompPtr
+
+Init -> V: add_component(std::move(component_ptr))
+activate V
+note right of V: Takes ownership of component_ptr
+V -> V: _components.push_back(...)
+V --> Init
+deactivate V
+
+Init -> CompPtr: .get()
+activate CompPtr
+CompPtr --> Init: raw_ptr (SpecificComponentType*)
+deactivate CompPtr
+
+Init --> Caller: raw_ptr
+deactivate Init
+
+@enduml 

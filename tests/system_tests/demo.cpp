@@ -13,8 +13,11 @@
 #include "vehicle.h"
 #include "debug.h"
 #include "component.h"
-#include "components/sender_component.h"
-#include "components/receiver_component.h"
+#include "components/ecu_component.h"
+#include "components/camera_component.h"
+#include "components/lidar_component.h"
+#include "components/ins_component.h"
+#include "components/battery_component.h"
 #include "test_utils.h"
 
 
@@ -27,16 +30,26 @@ void run_vehicle(Vehicle* v) {
     int lifetime = dist_lifetime(gen);
     unsigned int vehicle_id = v->id(); // Store ID before deletion
 
-    // Create components based on vehicle ID
-    // Even ID vehicles will send and receive
-    // Odd ID vehicles will only receive
-    if (v->id() % 2 == 0) {
-        db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating sender component\n";
-        v->add_component(new SenderComponent(v));
-    }
-    
-    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating receiver component\n";
-    v->add_component(new ReceiverComponent(v));
+    // Create components in the specified order
+    // Order determines the port assigned by Vehicle::next_component_address()
+    // ECU1 -> Port 0
+    // ECU2 -> Port 1
+    // Camera -> Port 2
+    // Lidar -> Port 3
+    // INS -> Port 4
+    // Battery -> Port 5
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating ECU1 component\n";
+    Initializer::create_component<ECUComponent>(v, "ECU1");
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating ECU2 component\n";
+    Initializer::create_component<ECUComponent>(v, "ECU2");
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating Camera component\n";
+    Initializer::create_component<CameraComponent>(v, "Camera");
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating Lidar component\n";
+    Initializer::create_component<LidarComponent>(v, "Lidar");
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating INS component\n";
+    Initializer::create_component<INSComponent>(v, "INS");
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating Battery component\n";
+    Initializer::create_component<BatteryComponent>(v, "Battery");
 
     v->start();
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] starting. Lifetime: " << lifetime << "s\n";
