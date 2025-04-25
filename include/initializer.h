@@ -23,6 +23,10 @@ class Initializer {
 
         // Start the vehicle process
         static Vehicle* create_vehicle(unsigned int id);
+
+        static VehicleNIC* create_nic();
+
+        static CProtocol* create_protocol(VehicleNIC* nic);
         
         // Template method to create a component with its own communicator
         template <typename SpecificComponentType, typename... Args>
