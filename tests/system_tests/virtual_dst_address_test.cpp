@@ -16,30 +16,31 @@
 #include "test_utils.h"
 
 int main() {
-    TEST_INIT("vehicle_to_vehicle_component_test");
+    TEST_INIT("Virtual Destination Address Test");
 
     // 1. Create two vehicles
-    Vehicle* v1 = Initializer::create_vehicle(101);
+    Vehicle* v1 = Initializer::create_vehicle(201);
     Vehicle* v2 = Initializer::create_vehicle(202);
 
     // 2. Add components to both vehicles (order determines port assignment)
     ECUComponent* v1_ecu1 = Initializer::create_component<ECUComponent>(v1, "ECU1");
-    ECUComponent* v1_ecu2 = Initializer::create_component<ECUComponent>(v1, "ECU2");
-    CameraComponent* v1_camera = Initializer::create_component<CameraComponent>(v1, "Camera");
+    Initializer::create_component<ECUComponent>(v1, "ECU2");
+    Initializer::create_component<CameraComponent>(v1, "Camera");
 
-    ECUComponent* v2_ecu1 = Initializer::create_component<ECUComponent>(v2, "ECU1");
-    ECUComponent* v2_ecu2 = Initializer::create_component<ECUComponent>(v2, "ECU2");
-    CameraComponent* v2_camera = Initializer::create_component<CameraComponent>(v2, "Camera");
+    Initializer::create_component<ECUComponent>(v2, "ECU1");
+    Initializer::create_component<ECUComponent>(v2, "ECU2");
+    Initializer::create_component<CameraComponent>(v2, "Camera");
 
     // 3. Start both vehicles (starts all components)
     v1->start();
     v2->start();
 
     // 4. Compose the destination address for v2's ECU2 (vehicle 2's MAC, port 1)
-    TheAddress dest_addr = TheAddress(v2->address(), ECU2_PORT); // Assuming ECU2_PORT is defined in the component header
+    TheAddress dest_addr = v2->address(); // Assuming ECU2_PORT is defined in the component header
+    dest_addr.port(static_cast<unsigned int>(ECU2_PORT)); // Set the port to ECU2's port
 
     // 5. Compose a test message
-    std::string test_msg = "[Test] Vehicle 101 to Vehicle 202 ECU2";
+    std::string test_msg = "[Test] Vehicle 201 to Vehicle 202 ECU2";
 
     // 6. Send the message from v1's ECU1 to v2's ECU2
     int bytes_sent = v1_ecu1->send(dest_addr, test_msg.c_str(), test_msg.size());

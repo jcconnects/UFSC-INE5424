@@ -62,7 +62,7 @@ SpecificComponentType* Initializer::create_component(Vehicle* vehicle, const std
 
     // Get the next available address for this component
     auto address = vehicle->next_component_address();
-    db<Initializer>(INF) << "Creating component '" << name << "' with address " << address << "\n";
+    db<Initializer>(INF) << "Creating component '" << name << "' with address " << address.paddr() << " and port " << address.port() << "\n";
 
     // Create the component using std::make_unique for automatic memory management
     // This directly creates the derived type (e.g., SenderComponent)

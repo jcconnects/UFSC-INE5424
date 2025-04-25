@@ -253,7 +253,7 @@ void NIC<Engine>::handleSignal() {
     // Convert protocol from network to host byte order
     frame.prot = ntohs(frame.prot);
     // // Filters out messages from itself
-    if (_address == frame.src || frame.dst != _address && frame.dst != Ethernet::BROADCAST) {
+    if (_address == frame.src || (frame.dst != _address && frame.dst != Ethernet::BROADCAST)) {
         db<SocketEngine>(INF) << "[SocketEngine] Ignoring frame from self or not for this NIC\n";
         return;
     }
