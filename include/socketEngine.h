@@ -209,7 +209,7 @@ int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
     addr.sll_protocol = htons(frame->prot);
     addr.sll_ifindex  = _if_index;
     addr.sll_halen    = Ethernet::MAC_SIZE;
-    std::memcpy(addr.sll_addr, _mac_address.bytes, Ethernet::MAC_SIZE);
+    std::memcpy(addr.sll_addr, frame->dst.bytes, Ethernet::MAC_SIZE);
 
     // Make sure protocol field is in network byte order before sending
     frame->prot = htons(frame->prot);
