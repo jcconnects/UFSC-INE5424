@@ -8,13 +8,18 @@
 #include "vehicle.h"
 #include "debug.h"
 #include "ethernet.h"
+#include "sharedMemoryEngine.h"
 #include <memory> // Add include for std::make_unique and std::move
 
 // Initializer class responsible for creating and managing a single vehicle process
 class Initializer {
     public:
-        typedef NIC<SocketEngine> VehicleNIC;
-        typedef Protocol<VehicleNIC> CProtocol;
+        // Use the aliases defined in component.h (or types.h)
+        // These define the specific NIC and Protocol types for the system
+        // typedef NIC<SocketEngine> VehicleNIC; // Old
+        // typedef Protocol<VehicleNIC> CProtocol; // Old
+        using VehicleNIC = TheNIC;       // Use the dual-engine NIC alias
+        using CProtocol = TheProtocol;   // Use the corresponding protocol alias
 
         Initializer() = default;
 
@@ -31,16 +36,19 @@ class Initializer {
 /********** Initializer Implementation ***********/
 Vehicle* Initializer::create_vehicle(unsigned int id) {
     // Setting Vehicle virtual MAC Address
-    Ethernet::Address addr;
-    addr.bytes[0] = 0x02; // local, unicast
-    addr.bytes[1] = 0x00;
-    addr.bytes[2] = 0x00;
-    addr.bytes[3] = 0x00;
-    addr.bytes[4] = (id >> 8) & 0xFF;
-    addr.bytes[5] = id & 0xFF;
+    // Ethernet::Address addr; // We don't set the address here anymore;
+    // addr.bytes[0] = 0x02; // the NIC gets its address from the SocketEngine.
+    // addr.bytes[1] = 0x00;
+    // addr.bytes[2] = 0x00;
+    // addr.bytes[3] = 0x00;
+    // addr.bytes[4] = (id >> 8) & 0xFF;
+    // addr.bytes[5] = id & 0xFF;
 
+    // Create the concrete dual-engine NIC instance
     VehicleNIC* nic = new VehicleNIC();
-    nic->setAddress(addr);
+    // nic->setAddress(addr); // Address is now set internally by NIC from SocketEngine
+
+    // Create the protocol instance, passing the NIC
     CProtocol* protocol = new CProtocol(nic);
     return new Vehicle(id, nic, protocol);
 }

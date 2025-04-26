@@ -19,6 +19,7 @@
 #include "protocol.h"
 #include "nic.h"
 #include "socketEngine.h" // Corrected filename
+#include "sharedMemoryEngine.h" // Added SharedMemoryEngine
 #include "communicator.h"
 #include "message.h"
 // #include "vehicle.h" // REMOVED to break circular dependency
@@ -29,10 +30,11 @@ class Vehicle;
 
 // --- Concrete Type Definitions ---
 // TODO: Consider moving these to a central "types.h"
-using TheProtocol = Protocol<NIC<SocketEngine>>;
-using TheAddress = TheProtocol::Address;
-using TheCommunicator = Communicator<TheProtocol>;
-using TheMessage = Message<TheCommunicator::MAX_MESSAGE_SIZE>;
+using TheNIC = NIC<SocketEngine, SharedMemoryEngine>; // Define the concrete dual-engine NIC
+using TheProtocol = Protocol<TheNIC>;                 // Define the protocol using the concrete NIC
+using TheAddress = TheProtocol::Address;              // Address type from the protocol
+using TheCommunicator = Communicator<TheProtocol>;      // Communicator templated on the protocol
+using TheMessage = Message<TheCommunicator::MAX_MESSAGE_SIZE>; // Message constrained by communicator
 // --- End Concrete Type Definitions ---
 
 

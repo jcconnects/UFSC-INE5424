@@ -108,5 +108,14 @@ struct Traits<Debug> : public Traits<void>
     static const bool trace = true;
 };
 
+// Traits for SharedMemoryEngine class
+template<>
+struct Traits<SharedMemoryEngine> : public Traits<void>
+{
+    static const bool debugged = false;
+    static const unsigned int BUFFER_SIZE = 128;     // Capacity of the shared memory ring buffer
+    static const unsigned int POLL_INTERVAL_MS = 10; // Interval (ms) for the timerfd notification
+    static const unsigned int MTU = 1500;            // Max payload size in shared frames (aligned with Ethernet)
+};
 
 #endif // TRAITS_H
