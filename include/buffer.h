@@ -18,9 +18,11 @@ class Buffer{
         T* data();
         void setData(const void* data, unsigned int size);
         const unsigned int size() const;
-        void setSize(unsigned int size);
         void clear();
-
+        
+    private:
+        void setSize(unsigned int size);
+    
     private:
         std::uint8_t _data[MAX_SIZE];
         unsigned int _size;
