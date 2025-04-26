@@ -21,7 +21,7 @@ inline std::string get_interface_name() {
 template <typename NIC>
 class Protocol;
 
-template <typename Engine>
+template <typename NetworkEngine, typename MemoryEngine>
 class NIC;
 
 class SocketEngine;
@@ -42,8 +42,8 @@ struct Traits {
 };
 
 // Traits for NIC class
-template <typename Engine>
-struct Traits<NIC<Engine>> : public Traits<void>
+template <typename NetworkEngine, typename MemoryEngine>
+struct Traits<NIC<NetworkEngine, MemoryEngine>> : public Traits<void>
 {
     static const bool debugged = false;
     static const unsigned int SEND_BUFFERS = 512;
@@ -51,15 +51,8 @@ struct Traits<NIC<Engine>> : public Traits<void>
 };
 
 // Traits for Protocol class
-template <typename NIC>
-struct Traits<Protocol<NIC>> : public Traits<void>
-{
-    static const bool debugged = false;
-};
-
-// Traits for Protocol<NIC<SocketEngine>> class
-template <>
-struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
+template <typename NetworkEngine, typename MemoryEngine>
+struct Traits<Protocol<NIC<NetworkEngine, MemoryEngine>>> : public Traits<void>
 {
     static const bool debugged = false;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 888; // Example value
