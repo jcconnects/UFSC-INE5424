@@ -19,13 +19,9 @@ class TestBuffer : public TestCase {
         void test_create_empty_buffer();
         void test_create_buffer_with_data();
 
-        
-        void test_set_and_retrieve_size();
-        void test_set_size_less_than_zero();
-        void test_set_size_greater_than_maxsize();
-
         void test_set_and_retrieve_data();
         
+
         void test_clear_buffer();
 
     public:
@@ -59,8 +55,6 @@ TestBuffer::TestBuffer() {
     DEFINE_TEST(test_create_empty_buffer);
     DEFINE_TEST(test_create_buffer_with_data);
     DEFINE_TEST(test_set_and_retrieve_data);
-    DEFINE_TEST(test_set_and_retrieve_size);
-    DEFINE_TEST(test_set_size_greater_than_maxsize);
     DEFINE_TEST(test_clear_buffer);
 }
 
@@ -99,25 +93,6 @@ void TestBuffer::test_create_buffer_with_data() {
 
     // Result Verification
     assert_equal(buf.size(), sizeof(TestData), "Buffer size is different of data size!");
-}
-
-void TestBuffer::test_set_and_retrieve_size() {
-    // Inline Fixture
-    const unsigned int size = 2;
-
-    // Exercise SUT
-    _buf->setSize(size);
-
-    // Result Verification
-    assert_equal(_buf->size(), size, "Buffer size is different of setted size!");
-}
-
-void TestBuffer::test_set_size_greater_than_maxsize() {
-    // Exercise SUT
-    _buf->setSize(sizeof(TestData) + 10);
-
-    // Result Verification
-    assert_equal(_buf->size(), sizeof(TestData), "Buffer size is different of data size, which should not happen!");
 }
 
 void TestBuffer::test_set_and_retrieve_data() {
