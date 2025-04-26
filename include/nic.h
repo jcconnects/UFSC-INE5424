@@ -18,13 +18,13 @@
 class Initializer;
 
 // Network Interface Card implementation
-template <typename Engine>
-class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Ethernet::Protocol>, private Engine
+template <typename NetworkEngine, typename MemoryEngine>
+class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Ethernet::Protocol>, private NetworkEngine, private MemoryEngine
 {
     friend class Initializer;
 
     public:
-        static const unsigned int N_BUFFERS = Traits<NIC<Engine>>::SEND_BUFFERS + Traits<NIC<Engine>>::RECEIVE_BUFFERS;
+        static const unsigned int N_BUFFERS = Traits<NIC<NetworkEngine, MemoryEngine>>::SEND_BUFFERS + Traits<NIC<NetworkEngine, MemoryEngine>>::RECEIVE_BUFFERS;
 
         typedef Ethernet::Address Address;
         typedef Ethernet::Protocol Protocol_Number;
@@ -53,18 +53,16 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
     public:
         ~NIC();
         
-        // Send data over the network
-        // int send(Address dst, Protocol_Number prot, const void* data, unsigned int size);
+        int send(Address dst, Protocol_Number prot, const void * data, unsigned int size);
         
-        // Receive data from the network
-        // int receive(Address* src, Protocol_Number* prot, void* data, unsigned int size);
-        
+        int receive(Address * src, Protocol_Number * prot, void * data, unsigned int size);
+
         // Send a pre-allocated buffer
         int send(DataBuffer* buf);
 
         // Process a received buffer
         int receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size);
-        
+
         // Allocate a buffer for sending
         DataBuffer* alloc(Address dst, Protocol_Number prot, unsigned int size);
         
@@ -80,7 +78,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         // Get network statistics
         const Statistics& statistics();
         
-        // Explicitly stop the NIC and its underlying engine
+        // Explicitly stop the NIC and its underlying NetworkEngine
         void stop();
         
         // Attach/detach observers
@@ -100,9 +98,9 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
 };
 
 // NIC implementations
-template <typename Engine>
-NIC<Engine>::NIC() {
-    db<NIC>(TRC) << "NIC<Engine>::NIC() called!\n";
+template <typename NetworkEngine, typename MemoryEngine>
+NIC<NetworkEngine, MemoryEngine>::NIC() {
+    db<NIC>(TRC) << "NIC<NetworkEngine, MemoryEngine>::NIC() called!\n";
 
     for (unsigned int i = 0; i < N_BUFFERS; ++i) {
         _buffer[i] = DataBuffer();
@@ -117,29 +115,26 @@ NIC<Engine>::NIC() {
     // Setting default address
     _address = this->_mac_address;
     
-    // Starting Engine
-    Engine::start();
+    // Starting NetworkEngine
+    NetworkEngine::start();
 }
 
-template <typename Engine>
-NIC<Engine>::~NIC() {
-    db<NIC>(TRC) << "NIC<Engine>::~NIC() called!\n";
-
-    // Engine::stop() is now called via _nic->stop() in Vehicle::~Vehicle()
-    // so this call is redundant and has been removed
+template <typename NetworkEngine, typename MemoryEngine>
+NIC<NetworkEngine, MemoryEngine>::~NIC() {
+    db<NIC>(TRC) << "NIC<NetworkEngine, MemoryEngine>::~NIC() called!\n";
     
     sem_destroy(&_buffer_sem);
     sem_destroy(&_binary_sem);
 
 }
 
-template <typename Engine>
-int NIC<Engine>::send(DataBuffer* buf) {
-    db<NIC>(TRC) << "NIC<Engine>::send() called!\n";
+template <typename NetworkEngine, typename MemoryEngine>
+int NIC<NetworkEngine, MemoryEngine>::send(DataBuffer* buf) {
+    db<NIC>(TRC) << "NIC<NetworkEngine, MemoryEngine>::send() called!\n";
 
-    // Check if engine is running before trying to send
-    if (!Engine::running()) {
-        db<NIC>(INF) << "[NIC] send() called while engine is shutting down, dropping packet\n";
+    // Check if NetworkEngine is running before trying to send
+    if (!NetworkEngine::running()) {
+        db<NIC>(INF) << "[NIC] send() called while NetworkEngine is shutting down, dropping packet\n";
         _statistics.tx_drops++;
         return -1;
     }
@@ -150,8 +145,8 @@ int NIC<Engine>::send(DataBuffer* buf) {
         return -1;
     }
 
-    int result = Engine::send(buf->data(), buf->size());
-    db<NIC>(INF) << "[NIC] Engine::send() returned value " << std::to_string(result) << "\n";
+    int result = NetworkEngine::send(buf->data(), buf->size());
+    db<NIC>(INF) << "[NIC] NetworkEngine::send() returned value " << std::to_string(result) << "\n";
 
     if (result <= 0) {
         _statistics.tx_drops++;
@@ -164,9 +159,9 @@ int NIC<Engine>::send(DataBuffer* buf) {
     return result;
 }
 
-template <typename Engine>
-int NIC<Engine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size) {
-    db<NIC>(TRC) << "NIC<Engine>::receive() called!\n";
+template <typename NetworkEngine, typename MemoryEngine>
+int NIC<NetworkEngine, MemoryEngine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size) {
+    db<NIC>(TRC) << "NIC<NetworkEngine, MemoryEngine>::receive() called!\n";
 
     // Enhanced validation for buffer
     if (!buf || !buf->data()) {
@@ -220,13 +215,13 @@ int NIC<Engine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data
     return payload_size;
 }
 
-template <typename Engine>
-void NIC<Engine>::handleSignal() {
-    db<SocketEngine>(TRC) << "SocketEngine::handleSignal() called!\n";
+template <typename NetworkEngine, typename MemoryEngine>
+void NIC<NetworkEngine, MemoryEngine>::handleSignal() {
+    db<SocketNetworkEngine>(TRC) << "SocketNetworkEngine::handleSignal() called!\n";
     
-    // Early check - if engine is no longer running, don't process packets
-    if (!Engine::running()) {
-        db<SocketEngine>(TRC) << "[SocketEngine] Engine no longer running, ignoring signal\n";
+    // Early check - if NetworkEngine is no longer running, don't process packets
+    if (!NetworkEngine::running()) {
+        db<SocketNetworkEngine>(TRC) << "[SocketNetworkEngine] NetworkEngine no longer running, ignoring signal\n";
         return;
     }
     
@@ -237,7 +232,7 @@ void NIC<Engine>::handleSignal() {
     int bytes_received = recvfrom(this->_sock_fd, &frame, sizeof(frame), 0, reinterpret_cast<sockaddr*>(&src_addr), &addr_len);
                                
     if (bytes_received < 0) {
-        db<SocketEngine>(INF) << "[SocketEngine] No data received\n";
+        db<SocketNetworkEngine>(INF) << "[SocketNetworkEngine] No data received\n";
         if (errno != EAGAIN && errno != EWOULDBLOCK) {
             perror("recvfrom");
         }
@@ -246,7 +241,7 @@ void NIC<Engine>::handleSignal() {
 
     // Check for valid Ethernet frame size (at least header size)
     if (static_cast<unsigned int>(bytes_received) < Ethernet::HEADER_SIZE) {
-        db<SocketEngine>(ERR) << "[SocketEngine] Received undersized frame (" << bytes_received << " bytes)\n";
+        db<SocketNetworkEngine>(ERR) << "[SocketNetworkEngine] Received undersized frame (" << bytes_received << " bytes)\n";
         return;
     }
     
@@ -254,7 +249,7 @@ void NIC<Engine>::handleSignal() {
     frame.prot = ntohs(frame.prot);
     // // Filters out messages from itself
     if (_address == frame.src) return;
-    db<SocketEngine>(INF) << "[SocketEngine] received frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << frame.prot << ", size = " << bytes_received << "}\n";
+    db<SocketNetworkEngine>(INF) << "[SocketNetworkEngine] received frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << frame.prot << ", size = " << bytes_received << "}\n";
     
     // Process the frame if callback is set
     // 1. Extracting header
@@ -262,7 +257,7 @@ void NIC<Engine>::handleSignal() {
     Ethernet::Protocol proto = frame.prot;
 
     // 2. Allocate buffer
-    DataBuffer * buf = alloc(dst, proto, bytes_received);
+    DataBuffer * buf = alloc(dst, proto, bytes_received-Ethernet::HEADER_SIZE);
     if (!buf) return;
 
     // 4. Copy frame to buffer
@@ -275,13 +270,13 @@ void NIC<Engine>::handleSignal() {
     }
 }
 
-template <typename Engine>
-typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Number prot, unsigned int size) {
-    db<NIC>(TRC) << "NIC<Engine>::alloc() called!\n";
+template <typename NetworkEngine, typename MemoryEngine>
+typename NIC<NetworkEngine, MemoryEngine>::DataBuffer* NIC<NetworkEngine, MemoryEngine>::alloc(Address dst, Protocol_Number prot, unsigned int size) {
+    db<NIC>(TRC) << "NIC<NetworkEngine, MemoryEngine>::alloc() called!\n";
 
     sem_wait(&_buffer_sem);
 
-    if (!Engine::running()) {
+    if (!NetworkEngine::running()) {
         db<NIC>(WRN) << "[NIC] alloc() called when NIC has finished\n";
         sem_post(&_buffer_sem);
         return nullptr;
@@ -292,19 +287,23 @@ typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Numbe
     _free_buffers.pop();
     sem_post(&_binary_sem);
 
-    buf->data()->src = address();
-    buf->data()->dst = dst;
-    buf->data()->prot = prot;
-    buf->setSize(size);
+    Ethernet:Frame frame;
+    frame.src = address();
+    frame.dst = dst;
+    frame.prot = prot;
+
+    unsigned int frame_size = Ethernet::HEADER_SIZE + size;
+
+    buf->setdata(&frame, frame_size);
 
     db<NIC>(INF) << "[NIC] buffer allocated for frame: {src = " << Ethernet::mac_to_string(address()) << ", dst = " << Ethernet::mac_to_string(dst) << ", prot = " << std::to_string(prot) << ", size = " << size << "}\n";
 
     return buf;
 }
 
-template <typename Engine>
-void NIC<Engine>::free(DataBuffer* buf) {
-    db<NIC>(TRC) << "NIC<Engine>::free() called!\n";
+template <typename NetworkEngine, typename MemoryEngine>
+void NIC<NetworkEngine, MemoryEngine>::free(DataBuffer* buf) {
+    db<NIC>(TRC) << "NIC<NetworkEngine, MemoryEngine>::free() called!\n";
 
     if (!buf) return;
 
@@ -318,35 +317,35 @@ void NIC<Engine>::free(DataBuffer* buf) {
     sem_post(&_buffer_sem);
 }
 
-template <typename Engine>
-const typename NIC<Engine>::Address& NIC<Engine>::address() {
-    db<NIC>(TRC) << "NIC<Engine>::address() called!\n";
+template <typename NetworkEngine, typename MemoryEngine>
+const typename NIC<NetworkEngine, MemoryEngine>::Address& NIC<NetworkEngine, MemoryEngine>::address() {
+    db<NIC>(TRC) << "NIC<NetworkEngine, MemoryEngine>::address() called!\n";
 
     return _address;
 }
 
-template <typename Engine>
-void NIC<Engine>::setAddress(Address address) {
-    db<NIC>(TRC) << "NIC<Engine>::setAddress() called!\n";
+template <typename NetworkEngine, typename MemoryEngine>
+void NIC<NetworkEngine, MemoryEngine>::setAddress(Address address) {
+    db<NIC>(TRC) << "NIC<NetworkEngine, MemoryEngine>::setAddress() called!\n";
 
     _address = address;
     db<NIC>(INF) << "[NIC] address setted: " << Ethernet::mac_to_string(address) << "\n";
 }
 
-template <typename Engine>
-const typename NIC<Engine>::Statistics& NIC<Engine>::statistics() {
-    db<NIC>(TRC) << "NIC<Engine>::statistics() called!\n";
+template <typename NetworkEngine, typename MemoryEngine>
+const NIC<NetworkEngine, MemoryEngine>::Statistics& NIC<NetworkEngine, MemoryEngine>::statistics() {
+    db<NIC>(TRC) << "NIC<NetworkEngine, MemoryEngine>::statistics() called!\n";
 
     return _statistics;
 }
 
 
-template <typename Engine>
-void NIC<Engine>::stop() {
-    db<NIC>(TRC) << "NIC<Engine>::stop() called!\n";
+template <typename NetworkEngine, typename MemoryEngine>
+void NIC<NetworkEngine, MemoryEngine>::stop() {
+    db<NIC>(TRC) << "NIC<NetworkEngine, MemoryEngine>::stop() called!\n";
 
-    // Stops the engine execution
-    Engine::stop();
-    db<NIC>(INF) << "[NIC] Engine stopped\n";
+    // Stops the NetworkEngine execution
+    NetworkEngine::stop();
+    db<NIC>(INF) << "[NIC] NetworkEngine stopped\n";
 }
 #endif // NIC_H
