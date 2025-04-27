@@ -164,8 +164,13 @@ bool Communicator<Channel>::receive(Message<MAX_MESSAGE_SIZE>* message, Address*
         if (size > 0) {
             // Create a new message with the received data
             *message = Message<MAX_MESSAGE_SIZE>(temp_data, static_cast<unsigned int>(size));
-            
-            // Populate the source_address output parameter if provided
+
+            // --- Populate Origin Address --- 
+            message->origin(from);
+            db<Communicator>(INF) << "[Communicator] Received message origin set to: " << from << "\n";
+            // -----------------------------
+
+            // Populate the source_address output parameter if provided (legacy?)
             if (source_address) {
                 *source_address = from;
             }
