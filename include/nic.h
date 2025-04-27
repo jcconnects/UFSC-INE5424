@@ -14,7 +14,9 @@
 #include "observed.h"
 #include "ethernet.h"
 #include "buffer.h"
-// #include "socketEngine.h" // Engines are now template parameters
+// Include engine implementations directly
+#include "socketEngine.h"
+#include "sharedMemoryEngine.h"
 #include "traits.h"
 #include "debug.h"
 

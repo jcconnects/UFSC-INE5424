@@ -15,28 +15,21 @@
 #include <functional> // For std::function
 #include <sstream> // For std::stringstream
 
-// Assuming these are the correct includes for the concrete types
+// Include types.h for constants and forward declarations
+#include "types.h"
+
+// Include necessary headers 
 #include "protocol.h"
 #include "nic.h"
-#include "socketEngine.h" // Corrected filename
-#include "sharedMemoryEngine.h" // Added SharedMemoryEngine
+#include "socketEngine.h" 
+#include "sharedMemoryEngine.h"
 #include "communicator.h"
-#include "message.h"
-// #include "vehicle.h" // REMOVED to break circular dependency
+#include "address.h" // Include the address.h for TheAddress
 #include "debug.h" // Include for db<> logging
 
-// Forward declare Vehicle instead of including the full header
+// Forward declarations
 class Vehicle;
-
-// --- Concrete Type Definitions ---
-// TODO: Consider moving these to a central "types.h"
-using TheNIC = NIC<SocketEngine, SharedMemoryEngine>; // Define the concrete dual-engine NIC
-using TheProtocol = Protocol<TheNIC>;                 // Define the protocol using the concrete NIC
-using TheAddress = TheProtocol::Address;              // Address type from the protocol
-using TheCommunicator = Communicator<TheProtocol>;      // Communicator templated on the protocol
-using TheMessage = Message<TheCommunicator::MAX_MESSAGE_SIZE>; // Message constrained by communicator
-// --- End Concrete Type Definitions ---
-
+// TheMessage is already defined in message.h - don't redefine
 
 class Component {
 public:
@@ -255,5 +248,9 @@ void Component::close_log_file() {
         _log_file.close();
     }
 }
+
+// Include message.h for TheMessage implementation
+// This breaks the circular dependency by including it after the Component class declaration
+#include "message.h"
 
 #endif // COMPONENT_H 
