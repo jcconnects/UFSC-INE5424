@@ -2,7 +2,7 @@
 #define MESSAGE_H
 
 #include <cstring>
-#include "component.h" // Include for TheAddress type alias (might need a dedicated types.h later)
+#include "address.h" // Include for TheAddress type
 
 template <unsigned int MaxSize>
 class Message {
@@ -33,6 +33,8 @@ class Message {
         TheAddress _origin; // Added origin address member
 };
 
+// Define the concrete message type using the constant from types.h
+using TheMessage = Message<Constants::MAX_MESSAGE_SIZE>;
 
 /******** Message Implementation ********/
 template<unsigned int MaxSize>
