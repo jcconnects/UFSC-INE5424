@@ -75,8 +75,31 @@ _free_buffer_count--; // Decrement available buffer count
 sem_post(&_binary_sem); // Unlock the queue
 ```
 
-### Other Proposed Changes
+### 4. SharedMemoryEngine simplification
 **No SharedMemoryEngine** NIC can totally handle internal communication without depending on an engine. Even though that seems to imply that the NIC would take over responsabilities from the engine class that is not true at all. Allocating a buffer is enough in case of iternal messaging. So as soon as send is called and the NIC identifies the internal communication it could just immediately call the notifty method.
+
+### SharedMemoryEngine after changes
+```cpp
+class SharedMemoryEngine {
+public:
+    SharedMemoryEngine();
+    ~SharedMemoryEngine();
+
+    // Prevent copying
+    SharedMemoryEngine(const SharedMemoryEngine&) = delete;
+    SharedMemoryEngine& operator=(const SharedMemoryEngine&) = delete;
+
+    void start();
+    void stop();
+    // --- Interface methods required by NIC ---
+    // Send data (payload + protocol) into the shared queue
+    int send(Ethernet::Frame* frame, unsigned int size);
+    // Get the MAC address of the engine
+    Ethernet::Address getMacAddress() const;
+};
+```
+
+The changes also had implications that simplified the testing of SharedMemoryEngine. Refer to tests/unit_tests/sharedMemoryEngine_test.cpp.
 
 ### Pending Fixes
 
