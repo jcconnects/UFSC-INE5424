@@ -105,6 +105,9 @@ class Protocol: private NIC::Observer
         static void attach(Observer* obs, Address address);
         static void detach(Observer* obs, Address address);
         
+        // Add buffer free method
+        void free(Buffer* buf);
+
     private:
         void update(typename NIC::Protocol_Number prot, Buffer * buf) override;
 
@@ -219,9 +222,6 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     int result = _nic->send(buf);
     db<Protocol>(INF) << "[Protocol] NIC::send() returned value " << std::to_string(result) << "\n";
 
-    // Releasing buffer
-    _nic->free(buf);
-
     return size;
 }
 
@@ -291,6 +291,17 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
         db<Protocol>(INF) << "[Protocol] data received, but no one was notified\n";
         // No observers, free the buffer
         _nic->free(buf);
+    }
+}
+
+// Add implementation for Protocol::free
+template <typename NIC>
+void Protocol<NIC>::free(Buffer* buf) {
+    if (_nic) {
+        _nic->free(buf);
+    } else {
+        // Log error or handle case where NIC pointer is null (shouldn't happen in normal operation)
+        db<Protocol>(ERR) << "[Protocol] free() called but _nic is null!\n";
     }
 }
 

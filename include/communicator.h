@@ -185,14 +185,17 @@ bool Communicator<Channel>::receive(Message<MaxSize>* message, Address* source_a
             if (source_address) {
                 *source_address = from;
             }
+            _channel->free(buf); // Free buffer on success
             return true;
         }
 
         // If size <= 0, receive failed or returned no data
+        _channel->free(buf); // Free buffer on failure
         return false;
     
     } catch (const std::exception& e) {
         db<Communicator>(ERR) << "[Communicator] Error receiving message: " << e.what() << "\n";
+        _channel->free(buf); // Free buffer on exception
         return false;
     }
 }
