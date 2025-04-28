@@ -1,0 +1,65 @@
+@startuml 04-use_case_diagram
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseStyle rectangle
+skinparam ArrowColor #33658A
+skinparam ActorBorderColor #2F4858
+skinparam UsecaseBorderColor #F6AE2D
+skinparam PackageBorderColor #86BBD8
+
+title Autonomous Vehicle Communication System - Core Use Cases
+
+' Group actors by functionality
+package "Sensor Components" {
+  actor "CameraComponent" as Camera
+  actor "LidarComponent" as Lidar
+  actor "INSComponent" as INS
+  actor "BatteryComponent" as Battery
+}
+
+package "Processing Components" {
+  ' actor "ECUComponent" as ECU
+  actor "PerceptionComponent" as Perception
+  actor "PlanningComponent" as Planning
+  actor "ControlComponent" as Control
+  actor "V2XComponent" as V2X
+  ' actor "SafetyComponent" as Safety
+}
+
+' Define the simplified use cases
+rectangle "Communication System Use Cases" {
+    usecase "Vehicle-to-Vehicle\nCollision Avoidance" as UC1
+    usecase "Cooperative Intersection\nManagement" as UC2
+    usecase "Energy-Efficient\nRoute Planning" as UC3
+    usecase "Sensor Data Sharing\nand Fusion" as UC4
+    ' usecase "Emergency Vehicle\nResponse" as UC5
+    ' usecase "Cooperative Perception\nat Blind Intersections" as UC6
+    ' usecase "Battery Health Monitoring\nand Charging Recommendations" as UC7
+    ' usecase "Adaptive Cruise Control\nwith V2V Enhancement" as UC8
+}
+
+' Simplify relationships by connecting packages to use cases rather than individual actors
+' Only show the most important direct connections
+
+' Use Case 1: Vehicle-to-Vehicle Collision Avoidance
+Camera --> UC1 : visual data
+Lidar --> UC1 : distance data
+Planning --> UC1 : collision detection
+Control --> UC1 : avoidance execution
+
+' Use Case 2: Cooperative Intersection Management
+INS --> UC2 : position data
+V2X --> UC2 : vehicle negotiation
+Planning -[#FF6B6B]-> UC2 : trajectory planning
+Control -[#FF6B6B]-> UC2 : execution
+
+' Use Case 3: Energy-Efficient Route Planning
+Battery --> UC3 : energy status
+Planning -[#FF6B6B]-> UC3 : route optimization
+
+' Use Case 4: Sensor Data Sharing and Fusion
+V2X -[#FF6B6B]-> UC4 : data exchange
+Perception --> UC4 : data integration
+
+@enduml
