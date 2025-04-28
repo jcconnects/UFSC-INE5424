@@ -14,8 +14,8 @@
 #include <vector>
 #include <iomanip> // For std::fixed, std::setprecision
 
-// Assuming ECU2 will have port 1 based on creation order
-const unsigned short ECU2_PORT = 1;
+// Assuming ECU2 will have port 2 based on creation order
+const unsigned short ECU2_PORT = 2;
 
 class LidarComponent : public Component {
 public:
@@ -35,16 +35,16 @@ public:
         }
 
         // Determine the local address for ECU2
-        _ecu2_address = TheAddress(address.mac(), ECU2_PORT);
-         db<LidarComponent>(INF) << name() << " targeting local ECU2 at: " << _ecu2_address << "\n";
+        _ecu2_address = TheAddress(address.paddr(), ECU2_PORT);
+         db<LidarComponent>(INF) << Component::getName() << " targeting local ECU2 at: " << _ecu2_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::Address::BROADCAST, 0);
-         db<LidarComponent>(INF) << name() << " targeting broadcast at: " << _broadcast_address << "\n";
+        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0);
+         db<LidarComponent>(INF) << Component::getName() << " targeting broadcast at: " << _broadcast_address << "\n";
     }
 
     void run() override {
-         db<LidarComponent>(INF) << "[" << name() << "] thread running.\n";
+         db<LidarComponent>(INF) << "[" << Component::getName() << "] thread running.\n";
         int counter = 1;
 
         while (running()) {
@@ -64,7 +64,7 @@ public:
                 payload_ss << (i > 0 ? ", " : "") << "[" << x << ", " << y << ", " << z << ", " << intensity << "]";
                 // Limit message size to avoid exceeding buffer - crude check
                 if (payload_ss.tellp() > (TheCommunicator::MAX_MESSAGE_SIZE - 200)) {
-                     db<LidarComponent>(WRN) << "[" << name() << "] Approaching max message size, truncating point cloud for msg " << counter << "\n";
+                     db<LidarComponent>(WRN) << "[" << Component::getName() << "] Approaching max message size, truncating point cloud for msg " << counter << "\n";
                     break;
                 }
             }
@@ -72,41 +72,41 @@ public:
             std::string payload = payload_ss.str();
 
             // Construct the full message string
-            std::string msg = "[" + name() + "] Vehicle " + std::to_string(vehicle()->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_us_system) + ": " + payload;
+            std::string msg = "[" + Component::getName() + "] Vehicle " + std::to_string(vehicle()->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_us_system) + ": " + payload;
 
             // Ensure message isn't too large after adding header
              if (msg.size() >= TheCommunicator::MAX_MESSAGE_SIZE) {
-                  db<LidarComponent>(ERR) << "[" << name() << "] Message " << counter << " exceeds MAX_MESSAGE_SIZE (" << msg.size() << "), skipping send.\n";
+                  db<LidarComponent>(ERR) << "[" << Component::getName() << "] Message " << counter << " exceeds MAX_MESSAGE_SIZE (" << msg.size() << "), skipping send.\n";
                  // TODO: Implement better handling (e.g., fragmentation or reducing points)
                  continue; // Skip this send cycle
              }
 
 
             // 1. Send to local ECU2
-             db<LidarComponent>(TRC) << "[" << name() << "] sending msg " << counter << " to ECU2: " << _ecu2_address << "\n";
+             db<LidarComponent>(TRC) << "[" << Component::getName() << "] sending msg " << counter << " to ECU2: " << _ecu2_address << "\n";
             int bytes_sent_local = send(_ecu2_address, msg.c_str(), msg.size());
              if (bytes_sent_local > 0) {
-                  db<LidarComponent>(DEB) << "[" << name() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
+                  db<LidarComponent>(INF) << "[" << Component::getName() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
                  if (_log_file.is_open()) {
                       _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_local," << _ecu2_address << ",\"" << "PointCloud: " << num_points << " points" << "\"\n"; // Log summary
                       _log_file.flush();
                  }
              } else if(running()) {
-                  db<LidarComponent>(ERR) << "[" << name() << "] failed to send msg " << counter << " locally to " << _ecu2_address << "!\n";
+                  db<LidarComponent>(ERR) << "[" << Component::getName() << "] failed to send msg " << counter << " locally to " << _ecu2_address << "!\n";
              }
 
 
             // 2. Send to broadcast address
-             db<LidarComponent>(TRC) << "[" << name() << "] broadcasting msg " << counter << " to " << _broadcast_address << "\n";
+             db<LidarComponent>(TRC) << "[" << Component::getName() << "] broadcasting msg " << counter << " to " << _broadcast_address << "\n";
             int bytes_sent_bcast = send(_broadcast_address, msg.c_str(), msg.size());
              if (bytes_sent_bcast > 0) {
-                  db<LidarComponent>(DEB) << "[" << name() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
+                  db<LidarComponent>(INF) << "[" << Component::getName() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
                  if (_log_file.is_open()) {
                       _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_broadcast," << _broadcast_address << ",\"" << "PointCloud: " << num_points << " points" << "\"\n"; // Log summary
                       _log_file.flush();
                  }
              } else if(running()) {
-                  db<LidarComponent>(ERR) << "[" << name() << "] failed to broadcast msg " << counter << "!\n";
+                  db<LidarComponent>(ERR) << "[" << Component::getName() << "] failed to broadcast msg " << counter << "!\n";
              }
 
             counter++;
@@ -116,7 +116,7 @@ public:
             std::this_thread::sleep_for(std::chrono::milliseconds(wait_time_ms));
         }
 
-         db<LidarComponent>(INF) << "[" << name() << "] thread terminated.\n";
+         db<LidarComponent>(INF) << "[" << Component::getName() << "] thread terminated.\n";
     }
 
 private:

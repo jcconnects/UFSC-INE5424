@@ -18,6 +18,7 @@ class Ethernet {
         };
 
         static const Ethernet::Address NULL_ADDRESS;
+        static const Ethernet::Address BROADCAST;
         
         // Protocol Type
         typedef unsigned int Protocol;
@@ -48,6 +49,7 @@ class Ethernet {
 }; // all necessary definitions and formats
 
 const Ethernet::Address Ethernet::NULL_ADDRESS = {{0, 0, 0, 0, 0, 0}};
+const Ethernet::Address Ethernet::BROADCAST = {{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}};
 
 
 inline bool operator==(const Ethernet::Address& a, const Ethernet::Address& b) {
