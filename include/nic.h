@@ -126,7 +126,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         // Buffer management
         DataBuffer _buffer[N_BUFFERS];
         std::queue<DataBuffer*> _free_buffers;
-        sem_t _buffer_sem;
+        unsigned int _free_buffer_count; // Number of free buffers
         sem_t _binary_sem; // Mutex for _free_buffers queue
 };
 
@@ -146,9 +146,9 @@ NIC<ExternalEngine, InternalEngine>::NIC()
         _buffer[i] = DataBuffer();
         _free_buffers.push(&_buffer[i]);
     }
+    _free_buffer_count = N_BUFFERS;
     db<NIC>(INF) << "[NIC] " << std::to_string(N_BUFFERS) << " buffers created\n";
     
-    sem_init(&_buffer_sem, 0, N_BUFFERS);
     sem_init(&_binary_sem, 0, 1);
     
         // Get address from the External Engine
@@ -162,12 +162,13 @@ NIC<ExternalEngine, InternalEngine>::NIC()
             perror("eventfd");
             throw std::runtime_error("Failed to create NIC stop eventfd");
         }
-        setupNicEpoll(); // Sets up _nic_ep_fd and adds engine FDs
-
+        db<NIC>(INF) << "[NIC] Stop eventfd created: " << _stop_event_fd << "\n";
         // Engines should be started *before* the event loop if they manage their own threads/resources
         // Assuming engines have a start() method or are ready after construction
-        // _external_engine.start(); // If needed
-        // _internal_engine.start(); // If needed
+        _external_engine.start(); // If needed
+        _internal_engine.start(); // If needed
+
+        setupNicEpoll(); // Sets up _nic_ep_fd and adds engine FDs
 
         // Start the NIC's event loop thread
         _running.store(true, std::memory_order_release);
@@ -176,7 +177,6 @@ NIC<ExternalEngine, InternalEngine>::NIC()
             _running.store(false); // Creation failed, not running
             close(_nic_ep_fd); // Clean up epoll fd
             close(_stop_event_fd); // Clean up eventfd
-            sem_destroy(&_buffer_sem);
             sem_destroy(&_binary_sem);
             db<NIC>(ERR) << "ERROR; return code from pthread_create() is " << rc << "\n";
             throw std::runtime_error("Failed to create NIC event loop thread");
@@ -188,7 +188,6 @@ NIC<ExternalEngine, InternalEngine>::NIC()
         // Ensure partial resources are cleaned up if possible
         if (_nic_ep_fd >= 0) close(_nic_ep_fd);
         if (_stop_event_fd >= 0) close(_stop_event_fd);
-        sem_destroy(&_buffer_sem); // Safe to call even if not fully initialized? Check docs. Usually yes.
         sem_destroy(&_binary_sem);
         // Rethrow or handle appropriately
         throw;
@@ -201,7 +200,6 @@ NIC<ExternalEngine, InternalEngine>::~NIC() {
 
     stop(); // Ensure everything is stopped and joined
     
-    sem_destroy(&_buffer_sem);
     sem_destroy(&_binary_sem);
 
     // Engines (_external_engine, _internal_engine) are destructed automatically
@@ -243,21 +241,6 @@ void NIC<ExternalEngine, InternalEngine>::setupNicEpoll() {
     }
      db<NIC>(INF) << "[NIC] ExternalEngine FD (" << external_fd << ") added to epoll.\n";
 
-
-    // 3. Register InternalEngine notification FD
-    // Assumes InternalEngine provides getNotificationFd()
-    int internal_fd = _internal_engine.getNotificationFd();
-     if (internal_fd < 0) {
-         throw std::runtime_error("InternalEngine provided invalid notification FD");
-    }
-    ev.events = EPOLLIN;
-    ev.data.fd = internal_fd;
-    if (epoll_ctl(_nic_ep_fd, EPOLL_CTL_ADD, internal_fd, &ev) < 0) {
-        perror("epoll_ctl add internal_fd");
-        close(_nic_ep_fd);
-        throw std::runtime_error("Failed to add InternalEngine FD to NIC epoll");
-    }
-    db<NIC>(INF) << "[NIC] InternalEngine FD (" << internal_fd << ") added to epoll.\n";
     db<NIC>(INF) << "[NIC] Epoll setup complete.\n";
 }
 
@@ -305,9 +288,6 @@ void* NIC<ExternalEngine, InternalEngine>::eventLoop(void* arg) {
             } else if (fd == external_notify_fd) {
                 db<NIC>(INF) << "[NIC EventLoop] External engine event detected.\n";
                 self->handleExternalEvent();
-            } else if (fd == internal_notify_fd) {
-                db<NIC>(INF) << "[NIC EventLoop] Internal engine event detected.\n";
-                self->handleInternalEvent();
             } else {
                  db<NIC>(WRN) << "[NIC EventLoop] Unknown FD triggered epoll: " << fd << "\n";
             }
@@ -322,7 +302,6 @@ void* NIC<ExternalEngine, InternalEngine>::eventLoop(void* arg) {
     db<NIC>(INF) << "[NIC EventLoop] Thread terminated.\n";
     return nullptr;
 }
-
 
 template <typename ExternalEngine, typename InternalEngine>
 int NIC<ExternalEngine, InternalEngine>::send(DataBuffer* buf) {
@@ -354,6 +333,7 @@ int NIC<ExternalEngine, InternalEngine>::send(DataBuffer* buf) {
         if (result > 0) {
             _statistics.packets_sent_internal++;
             _statistics.bytes_sent_internal += result;
+            handleInternalEvent(); // Notify internal engine of sent data
         } else {
             _statistics.tx_drops_internal++;
             db<NIC>(WRN) << "[NIC] InternalEngine::send failed (result=" << result << ")\n";
@@ -588,19 +568,23 @@ typename NIC<ExternalEngine, InternalEngine>::DataBuffer* NIC<ExternalEngine, In
         return nullptr;
     }
 
-    // TODO: Consider timeout for semaphore wait?
-    sem_wait(&_buffer_sem);
-
+    sem_wait(&_binary_sem); // Lock the queue
+    // Check if there are free buffers available
+    if (!_free_buffer_count) {
+        db<NIC>(WRN) << "[NIC] No free buffers available for allocation.\n";
+        sem_post(&_binary_sem); // Release semaphore
+        return nullptr; // No buffer available
+    }
+    // TODO - review if this is needed
     // Re-check running status after acquiring semaphore, in case stop() was called
     if (!_running.load(std::memory_order_acquire)) {
         db<NIC>(WRN) << "[NIC] alloc() acquired semaphore but NIC stopped.\n";
-        sem_post(&_buffer_sem); // Release semaphore
         return nullptr;
     }
-    
-    sem_wait(&_binary_sem); // Lock the queue
+
     DataBuffer* buf = _free_buffers.front();
     _free_buffers.pop();
+    _free_buffer_count--; // Decrement available buffer count
     sem_post(&_binary_sem); // Unlock the queue
 
     // Set frame headers
@@ -632,9 +616,8 @@ void NIC<ExternalEngine, InternalEngine>::free(DataBuffer* buf) {
 
     sem_wait(&_binary_sem); // Lock queue
     _free_buffers.push(buf);
+    _free_buffer_count++; // Increment available buffer count
     sem_post(&_binary_sem); // Unlock queue
-
-    sem_post(&_buffer_sem); // Increment available buffer count
 }
 
 template <typename ExternalEngine, typename InternalEngine>
