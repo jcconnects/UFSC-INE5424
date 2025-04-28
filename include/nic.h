@@ -102,7 +102,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
     private:
         // Event handling for data arrival from engines
         void handleExternalEvent();
-        void handleInternalEvent();
+        void handleInternalEvent(DataBuffer* buf, int size);
 
         // NIC's own event loop
         static void* eventLoop(void* arg);
@@ -253,7 +253,6 @@ void* NIC<ExternalEngine, InternalEngine>::eventLoop(void* arg) {
     struct epoll_event events[MAX_EVENTS];
 
     int external_notify_fd = self->_external_engine.getNotificationFd();
-    int internal_notify_fd = self->_internal_engine.getNotificationFd();
 
     while (self->_running.load(std::memory_order_acquire)) {
         db<NIC>(INF) << "[NIC EventLoop] Waiting for events...\n";
@@ -333,7 +332,7 @@ int NIC<ExternalEngine, InternalEngine>::send(DataBuffer* buf) {
         if (result > 0) {
             _statistics.packets_sent_internal++;
             _statistics.bytes_sent_internal += result;
-            handleInternalEvent(); // Notify internal engine of sent data
+            handleInternalEvent(buf, result); // Notify internal engine of sent data
         } else {
             _statistics.tx_drops_internal++;
             db<NIC>(WRN) << "[NIC] InternalEngine::send failed (result=" << result << ")\n";
@@ -493,67 +492,22 @@ void NIC<ExternalEngine, InternalEngine>::handleExternalEvent() {
 
 
 template <typename ExternalEngine, typename InternalEngine>
-void NIC<ExternalEngine, InternalEngine>::handleInternalEvent() {
+void NIC<ExternalEngine, InternalEngine>::handleInternalEvent(DataBuffer* buf, int size) {
     db<NIC>(TRC) << "NIC::handleInternalEvent() called!\n";
-
-    // Assume InternalEngine provides a method like receiveData that provides
-    // payload, size, and crucial metadata (like original protocol).
-    // Example: int receiveData(void* payload_buf, unsigned int max_size, Protocol_Number* proto_out);
-    // Need a way to get payload, size, and protocol number.
-
-    unsigned char internal_payload[Traits<InternalEngine>::MTU]; // Assuming InternalEngine has MTU trait
-    Protocol_Number received_proto;
-    int payload_size = _internal_engine.receiveData(internal_payload, sizeof(internal_payload), &received_proto); // Hypothetical
-
-    if (payload_size <= 0) {
-        if (payload_size < 0) {
-            db<NIC>(ERR) << "[NIC] InternalEngine::receiveData failed or returned no data (" << payload_size << ")\n";
-            // Potentially update rx_drops_internal
-        }
-        return; // No data or error
-    }
-
-
-    db<NIC>(INF) << "[NIC Internal] Received data: {proto=" << received_proto
-                 << ", payload_size=" << payload_size << "}\n";
-
-    // Reconstruct an Ethernet::Frame for the Protocol layer
-    unsigned int total_frame_size = Ethernet::HEADER_SIZE + payload_size;
-
-    // Allocate a NIC buffer
-    // Destination MAC for internally received frames is the NIC itself
-    DataBuffer* buf = alloc(_address, received_proto, total_frame_size);
-    if (!buf) {
-        db<NIC>(ERR) << "[NIC Internal] Failed to allocate buffer for received data!\n";
-        _statistics.rx_drops_internal++;
-        return; // Drop packet
-    }
 
     // Fill the Ethernet header in the allocated buffer
     Ethernet::Frame* frame = buf->data();
-    frame->dst = _address; // Frame is destined for this NIC (local component)
-    frame->src = _address; // Frame originates internally (from this NIC's perspective)
-                           // TODO: Can InternalEngine provide original sender component info?
-                           // If so, maybe use a local MAC scheme for frame->src?
-                           // For now, using _address keeps it simple for Protocol layer.
-    frame->prot = received_proto; // Protocol number provided by InternalEngine
-
-    // Copy the payload
-    std::memcpy(frame->payload, internal_payload, payload_size);
-
-    // Ensure buffer size is set correctly
-    buf->setSize(total_frame_size);
 
     // Notify observers
-    db<NIC>(INF) << "[NIC Internal] Notifying observers for protocol " << received_proto << "\n";
-    if (!Observed::notify(received_proto, buf)) {
-        db<NIC>(INF) << "[NIC Internal] Data received, but no observer for protocol " << received_proto << ". Freeing buffer.\n";
+    db<NIC>(INF) << "[NIC Internal] Notifying observers for protocol " << frame->prot << "\n";
+    if (!Observed::notify(frame->prot, buf)) {
+        db<NIC>(INF) << "[NIC Internal] Data received, but no observer for protocol " << frame->prot << ". Freeing buffer.\n";
         _statistics.rx_drops_internal++; // Count as drop
         free(buf);
     } else {
         _statistics.packets_received_internal++;
-        _statistics.bytes_received_internal += total_frame_size; // Store total frame size for consistency?
-        db<NIC>(INF) << "[NIC Internal] Notification successful for protocol " << received_proto << ". Buffer passed to observer.\n";
+        _statistics.bytes_received_internal += size; // Store total frame size for consistency?
+        db<NIC>(INF) << "[NIC Internal] Notification successful for protocol " << frame->prot << ". Buffer passed to observer.\n";
     }
 }
 
