@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
+project(INE5424_Tests)
 
 # Find all test source files in each test directory
 file(GLOB UNIT_TEST_SOURCES "unit_tests/*.cpp")
@@ -33,8 +34,25 @@ foreach(system_test_source ${SYSTEM_TEST_SOURCES})
 endforeach()
 
 # Make unit tests run first, then integration tests, then system tests
-set_property(TEST UnitTest_* PROPERTY FIXTURES_REQUIRED unit_tests)
-set_property(TEST IntegrationTest_* PROPERTY FIXTURES_REQUIRED integration_tests)
-set_property(TEST SystemTest_* PROPERTY FIXTURES_REQUIRED system_tests)
-set_property(TEST IntegrationTest_* PROPERTY DEPENDS UnitTest_*)
-set_property(TEST SystemTest_* PROPERTY DEPENDS IntegrationTest_*) 
+if(UNIT_TEST_SOURCES)
+    foreach(unit_test_source ${UNIT_TEST_SOURCES})
+        get_filename_component(test_name ${unit_test_source} NAME_WE)
+        set_tests_properties(UnitTest_${test_name} PROPERTIES FIXTURES_REQUIRED unit_tests)
+    endforeach()
+endif()
+
+if(INTEGRATION_TEST_SOURCES)
+    foreach(integration_test_source ${INTEGRATION_TEST_SOURCES})
+        get_filename_component(test_name ${integration_test_source} NAME_WE)
+        set_tests_properties(IntegrationTest_${test_name} PROPERTIES FIXTURES_REQUIRED integration_tests)
+        set_tests_properties(IntegrationTest_${test_name} PROPERTIES DEPENDS "UnitTest_*")
+    endforeach()
+endif()
+
+if(SYSTEM_TEST_SOURCES)
+    foreach(system_test_source ${SYSTEM_TEST_SOURCES})
+        get_filename_component(test_name ${system_test_source} NAME_WE)
+        set_tests_properties(SystemTest_${test_name} PROPERTIES FIXTURES_REQUIRED system_tests)
+        set_tests_properties(SystemTest_${test_name} PROPERTIES DEPENDS "IntegrationTest_*")
+    endforeach()
+endif() 
