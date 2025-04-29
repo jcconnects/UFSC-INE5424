@@ -224,6 +224,7 @@ int Component::receive(void* data, unsigned int max_size, TheAddress* source_add
     std::memcpy(data, msg.data(), msg.size());
     // Use TRC level and fix DEB typo
     db<Component>(TRC) << getName() << "::receive successfully processed message (" << msg.size() << " bytes copied).\n";
+    db<Component>(INF) << getName() << ":: received data: " << std::string(static_cast<const char*>(data), msg.size()) << "\n"; // Log received data
     return msg.size(); // Return bytes received
 }
 

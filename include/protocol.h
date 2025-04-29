@@ -100,7 +100,7 @@ class Protocol: private NIC::Observer
         ~Protocol();
         
         int send(Address from, Address to, const void* data, unsigned int size);
-        int receive(Buffer* buf, Address from, void* data, unsigned int size);
+        int receive(Buffer* buf, Address *from, void* data, unsigned int size);
 
         static void attach(Observer* obs, Address address);
         static void detach(Observer* obs, Address address);
@@ -226,7 +226,7 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
 }
 
 template <typename NIC>
-int Protocol<NIC>::receive(Buffer* buf, Address from, void* data, unsigned int size) {
+int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int size) {
     db<Protocol>(TRC) << "Protocol<NIC>::receive() called!\n";
 
     typename NIC::Address src_mac;
@@ -242,12 +242,17 @@ int Protocol<NIC>::receive(Buffer* buf, Address from, void* data, unsigned int s
         return 0;
     }
 
+    db<Protocol>(INF) << "[Protocol] Received packet from " << Ethernet::mac_to_string(src_mac) << " to " << Ethernet::mac_to_string(dst_mac) << "\n";
+    db<Protocol>(INF) << "[Protocol] Packet size: " << packet_size << "\n";
+
     // Interpretar como Packet
     Packet* pkt = reinterpret_cast<Packet*>(temp_buffer);
 
     if (from) {
-        from.paddr(src_mac);
-        from.port(pkt->header()->from_port());
+        from->paddr(src_mac);
+        from->port(pkt->header()->from_port());
+    } else {
+        db<Protocol>(ERR) << "[Protocol] from is null\n";
     }
 
     // Calcular tamanho do payload

@@ -88,6 +88,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         
         // Get the NIC's primary (external) address
         const Address& address();
+        void setAddress(const Address& addr);
         
         // Get network statistics
         const Statistics& statistics();
@@ -150,6 +151,11 @@ NIC<ExternalEngine, InternalEngine>::NIC()
     db<NIC>(INF) << "[NIC] " << std::to_string(N_BUFFERS) << " buffers created\n";
     
     sem_init(&_binary_sem, 0, 1);
+
+        // Engines should be started *before* the event loop if they manage their own threads/resources
+        // Assuming engines have a start() method or are ready after construction
+        _external_engine.start(); // If needed
+        _internal_engine.start(); // If needed
     
         // Get address from the External Engine
         // Assumes ExternalEngine provides getMacAddress()
@@ -163,10 +169,6 @@ NIC<ExternalEngine, InternalEngine>::NIC()
             throw std::runtime_error("Failed to create NIC stop eventfd");
         }
         db<NIC>(INF) << "[NIC] Stop eventfd created: " << _stop_event_fd << "\n";
-        // Engines should be started *before* the event loop if they manage their own threads/resources
-        // Assuming engines have a start() method or are ready after construction
-        _external_engine.start(); // If needed
-        _internal_engine.start(); // If needed
 
         setupNicEpoll(); // Sets up _nic_ep_fd and adds engine FDs
 
@@ -389,7 +391,9 @@ int NIC<ExternalEngine, InternalEngine>::receive(DataBuffer* buf, Address* src, 
     
     // 1. Fill src and dst addresses if requested
     if (src) *src = frame->src;
+    else db<NIC>(WRN) << "[NIC] receive() called with null src pointer.\n";
     if (dst) *dst = frame->dst;
+    else db<NIC>(WRN) << "[NIC] receive() called with null dst pointer.\n";
     
     // 2. Calculate payload size
     unsigned int payload_size = buf->size() - Ethernet::HEADER_SIZE;
@@ -579,6 +583,13 @@ const typename NIC<ExternalEngine, InternalEngine>::Address& NIC<ExternalEngine,
     // Returns the primary MAC address associated with the external interface
     db<NIC>(TRC) << "NIC::address() called!\n";
     return _address;
+}
+
+template <typename ExternalEngine, typename InternalEngine>
+void NIC<ExternalEngine, InternalEngine>::setAddress(const Address& addr) {
+    db<NIC>(TRC) << "NIC::setAddress() called!\n";
+    memcpy(&_address, &addr, sizeof(Address)); // Copy address
+    db<NIC>(INF) << "[NIC] Address set to: " << Ethernet::mac_to_string(_address) << "\n";
 }
 
 template <typename ExternalEngine, typename InternalEngine>

@@ -101,7 +101,7 @@ public:
 
 The changes also had implications that simplified the testing of SharedMemoryEngine. Refer to tests/unit_tests/sharedMemoryEngine_test.cpp.
 
-### Pending Fixes
+### Other Fixes
 
 ### Message delivery fix
 This is the virtual destination address test:
@@ -112,6 +112,23 @@ ECU2::receive successfully processed message (888 bytes copied).
 ECU2::receive received message of size 888 from 00:00:00:00:00:00:0
 ```
 The virtual address works well and the message is being delivered to the right component, but the there is something wrong with the integrity of the delivered message. Its source address should not be "00:00:00:00:00:00", its body should not be "0" and its size should not be "888 bytes".
+
+### Fix
+After Enzo's free(buf) fix, refer to 2025-04-28-EnzoChanges.md, the address was still incorrect in the debug class output. The problem was that Protocol<NIC>::receive() was declared like the following:
+
+```cpp
+int receive(Buffer* buf, Address from, void* data, unsigned int size);
+```
+
+So since from was copied to the contex of the method it was never truly updated. After spotted the problem was easily fixed by changing the parameter to a pointer.
+
+### After
+
+```cpp
+int receive(Buffer* buf, Address *from, void* data, unsigned int size);
+```
+
+### Pending Fixes
 
 ### Termination procedure fix
 Currrently neither the demo nor the virtual destination address tests are terminating currectly and the second is falling into a segmentation fault. The changes on the components likely compromised some part of the termination procedure.
