@@ -216,7 +216,7 @@ TheAddress Vehicle::next_component_address() {
     // Create an address with the vehicle's physical address and next component ID as port
     TheAddress addr = _base_address; // Copy base address (NIC MAC + Port 0)
     addr.port(_next_component_id++); // Set the port to the next available ID
-    db<Vehicle>(INF) << "[Vehicle " << _id << "] Generated next component address: " << addr << "\n";
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Generated next component address: " << addr.to_string() << "\n";
     return addr;
 }
 
