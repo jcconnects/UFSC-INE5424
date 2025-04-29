@@ -7,59 +7,141 @@ skinparam ArrowColor #33658A
 skinparam ActorBorderColor #2F4858
 skinparam UsecaseBorderColor #F6AE2D
 skinparam PackageBorderColor #86BBD8
+skinparam NoteBorderColor #F26419
+skinparam NoteBackgroundColor #FDFFFC
 
-title Autonomous Vehicle Communication System - Core Use Cases
+' Colors for different vehicles
+skinparam rectangleBackgroundColor<<Vehicle1>> #D4F0F0
+skinparam rectangleBorderColor<<Vehicle1>> #2F6D80
+skinparam packageBackgroundColor<<V1>> #E6F5F5
+skinparam packageBorderColor<<V1>> #2F6D80
 
-' Group actors by functionality
-package "Sensor Components" {
-  actor "CameraComponent" as Camera
-  actor "LidarComponent" as Lidar
-  actor "INSComponent" as INS
-  actor "BatteryComponent" as Battery
+skinparam rectangleBackgroundColor<<Vehicle2>> #F0E6D4
+skinparam rectangleBorderColor<<Vehicle2>> #8D6E2F
+skinparam packageBackgroundColor<<V2>> #F5F0E6
+skinparam packageBorderColor<<V2>> #8D6E2F
+
+title Autonomous Vehicle Communication Patterns
+
+' Group actors by vehicle
+rectangle "Vehicle 1 Components" <<Vehicle1>> {
+  package "Sensor Components" as V1SensorComponents <<V1>> {
+    actor "CameraComponent" as Camera1
+    actor "LidarComponent" as Lidar1
+    actor "INSComponent" as INS1
+  }
+  package "Processing Components" as V1ProcessingComponents <<V1>> {
+    actor "PerceptionComponent" as Perception1
+    actor "PlanningComponent" as Planning1
+  }
+  package "Control Components" as V1ControlComponents <<V1>> {
+    actor "ControlComponent" as Control1
+  }
+  package "Communication Components" as V1CommunicationComponents <<V1>> {
+    actor "V2XComponent" as V2X1
+  }
 }
 
-package "Processing Components" {
-  ' actor "ECUComponent" as ECU
-  actor "PerceptionComponent" as Perception
-  actor "PlanningComponent" as Planning
-  actor "ControlComponent" as Control
-  actor "V2XComponent" as V2X
-  ' actor "SafetyComponent" as Safety
+rectangle "Vehicle 2 Components" <<Vehicle2>> {
+  package "Sensor Components" as V2SensorComponents <<V2>> {
+    actor "LidarComponent" as Lidar2
+    actor "INSComponent" as INS2
+  }
+  package "Processing Components" as V2ProcessingComponents <<V2>> {
+    actor "PerceptionComponent" as Perception2
+    actor "PlanningComponent" as Planning2
+  }
+  package "Communication Components" as V2CommunicationComponents <<V2>> {
+    actor "V2XComponent" as V2X2
+  }
 }
 
-' Define the simplified use cases
-rectangle "Communication System Use Cases" {
-    usecase "Vehicle-to-Vehicle\nCollision Avoidance" as UC1
-    usecase "Cooperative Intersection\nManagement" as UC2
-    usecase "Energy-Efficient\nRoute Planning" as UC3
-    usecase "Sensor Data Sharing\nand Fusion" as UC4
-    ' usecase "Emergency Vehicle\nResponse" as UC5
-    ' usecase "Cooperative Perception\nat Blind Intersections" as UC6
-    ' usecase "Battery Health Monitoring\nand Charging Recommendations" as UC7
-    ' usecase "Adaptive Cruise Control\nwith V2V Enhancement" as UC8
+' Define use cases organized by communication patterns
+rectangle "Internal Communication" {
+    usecase "Camera to Perception\nTarget Tracking" as UC1_Int_Uni
+    note bottom of UC1_Int_Uni
+        <b>Unicast Internal</b>
+        Camera sends object detection
+        data to specific Perception
+        component within same vehicle
+    end note
+    
+    usecase "Lidar to Perception \n& Planning" as UC2_Int_Multi
+    note bottom of UC2_Int_Multi
+        <b>Multicast Internal</b>
+        Lidar sends point cloud data to
+        multiple components within
+        same vehicle for parallel processing
+    end note
+    
+    usecase "INS Status\nUpdate" as UC3_Int_Broad
+    note bottom of UC3_Int_Broad
+        <b>Broadcast Internal</b>
+        INS broadcasts position updates to
+        all components within same vehicle
+    end note
 }
 
-' Simplify relationships by connecting packages to use cases rather than individual actors
-' Only show the most important direct connections
+rectangle "External Communication" {
+    usecase "V2X Direct\nMessage" as UC4_Ext_Uni
+    note bottom of UC4_Ext_Uni
+        <b>Unicast External</b>
+        V2X sends trajectory negotiation
+        message to specific vehicle
+    end note
+    
+    usecase "Perception Data\nSharing" as UC5_Ext_Multi
+    note bottom of UC5_Ext_Multi
+        <b>Multicast External</b>
+        Perception sends object data
+        to specific group of nearby
+        vehicles at intersection
+    end note
+    
+    usecase "Emergency\nAlert" as UC6_Ext_Broad
+    note bottom of UC6_Ext_Broad
+        <b>Broadcast External</b>
+        Control sends emergency braking
+        alert to all vehicles in range
+    end note
+}
 
-' Use Case 1: Vehicle-to-Vehicle Collision Avoidance
-Camera --> UC1 : visual data
-Lidar --> UC1 : distance data
-Planning --> UC1 : collision detection
-Control --> UC1 : avoidance execution
+' Internal Unicast: Camera to Perception
+Camera1 -[#2F6D80]-> UC1_Int_Uni : sends object data
+Perception1 -[#2F6D80]-> UC1_Int_Uni : receives data
 
-' Use Case 2: Cooperative Intersection Management
-INS --> UC2 : position data
-V2X --> UC2 : vehicle negotiation
-Planning -[#FF6B6B]-> UC2 : trajectory planning
-Control -[#FF6B6B]-> UC2 : execution
+' Internal Multicast: Lidar to Perception & Planning
+Lidar1 -[#2F6D80]-> UC2_Int_Multi : sends point cloud
+Perception1 -[#2F6D80]-> UC2_Int_Multi : receives data
+Planning1 -[#2F6D80]-> UC2_Int_Multi : receives data
 
-' Use Case 3: Energy-Efficient Route Planning
-Battery --> UC3 : energy status
-Planning -[#FF6B6B]-> UC3 : route optimization
+' Internal Broadcast: INS to All
+INS1 -[#2F6D80]-> UC3_Int_Broad : broadcasts position
+Perception1 -[#2F6D80]-> UC3_Int_Broad : receives
+Planning1 -[#2F6D80]-> UC3_Int_Broad : receives
+Control1 -[#2F6D80]-> UC3_Int_Broad : receives
+V2X1 -[#2F6D80]-> UC3_Int_Broad : receives
 
-' Use Case 4: Sensor Data Sharing and Fusion
-V2X -[#FF6B6B]-> UC4 : data exchange
-Perception --> UC4 : data integration
+' External Unicast: V2X to V2X
+V2X1 -[#2F6D80]-> UC4_Ext_Uni : sends specific message
+V2X2 -[#8D6E2F]-> UC4_Ext_Uni : receives message
+
+' External Multicast: Perception to Group
+Perception1 -[#2F6D80]-> UC5_Ext_Multi : shares data
+V2X1 -[#2F6D80]-> UC5_Ext_Multi : transmits to group
+V2X2 -[#8D6E2F]-> UC5_Ext_Multi : receives in group
+Perception2 -[#8D6E2F]-> UC5_Ext_Multi : processes data
+
+' External Broadcast: Control to All
+Control1 -[#2F6D80]-> UC6_Ext_Broad : emergency alert
+V2X1 -[#2F6D80]-> UC6_Ext_Broad : transmits alert
+V2X2 -[#8D6E2F]-> UC6_Ext_Broad : receives alert
+Planning2 -[#8D6E2F]-> UC6_Ext_Broad : executes emergency response
+
+' Add separations for clarity
+UC1_Int_Uni -[hidden]- UC2_Int_Multi
+UC2_Int_Multi -[hidden]- UC3_Int_Broad
+UC4_Ext_Uni -[hidden]- UC5_Ext_Multi
+UC5_Ext_Multi -[hidden]- UC6_Ext_Broad
 
 @enduml
