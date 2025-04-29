@@ -83,13 +83,14 @@ class Concurrent_Observer : public Conditional_Data_Observer<D, C> {
 /***************** CONCURRENT_OBSERVER IMPLEMENTATION *************************/
 template <typename D, typename C>
 void Concurrent_Observer<D, C>::update(C c, D* d) {
-    if (c == this->_rank) {
+    // Accept if condition matches rank OR if it's the broadcast condition (0)
+    if (c == this->_rank || (c == 0 && std::is_integral<C>::value)) { // Ensure condition type supports 0 check
         // Special case: if d is nullptr, it's a shutdown signal, still post the semaphore
         // to unblock waiting threads, but don't add to the queue
         if (d != nullptr) {
             this->_data.insert(d);
         }
-        // Post semaphore even for nullptr to unblock threads
+        // Post semaphore even for nullptr or broadcast to unblock threads
         _semaphore.post();
     }
 }

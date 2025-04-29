@@ -207,9 +207,8 @@ void Communicator<Channel>::close() {
     _closed.store(true, std::memory_order_release);
 
     try {
-        // Signal any threads waiting on receive to wake up
-        Buffer buf = Buffer();
-        update(nullptr, _address.port(), &buf);
+        // Signal any threads waiting on receive to wake up *without data*
+        update(nullptr, _address.port(), nullptr);
     } catch (const std::exception& e) {
         std::cerr << "Error during communicator close: " << e.what() << std::endl;
     }

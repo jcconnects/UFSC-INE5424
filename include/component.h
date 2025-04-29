@@ -126,10 +126,11 @@ void Component::stop() {
     db<Component>(TRC) << "Component::stop() called for component " << _name << "\n";
     if (running()) {
         _running.store(false, std::memory_order_release);
-        // Optionally: Signal the communicator to interrupt blocking calls if implemented
-        // if (_communicator) {
-        //     _communicator->interrupt();
-        // }
+        // Signal the communicator to interrupt blocking calls
+        if (_communicator) {
+             db<Component>(INF) << "Component '" << _name << "' closing communicator.\n";
+            _communicator->close();
+        }
         if (_thread != 0) {
             int join_rc = pthread_join(_thread, nullptr);
             if (join_rc == 0) {

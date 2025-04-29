@@ -114,10 +114,23 @@ bool Concurrent_Observed<T, C>::notify(C c, T* d) {
     pthread_mutex_lock(&_mtx);
     bool notified = false;
     
-    for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-        if ((*obs)->rank() == c) {
-            (*obs)->update(c, d);
+    // Check for broadcast condition (assuming 0 and C is integral)
+    if (c == 0 && std::is_integral<C>::value) {
+        // Broadcast: Notify ALL attached observers with condition 0
+        for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+            (*obs)->update(0, d); // Notify with broadcast condition 0
             notified = true;
+        }
+    } else {
+        // Normal notification: Notify only matching observers
+        for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+            if ((*obs)->rank() == c) {
+                (*obs)->update(c, d); // Notify with original condition
+                notified = true;
+                // Optimization: If only one observer per condition is expected,
+                // you could potentially break here.
+                 break; // Assuming only one observer per port
+            }
         }
     }
     

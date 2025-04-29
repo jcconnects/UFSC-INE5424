@@ -199,29 +199,53 @@ Protocol<NIC>::~Protocol() {
 template <typename NIC>
 int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int size) {
     db<Protocol>(TRC) << "Protocol<NIC>::send() called!\n";
-    
 
     db<Protocol>(INF) << "[Protocol] sending from port " << from.port() << " to port " << to.port() << "\n";
-    
-    // Allocate buffer with header and data
-    unsigned int frame_size = sizeof(Header) + Ethernet::HEADER_SIZE + size;
 
-    Buffer* buf = _nic->alloc(to.paddr(), PROTO, frame_size);
+    // Calculate total size needed for the *entire* Ethernet frame
+    unsigned int total_frame_size = Ethernet::HEADER_SIZE + sizeof(Header) + size;
+
+    // Check against MTU before allocation (optional but good practice)
+    if (total_frame_size > NIC::MTU + Ethernet::HEADER_SIZE) { // Compare total size with NIC capacity
+         db<Protocol>(ERR) << "[Protocol] Data size (" << size << ") + Proto Header (" << sizeof(Header) << ") exceeds MTU (" << NIC::MTU << "). Dropping packet.\n";
+         return 0; // Indicate failure due to size
+    }
+
+    // Allocate buffer for the entire frame
+    // NIC::alloc expects the total frame size
+    Buffer* buf = _nic->alloc(to.paddr(), PROTO, total_frame_size);
     if (!buf) {
         db<Protocol>(ERR) << "[Protocol] Failed to allocate buffer for send\n";
-        return 0;
+        return 0; // Indicate failure, no buffer allocated
     }
-    
-    // Set up Packet
+
+    // Get pointer to where Protocol packet starts (within the Ethernet payload)
+    // Assumes buf->data() returns Ethernet::Frame* and payload follows header
     Packet* packet = reinterpret_cast<Packet*>(buf->data()->payload);
+
+    // Set up Protocol Packet Header
     packet->from_port(from.port());
     packet->to_port(to.port());
+    packet->size(size); // Set the size of the *user data*
+
+    // Copy user data into the packet's data section
     std::memcpy(packet->template data<void>(), data, size);
-    
-    // Send the packet
-    int result = _nic->send(buf);
+
+    // Send the packet via NIC
+    int result = _nic->send(buf); // NIC::send takes the buffer containing the full frame
     db<Protocol>(INF) << "[Protocol] NIC::send() returned value " << std::to_string(result) << "\n";
 
+    // --- Buffer Freeing on Failure ---
+    if (result <= 0) {
+        db<Protocol>(ERR) << "[Protocol] NIC::send failed. Freeing allocated buffer.\n";
+        _nic->free(buf); // Free the buffer if send failed
+        return 0; // Indicate send failure
+    }
+    // --- End Buffer Freeing ---
+
+    // If send was successful, NIC/Engine handles the buffer from here on.
+    // Protocol layer doesn't free it on success.
+    // Return the size of the *user data* sent successfully.
     return size;
 }
 
@@ -284,17 +308,31 @@ template <typename NIC>
 void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     db<Protocol>(TRC) << "Protocol<NIC>::update() called!\n";
     
-    // Extracting packet from buffer
-    Packet* packet = reinterpret_cast<Packet*>(buf->data()->payload);
+    // Extracting Ethernet Frame to check source MAC
+    Ethernet::Frame* frame = buf->data();
+    Ethernet::Address src_mac = frame->src;
+    Ethernet::Address my_mac = _nic->address(); // Get NIC's MAC address
+
+    // Extracting packet from buffer payload
+    Packet* packet = reinterpret_cast<Packet*>(frame->payload);
     
-    // Extracting dst port from packet
+    // Extracting dst port from packet header
     Port dst_port = packet->header()->to_port();
 
-    // If we have observers, notify them and let reference counting handle buffer cleanup
+    // --- Security Check: Drop external packets to broadcast port 0 --- 
+    if (src_mac != my_mac && dst_port == 0) {
+        db<Protocol>(WRN) << "[Protocol] Dropping external packet (src=" << Ethernet::mac_to_string(src_mac) << ") destined for broadcast port 0.\n";
+        _nic->free(buf); // Free the buffer
+        return;          // Do not process further
+    }
+    // ------------------------------------------------------------------
+
+    // If we have observers, notify them based on destination port (broadcast handled by notify)
+    // Let reference counting handle buffer cleanup if notified.
     // Otherwise, free the buffer ourselves
     if (!Protocol::_observed.notify(dst_port, buf)) { // Use port for notification
-        db<Protocol>(INF) << "[Protocol] data received, but no one was notified\n";
-        // No observers, free the buffer
+        db<Protocol>(INF) << "[Protocol] data received, but no one was notified for port " << dst_port << ". Freeing buffer.\n";
+        // No observers for this specific port (and not broadcast, or broadcast had no observers)
         _nic->free(buf);
     }
 }

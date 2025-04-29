@@ -48,6 +48,8 @@ class Ethernet {
 
 }; // all necessary definitions and formats
 
+constexpr unsigned int Ethernet::MTU;
+
 const Ethernet::Address Ethernet::NULL_ADDRESS = {{0, 0, 0, 0, 0, 0}};
 const Ethernet::Address Ethernet::BROADCAST = {{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}};
 

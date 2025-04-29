@@ -527,18 +527,26 @@ typename NIC<ExternalEngine, InternalEngine>::DataBuffer* NIC<ExternalEngine, In
     }
 
     sem_wait(&_binary_sem); // Lock the queue
+
+    // Re-check running status after acquiring semaphore, in case stop() was called while waiting
+    if (!_running.load(std::memory_order_acquire)) {
+        db<NIC>(WRN) << "[NIC] alloc() acquired semaphore but NIC stopped.\n";
+        sem_post(&_binary_sem); // Release semaphore before returning
+        return nullptr;
+    }
+
     // Check if there are free buffers available
-    if (!_free_buffer_count) {
+    if (_free_buffer_count == 0) { // Check count directly
         db<NIC>(WRN) << "[NIC] No free buffers available for allocation.\n";
         sem_post(&_binary_sem); // Release semaphore
         return nullptr; // No buffer available
     }
     // TODO - review if this is needed
     // Re-check running status after acquiring semaphore, in case stop() was called
-    if (!_running.load(std::memory_order_acquire)) {
-        db<NIC>(WRN) << "[NIC] alloc() acquired semaphore but NIC stopped.\n";
-        return nullptr;
-    }
+    // if (!_running.load(std::memory_order_acquire)) {
+    //     db<NIC>(WRN) << "[NIC] alloc() acquired semaphore but NIC stopped.\n";
+    //     return nullptr;
+    // }
 
     DataBuffer* buf = _free_buffers.front();
     _free_buffers.pop();
