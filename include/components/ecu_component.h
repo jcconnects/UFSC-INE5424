@@ -56,7 +56,7 @@ public:
 
                 // Attempt to parse the message (assuming a common format for now)
                 // Example format: "[SourceType] Vehicle [ID] message [MsgID] at [Timestamp]: [Payload]"
-                std::regex pattern("\\[(\w+)\\] Vehicle (\\d+) message (\\d+) at (\\d+): (.*)");
+                std::regex pattern("\\[(\\w+)\\] Vehicle (\\d+) message (\\d+) at (\\d+): (.*)");
                 std::smatch matches;
 
                 long long send_time_us = 0;
