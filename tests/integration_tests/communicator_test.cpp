@@ -1,12 +1,3 @@
-#include "../../include/communicator.h"
-#include "../../include/message.h"
-// Required includes for the Initializer stub
-#include "../../include/nic.h"
-#include "../../include/protocol.h"
-#include "../../include/socketEngine.h"
-#include "../../include/ethernet.h"
-// ---
-#include "test_utils.h"
 #include <pthread.h>
 #include <unistd.h>
 #include <atomic>
@@ -14,128 +5,210 @@
 #include <chrono> // For sleep_for
 #include <cstring> // For strlen
 
-std::atomic<bool> thread_done(false);
+#include "../testcase.h"
+#include "test_utils.h"
+#include "message.h"
+#include "communicator.h"
+#include "protocol.h"
+#include "nic.h"
+#include "socketEngine.h"
+#include "ethernet.h"
+#include "initializer.h"
 
-// Protocol Stub / Initializer (remains the same)
-class Initializer {
+#define DEFINE_TEST(name) registerTest(#name, [this]() { this->name(); });
+
+class TestCommunicator : public TestCase, public Initializer {
+
     public:
-        typedef NIC<SocketEngine> NICType;
-        typedef Protocol<NICType> ProtocolType;
+        TestCommunicator();
+        ~TestCommunicator();
 
-        static NICType* create_nic(unsigned int id) {
-            // Setting virtual MAC Address
-            Ethernet::Address addr;
-            addr.bytes[0] = 0x02; // local, unicast
-            addr.bytes[1] = 0x00;
-            addr.bytes[2] = 0x00;
-            addr.bytes[3] = 0x00;
-            addr.bytes[4] = (id >> 8) & 0xFF;
-            addr.bytes[5] = id & 0xFF;
-    
-            NICType* nic = new NICType();
-            nic->setAddress(addr);
-            return nic;
-        }
+        static void setUpClass();
+        static void tearDownClass();
+
+        void setUp() override;
+        void tearDown() override;
+
+        /* TESTS */
+        void test_creation_with_null_channel();
         
-        static ProtocolType* create_protocol(NICType* nic) {
-            return new ProtocolType(nic);
-        }
+        void test_close();
+        
+        void test_send_valid_message();
+        void test_send_empty_message();
+        void test_send_null_message();
+        void test_send_when_closed();
+        
+        void test_receive_valid_message();
+        void test_receive_null_message();
+        void test_receive_when_closed();
+    
+    private:
+        static NIC<SocketEngine>* _nic;
+        static Protocol<NIC<SocketEngine>>* _protocol;
+        Communicator<Protocol<NIC<SocketEngine>>>* _comms;
 };
 
-// Updated receive function to match new signature
-void* run_recv(void* comm) {
-    Communicator<Initializer::ProtocolType>* c = static_cast<Communicator<Initializer::ProtocolType>*>(comm);
-    Message<1488> m = Message<1488>();
-    Initializer::ProtocolType::Address source_addr; // Variable to store source address
+NIC<SocketEngine>* TestCommunicator::_nic;
+Protocol<NIC<SocketEngine>>* TestCommunicator::_protocol;
 
-    TEST_LOG_THREAD("Receiver thread started, waiting for message...");
-    // Call receive with new signature
-    bool received_ok = c->receive(&m, &source_addr);
+TestCommunicator::TestCommunicator() {
+    DEFINE_TEST(test_creation_with_null_channel);
+    DEFINE_TEST(test_close);
+    DEFINE_TEST(test_send_valid_message);
+    DEFINE_TEST(test_send_empty_message);
+    DEFINE_TEST(test_send_null_message);
+    DEFINE_TEST(test_send_when_closed);
+    DEFINE_TEST(test_receive_valid_message);
+    DEFINE_TEST(test_receive_null_message);
+    DEFINE_TEST(test_receive_when_closed);
 
-    if (received_ok) {
-        TEST_LOG_THREAD("Receiver thread received message successfully from " + source_addr.to_string());
-        // TODO: Add assertion here to check message content m.data() and m.size()
-        // TODO: Add assertion here to check source_addr against expected sender (e.g., comm1_address)
-        thread_done.store(true);
-    } else {
-        TEST_LOG_THREAD("Receiver thread receive() returned false (likely timeout or close).");
-        // thread_done remains false
-    }
-    return static_cast<void*>(nullptr);
+    TestCommunicator::setUpClass();
 }
+
+TestCommunicator::~TestCommunicator() {
+    TestCommunicator::tearDownClass();
+}
+
+/******** CLASS METHODS ********/
+void TestCommunicator::setUpClass() {
+    _nic = create_nic();
+    _protocol = create_protocol(_nic);
+
+}
+
+void TestCommunicator::tearDownClass() {
+    _nic->stop();
+
+    delete _protocol;
+    delete _nic;
+}
+/*******************************/
+
+/****** FIXTURES METHODS *******/
+void TestCommunicator::setUp() {
+    _comms = new Communicator<Protocol<NIC<SocketEngine>>>(_protocol, Protocol<NIC<SocketEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine>>::Address::NULL_VALUE));
+}
+
+void TestCommunicator::tearDown() {
+    delete _comms;
+}
+/*******************************/
+
+/************ TESTS ************/
+void TestCommunicator::test_creation_with_null_channel() {
+    // Exercise SUT
+    assert_throw<std::invalid_argument>([] { Communicator<Protocol<NIC<SocketEngine>>>(nullptr, Protocol<NIC<SocketEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine>>::Address::NULL_VALUE)); });
+}
+
+void TestCommunicator::test_close() {
+    // Exercise SUT
+    _comms->close();
+
+    // Result Verification
+    assert_true(_comms->is_closed(), "Communicator was not closed!");
+}
+
+void TestCommunicator::test_send_valid_message() {
+    // Inline Fixture
+    std::string data = "teste";
+    Message<Protocol<NIC<SocketEngine>>::MTU> msg(data.c_str(), data.size());
+
+    // Exercise SUT
+    bool result = _comms->send(&msg);
+
+    // Result Verification
+    assert_true(result, "Communicator failed to send valid message!");
+}
+
+void TestCommunicator::test_send_empty_message() {
+    // Inline Fixture
+    Message<Protocol<NIC<SocketEngine>>::MTU> msg;
+
+    // Exercise SUT
+    bool result = _comms->send(&msg);
+
+    // Result Verification
+    assert_false(result, "Communicator sent empty message, which should not happen!");
+}
+
+void TestCommunicator::test_send_null_message() {
+    // Exercise SUT
+    bool result = _comms->send(nullptr);
+
+    // Result Verification
+    assert_false(result, "Communicator sent null message, which should not happen!");
+}
+
+void TestCommunicator::test_send_when_closed() {
+    // Inline Fixture
+    _comms->close();
+    std::string data = "teste";
+    Message<Protocol<NIC<SocketEngine>>::MTU> msg(data.c_str(), data.size());
+
+    // Exercise SUT
+    bool result = _comms->send(&msg);
+
+    // Result Verification
+    assert_false(result, "Communicator sent message when closed, which should not happen!");
+}
+
+void TestCommunicator::test_receive_valid_message() {
+    // Inline Fixture
+    NIC<SocketEngine>* sender_nic = create_nic();
+    Ethernet::Address sender_addr = {{0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E}};
+    sender_nic->setAddress(sender_addr);
+
+    Protocol<NIC<SocketEngine>>* sender_protocol = create_protocol(sender_nic);
+    
+    Communicator<Protocol<NIC<SocketEngine>>> sender_comms(sender_protocol, Protocol<NIC<SocketEngine>>::Address(sender_nic->address(), Protocol<NIC<SocketEngine>>::Address::NULL_VALUE));
+
+    std::string data = "teste";
+    Message<Protocol<NIC<SocketEngine>>::MTU> send_msg(data.c_str(), data.size());
+
+    sender_comms.send(&send_msg);
+
+    Message<Protocol<NIC<SocketEngine>>::MTU> msg;
+
+    // Exercise SUT
+    bool result = _comms->receive(&msg);
+
+    // Result Verification
+    assert_true(result, "Communicator::receive() returned false even though a valid message was sent!");
+    std::string received(static_cast<const char*>(msg.data()), msg.size());
+    assert_equal(received, "teste", "Message received is not the same message that was sent!");
+
+    // TearDown
+    sender_nic->stop();
+
+    delete sender_protocol;
+    delete sender_nic;
+}
+
+void TestCommunicator::test_receive_null_message() {
+    // Exercise SUT
+    bool result = _comms->receive(nullptr);
+
+    // Result Verification
+    assert_false(result, "Communicator::receive() returned true, even though a null message was passed!");
+}
+
+void TestCommunicator::test_receive_when_closed() {
+    // Inline Fixture
+    _comms->close();
+    Message<Protocol<NIC<SocketEngine>>::MTU> msg;
+
+    // Exercise SUT
+    bool result = _comms->receive(&msg);
+
+    // Result Verification
+    assert_false(result, "Communicator received message when closed, which should not happen!");
+}
+/********************************/
 
 
 int main() {
-    TEST_INIT("communicator_test");
 
-    TEST_LOG("Creating NIC and Protocol instances");
-    Initializer::NICType* nic1 = Initializer::create_nic(1);
-    Initializer::NICType* nic2 = Initializer::create_nic(2);
-    Initializer::ProtocolType* prot1 = Initializer::create_protocol(nic1); // Protocol for comm1
-    // Using a single protocol instance for both communicators for this test.
-    // This assumes the underlying protocol/NIC can handle routing based on address.
-
-    // Define addresses for the communicators
-    auto comm1_address = Initializer::ProtocolType::Address(nic1->address(), 111); // Use specific ports
-    auto comm2_address = Initializer::ProtocolType::Address(nic2->address(), 222);
-
-    TEST_LOG("Creating Communicator instances with addresses: " + comm1_address.to_string() + " and " + comm2_address.to_string());
-    Communicator<Initializer::ProtocolType>* comm1 = new Communicator<Initializer::ProtocolType>(prot1, comm1_address);
-    Communicator<Initializer::ProtocolType>* comm2 = new Communicator<Initializer::ProtocolType>(prot1, comm2_address); // Using shared protocol prot1
-
-    pthread_t thread_id_recv1;
-    thread_done.store(false); // Reset flag
-
-    // Test 1: Close (Adapted - check if receive returns false)
-    TEST_LOG("--- Test 1: Close ---");
-    TEST_LOG("Starting receiver thread (comm1) and closing communicator...");
-    pthread_create(&thread_id_recv1, nullptr, run_recv, comm1);
-    // Give thread a moment to start waiting in receive()
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    comm1->close(); // Close should interrupt receive()
-    pthread_join(thread_id_recv1, nullptr); // Wait for thread to finish
-    TEST_ASSERT(!thread_done.load(), "Receive should return false when communicator is closed");
-    TEST_LOG("Test 1 Passed.");
-
-
-    // Test 2 & 3: Send/Receive (Adapted)
-    TEST_LOG("--- Test 2 & 3: Send/Receive ---");
-    pthread_t thread_id_recv2;
-    thread_done.store(false); // Reset flag
-
-    // Start receiver thread for comm2
-    TEST_LOG("Starting receiver thread (comm2)...");
-    pthread_create(&thread_id_recv2, nullptr, run_recv, comm2);
-    // Give thread time to initialize and wait in receive()
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-    // Send message from comm1 to comm2
-    const char* test_payload = "a message";
-    size_t payload_len = strlen(test_payload) + 1; // Include null terminator
-    TEST_LOG("Sending message from comm1 (" + comm1_address.to_string() + ") to comm2 (" + comm2_address.to_string() + ")");
-    Message<1488> m_send(test_payload, payload_len);
-    bool sent = comm1->send(comm2_address, &m_send); // Use new send signature
-    TEST_ASSERT(sent, "Send should return true");
-
-    // Wait for the receiver thread to signal completion
-    TEST_LOG("Waiting for receiver thread (comm2) to finish...");
-    pthread_join(thread_id_recv2, nullptr);
-    TEST_ASSERT(thread_done.load(), "Receive should return true after message sent");
-    // TODO: Add check for received message content if stored globally/returned by thread.
-    TEST_LOG("Test 2 & 3 Passed.");
-
-
-    // Cleanup
-    TEST_LOG("Cleaning up...");
-    // comm1 was closed in Test 1, comm2 needs closing.
-    comm2->close(); // Explicitly close comm2 before deleting
-    delete comm1;
-    delete comm2;
-    delete prot1;
-    delete nic1;
-    delete nic2;
-
-    std::cout << "Communicator test passed successfully!" << std::endl;
-
-    return 0;
+    TestCommunicator test;
+    test.run();
 }

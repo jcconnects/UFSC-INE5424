@@ -51,13 +51,6 @@ struct Traits<NIC<ExternalEngine, InternalEngine>> : public Traits<void>
     static const unsigned int RECEIVE_BUFFERS = 512;
 };
 
-// Traits for Protocol class
-template <typename NIC>
-struct Traits<Protocol<NIC>> : public Traits<void>
-{
-    static const bool debugged = false;
-};
-
 // Traits for Protocol with dual-engine NIC
 template <>
 struct Traits<Protocol<NIC<SocketEngine, SharedMemoryEngine>>> : public Traits<void>
@@ -98,7 +91,7 @@ const unsigned int Traits<SharedMemoryEngine>::MTU;
 template<typename Channel>
 struct Traits<Communicator<Channel>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for Vehicle class
@@ -111,15 +104,15 @@ struct Traits<Vehicle> : public Traits<void>
 template <>
 struct Traits<Component> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 //traits para classe Debug
 template<>
 struct Traits<Debug> : public Traits<void>
 {
-    static const bool error = false;
-    static const bool warning = false;
+    static const bool error = true;
+    static const bool warning = true;
     static const bool info = true;
     static const bool trace = true;
 };

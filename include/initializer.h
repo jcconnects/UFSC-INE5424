@@ -13,6 +13,7 @@
 
 // Initializer class responsible for creating and managing a single vehicle process
 class Initializer {
+
     public:
         // Use the aliases defined in component.h (or types.h)
         // These define the specific NIC and Protocol types for the system
@@ -27,6 +28,10 @@ class Initializer {
 
         // Start the vehicle process
         static Vehicle* create_vehicle(unsigned int id);
+
+        static VehicleNIC* create_nic();
+
+        static CProtocol* create_protocol(VehicleNIC* nic);
         
         // Template method to create a component with its own communicator
         template <typename SpecificComponentType, typename... Args>
@@ -34,6 +39,15 @@ class Initializer {
 };
 
 /********** Initializer Implementation ***********/
+
+Initializer::VehicleNIC* Initializer::create_nic() {
+    return new VehicleNIC();
+}
+
+Initializer::CProtocol* Initializer::create_protocol(VehicleNIC* nic) {
+    return new CProtocol(nic);
+}
+
 Vehicle* Initializer::create_vehicle(unsigned int id) {
     // Setting Vehicle virtual MAC Address
     Ethernet::Address addr; // We don't set the address here anymore;

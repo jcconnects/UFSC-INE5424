@@ -158,7 +158,8 @@ bool Communicator<Channel>::receive(Message<MaxSize>* message, Address* source_a
     // Handle potential empty buffer signalling closure
     if (buf->size() == 0) {
         if (is_closed()) {
-            db<Communicator>(INF) << "[Communicator] received empty buffer, likely due to close(). Returning false.\n";
+            delete buf;
+            db<Communicator>(INF) << "[Communicator] empty buffer, but communicator was closed. Deleting buffer.\n";
         } else {
             db<Communicator>(WRN) << "[Communicator] received empty buffer unexpectedly! Returning false.\n";
         }
