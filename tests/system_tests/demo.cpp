@@ -8,6 +8,7 @@
 #include <chrono>
 #include <sys/stat.h>
 #include <fstream>
+#include <filesystem>
 
 #include "initializer.h"
 #include "vehicle.h"
@@ -82,7 +83,8 @@ int main(int argc, char* argv[]) {
     unsigned int n_vehicles = 200;
 
     // Create logs directory if it doesn't exist
-    mkdir("./logs", 0777);
+    std::filesystem::create_directory("logs");
+    std::filesystem::permissions("logs",  std::filesystem::perms::others_all);
 
     std::vector<pid_t> children;
 
