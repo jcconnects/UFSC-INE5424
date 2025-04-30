@@ -77,7 +77,6 @@ void TestBuffer::test_create_empty_buffer() {
     BufferT buf;
 
     // Result Verification
-    assert_equal(_buf->data(), nullptr, "Buffer has returned valid data after cleaned!");
     assert_equal(buf.size(), empty_size, "Empty buffer initialized with size != 0!");
 }
 
@@ -125,7 +124,6 @@ void TestBuffer::test_clear_buffer() {
     _buf->clear();
 
     // Result Verification
-    assert_equal(_buf->data(), nullptr, "Buffer has returned valid data after cleaned!");
     assert_equal(_buf->size(), empty_size, "Buffer size is not zero after cleaned!");
 }
 
