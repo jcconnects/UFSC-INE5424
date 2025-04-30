@@ -1,4 +1,4 @@
-@startuml 01-system_sequence_diagram
+@startuml 01-system_sequence_socket_engine_communication_diagram
 
 ' Process flow
 participant "Vehicle <<Process>>" as Vehicle
@@ -6,7 +6,7 @@ participant "Message" as Message
 participant "Communicator <<Concurrent_Observer>>" as Communicator
 participant "Protocol <<Conditional_Data_Observer>>" as Protocol
 participant "NIC" as NIC
-participant "SocketEngine <<Engine>>" as SocketEngine
+participant "SocketEngine <<External_Engine>>" as SocketEngine
 participant "NIC <<Physical>>" as NIC_Physical
 
 autonumber
@@ -19,8 +19,13 @@ Protocol -> NIC: alloc(address, PROTO, size)
 NIC --> Protocol: return buffer
 note right of Protocol: Copy data to buffer
 Protocol -> NIC: send(buf)
-NIC -> SocketEngine: send(buf->data(), buf->size())
-SocketEngine --> NIC_Physical: sendto(F)
+note right of NIC: Get destination MAC address from buffer
+alt dest_mac == my_mac 
+    note right of NIC: Send to internal engine
+else
+    NIC -> SocketEngine: send(buf->data(), buf->size())
+    SocketEngine --> NIC_Physical: sendto(Frame, size)
+end
 deactivate Protocol
 
 ==== Network Layer Boundary ====
@@ -31,9 +36,10 @@ NIC_Physical -> SocketEngine: handleSignal()
 SocketEngine -> NIC: receiveData(PROTO, buffer)
 activate NIC
 NIC -> NIC: notify(PROTO, buffer)
-NIC -> Protocol: update(&_observed, PROTO, buffer)
+NIC -> Protocol: update(PROTO, buffer)
 activate Protocol
-Protocol -> Protocol: notify(condition, data)
+Protocol -> Protocol: notify(dst_port, buffer)
+note right of Protocol: Extract dst_port from packet
 Protocol -> Communicator: update(condition, data)
 note right of Communicator: Calls update and releases the thread waiting for data
 deactivate Protocol

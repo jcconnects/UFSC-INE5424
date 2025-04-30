@@ -1,0 +1,54 @@
+@startuml 01-system_sequence_shared_memory_engine_communication_diagram
+
+' Process flow
+participant "Component1 <<Component>>" as Component1
+participant "Message" as Message
+participant "Communicator1 <<Concurrent_Observer>>" as Communicator1
+participant "Protocol <<Conditional_Data_Observer>>" as Protocol
+participant "NIC" as NIC
+participant "SharedMemoryEngine <<Internal_Engine>>" as SharedMemoryEngine
+participant "Communicator2 <<Concurrent_Observer>>" as Communicator2
+participant "Component2 <<Component>>" as Component2
+
+autonumber
+Component1 -> Message: Create
+Message -> Component1: Message
+Component1 -> Communicator1: send(Message)
+Communicator1 -> Protocol: send(address, BROADCAST, data, size)
+activate Protocol
+Protocol -> NIC: alloc(address, PROTO, size)
+NIC --> Protocol: return buffer
+note right of Protocol: Copy data to buffer
+Protocol -> NIC: send(buf)
+note right of NIC: Get destination MAC address from buffer
+alt dest_mac == my_mac 
+    NIC -> SharedMemoryEngine: send(buf->data(), buf->size())
+    SharedMemoryEngine --> NIC: return size
+else
+    note right of NIC: Send to external engine
+end
+deactivate Protocol
+
+==== Shared Memory Boundary ====
+
+' Process2 receives data via shared memory
+NIC -> NIC: handleInternalEvent(buf, size)
+activate NIC
+NIC -> NIC: notify(PROTO, buffer)
+NIC -> Protocol: update(PROTO, buffer)
+activate Protocol
+Protocol -> Protocol: notify(dst_port, buffer)
+note right of Protocol: Extract dst_port from packet
+Protocol -> Communicator2: update(condition, data)
+note right of Communicator2: Calls update and releases the thread waiting for data
+deactivate Protocol
+deactivate NIC
+
+Component2 -> Communicator2: receive(Message)
+activate Communicator2
+Communicator2 -> Communicator2: updated()
+note right of Communicator2: Method inherited from Observer pattern class that waits until data is returned
+deactivate Communicator2
+note right of Component2: Updated that data is available
+
+@enduml 
