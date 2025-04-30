@@ -15,6 +15,12 @@ The communication system implements a layered architecture for network communica
          |                       |
          v                       v
 +------------------+    +------------------+
+|   Components     |    |   Components     |
+| (ECU, LiDAR, etc)|    | (ECU, LiDAR, etc)|
++------------------+    +------------------+
+         |                       |
+         v                       v
++------------------+    +------------------+
 |   Communicator   |    |   Communicator   |
 +------------------+    +------------------+
          |                       |
@@ -59,6 +65,8 @@ The communication stack implements two types of Observer patterns:
 |-----------|-------------|------------------------|
 | **Initializer** | Manages process creation and lifecycle for vehicles and communication components | [README-Initializer.md](classes/README-Initializer.md) |
 | **Observer** | Implements thread-safe observer patterns for asynchronous communication | [README-Observer.md](classes/README-Observer.md) |
+| **Vehicle** | Manages the lifecycle of a vehicle and its components | [Vehicle.h](../include/vehicle.h) |
+| **Component** | Base class for all vehicle components with thread management | [Component.h](../include/component.h) |
 
 ### Communication Stack
 
@@ -69,6 +77,17 @@ The communication stack implements two types of Observer patterns:
 | Network | **NIC** | Network interface card implementation for frame handling | [README-Nic.md](classes/README-Nic.md) |
 | Link | **Ethernet** | Ethernet frame handling and MAC address management | [README-Ethernet.md](classes/README-Ethernet.md) |
 | Physical | **SocketEngine** | Low-level network access with raw sockets and asynchronous I/O | [README-SocketEngine.md](classes/README-SocketEngine.md) |
+| Physical (Alt) | **SharedMemoryEngine** | Shared memory communication for local inter-process communication | [README-SharedMemoryEngine.md](classes/README-SharedMemoryEngine.md) |
+
+### Vehicle Components
+
+| Component | Description | Source File |
+|-----------|-------------|-------------|
+| **LiDAR Component** | Generates and transmits point cloud data | [lidar_component.h](../include/components/lidar_component.h) |
+| **Camera Component** | Simulates video frame capture and transmission | [camera_component.h](../include/components/camera_component.h) |
+| **ECU Component** | Electronic Control Unit for vehicle management | [ecu_component.h](../include/components/ecu_component.h) |
+| **INS Component** | Inertial Navigation System for position tracking | [ins_component.h](../include/components/ins_component.h) |
+| **Battery Component** | Battery status monitoring and reporting | [battery_component.h](../include/components/battery_component.h) |
 
 ### Data Structures
 
@@ -76,6 +95,7 @@ The communication stack implements two types of Observer patterns:
 |-----------|-------------|------------------------|
 | **Message** | Generic container for communication data | [README-Message.md](classes/README-Message.md) |
 | **Buffer** | Memory management for network data | [README-Buffer.md](classes/README-Buffer.md) |
+| **Address** | Addressing scheme for communication endpoints | [address.h](../include/address.h) |
 
 ## Component Relationships
 
@@ -85,37 +105,62 @@ The Initializer framework manages the creation and lifecycle of vehicle processe
 
 - **Initializer** creates **NIC** and **Protocol** instances
 - **Initializer** creates a **Vehicle** and passes NIC and Protocol to it
-- **Vehicle** creates its own **Communicator** using the Protocol
+- **Vehicle** creates its components and manages their lifecycle
 - Each vehicle runs in its own process for isolation
+
+### Component Architecture
+
+The Component architecture follows these principles:
+
+1. **Thread-Safe Execution**:
+   - Each component runs in its own thread
+   - Components start/stop in coordinated fashion through Vehicle
+   - Built-in error handling and recovery mechanisms
+
+2. **Communication Model**:
+   - Components communicate through Communicator interface
+   - Messages can be directed to specific components or broadcast
+   - Both intra-vehicle and inter-vehicle communication supported
+
+3. **Component Hierarchy**:
+   - All components derive from the Component base class
+   - Specialized components implement specific vehicle functions
+   - Components have a standard interface but custom behaviors
 
 ### Communication Flow
 
 1. **Message Creation**:
-   - Application creates a **Message** with data
-   - **Communicator** prepares the message for transmission
+   - Component creates a **Message** with data
+   - **Component** uses its **Communicator** to prepare the message for transmission
 
 2. **Message Sending**:
    - **Communicator** passes message to **Protocol**
    - **Protocol** adds protocol headers and passes to **NIC**
-   - **NIC** formats an **Ethernet** frame and passes to **SocketEngine**
-   - **SocketEngine** transmits the raw frame to the network using raw sockets
+   - **NIC** formats an **Ethernet** frame and passes to **SocketEngine** or **SharedMemoryEngine**
+   - Engine transmits the raw frame to the network or shared memory
 
 3. **Message Reception**:
-   - **SocketEngine** receives a raw frame via its dedicated thread
-   - **SocketEngine** notifies **NIC** through its callback mechanism
+   - Engine receives a raw frame via its dedicated thread
+   - Engine notifies **NIC** through its callback mechanism
    - **NIC** notifies **Protocol** based on protocol number (Conditional Observer)
    - **Protocol** processes the frame and notifies **Communicator** based on port (Concurrent Observer)
-   - **Communicator** delivers the **Message** to the application
+   - **Communicator** delivers the **Message** to the appropriate **Component**
 
-### SocketEngine Integration
+### Engine Integration
 
-The SocketEngine provides the lowest level of network access:
+The system supports two types of communication engines:
 
-- Implemented with raw sockets for direct Ethernet frame transmission/reception
-- Uses epoll for efficient asynchronous I/O
-- Runs a dedicated thread for receiving frames
-- Provides callback mechanism that integrates with the NIC layer
-- Handles low-level details like interface binding and MAC address retrieval
+1. **SocketEngine**:
+   - Implemented with raw sockets for direct Ethernet frame transmission/reception
+   - Uses epoll for efficient asynchronous I/O
+   - Runs a dedicated thread for receiving frames
+   - Provides callback mechanism that integrates with the NIC layer
+
+2. **SharedMemoryEngine**:
+   - Provides efficient local inter-process communication
+   - Uses shared memory regions for data exchange
+   - Supports high-throughput communication between local processes
+   - Integrates with the same NIC interface as SocketEngine
 
 ## Implementation Details
 
@@ -136,7 +181,7 @@ The system ensures thread safety through:
 - Semaphores for thread synchronization in the Concurrent Observer pattern
 - Mutex protection for shared data structures
 - Proper encapsulation and information hiding
-- Dedicated thread in SocketEngine for asynchronous reception
+- Dedicated threads for asynchronous reception
 
 ## Usage Examples
 
@@ -144,8 +189,9 @@ For detailed usage examples of each component, refer to their respective README 
 
 1. Create a Vehicle configuration
 2. Initialize the communication stack using the Initializer
-3. Use the Communicator to send and receive messages
-4. Process messages in the application logic
+3. Add specialized components to the vehicle
+4. Start the vehicle and its components
+5. Process messages in component logic
 
 ## Key Design Patterns
 
@@ -153,7 +199,8 @@ For detailed usage examples of each component, refer to their respective README 
 2. **Template-Based Design**: For type-safe component implementation
 3. **Process-Based Isolation**: Each vehicle runs in its own process
 4. **Dependency Injection**: Components are passed dependencies through constructors
-5. **Callback Pattern**: For asynchronous event handling in SocketEngine 
+5. **Callback Pattern**: For asynchronous event handling in communication engines
+6. **Thread-Per-Component**: Each component runs in its own thread for isolation
 
 ## Testing Framework
 

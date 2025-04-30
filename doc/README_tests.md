@@ -167,7 +167,27 @@ Tests the functionality of the `SocketEngine` class, which manages raw socket co
   - Engine stopping
   - Running status after stop
 
-### 6. NIC Test (`components/nic_test.cpp`)
+### 6. SharedMemoryEngine Test (`components/sharedMemoryEngine_test.cpp`)
+
+Tests the functionality of the `SharedMemoryEngine` class, which provides local inter-process communication.
+
+**Test Cases:**
+- **Initialization:**
+  - Shared memory segment creation
+  - Region mapping
+  - Queue initialization
+
+- **Communication:**
+  - Message enqueueing and dequeueing
+  - Message ordering
+  - Thread safety during concurrent operations
+  - Performance under load
+
+- **Shutdown:**
+  - Resource cleanup
+  - Proper unmapping of shared memory regions
+
+### 7. NIC Test (`components/nic_test.cpp`)
 
 Tests the functionality of the `NIC` template class, which provides a network interface controller implementation.
 
@@ -188,7 +208,7 @@ Tests the functionality of the `NIC` template class, which provides a network in
   - Error condition handling
   - Drop counter increment on failed operations
 
-### 7. Protocol Test (`components/protocol_test.cpp`)
+### 8. Protocol Test (`components/protocol_test.cpp`)
 
 Tests the functionality of the `Protocol` template class, which provides a protocol layer on top of the network interface.
 
@@ -199,143 +219,115 @@ Tests the functionality of the `Protocol` template class, which provides a proto
   - Address comparison (equality testing)
   - Boolean evaluation of addresses (null vs. non-null)
 
-- **Observer Pattern:**
-  - Observer attachment to specific protocol ports
-  - Observer notification on message reception
-  - Observer detachment and verification
+### 9. Component Test (`components/component_test.cpp`)
 
-- **Send and Receive:**
-  - Message transmission between protocol instances
-  - Source and destination address handling
-  - Message integrity verification after transmission
-  - Buffer management during send/receive operations
-
-- **Large Data Handling:**
-  - Sending data close to MTU size
-  - Data integrity verification for large messages
-
-- **Broadcast Address:**
-  - Verification of the broadcast address constants
-
-### 8. Initializer Test (`components/initializer_test.cpp`)
-
-Tests the functionality of the `Initializer` class, which is responsible for creating and initializing vehicle instances with their network components.
+Tests the functionality of the `Component` base class and its derived components.
 
 **Test Cases:**
-- **Vehicle Creation:**
-  - Creating vehicles with specific IDs
-  - Verifying vehicle IDs are correctly set
-  - Validating that vehicles are initially not running
-  - Ensuring the proper initialization of all internal components (NIC, Protocol)
+- **Component Creation:**
+  - Basic component creation with vehicle and protocol
+  - Name assignment and retrieval
+  - Address assignment and verification
 
-- **Vehicle Identity:**
-  - Ensuring different vehicles have unique IDs
-  - Verifying multiple vehicles created with different IDs
-  - Testing creation of a batch of vehicles with sequential IDs
-
-- **Vehicle Lifecycle:**
-  - Starting vehicles and confirming running state
-  - Stopping vehicles and confirming non-running state
-  - Testing multiple start/stop cycles for stability
-
-- **MAC Address Assignment:**
-  - Verifying MAC addresses are correctly derived from vehicle IDs
-  - Checking MAC address format (02:00:00:00:HH:LL where HHLL is the 16-bit ID)
-  - Ensuring MAC address uniqueness between vehicles
-  - Validating the MAC address encoding matches the expected pattern
-
-- **Basic Functionality:**
-  - Testing send functionality of created vehicles
-  - Verifying send operations complete successfully
-  - Testing proper resource management and cleanup
-
-### 9. Vehicle Test (`components/vehicle_test.cpp`)
-
-Tests the functionality of the `Vehicle` class, which manages vehicle state, components, and communication.
-
-**Test Cases:**
-- **Creation and Basic Properties:**
-  - Creating vehicles with specific IDs
-  - Verifying correct ID retrieval
-  - Validating initial running state
-
-- **Lifecycle Management:**
-  - Starting and stopping vehicles
-  - Verifying running state changes correctly
-  - Testing multiple start/stop cycles
-
-- **Component Management:**
-  - Adding components to vehicles
-  - Starting components explicitly
-  - Stopping components explicitly
-  - Verifying component state transitions
-  - Ensuring correct component ownership (components reference correct vehicle)
-
-- **Component Lifecycle Integration:**
-  - Verifying components are started when vehicle starts
-  - Ensuring component lifecycle follows vehicle lifecycle
-  - Testing components across multiple vehicles
-
-- **Two-Phase Shutdown:**
-  - Testing the `signal_stop()` method on components
-  - Verifying components properly respond to shutdown signals
-  - Ensuring correct shutdown sequence is followed
+- **Thread Management:**
+  - Thread creation during start()
+  - Thread termination during stop()
+  - Running status tracking
 
 - **Communication:**
-  - Testing send functionality with valid parameters
-  - Verifying successful message transmission
-  - Testing communication between different vehicles
+  - Message sending between components
+  - Message receiving with timeout
+  - Handling of oversized messages
 
-- **Error Handling:**
-  - Testing edge cases with empty data buffers
-  - Verifying receive fails when vehicle is stopped
-  - Ensuring proper error responses for invalid inputs
-  - Testing safe error handling for communication failures
-
-- **Resource Management:**
-  - Verifying vehicle destructor properly cleans up components
-  - Testing proper destruction order to avoid memory issues
-
-**Note on Test Implementation:**
-The test uses a specialized `TestComponent` class that overrides the `signal_stop()` method instead of the legacy `stop()` method to align with the robust two-phase shutdown approach implemented in the system.
-
-### 10. Observer Pattern Test (`components/observer_pattern_test.cpp`)
-
-Tests the functionality of the Observer pattern classes, which implement the Observer design pattern in both conditional and concurrent variants.
-
-**Test Cases:**
-- **Conditional Observer Pattern:**
-  - Observer registration (attach) to specific conditions
-  - Observer detachment (detach) from observed entities
-  - Notification filtering based on conditions
-  - Multiple observers for the same condition
-  - Behavior when notifying with no observers for a condition
-  - Data retrieval after notification
-
-- **Concurrent Observer Pattern:**
-  - Thread-safe observer registration and notification
-  - Concurrent data production and consumption
-  - Multiple producer threads sending notifications
-  - Multiple consumer threads receiving notifications
-  - Blocking behavior when waiting for notifications
-  - Reference counting for shared data
-  - Observer detachment while concurrent operations are running
+- **Lifecycle:**
+  - Proper resource acquisition during initialization
+  - Proper resource cleanup during termination
+  - Logging file creation and closure
 
 ## Integration Tests
 
 Integration tests verify the interactions between multiple components.
 
-## System Tests
+### 1. Vehicle Integration Test (`integration/vehicle_test.cpp`)
 
-System tests verify the entire system functioning together.
-
-### 1. Demo Test (`system_tests/demo.cpp`)
-
-Tests the complete system with multiple vehicles communicating with each other.
+Tests the integration of Vehicle with components, NIC, and Protocol.
 
 **Test Cases:**
-- Creating multiple vehicle processes
-- Inter-vehicle communication
-- Automatic component creation and management
-- Message sending between vehicles
-- Graceful process termination
+- **Vehicle Creation:**
+  - Initializing a vehicle with NIC and Protocol
+  - Base address verification
+  - Component addition and verification
+
+- **Component Integration:**
+  - Adding multiple components to a vehicle
+  - Component address assignment
+  - Component lifecycle managed by vehicle
+
+- **Communication Flow:**
+  - End-to-end message passing between components
+  - Communication between vehicles
+  - Broadcast messaging
+
+### 2. Components Integration Test (`integration/components_test.cpp`)
+
+Tests the interactions between different specialized components.
+
+**Test Cases:**
+- **Component Communication:**
+  - LiDAR component sending data to ECU
+  - Camera component sending frames to ECU
+  - Battery reporting to multiple components
+  - INS providing location data to other components
+
+- **Data Processing:**
+  - ECU receiving and processing sensor data
+  - Components responding to commands
+  - Error handling in component interactions
+
+## System Tests
+
+System tests verify the entire system functioning as a whole, with multiple vehicles and components operating concurrently.
+
+### 1. Vehicle Network Test (`system/vehicle_network_test.cpp`)
+
+Tests a network of vehicles communicating with each other.
+
+**Test Cases:**
+- **Multi-Vehicle Network:**
+  - Creating multiple vehicles running concurrently
+  - Inter-vehicle communication
+  - Network congestion handling
+  - Message routing between vehicles
+
+### 2. Component Network Test (`system/component_network_test.cpp`)
+
+Tests a network of components across multiple vehicles.
+
+**Test Cases:**
+- **Cross-Vehicle Component Communication:**
+  - LiDAR on one vehicle sending to ECU on another
+  - Coordinated behavior between components on different vehicles
+  - Broadcast messaging across the component network
+
+### 3. Full Demo Test (`system/demo_test.cpp`)
+
+Full demonstration of the system capabilities with realistic vehicle configurations.
+
+**Test Cases:**
+- **Complete System:**
+  - Multiple vehicles with full component suites
+  - Dynamic vehicle creation and destruction
+  - Realistic message patterns between components
+  - System stability under load
+  - Performance metrics collection
+
+## Performance Tests
+
+In addition to functional tests, the system includes performance tests to evaluate throughput, latency, and resource utilization.
+
+- **Throughput Tests:** Measure message throughput under various loads
+- **Latency Tests:** Measure end-to-end message delivery time
+- **Resource Tests:** Monitor CPU, memory, and network utilization
+- **Scalability Tests:** Evaluate system performance as the number of vehicles increases
+
+Results from performance tests are stored in the `statistics/` directory for analysis and comparison between system versions.

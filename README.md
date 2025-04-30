@@ -21,6 +21,11 @@ The project follows the specifications provided by the Operating Systems II cour
    - Initializer framework for managing vehicle lifecycle
    - Inter-process communication through the communication stack
 
+4. **Vehicle Component Architecture**:
+   - Component base class for vehicle subsystems
+   - Specialized components for various vehicle functions
+   - Thread-safe communication between components
+
 ## Project Structure
 
 ```
@@ -33,12 +38,28 @@ project-root/
 │   ├── observer.h        # Observer pattern implementation
 │   ├── protocol.h        # Communication protocol
 │   ├── vehicle.h         # Vehicle implementation
-│   ├── stubs/            # Stub implementations for testing
+│   ├── component.h       # Base class for vehicle components
+│   ├── address.h         # Address handling
+│   ├── ethernet.h        # Ethernet frame handling
+│   ├── socketEngine.h    # Raw socket communication
+│   ├── sharedMemoryEngine.h # Shared memory communication
+│   ├── message.h         # Message container
+│   ├── buffer.h          # Memory management
+│   ├── components/       # Specialized vehicle components
+│       ├── battery_component.h
+│       ├── camera_component.h
+│       ├── ecu_component.h
+│       ├── ins_component.h
+│       ├── lidar_component.h
 │── tests/                # Test implementations
-│   ├── demo.cpp
+│   ├── unit_tests/       # Unit tests for individual components
+│   ├── integration_tests/ # Tests for component interactions
+│   ├── system_tests/     # Full system tests
 │── bin/                  # Compiled binaries
+│── build/                # Build artifacts
 │── doc/                  # Documentation
 │   ├── README.md         # System architecture overview
+│   ├── README_tests.md   # Testing framework documentation
 │   ├── classes/          # Component-specific documentation
 │       ├── README-Communicator.md
 │       ├── README-Initializer.md
@@ -47,9 +68,13 @@ project-root/
 │       ├── README-Nic.md
 │       ├── README-Ethernet.md
 │       ├── README-SocketEngine.md
+│       ├── README-SharedMemoryEngine.md
 │       ├── README-Message.md
 │       ├── README-Buffer.md
+│── logs/                 # Log output directory
+│── statistics/           # Performance metrics and statistics
 │── Makefile              # Build and test automation
+│── Dockerfile            # Container definition for testing
 │── README.md             # Project overview
 ```
 
@@ -74,10 +99,9 @@ make clean
 ### Demo Test Configuration
 
 The main demo test simulates a network of autonomous vehicles:
-- Creates 30 vehicles running in separate processes
-- Each vehicle has a random lifetime between 10-50 seconds
-- Even-numbered vehicles act as both senders and receivers
-- Odd-numbered vehicles act only as receivers
+- Creates multiple vehicles running in separate processes
+- Each vehicle has various components (LiDAR, camera, ECU, etc.)
+- Components communicate with each other within and across vehicles
 - All log output is saved to the logs/ directory
 
 ## System Architecture
@@ -90,11 +114,33 @@ The complete system architecture and detailed component interactions are documen
 - Information about communication flow and message handling
 - Memory management and thread safety details
 
+## Component Architecture
+
+The component architecture consists of:
+
+1. **Base Component Class**:
+   - Thread-safe execution in dedicated threads
+   - Standardized communication interface
+   - Built-in logging and error handling
+
+2. **Specialized Components**:
+   - **LiDAR Component**: Generates and transmits point cloud data
+   - **Camera Component**: Simulates video frame capture and transmission
+   - **ECU Component**: Electronic Control Unit for vehicle management
+   - **INS Component**: Inertial Navigation System for position tracking
+   - **Battery Component**: Battery status monitoring and reporting
+
+3. **Component Communication**:
+   - Direct component-to-component messaging
+   - Support for broadcast communications
+   - Addressing based on vehicle ID and component port
+
 ## Documentation
 
 For detailed information about each component, please refer to the following documentation:
 
 - **doc/README.md**: Overview of the entire communication system architecture
+- **doc/README_tests.md**: Details about the testing framework
 - **doc/classes/README-Communicator.md**: Details of the Communicator class implementation
 - **doc/classes/README-Initializer.md**: Process management and vehicle lifecycle
 - **doc/classes/README-Observer.md**: Observer pattern implementation details
@@ -102,6 +148,7 @@ For detailed information about each component, please refer to the following doc
 - **doc/classes/README-Nic.md**: Network interface card implementation
 - **doc/classes/README-Ethernet.md**: Ethernet frame handling
 - **doc/classes/README-SocketEngine.md**: Low-level network access with raw sockets
+- **doc/classes/README-SharedMemoryEngine.md**: Shared memory communication engine
 - **doc/classes/README-Message.md**: Message container implementation
 - **doc/classes/README-Buffer.md**: Memory management for network data
 
@@ -119,4 +166,78 @@ This project implements a dual observer pattern approach:
    - Provides asynchronous message handling
    - Includes thread synchronization with semaphores
 
-The implementation follows the professor's specifications exactly, providing a robust foundation for communication between autonomous systems.
+The implementation follows the professor's specifications, providing a robust foundation for communication between autonomous systems.
+
+## Address Rule of Formation
+
+Each Communicator in the system is assigned a unique address that follows a hierarchical addressing scheme:
+
+1. **Physical Address Component (MAC Address)**:
+   - Each Communicator inherits the physical MAC address of the vehicle's NIC
+   - MAC addresses are 6-byte (48-bit) identifiers defined in `Ethernet::Address`
+
+2. **Logical Address Component (Port Number)**:
+   - Each Communicator within a vehicle is assigned a unique port number
+   - Port 0 is reserved for the vehicle itself
+   - Components are assigned sequential ports (1, 2, 3, etc.)
+
+3. **Vehicle MAC Address Formation**:
+   - Vehicle MAC addresses follow a specific format: `02:00:00:00:XX:YY`
+   - The first byte is always `0x02` to indicate a locally administered address
+   - The last two bytes `XX:YY` represent the 16-bit vehicle ID
+   - This design limits the system to a maximum of 65,536 (2^16) unique vehicles
+
+4. **String Representation**:
+   - Addresses are formatted as `MAC:PORT` 
+   - Example: `02:00:00:00:00:01:1` represents the component with port 1 on a vehicle with MAC address 02:00:00:00:00:01
+
+This dual-layer addressing system ensures unique identification of each Communicator across the entire network.
+
+## Multicast Capability
+
+The hierarchical addressing scheme supports potential implementation of multicast communication:
+
+1. **Component Groups**:
+   - Components can be logically grouped by assigning similar port patterns
+   - For example, all sensor components could use ports 1xx, actuators 2xx, etc.
+
+2. **Vehicle Groups**:
+   - Vehicles can be organized into functional groups using specific bits in their ID
+   - Example: First 8 bits could represent the group, last 8 bits the vehicle within the group
+
+3. **Multicast Implementation**:
+   - Protocol layer can be extended to recognize special address patterns for multicast
+   - Messages could be sent to all components of a certain type across multiple vehicles
+   - A multicast address could use reserved patterns (e.g., specific port ranges or MAC address bits)
+
+This addressing structure provides the flexibility to implement efficient one-to-many communication patterns in future extensions.
+
+## Encapsulation Hierarchy
+
+```
+Application Layer:
+└── Message<MaxSize>
+    ├── _data[] (actual application data)
+    ├── _size (data size)
+    └── _origin (source address)
+    
+Transport Layer (Protocol):
+└── Protocol::Packet
+    ├── Header (from_port, to_port, size)
+    └── Data[] (contains Message's _data)
+    
+Network Layer (Ethernet):
+└── DataBuffer
+    └── Ethernet::Frame
+        ├── Header (src MAC, dst MAC, protocol)
+        └── payload[] (contains Protocol::Packet)
+```
+
+### Illustration of the Encapsulation
+
+![Encapsulation](./doc/img/encapsulation.png)
+
+
+
+
+
