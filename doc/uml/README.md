@@ -16,6 +16,10 @@ This directory contains UML diagrams for the UFSC-INE5424 communication system.
    - Shows the main classes and their relationships
    - Provides an overview of the system architecture
 
+4. **[Use Case Diagram](04-use_case_diagram.puml)**
+   - Shows the use case diagram of the system
+   - Illustrates the interactions between the components
+
 ## Component Diagrams
 
 Individual components have their own UML diagrams:

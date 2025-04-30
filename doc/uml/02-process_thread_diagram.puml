@@ -37,7 +37,7 @@ package "Process'" {
 package "Kernel" {
   component [Socket] as socket
   
-  SocketEngine1 --> socket
+  nic1--> socket
   nic2 <-- socket
 }
 
