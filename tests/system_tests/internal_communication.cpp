@@ -16,7 +16,7 @@
 #include "test_utils.h"
 
 int main() {
-    TEST_INIT("Virtual Destination Address Test");
+    TEST_INIT("Local Communication Test");
 
     // 1. Create a vehicle
     Vehicle* v1 = Initializer::create_vehicle(201);
@@ -51,9 +51,9 @@ int main() {
     broadcast_addr.port(static_cast<unsigned int>(0)); // Ensure the port is set to port 0
 
     // 9. Compose a test message
-    std::string test_msg = "[Test] Lidar to All";
+    std::string test_all_msg = "[Test] Lidar to All";
 
-    byte_sent = v1_lidar->send(broadcast_addr, test_msg.c_str(), test_msg.size());
+    bytes_sent = v1_lidar->send(broadcast_addr, test_msg.c_str(), test_msg.size());
     TEST_ASSERT(bytes_sent == (int)test_msg.size(), "Broadcast message should be sent successfully");
 
     // 8. Clean up: delete vehicles (which stops and deletes components)
