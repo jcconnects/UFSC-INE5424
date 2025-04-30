@@ -19,18 +19,18 @@ int main() {
     TEST_INIT("Broadcast Test");
 
     // 1. Create a group of vehicles
-    Vehicle* vehicles;
+    Vehicle** vehicles = new Vehicle*[5];
     for (int i = 0; i < 5; ++i) {
         vehicles[i] = Initializer::create_vehicle(200 + i);
     }
 
     // 2. Create components for each vehicle
     for (int i = 0; i < 5; ++i) {
-        vehicles[i]->create_component<ECUComponent>("ECU", vehicles[i]);
-        vehicles[i]->create_component<CameraComponent>("Camera", vehicles[i]);
-        vehicles[i]->create_component<LidarComponent>("Lidar", vehicles[i]);
-        vehicles[i]->create_component<INSComponent>("INS", vehicles[i]);
-        vehicles[i]->create_component<BatteryComponent>("Battery", vehicles[i]);
+        Initializer::create_component<ECUComponent>(vehicles[i], "ECU");
+        Initializer::create_component<CameraComponent>(vehicles[i], "Camera");
+        Initializer::create_component<LidarComponent>(vehicles[i], "Lidar");
+        Initializer::create_component<INSComponent>(vehicles[i], "INS");
+        Initializer::create_component<BatteryComponent>(vehicles[i], "Battery");
     }
 
     // 3. Start all vehicles (which starts all components)
@@ -42,9 +42,9 @@ int main() {
     std::string test_msg = "[BROADCAST] Vehicle 201 to all ECUs";
 
     // 5. Create sending component
-    ECUComponent* sender = create_component<LidarComponent>("Sender");
-    TheAddress broadcast_address = Protocol<NIC>::Address::BROADCAST;
-    broadcast_address.set_port(ECU1_PORT); // Set the port to 0 for broadcast
+    LidarComponent* sender = Initializer::create_component<LidarComponent>(vehicles[0], "Sender");
+    TheAddress broadcast_address = Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address::BROADCAST;
+    broadcast_address.port(ECU1_PORT); // Set the port to 0 for broadcast
     sender->send(broadcast_address, test_msg.c_str(), test_msg.size());
 
     // 6. Sleep for a while to allow all components to process the broadcast message
@@ -55,6 +55,7 @@ int main() {
         vehicles[i]->stop();
         delete vehicles[i];
     }
+    delete [] vehicles;
     delete sender;
 
     TEST_LOG("Vehicle-to-vehicle component addressing test completed successfully.");
