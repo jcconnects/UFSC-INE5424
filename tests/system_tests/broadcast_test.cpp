@@ -19,6 +19,7 @@ int main() {
     TEST_INIT("Broadcast Test");
 
     // 1. Create a group of vehicles
+    TEST_LOG("Creating 5 vehicles with IDs 200 to 204.");
     Vehicle** vehicles = new Vehicle*[5];
     for (int i = 0; i < 5; ++i) {
         vehicles[i] = Initializer::create_vehicle(200 + i);
@@ -27,7 +28,6 @@ int main() {
     // 2. Create components for each vehicle
     for (int i = 0; i < 5; ++i) {
         Initializer::create_component<ECUComponent>(vehicles[i], "ECU");
-        Initializer::create_component<CameraComponent>(vehicles[i], "Camera");
         Initializer::create_component<LidarComponent>(vehicles[i], "Lidar");
         Initializer::create_component<INSComponent>(vehicles[i], "INS");
         Initializer::create_component<BatteryComponent>(vehicles[i], "Battery");
@@ -52,11 +52,11 @@ int main() {
 
     // 7. Clean up: stop and delete vehicles (which stops and deletes components)
     for (int i = 0; i < 5; ++i) {
-        vehicles[i]->stop();
         delete vehicles[i];
     }
+    TEST_LOG("Vehicles deleted successfully.");
     delete [] vehicles;
-    delete sender;
+    TEST_LOG("Vehicle array deleted successfully.");
 
     TEST_LOG("Vehicle-to-vehicle component addressing test completed successfully.");
     return 0;

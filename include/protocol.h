@@ -314,10 +314,14 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
         return;          // Do not process further
     }
     // ------------------------------------------------------------------
-
     // If we have observers, notify them based on destination port (broadcast handled by notify)
     // Let reference counting handle buffer cleanup if notified.
     // Otherwise, free the buffer ourselves
+    if (dst_port == 0) {
+        db<Protocol>(INF) << "[Protocol] Received broadcast packet.\n";
+    } else {
+        db<Protocol>(INF) << "[Protocol] Received packet for port " << dst_port << "\n";
+    }
     if (!Protocol::_observed.notify(dst_port, buf)) { // Use port for notification
         db<Protocol>(INF) << "[Protocol] data received, but no one was notified for port " << dst_port << ". Freeing buffer.\n";
         // No observers for this specific port (and not broadcast, or broadcast had no observers)

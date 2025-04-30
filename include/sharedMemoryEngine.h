@@ -16,6 +16,8 @@
 #include <iostream> // Include missing iostream
 
 #include "ethernet.h"
+#include "traits.h"
+#include "debug.h"
 
 
 class SharedMemoryEngine {

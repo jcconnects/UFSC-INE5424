@@ -42,8 +42,6 @@ void run_vehicle(Vehicle* v) {
     Initializer::create_component<ECUComponent>(v, "ECU1");
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating ECU2 component\n";
     Initializer::create_component<ECUComponent>(v, "ECU2");
-    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating Camera component\n";
-    Initializer::create_component<CameraComponent>(v, "Camera");
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating Lidar component\n";
     Initializer::create_component<LidarComponent>(v, "Lidar");
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating INS component\n";

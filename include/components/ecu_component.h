@@ -32,10 +32,10 @@ public:
     void run() override {
         db<ECUComponent>(INF) << "[ECU " << Component::getName() << "] thread running.\n";
 
-        std::array<char, TheCommunicator::MAX_MESSAGE_SIZE> buf;
-        TheAddress source_addr;
-
         while (running()) {
+            
+            std::array<char, TheCommunicator::MAX_MESSAGE_SIZE> buf;
+            TheAddress source_addr;
             int bytes_received = receive(buf.data(), buf.size(), &source_addr);
 
             if (bytes_received < 0) {

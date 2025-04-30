@@ -25,11 +25,9 @@ int main() {
     // 2. Add components to both vehicles (order determines port assignment)
     ECUComponent* v1_ecu1 = Initializer::create_component<ECUComponent>(v1, "ECU1");
     Initializer::create_component<ECUComponent>(v1, "ECU2");
-    Initializer::create_component<CameraComponent>(v1, "Camera");
 
     Initializer::create_component<ECUComponent>(v2, "ECU1");
     Initializer::create_component<ECUComponent>(v2, "ECU2");
-    Initializer::create_component<CameraComponent>(v2, "Camera");
 
     // 3. Start both vehicles (starts all components)
     v1->start();

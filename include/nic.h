@@ -350,6 +350,7 @@ int NIC<ExternalEngine, InternalEngine>::send(DataBuffer* buf) {
             _statistics.tx_drops_external++;
             db<NIC>(WRN) << "[NIC] ExternalEngine::send failed (result=" << result << ")\n";
         }
+        free(buf); // Free the buffer after sending externally
     }
 
     db<NIC>(INF) << "[NIC] send() returning " << result << "\n";
@@ -461,7 +462,6 @@ void NIC<ExternalEngine, InternalEngine>::handleExternalEvent() {
          db<NIC>(INF) << "[NIC External] Ignoring frame not for this NIC: {dst=" << Ethernet::mac_to_string(dst) << "}\n";
         return;
     }
-
 
     db<NIC>(INF) << "[NIC External] Received frame: {src=" << Ethernet::mac_to_string(src)
                  << ", dst=" << Ethernet::mac_to_string(dst) << ", prot=" << proto

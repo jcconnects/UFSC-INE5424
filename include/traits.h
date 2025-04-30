@@ -46,7 +46,7 @@ struct Traits {
 template <typename ExternalEngine, typename InternalEngine>
 struct Traits<NIC<ExternalEngine, InternalEngine>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static const unsigned int SEND_BUFFERS = 512;
     static const unsigned int RECEIVE_BUFFERS = 512;
 };
@@ -55,7 +55,7 @@ struct Traits<NIC<ExternalEngine, InternalEngine>> : public Traits<void>
 template <>
 struct Traits<Protocol<NIC<SocketEngine, SharedMemoryEngine>>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 888; // Example value
 };
 
@@ -63,7 +63,7 @@ struct Traits<Protocol<NIC<SocketEngine, SharedMemoryEngine>>> : public Traits<v
 template<>
 struct Traits<SocketEngine> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static constexpr const char* DEFAULT_INTERFACE_NAME = "test-dummy0";
     
     static const char* INTERFACE_NAME() {
@@ -76,7 +76,7 @@ struct Traits<SocketEngine> : public Traits<void>
 template<>
 struct Traits<SharedMemoryEngine> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static const unsigned int BUFFER_SIZE = 128;     // Capacity of the shared memory ring buffer
     static const unsigned int POLL_INTERVAL_MS = 10; // Interval (ms) for the timerfd notification
     static const unsigned int MTU = 1500;            // Max payload size in shared frames (aligned with Ethernet)
@@ -104,7 +104,7 @@ struct Traits<Vehicle> : public Traits<void>
 template <>
 struct Traits<Component> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 //traits para classe Debug

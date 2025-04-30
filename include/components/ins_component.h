@@ -52,7 +52,7 @@ public:
          db<INSComponent>(INF) << Component::getName() << " targeting local ECU1 at: " << _ecu1_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0);
+        _broadcast_address = TheAddress(Ethernet::BROADCAST, ECU1_PORT);
          db<INSComponent>(INF) << Component::getName() << " targeting broadcast at: " << _broadcast_address << "\n";
     }
 
