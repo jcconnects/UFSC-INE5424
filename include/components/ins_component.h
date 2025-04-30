@@ -48,16 +48,16 @@ public:
         }
 
         // Determine the local address for ECU1
-        _ecu1_address = TheAddress(address.mac(), ECU1_PORT);
-         db<INSComponent>(INF) << name() << " targeting local ECU1 at: " << _ecu1_address << "\n";
+        _ecu1_address = TheAddress(address.paddr(), ECU1_PORT);
+         db<INSComponent>(INF) << Component::getName() << " targeting local ECU1 at: " << _ecu1_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::Address::BROADCAST, 0);
-         db<INSComponent>(INF) << name() << " targeting broadcast at: " << _broadcast_address << "\n";
+        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0);
+         db<INSComponent>(INF) << Component::getName() << " targeting broadcast at: " << _broadcast_address << "\n";
     }
 
     void run() override {
-         db<INSComponent>(INF) << "[" << name() << "] thread running.\n";
+         db<INSComponent>(INF) << "[" << Component::getName() << "] thread running.\n";
         int counter = 1;
 
         while (running()) {
@@ -89,19 +89,19 @@ public:
             std::string payload = payload_ss.str();
 
             // Construct the full message string
-            std::string msg = "[" + name() + "] Vehicle " + std::to_string(vehicle()->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_us_system) + ": " + payload;
+            std::string msg = "[" + Component::getName() + "] Vehicle " + std::to_string(vehicle()->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_us_system) + ": " + payload;
 
              // Ensure message isn't too large
               if (msg.size() >= TheCommunicator::MAX_MESSAGE_SIZE) {
-                   db<INSComponent>(ERR) << "[" << name() << "] Message " << counter << " exceeds MAX_MESSAGE_SIZE (" << msg.size() << "), skipping send.\n";
+                   db<INSComponent>(ERR) << "[" << Component::getName() << "] Message " << counter << " exceeds MAX_MESSAGE_SIZE (" << msg.size() << "), skipping send.\n";
                   continue;
               }
 
             // 1. Send to local ECU1
-             db<INSComponent>(TRC) << "[" << name() << "] sending msg " << counter << " to ECU1: " << _ecu1_address << "\n";
+             db<INSComponent>(TRC) << "[" << Component::getName() << "] sending msg " << counter << " to ECU1: " << _ecu1_address << "\n";
             int bytes_sent_local = send(_ecu1_address, msg.c_str(), msg.size());
              if (bytes_sent_local > 0) {
-                  db<INSComponent>(DEB) << "[" << name() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
+                  db<INSComponent>(INF) << "[" << Component::getName() << "] msg " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
                  if (_log_file.is_open()) {
                       _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_local," << _ecu1_address << ","
                                 << std::fixed << std::setprecision(8) << lat << "," << lon << "," << std::setprecision(3) << alt << "," << vel << ","
@@ -110,22 +110,21 @@ public:
                       _log_file.flush();
                  }
              } else if(running()) {
-                  db<INSComponent>(ERR) << "[" << name() << "] failed to send msg " << counter << " locally to " << _ecu1_address << "!\n";
+                  db<INSComponent>(ERR) << "[" << Component::getName() << "] failed to send msg " << counter << " locally to " << _ecu1_address << "!\n";
              }
 
             // 2. Send to broadcast address
-             db<INSComponent>(TRC) << "[" << name() << "] broadcasting msg " << counter << " to " << _broadcast_address << "\n";
+             db<INSComponent>(TRC) << "[" << Component::getName() << "] broadcasting msg " << counter << " to " << _broadcast_address << "\n";
             int bytes_sent_bcast = send(_broadcast_address, msg.c_str(), msg.size());
-             if (bytes_sent_bcast > 0) {
-                  db<INSComponent>(DEB) << "[" << name() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
+            if (bytes_sent_bcast > 0) {
+                db<INSComponent>(INF) << "[" << Component::getName() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
                  if (_log_file.is_open()) {
                      // Could log broadcast sends too, but might be redundant with local send log
-                      // _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_broadcast," << _broadcast_address << ",...
-";
+                      // _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_broadcast," << _broadcast_address << ",...";
                       // _log_file.flush();
                  }
              } else if(running()) {
-                  db<INSComponent>(ERR) << "[" << name() << "] failed to broadcast msg " << counter << "!\n";
+                  db<INSComponent>(ERR) << "[" << Component::getName() << "] failed to broadcast msg " << counter << "!\n";
              }
 
 
@@ -136,7 +135,7 @@ public:
             std::this_thread::sleep_for(std::chrono::milliseconds(wait_time_ms));
         }
 
-         db<INSComponent>(INF) << "[" << name() << "] thread terminated.\n";
+         db<INSComponent>(INF) << "[" << Component::getName() << "] thread terminated.\n";
     }
 
 private:

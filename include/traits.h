@@ -21,10 +21,11 @@ inline std::string get_interface_name() {
 template <typename NIC>
 class Protocol;
 
-template <typename NetworkEngine, typename MemoryEngine>
+template <typename ExternalEngine, typename InternalEngine>
 class NIC;
 
 class SocketEngine;
+class SharedMemoryEngine;
 
 class Debug;
 
@@ -41,9 +42,9 @@ struct Traits {
     static const bool debugged = false;
 };
 
-// Traits for NIC class
-template <typename NetworkEngine, typename MemoryEngine>
-struct Traits<NIC<NetworkEngine, MemoryEngine>> : public Traits<void>
+// New traits for dual-engine NIC
+template <typename ExternalEngine, typename InternalEngine>
+struct Traits<NIC<ExternalEngine, InternalEngine>> : public Traits<void>
 {
     static const bool debugged = false;
     static const unsigned int SEND_BUFFERS = 512;
@@ -51,8 +52,15 @@ struct Traits<NIC<NetworkEngine, MemoryEngine>> : public Traits<void>
 };
 
 // Traits for Protocol class
-template <typename NetworkEngine, typename MemoryEngine>
-struct Traits<Protocol<NIC<NetworkEngine, MemoryEngine>>> : public Traits<void>
+template <typename NIC>
+struct Traits<Protocol<NIC>> : public Traits<void>
+{
+    static const bool debugged = false;
+};
+
+// Traits for Protocol with dual-engine NIC
+template <>
+struct Traits<Protocol<NIC<SocketEngine, SharedMemoryEngine>>> : public Traits<void>
 {
     static const bool debugged = false;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 888; // Example value
@@ -70,6 +78,21 @@ struct Traits<SocketEngine> : public Traits<void>
         return interface_name.c_str();
     }
 };
+
+// Traits for SharedMemoryEngine class
+template<>
+struct Traits<SharedMemoryEngine> : public Traits<void>
+{
+    static const bool debugged = false;
+    static const unsigned int BUFFER_SIZE = 128;     // Capacity of the shared memory ring buffer
+    static const unsigned int POLL_INTERVAL_MS = 10; // Interval (ms) for the timerfd notification
+    static const unsigned int MTU = 1500;            // Max payload size in shared frames (aligned with Ethernet)
+};
+
+// Define the static const members outside the class
+const unsigned int Traits<SharedMemoryEngine>::BUFFER_SIZE;
+const unsigned int Traits<SharedMemoryEngine>::POLL_INTERVAL_MS;
+const unsigned int Traits<SharedMemoryEngine>::MTU;
 
 // Traits for Communicator class
 template<typename Channel>
