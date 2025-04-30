@@ -18,11 +18,13 @@ class Communicator<Channel> {
   + {static} MAX_MESSAGE_SIZE: unsigned int
   - _channel: Channel*
   - _address: Address
+  - _closed: std::atomic<bool>
   + Communicator(channel: Channel*, address: Address)
   + ~Communicator()
-  + send(message: const Message<MAX_MESSAGE_SIZE>*): bool
-  + receive(message: Message<MAX_MESSAGE_SIZE>*): bool
+  + send(destination: const Address&, message: const Message<MaxSize>*): bool
+  + receive(message: Message<MaxSize>*, source_address: Address* = nullptr): bool
   + close(): void
+  + is_closed(): bool
   - update(obs: Channel::Observed*, c: Channel::Observer::Observing_Condition, buf: Buffer*): void
   .. Typedefs ..
   + Observer: typedef
@@ -45,8 +47,9 @@ class Ethernet {
   + {static} MAC_SIZE: unsigned int
   + {static} HEADER_SIZE: unsigned int
   + {static} NULL_ADDRESS: Address
-  + Ethernet()
-  + ~Ethernet()
+  + {static} BROADCAST: Address
+  + Ethernet() = default
+  + ~Ethernet() = default
   + {static} mac_to_string(addr: Address): std::string
   .. Nested types ..
   + Address: struct
@@ -57,6 +60,12 @@ class Ethernet {
 class "Ethernet::Address" as EthernetAddress <<struct>> {
   + bytes: std::uint8_t[MAC_SIZE]
 }
+
+note top of EthernetAddress
+  + operator==(other: const Address&): bool
+  + operator!=(other: const Address&): bool
+  defined as global inline functions
+end note
 
 class "Ethernet::Frame" as EthernetFrame <<struct>> {
   + dst: Address
@@ -75,26 +84,39 @@ class Initializer {
 }
 
 class "Message<MaxSize>" as Message {
-  - _data: void*[MAX_SIZE]
+  - _data: unsigned char[MAX_SIZE]
   - _size: unsigned int
+  - _origin: TheAddress
   + {static} MAX_SIZE: unsigned int
   + Message()
   + Message(data: const void*, size: unsigned int)
   + Message(other: const Message&)
   + operator=(other: const Message&): Message&
   + data(): const void*
+  + data(): void*
   + size(): const unsigned int
+  + origin(): const TheAddress&
+  + origin(addr: const TheAddress&): void
 }
 
-class "NIC<Engine>" as NIC {
-  + {static} BUFFER_SIZE: unsigned int
+note bottom of Message
+  TheMessage = Message<Constants::MAX_MESSAGE_SIZE>
+end note
+
+class "NIC<ExternalEngine, InternalEngine>" as NIC {
   + {static} N_BUFFERS: unsigned int
+  - _external_engine: ExternalEngine
+  - _internal_engine: InternalEngine
+  - _address: Address
+  - _running: std::atomic<bool>
+  - _nic_ep_fd: int
+  - _stop_event_fd: int
+  - _event_thread: pthread_t
   - _statistics: Statistics
   - _buffer: DataBuffer[N_BUFFERS]
   - _free_buffers: std::queue<DataBuffer*>
-  - _buffer_sem: sem_t
+  - _free_buffer_count: unsigned int
   - _binary_sem: sem_t
-  - _address: Address
   # NIC()
   + ~NIC()
   + send(buf: DataBuffer*): int
@@ -105,7 +127,10 @@ class "NIC<Engine>" as NIC {
   + setAddress(address: Address): void
   + statistics(): const Statistics&
   + stop(): void
-  - receiveData(frame: Ethernet::Frame&, size: unsigned int): void
+  - handleExternalEvent(): void
+  - handleInternalEvent(buf: DataBuffer*, size: int): void
+  - eventLoop(arg: void*): static void*
+  - setupNicEpoll(): void
   .. Typedefs ..
   + Address: typedef Ethernet::Address
   + Protocol_Number: typedef Ethernet::Protocol
@@ -120,45 +145,43 @@ note top of NIC
   Inherits from:
   - Ethernet
   - Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Ethernet::Protocol>
-  - Engine (private)
 end note
 
-class "NIC<Engine>::Statistics" as NICStatistics <<struct>> {
-  + packets_sent: std::atomic<unsigned int>
-  + packets_received: std::atomic<unsigned int>
-  + bytes_sent: std::atomic<unsigned int>
-  + bytes_received: std::atomic<unsigned int>
-  + tx_drops: std::atomic<unsigned int>
-  + rx_drops: std::atomic<unsigned int>
+class "NIC<ExternalEngine, InternalEngine>::Statistics" as NICStatistics <<struct>> {
+  + packets_sent_external: std::atomic<unsigned int>
+  + packets_received_external: std::atomic<unsigned int>
+  + bytes_sent_external: std::atomic<unsigned int>
+  + bytes_received_external: std::atomic<unsigned int>
+  + tx_drops_external: std::atomic<unsigned int>
+  + rx_drops_external: std::atomic<unsigned int>
+  + packets_sent_internal: std::atomic<unsigned int>
+  + packets_received_internal: std::atomic<unsigned int>
+  + bytes_sent_internal: std::atomic<unsigned int>
+  + bytes_received_internal: std::atomic<unsigned int>
+  + tx_drops_internal: std::atomic<unsigned int>
+  + rx_drops_internal: std::atomic<unsigned int>
   + Statistics()
 }
 
-class "NIC<Engine>::Observer" as NICObserver {
-}
-
-note top of NICObserver
-  typedef Conditional_Data_Observer<DataBuffer, Protocol_Number>
-end note
-
 class "Conditional_Data_Observer<T, Condition>" as ConditionalDataObserver {
   # _rank: Condition
-  - _data: List<T>
+  # _data: List<T>
   + {typedef} Observed_Data
   + {typedef} Observing_Condition
   + {typedef} Observed
   + Conditional_Data_Observer(c: Condition)
-  + ~Conditional_Data_Observer() = default
+  + {virtual} ~Conditional_Data_Observer() = default
   + {virtual} update(c: Condition, d: Observed_Data*): void
   + {virtual} updated(): T*
   + rank(): const Condition
 }
 
 class "Conditionally_Data_Observed<T, Condition>" as ConditionallyDataObserved {
-  - _observers: Observers
+  # _observers: Observers
   + {typedef} Observed_Data
   + {typedef} Observing_Condition
   + {typedef} Observer
-  + {typedef} Observers
+  + {typedef} Observers: Ordered_List<Observer, Condition>
   + Conditionally_Data_Observed() = default
   + {virtual} ~Conditionally_Data_Observed() = default
   + attach(o: Observer*, c: Condition): void
@@ -173,7 +196,7 @@ class "Concurrent_Observer<D, C>" as ConcurrentObserver {
   + {typedef} Observed
   + Concurrent_Observer(rank: C)
   + ~Concurrent_Observer() = default
-  + update(c: C, d: D*): void
+  + update(c: C, d: D*): void override
   + updated(): D*
 }
 
@@ -183,14 +206,15 @@ end note
 
 class "Concurrent_Observed<D, C>" as ConcurrentObserved {
   - _mtx: pthread_mutex_t
+  - _observers: Observers
   + {typedef} Observed_Data
   + {typedef} Observing_Condition
-  + {typedef} Observers
+  + {typedef} Observers: Ordered_List<Concurrent_Observer<D, C>, C>
   + Concurrent_Observed()
   + ~Concurrent_Observed()
   + attach(o: Concurrent_Observer<D, C>*, c: C): void
   + detach(o: Concurrent_Observer<D, C>*, c: C): void
-  + notify(c: C, d: D*): void
+  + notify(c: C, d: D*): bool
 }
 
 note bottom of ConcurrentObserved
@@ -205,10 +229,11 @@ class "Protocol<NIC>" as ProtocolNIC {
   + Protocol(nic: NIC*)
   + ~Protocol()
   + send(from: Address, to: Address, data: const void*, size: unsigned int): int
-  + receive(buf: Buffer*, from: Address, data: void*, size: unsigned int): int
+  + receive(buf: Buffer*, from: Address*, data: void*, size: unsigned int): int
+  + free(buf: Buffer*): void
   + {static} attach(obs: Observer*, address: Address): void
   + {static} detach(obs: Observer*, address: Address): void
-  - update(prot: NIC::Protocol_Number, buf: Buffer*): void
+  - update(prot: NIC::Protocol_Number, buf: Buffer*): void override
   .. Typedefs ..
   + Buffer: typedef
   + Physical_Address: typedef
@@ -227,11 +252,11 @@ class "Protocol<NIC>::Header" as ProtocolHeader {
   - _to_port: Port
   - _size: unsigned int
   + Header()
-  + from_port(): Port
+  + from_port(): Port const
   + from_port(p: Port): void
-  + to_port(): Port
+  + to_port(): Port const
   + to_port(p: Port): void
-  + size(): unsigned int
+  + size(): unsigned int const
   + size(s: unsigned int): void
 }
 
@@ -242,68 +267,67 @@ class "Protocol<NIC>::Packet" as ProtocolPacket {
   + data<T>(): T*
 }
 
+class "Protocol<NIC>::Address" as ProtocolAddress {
+  - _port: Port
+  - _paddr: Physical_Address
+  + {static} BROADCAST: Address
+  + Address()
+  + Address(null: Null)
+  + Address(paddr: Physical_Address, port: Port)
+  + paddr(addr: Physical_Address): void
+  + paddr(): const Physical_Address&
+  + port(port: Port): void
+  + port(): const Port&
+  + to_string(): std::string
+  + operator bool(): bool const
+  + operator==(a: const Address&): bool const
+  .. Nested types ..
+  + Null: enum
+}
+
 note top of ProtocolPacket
   Inherits from Protocol<NIC>::Header
 end note
 
 class SocketEngine {
-  + {static} INTERFACE: const char*
-  - _sock_fd: int
-  - _ep_fd: int
-  - _if_index: int
-  - _callback: CallbackMethod
-  - _receive_thread: pthread_t
+  + {static} INTERFACE(): const char*
+  # _sock_fd: int
+  # _if_index: int
   # _mac_address: Ethernet::Address
-  - {static} _running: bool
+  - _running: std::atomic<bool>
   + SocketEngine()
   + ~SocketEngine()
-  + setCallback(callback: CallbackMethod): void
-  + send(frame: Ethernet::Frame*, size: unsigned int): int
-  + {static} run(arg: void*): void*
+  + start(): void
   + stop(): void
+  + running(): const bool const
+  + send(frame: Ethernet::Frame*, size: unsigned int): int
+  + receiveFrame(frame_buffer: Ethernet::Frame&): int
+  + getMacAddress(): Ethernet::Address const
+  + getNotificationFd(): int const
   - setUpSocket(): void
-  - setUpEpoll(): void
-  - handleSignal(): void
-  .. Typedefs ..
-  + CallbackMethod: typedef std::function<void(Ethernet::Frame&, unsigned int)>
 }
 
 class Vehicle {
   + {static} MAX_MESSAGE_SIZE: unsigned int
   - _id: unsigned int
-  - _protocol: Protocol<NIC<SocketEngine>>*
-  - _nic: NIC<SocketEngine>*
-  - _comms: Communicator<Protocol<NIC<SocketEngine>>>*
+  - _protocol: TheProtocol*
+  - _nic: TheNIC*
+  - _base_address: TheAddress
+  - _next_component_id: unsigned int
   - _running: std::atomic<bool>
-  - _components: std::vector<Component*>
-  + Vehicle(id: unsigned int, nic: NIC<SocketEngine>*, protocol: Protocol<NIC<SocketEngine>>*)
+  - _components: std::vector<std::unique_ptr<Component>>
+  + Vehicle(id: unsigned int, nic: TheNIC*, protocol: TheProtocol*)
   + ~Vehicle()
-  + id(): const unsigned int
-  + running(): const bool
+  + id(): const unsigned int const
+  + running(): const bool const
   + start(): void
   + stop(): void
-  + send(data: const void*, size: unsigned int): int
-  + receive(data: void*, size: unsigned int): int
-  + add_component(component: Component*): void
+  + add_component(component: std::unique_ptr<Component>): void
   + start_components(): void
   + stop_components(): void
-}
-
-class SemaphoreWrapper {
-  # ifdef __APPLE__
-  - _sem: sem_t*
-  - _name: char[32]
-  - {static} _sem_count: std::atomic<int>
-  # else
-  - _sem: sem_t
-  # endif
-  + SemaphoreWrapper(initial_value: int = 0)
-  + ~SemaphoreWrapper()
-  + post(): void
-  + wait(): void
-  .. Deleted methods ..
-  + SemaphoreWrapper(const SemaphoreWrapper&) = delete
-  + operator=(const SemaphoreWrapper&): SemaphoreWrapper& = delete
+  + address(): TheAddress const
+  + protocol(): TheProtocol* const
+  + next_component_address(): TheAddress
 }
 
 class Component {
@@ -311,64 +335,131 @@ class Component {
   # _name: std::string
   # _running: std::atomic<bool>
   # _thread: pthread_t
+  # _communicator: std::unique_ptr<TheCommunicator>
+  # _protocol: TheProtocol*
   # _log_file: std::ofstream
-  # _log_mutex: pthread_mutex_t
-  + Component(vehicle: Vehicle*, name: const std::string)
+  + Component(vehicle: Vehicle*, name: const std::string&, protocol: TheProtocol*, address: TheAddress)
   + {virtual} ~Component() = default
   + {virtual} start(): void
   + {virtual} stop(): void
-  + running(): bool
-  + name(): const std::string
-  + vehicle(): Vehicle*
+  + {virtual} run(): void = 0
+  + running(): bool const
+  + getName(): const std::string&
+  + vehicle(): Vehicle* const
   + log_file(): std::ofstream*
-  # open_log_file(filename: const std::string): void
+  + send(destination: const TheAddress&, data: const void*, size: unsigned int): int
+  + receive(data: void*, max_size: unsigned int, source_address: TheAddress* = nullptr): int
+  # thread_entry_point(arg: void*): static void*
+  # open_log_file(filename_prefix: const std::string&): void
   # close_log_file(): void
-  # write_to_log(line: const std::string): void
+  .. Deleted methods ..
+  - Component(const Component&) = delete
+  - operator=(const Component&) = delete
 }
 
-class SenderComponent {
-  + SenderComponent(vehicle: Vehicle*)
-  + start(): void
-  + stop(): void
-  - run(arg: void*): void*
+class BatteryComponent {
+  - _ecu2_address: TheAddress
+  - _broadcast_address: TheAddress
+  - _rd: std::random_device
+  - _gen: std::mt19937
+  - _voltage_dist: std::uniform_real_distribution<>
+  - _current_dist: std::uniform_real_distribution<>
+  - _temp_dist: std::uniform_real_distribution<>
+  - _soc_dist: std::uniform_real_distribution<>
+  - _delay_dist: std::uniform_int_distribution<>
+  + BatteryComponent(vehicle: Vehicle*, name: const std::string&, protocol: TheProtocol*, address: TheAddress)
+  + run(): void override
 }
 
-class ReceiverComponent {
-  + ReceiverComponent(vehicle: Vehicle*)
+class CameraComponent {
+  - _ecu1_address: TheAddress
+  - _broadcast_address: TheAddress
+  - _rd: std::random_device
+  - _gen: std::mt19937
+  - _coord_dist: std::uniform_real_distribution<>
+  - _size_dist: std::uniform_real_distribution<>
+  - _label_dist: std::uniform_int_distribution<>
+  - _delay_dist: std::uniform_int_distribution<>
+  - _labels: const std::vector<std::string>
+  + CameraComponent(vehicle: Vehicle*, name: const std::string&, protocol: TheProtocol*, address: TheAddress)
+  + run(): void override
+}
+
+class ECUComponent {
+  + ECUComponent(vehicle: Vehicle*, name: const std::string&, protocol: TheProtocol*, address: TheAddress)
+  + run(): void override
+}
+
+class LidarComponent {
+  - _ecu2_address: TheAddress
+  - _broadcast_address: TheAddress
+  - _rd: std::random_device
+  - _gen: std::mt19937
+  - _coord_dist: std::uniform_real_distribution<>
+  - _intensity_dist: std::uniform_real_distribution<>
+  - _num_points_dist: std::uniform_int_distribution<>
+  - _delay_dist: std::uniform_int_distribution<>
+  + LidarComponent(vehicle: Vehicle*, name: const std::string&, protocol: TheProtocol*, address: TheAddress)
+  + run(): void override
+}
+
+class INSComponent {
+  - _ecu1_address: TheAddress
+  - _broadcast_address: TheAddress
+  - _rd: std::random_device
+  - _gen: std::mt19937
+  - _lat_dist: std::uniform_real_distribution<>
+  - _lon_dist: std::uniform_real_distribution<>
+  - _alt_dist: std::uniform_real_distribution<>
+  - _vel_dist: std::uniform_real_distribution<>
+  - _accel_dist: std::uniform_real_distribution<>
+  - _gyro_dist: std::uniform_real_distribution<>
+  - _heading_dist: std::uniform_real_distribution<>
+  - _delay_dist: std::uniform_int_distribution<>
+  + INSComponent(vehicle: Vehicle*, name: const std::string&, protocol: TheProtocol*, address: TheAddress)
+  + run(): void override
+}
+
+class SharedMemoryEngine {
+  + SharedMemoryEngine()
+  + ~SharedMemoryEngine()
   + start(): void
   + stop(): void
-  - run(arg: void*): void*
+  + send(frame: Ethernet::Frame*, size: unsigned int): int
+  + getMacAddress(): Ethernet::Address const
+  .. Deleted methods ..
+  + SharedMemoryEngine(const SharedMemoryEngine&) = delete
+  + operator=(const SharedMemoryEngine&) = delete
 }
 
 ' Communicator Relationships
-ConcurrentObserver <|-- Communicator
 Communicator ..> Message : uses
 Communicator ..> Buffer : uses
+ConcurrentObserver <|-- Communicator
 
 ' NIC Relationships
 Ethernet <|-- NIC
 ConditionallyDataObserved <|-- NIC
-SocketEngine <|-- NIC : private
 NIC *-- "1" NICStatistics : _statistics
 NIC <.. Initializer : friend
 NIC ..> Buffer : uses
+NIC *-- "1" SocketEngine : _external_engine
+NIC *-- "1" SharedMemoryEngine : _internal_engine
+
 
 ' Protocol Relationships
-ConditionalDataObserver <|-- NICObserver
-NICObserver <|-- ProtocolNIC : private
-ProtocolHeader <|-- ProtocolPacket
+ProtocolHeader <|-- ProtocolPacket : inherits
 ProtocolNIC o-- "1" NIC : _nic
 ProtocolNIC *-- "1" ConditionallyDataObserved : _observed > static
 ProtocolNIC +-- "1" ProtocolHeader : nested class
 ProtocolNIC +-- "1" ProtocolPacket : nested class
-
-' SocketEngine Relationships
-SocketEngine o-- "1" EthernetAddress : _address
+ProtocolNIC +-- ProtocolAddress : nested class
 
 ' Vehicle Relationships
 Vehicle o-- "1" ProtocolNIC : _protocol
 Vehicle o-- "1" NIC : _nic
 Vehicle o-- "1" Communicator : _comms
+Vehicle o-- "*" Component : _components
 
 ' Ethernet Relationships
 Ethernet +-- EthernetAddress : nested class
@@ -377,14 +468,25 @@ EthernetFrame o-- "2" EthernetAddress : dst,src
 Ethernet o-- "1" EthernetAddress : NULL_ADDRESS > static
 
 ' Observer Relationships
+ConcurrentObserver <.. ConcurrentObserved : <<friend>>
+ConditionalDataObserver -- ConditionallyDataObserved : <<observes>>
 ConditionalDataObserver <|-- ConcurrentObserver
 ConditionalDataObserver ..> ConditionallyDataObserved : <<friend>>
 ConcurrentObserver ..> ConcurrentObserved : <<friend>>
-ConcurrentObserver *-- "1" SemaphoreWrapper : _semaphore
 ConcurrentObserver -- ConcurrentObserved : <<observes>>
 
 ' Observed Relationships
 ConditionallyDataObserved <|-- ConcurrentObserved
-ConditionalDataObserver -- ConditionallyDataObserved : <<observes>>
+
+' Component Relationships
+Component o-- "1" Communicator : _communicator
+Component o-- "1" Vehicle : _vehicle
+Component <|-- BatteryComponent : inherits
+Component <|-- CameraComponent : inherits
+Component <|-- ECUComponent : inherits
+Component <|-- LidarComponent : inherits
+Component <|-- INSComponent : inherits
+
+
 
 @enduml
