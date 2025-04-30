@@ -142,9 +142,11 @@ bool Communicator<Channel>::receive(Message<MaxSize>* message, Address* source_a
         return false;
     }
     
+    db<Communicator>(TRC) << "Communicator<Channel>::receive() calls Observer::updated()!\n";
     Buffer* buf = Observer::updated(); // Blocks until a message is received
     db<Communicator>(INF) << "[Communicator] buffer retrieved\n";
 
+    db<Communicator>(TRC) << "Communicator<Channel>::receive() checks buffer!\n";
     if (!buf) {
         // Check if the communicator was closed while waiting
         if (is_closed()) {
@@ -155,10 +157,12 @@ bool Communicator<Channel>::receive(Message<MaxSize>* message, Address* source_a
         return false;
     }
 
+    db<Communicator>(TRC) << "Communicator<Channel>::receive() buf->size()!\n";
     // Handle potential empty buffer signalling closure
     if (buf->size() == 0) {
         if (is_closed()) {
-            db<Communicator>(INF) << "[Communicator] received empty buffer, likely due to close(). Returning false.\n";
+            delete buf;
+            db<Communicator>(INF) << "[Communicator] empty buffer, but communicator was closed. Deleting buffer.\n";
         } else {
             db<Communicator>(WRN) << "[Communicator] received empty buffer unexpectedly! Returning false.\n";
         }

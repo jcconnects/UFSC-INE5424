@@ -39,7 +39,7 @@ public:
          db<LidarComponent>(INF) << Component::getName() << " targeting local ECU2 at: " << _ecu2_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0);
+        _broadcast_address = TheAddress(Ethernet::BROADCAST, ECU1_PORT);
          db<LidarComponent>(INF) << Component::getName() << " targeting broadcast at: " << _broadcast_address << "\n";
     }
 

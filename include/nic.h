@@ -79,7 +79,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         // Process a received buffer (called by Protocol layer)
         // This method essentially unwraps the payload from the DataBuffer
         int receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size);
-        
+
         // Allocate a buffer for sending
         DataBuffer* alloc(Address dst, Protocol_Number prot, unsigned int size);
         
@@ -350,6 +350,7 @@ int NIC<ExternalEngine, InternalEngine>::send(DataBuffer* buf) {
             _statistics.tx_drops_external++;
             db<NIC>(WRN) << "[NIC] ExternalEngine::send failed (result=" << result << ")\n";
         }
+        free(buf); // Free the buffer after sending externally
     }
 
     db<NIC>(INF) << "[NIC] send() returning " << result << "\n";
@@ -461,7 +462,6 @@ void NIC<ExternalEngine, InternalEngine>::handleExternalEvent() {
          db<NIC>(INF) << "[NIC External] Ignoring frame not for this NIC: {dst=" << Ethernet::mac_to_string(dst) << "}\n";
         return;
     }
-
 
     db<NIC>(INF) << "[NIC External] Received frame: {src=" << Ethernet::mac_to_string(src)
                  << ", dst=" << Ethernet::mac_to_string(dst) << ", prot=" << proto

@@ -158,21 +158,9 @@ bool Protocol<NIC>::Address::operator==(const Address& a) const {
 
 template <typename NIC>
 std::string Protocol<NIC>::Address::to_string() const {
-    std::stringstream ss;
-    std::string mac_str;
-    try {
-        // Use the utility function from Ethernet namespace (likely in ethernet.h)
-        mac_str = Ethernet::mac_to_string(_paddr);
-        // Check if the conversion resulted in an empty string
-        if (mac_str.empty()) {
-            mac_str = "[MAC:?]"; // Use placeholder if MAC string is empty
-        }
-    } catch (...) {
-        // Fallback if Ethernet::mac_to_string throws an exception
-        mac_str = "[MAC:ERR]"; // Use different placeholder for exception case
-    }
-    ss << mac_str << ":" << _port; // Combine MAC string and port
-    return ss.str();
+    std::string mac_addr = Ethernet::mac_to_string(_paddr);
+    return mac_addr + ":" + std::to_string(_port);
+
 }
 
 /********* Protocol Implementation *********/
@@ -326,10 +314,14 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
         return;          // Do not process further
     }
     // ------------------------------------------------------------------
-
     // If we have observers, notify them based on destination port (broadcast handled by notify)
     // Let reference counting handle buffer cleanup if notified.
     // Otherwise, free the buffer ourselves
+    if (dst_port == 0) {
+        db<Protocol>(INF) << "[Protocol] Received broadcast packet.\n";
+    } else {
+        db<Protocol>(INF) << "[Protocol] Received packet for port " << dst_port << "\n";
+    }
     if (!Protocol::_observed.notify(dst_port, buf)) { // Use port for notification
         db<Protocol>(INF) << "[Protocol] data received, but no one was notified for port " << dst_port << ". Freeing buffer.\n";
         // No observers for this specific port (and not broadcast, or broadcast had no observers)
@@ -356,7 +348,7 @@ typename Protocol<NIC>::Observed Protocol<NIC>::_observed;
 template <typename NIC>
 const typename Protocol<NIC>::Address Protocol<NIC>::Address::BROADCAST = 
     typename Protocol<NIC>::Address(
-        Protocol<NIC>::Physical_Address({0xff, 0xff, 0xff, 0xff, 0xff, 0xff}), // MAC broadcast
+        Ethernet::BROADCAST, // MAC broadcast
         Protocol<NIC>::Address::NULL_VALUE // ou um valor reservado, como "porta broadcast"
     );
 #endif // PROTOCOL_H

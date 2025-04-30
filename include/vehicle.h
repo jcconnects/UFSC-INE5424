@@ -152,6 +152,8 @@ void Vehicle::stop() {
         return;
     }
 
+    _nic->stop();
+
     // Order: Stop components first, then the communication stack (NIC)
     // This follows the principle of stopping input/processing before the underlying comms.
     db<Vehicle>(INF) << "[Vehicle " << _id << "] Stopping components...\n";

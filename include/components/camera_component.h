@@ -41,7 +41,7 @@ public:
         db<CameraComponent>(INF) << Component::getName() << " targeting local ECU1 at: " << _ecu1_address << "\n";
 
         // Define the broadcast address
-        _broadcast_address = TheAddress(Ethernet::BROADCAST, 0); // Target port 0 for broadcast for simplicity
+        _broadcast_address = TheAddress(Ethernet::BROADCAST, ECU1_PORT); // Target port 0 for broadcast for simplicity
          db<CameraComponent>(INF) << Component::getName() << " targeting broadcast at: " << _broadcast_address << "\n";
 
     }

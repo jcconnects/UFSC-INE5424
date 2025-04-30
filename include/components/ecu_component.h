@@ -32,10 +32,10 @@ public:
     void run() override {
         db<ECUComponent>(INF) << "[ECU " << Component::getName() << "] thread running.\n";
 
-        std::array<char, TheCommunicator::MAX_MESSAGE_SIZE> buf;
-        TheAddress source_addr;
-
         while (running()) {
+            
+            std::array<char, TheCommunicator::MAX_MESSAGE_SIZE> buf;
+            TheAddress source_addr;
             int bytes_received = receive(buf.data(), buf.size(), &source_addr);
 
             if (bytes_received < 0) {
@@ -56,7 +56,7 @@ public:
 
                 // Attempt to parse the message (assuming a common format for now)
                 // Example format: "[SourceType] Vehicle [ID] message [MsgID] at [Timestamp]: [Payload]"
-                std::regex pattern("\\[(\w+)\\] Vehicle (\\d+) message (\\d+) at (\\d+): (.*)");
+                std::regex pattern("\\[(\\w+)\\] Vehicle (\\d+) message (\\d+) at (\\d+): (.*)");
                 std::smatch matches;
 
                 long long send_time_us = 0;
