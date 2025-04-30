@@ -239,5 +239,10 @@ Network Layer (Ethernet):
 
 
 
+## Docker to use most recent gcc version
 
 
+```bash
+sudo docker build -t newestGCCenv .
+sudo docker run -it --rm --privileged -v "$(pwd)":/app newestGCCenv
+```
