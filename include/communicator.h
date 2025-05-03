@@ -63,6 +63,9 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
 
         // Check if communicator is closed
         const bool is_closed();
+
+        // Address getter
+        const Address& address() const;
         
         // Deleted copy constructor and assignment operator to prevent copying
         Communicator(const Communicator&) = delete;
@@ -228,7 +231,8 @@ bool Communicator<Channel>::receive(Message* message) {
         std::uint8_t temp_data[MAX_MESSAGE_SIZE];
 
         int size = _channel->receive(buf, &from, temp_data, buf->size()); // Assuming Channel::receive fills 'from'
-        
+        db<Communicator>(INF) << "[Communicator] Channel::receive() returned " << size << ".\n";
+
         if (size <= 0) {
             db<Communicator>(ERR) << "[Communicator] failed to receive data.\n";
             return false;
@@ -270,6 +274,11 @@ template <typename Channel>
 void Communicator<Channel>::update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition c, Buffer* buf) {
     db<Communicator>(TRC) << "Communicator<Channel>::update() called!\n";
     Observer::update(c, buf); // releases the thread waiting for data
+}
+
+template <typename Channel>
+const typename Communicator<Channel>::Address& Communicator<Channel>::address() const {
+    return _address;
 }
 
 #endif // COMMUNICATOR_H
