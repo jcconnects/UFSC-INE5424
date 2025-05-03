@@ -115,7 +115,7 @@ void INSComponent::run() {
         Address ecu1_address(_vehicle->address(), static_cast<unsigned int>(Vehicle::Ports::ECU1)); 
 
         db<INSComponent>(INF) << "[INSComponent] " << Component::getName() << " sending message " << counter << " to ECU1: " << ecu1_address.to_string() << "\n";
-        int bytes_sent_local = send(msg.c_str(), msg.size());
+        int bytes_sent_local = send(msg.c_str(), msg.size(), ecu1_address);
 
         if (bytes_sent_local > 0) {
             db<INSComponent>(INF) << "[INSComponent] " << Component::getName() << " message " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
