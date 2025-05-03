@@ -187,7 +187,8 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     db<Protocol>(INF) << "[Protocol] sending from " << from.to_string() << " to " << to.to_string() << "\n";
 
     // Allocate buffer for the entire frame -> NIC alloc adds Frame Header size (this is better for independency)
-    Buffer* buf = _nic->alloc(to.paddr(), PROTO, size);
+    unsigned int packet_size = size + sizeof(Header);
+    Buffer* buf = _nic->alloc(to.paddr(), PROTO, packet_size);
     if (!buf) {
         db<Protocol>(ERR) << "[Protocol] Failed to allocate buffer for send\n";
         return 0; // Indicate failure, no buffer allocated
@@ -230,6 +231,7 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
     std::uint8_t temp_buffer[size];
     
     int packet_size = _nic->receive(buf, &src_mac, &dst_mac, temp_buffer, NIC::MTU);
+    db<Protocol>(INF) << "[Protocol] NIC::send() returned " << packet_size << ".\n";
 
     if (packet_size < 0) {
         db<Protocol>(ERR) << "[Protocol] failed to receive message.\n";
