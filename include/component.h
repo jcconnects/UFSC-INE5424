@@ -62,6 +62,7 @@ class Component {
         const std::string& getName() const;
         const Vehicle* vehicle() const;
         std::ofstream* log_file();
+        const Address& address() const;
 
         // Concrete send and receive methods using defined types
         int send(const void* data, unsigned int size, Address destination = Address::BROADCAST);
@@ -225,9 +226,10 @@ int Component::receive(void* data, unsigned int max_size, Address* source_addres
     }
 
     // Sets source address
-    *source_address = msg.origin();
+    if (source_address)
+        *source_address = msg.origin();
 
-    db<Component>(TRC) << "[Component] " << getName() << " received message of size " << msg.size() << " from " << source_address->to_string() << ".\n";
+    db<Component>(TRC) << "[Component] " << getName() << " received message of size " << msg.size() << ".\n";
 
     if (msg.size() > max_size) {
         db<Component>(ERR) << "[Component] "<< getName() << " buffer too small (" << max_size << " bytes) for received message (" << msg.size() << " bytes).\n";
@@ -289,5 +291,9 @@ const Vehicle* Component::vehicle() const {
 
 std::ofstream* Component::log_file() {
     return &_log_file;
+}
+
+const Component::Address& Component::address() const {
+    return _communicator->address();
 }
 #endif // COMPONENT_H 
