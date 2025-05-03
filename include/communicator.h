@@ -1,19 +1,8 @@
 #ifndef COMMUNICATOR_H
 #define COMMUNICATOR_H
 
-#include <iostream>
-#include <cstring> // For memcpy
 #include <stdexcept>
-#include <unistd.h> // For usleep
 #include <atomic>
-#include <sstream>
-#include <mutex>
-
-// Include files in the correct order
-#include "types.h" // For constants and declarations
-#include "protocol.h" // For Protocol implementation
-
-// message.h will be included at the end of the file to avoid circular dependency
 
 #include "traits.h"
 #include "debug.h"
@@ -28,27 +17,52 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         typedef typename Channel::Address Address;
         typedef typename Channel::Port Port;
         
-        static constexpr const unsigned int MAX_MESSAGE_SIZE = Constants::MAX_MESSAGE_SIZE; // Maximum message size in bytes
+        static constexpr const unsigned int MAX_MESSAGE_SIZE = Channel::MTU; // Maximum message size in bytes
         
+        class Message {
+            friend class Communicator<Channel>;
+
+            private:
+                // Constructors
+                Message(const void* data, unsigned int size, const Address& origin);
+                
+            public:
+                Message();
+                ~Message() = default;
+            
+                // Getters
+                const void* data() const; // Returns const void* for generic access
+                const unsigned int size() const;
+                
+                // Setters
+                void setData(const void* data, unsigned int size);
+
+                // Origin Address getter/setter
+                const Address& origin() const;
+                void origin(const Address& addr);
+
+            private:
+                std::uint8_t _data[MAX_MESSAGE_SIZE];
+                unsigned int _size;
+                Address _origin;
+        };
+
         // Constructor and Destructor
         Communicator(Channel* channel, Address address);
         ~Communicator();
         
+        // Message creation
+        Message* new_message(const void* data, unsigned int size);
+
         // Communication methods
-        template <unsigned int MaxSize>
-        bool send(const Address& destination, const Message<MaxSize>* message);
-        
-        template <unsigned int MaxSize>
-        bool receive(Message<MaxSize>* message, Address* source_address);
+        bool send(const Message* message, const Address& destination = Channel::Address::BROADCAST);
+        bool receive(Message* message);
         
         // Method to close the communicator and unblock any pending receive calls
         void close();
 
-        
         // Check if communicator is closed
-        bool is_closed() const { 
-            return _closed.load(std::memory_order_acquire); 
-        }
+        const bool is_closed();
         
         // Deleted copy constructor and assignment operator to prevent copying
         Communicator(const Communicator&) = delete;
@@ -69,6 +83,43 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
 // Add the definition for the static constexpr member
 template <typename Channel>
 constexpr const unsigned int Communicator<Channel>::MAX_MESSAGE_SIZE;
+
+/*************** Message Implementation ******************/
+template <typename Channel>
+Communicator<Channel>::Message::Message() :_size(0), _origin() {
+    std::memset(_data, 0, MAX_MESSAGE_SIZE);
+}
+
+template<typename Channel>
+Communicator<Channel>::Message::Message(const void* data, unsigned int size, const Address& origin) : _size(size), _origin(origin) {
+    std::memcpy(_data, data, _size);
+}
+
+template<typename Channel>
+const void* Communicator<Channel>::Message::data() const{
+    return static_cast<const void*>(_data);
+}
+
+template <typename Channel>
+const unsigned int Communicator<Channel>::Message::size() const {
+    return _size;
+}
+
+template <typename Channel>
+void Communicator<Channel>::Message::setData(const void* data, unsigned int size) {
+    _size = size;
+    std::memcpy(_data, data, _size);
+}
+
+template <typename Channel>
+const typename Communicator<Channel>::Address& Communicator<Channel>::Message::origin() const {
+    return _origin;
+}
+
+template <typename Channel>
+void Communicator<Channel>::Message::origin(const Address& addr) {
+    _origin = addr;
+}
 
 /*************** Communicator Implementation *****************/
 template <typename Channel>
@@ -94,13 +145,31 @@ Communicator<Channel>::~Communicator() {
 }
 
 template <typename Channel>
-template <unsigned int MaxSize>
-bool Communicator<Channel>::send(const Address& destination, const Message<MaxSize>* message) {
+typename Communicator<Channel>::Message* Communicator<Channel>::new_message(const void* data, unsigned int size) {
+    if (size > MAX_MESSAGE_SIZE) {
+        db<Communicator>(WRN) << "[Communicator] attempted creating message with oversize.\n";
+        return nullptr;
+    }
+
+    if (size == 0) {
+        return new Message();
+    }
+
+    if (data == nullptr) {
+        db<Communicator>(WRN) << "[Communicator] attempted creating message with null data.\n";
+        return nullptr;
+    }
+
+    return new Message(data, size, _address);
+}
+
+template <typename Channel>
+bool Communicator<Channel>::send(const Message* message, const Address& destination) {
     db<Communicator>(TRC) << "Communicator<Channel>::send() called!\n";
     
     // Check if communicator is closed before attempting to send
     if (is_closed()) {
-        db<Communicator>(WRN) << "[Communicator] send() called while communicator is closed! Returning False\n";
+        db<Communicator>(WRN) << "[Communicator] send() called when communicator is closed! Returning False\n";
         return false;
     }
     
@@ -127,13 +196,12 @@ bool Communicator<Channel>::send(const Address& destination, const Message<MaxSi
 }
 
 template <typename Channel>
-template <unsigned int MaxSize>
-bool Communicator<Channel>::receive(Message<MaxSize>* message, Address* source_address) {
+bool Communicator<Channel>::receive(Message* message) {
     db<Communicator>(TRC) << "Communicator<Channel>::receive() called!\n";
     
     // If communicator is closed, doesn't even try to receive
     if (is_closed()) {
-        db<Communicator>(INF) << "[Communicator] receive() called while communicator is closed! Returning false\n";
+        db<Communicator>(WRN) << "[Communicator] receive() called while communicator is closed! Returning false\n";
         return false;
     }
 
@@ -142,11 +210,9 @@ bool Communicator<Channel>::receive(Message<MaxSize>* message, Address* source_a
         return false;
     }
     
-    db<Communicator>(TRC) << "Communicator<Channel>::receive() calls Observer::updated()!\n";
     Buffer* buf = Observer::updated(); // Blocks until a message is received
     db<Communicator>(INF) << "[Communicator] buffer retrieved\n";
 
-    db<Communicator>(TRC) << "Communicator<Channel>::receive() checks buffer!\n";
     if (!buf) {
         // Check if the communicator was closed while waiting
         if (is_closed()) {
@@ -157,45 +223,26 @@ bool Communicator<Channel>::receive(Message<MaxSize>* message, Address* source_a
         return false;
     }
 
-    db<Communicator>(TRC) << "Communicator<Channel>::receive() buf->size()!\n";
-    // Handle potential empty buffer signalling closure
-    if (buf->size() == 0) {
-        if (is_closed()) {
-            delete buf;
-            db<Communicator>(INF) << "[Communicator] empty buffer, but communicator was closed. Deleting buffer.\n";
-        } else {
-            db<Communicator>(WRN) << "[Communicator] received empty buffer unexpectedly! Returning false.\n";
-        }
-        return false;
-    }
-
     try {
         Address from; // Temporary to hold the source address from the channel
         std::uint8_t temp_data[MAX_MESSAGE_SIZE];
 
         int size = _channel->receive(buf, &from, temp_data, buf->size()); // Assuming Channel::receive fills 'from'
-        db<Communicator>(INF) << "[Communicator] Channel::receive() returned size " << std::to_string(size) << "\n";
         
-        if (size > 0) {
-            // Create a new message with the received data
-            *message = Message<MaxSize>(temp_data, static_cast<unsigned int>(size));
-
-            // --- Populate Origin Address --- 
-            message->origin(from);
-            db<Communicator>(INF) << "[Communicator] Received message origin set to: " << from << "\n";
-            // -----------------------------
-
-            // Populate the source_address output parameter if provided (legacy?)
-            if (source_address) {
-                *source_address = from;
-            }
-            _channel->free(buf); // Free buffer on success
-            return true;
+        if (size <= 0) {
+            db<Communicator>(ERR) << "[Communicator] failed to receive data.\n";
+            return false;
         }
 
-        // If size <= 0, receive failed or returned no data
-        _channel->free(buf); // Free buffer on failure
-        return false;
+        // Sets message content
+        message->setData(static_cast<void*>(temp_data), size);
+
+        // --- Populate Origin Address --- 
+        message->origin(from);
+        db<Communicator>(INF) << "[Communicator] Received message origin set to: " << from << "\n";
+        // -----------------------------
+
+        return true;
     
     } catch (const std::exception& e) {
         db<Communicator>(ERR) << "[Communicator] Error receiving message: " << e.what() << "\n";
@@ -209,13 +256,14 @@ void Communicator<Channel>::close() {
     db<Communicator>(TRC) << "Communicator<Channel>::close() called!\n";
     
     _closed.store(true, std::memory_order_release);
+    
+    // Signal any threads waiting on receive to wake up *without data*
+    update(nullptr, _address.port(), nullptr);
+}
 
-    try {
-        // Signal any threads waiting on receive to wake up *without data*
-        update(nullptr, _address.port(), nullptr);
-    } catch (const std::exception& e) {
-        std::cerr << "Error during communicator close: " << e.what() << std::endl;
-    }
+template <typename Channel>
+const bool Communicator<Channel>::is_closed() { 
+    return _closed.load(std::memory_order_acquire); 
 }
 
 template <typename Channel>
@@ -223,8 +271,5 @@ void Communicator<Channel>::update(typename Channel::Observed* obs, typename Cha
     db<Communicator>(TRC) << "Communicator<Channel>::update() called!\n";
     Observer::update(c, buf); // releases the thread waiting for data
 }
-
-// Include message.h here to break circular dependency
-#include "message.h"
 
 #endif // COMMUNICATOR_H

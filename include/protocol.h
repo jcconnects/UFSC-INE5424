@@ -2,17 +2,14 @@
 #define PROTOCOL_H
 
 #include <string>
-#include <iostream>
 #include <cstring>
 #include <atomic>
-#include <sstream>
-#include <iomanip> // For std::setfill, std::setw, std::hex
 
-#include "nic.h"
 #include "traits.h"
 #include "debug.h"
 #include "observed.h"
-#include "ethernet.h" // Assuming Ethernet namespace is included
+#include "observer.h"
+#include "ethernet.h"
 
 // Protocol implementation that works with the real Communicator
 template <typename NIC>
@@ -60,7 +57,7 @@ class Protocol: private NIC::Observer
                 Header* header() { return this; }
                 
                 template<typename T>
-                T* data() { return reinterpret_cast<T*>(&_data); }
+                T* data() { return reinterpret_cast<T*>(_data); }
                 
             private:
                 Data _data;
@@ -83,7 +80,7 @@ class Protocol: private NIC::Observer
                 void port(Port port);
                 const Port& port() const;
 
-                std::string to_string() const;
+                const std::string to_string() const;
 
                 static const Address BROADCAST;
                 
@@ -157,10 +154,9 @@ bool Protocol<NIC>::Address::operator==(const Address& a) const {
 }
 
 template <typename NIC>
-std::string Protocol<NIC>::Address::to_string() const {
-    std::string mac_addr = Ethernet::mac_to_string(_paddr);
+const std::string Protocol<NIC>::Address::to_string() const {
+    std::string mac_addr = NIC::mac_to_string(_paddr);
     return mac_addr + ":" + std::to_string(_port);
-
 }
 
 /********* Protocol Implementation *********/
@@ -188,20 +184,10 @@ template <typename NIC>
 int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int size) {
     db<Protocol>(TRC) << "Protocol<NIC>::send() called!\n";
 
-    db<Protocol>(INF) << "[Protocol] sending from port " << from.port() << " to port " << to.port() << "\n";
+    db<Protocol>(INF) << "[Protocol] sending from " << from.to_string() << " to " << to.to_string() << "\n";
 
-    // Calculate total size needed for the *entire* Ethernet frame
-    unsigned int total_frame_size = Ethernet::HEADER_SIZE + sizeof(Header) + size;
-
-    // Check against MTU before allocation (optional but good practice)
-    if (total_frame_size > NIC::MTU + Ethernet::HEADER_SIZE) { // Compare total size with NIC capacity
-         db<Protocol>(ERR) << "[Protocol] Data size (" << size << ") + Proto Header (" << sizeof(Header) << ") exceeds MTU (" << NIC::MTU << "). Dropping packet.\n";
-         return 0; // Indicate failure due to size
-    }
-
-    // Allocate buffer for the entire frame
-    // NIC::alloc expects the total frame size
-    Buffer* buf = _nic->alloc(to.paddr(), PROTO, total_frame_size);
+    // Allocate buffer for the entire frame -> NIC alloc adds Frame Header size (this is better for independency)
+    Buffer* buf = _nic->alloc(to.paddr(), PROTO, size);
     if (!buf) {
         db<Protocol>(ERR) << "[Protocol] Failed to allocate buffer for send\n";
         return 0; // Indicate failure, no buffer allocated
@@ -221,20 +207,17 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
 
     // Send the packet via NIC
     int result = _nic->send(buf); // NIC::send takes the buffer containing the full frame
-    db<Protocol>(INF) << "[Protocol] NIC::send() returned value " << std::to_string(result) << "\n";
 
-    // --- Buffer Freeing on Failure ---
+    // --- Buffer Release on Failure ---
     if (result <= 0) {
-        db<Protocol>(ERR) << "[Protocol] NIC::send failed. Freeing allocated buffer.\n";
-        _nic->free(buf); // Free the buffer if send failed
-        return 0; // Indicate send failure
+        db<Protocol>(ERR) << "[Protocol] failed to send message.\n";
+    } else {
+        db<Protocol>(INF) << "[Protocol] message sucessfully sent.\n";
     }
-    // --- End Buffer Freeing ---
 
-    // If send was successful, NIC/Engine handles the buffer from here on.
-    // Protocol layer doesn't free it on success.
-    // Return the size of the *user data* sent successfully.
-    return size;
+    // NIC should release buffer after use
+    
+    return result;
 }
 
 template <typename NIC>
@@ -247,15 +230,18 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
     std::uint8_t temp_buffer[size];
     
     int packet_size = _nic->receive(buf, &src_mac, &dst_mac, temp_buffer, NIC::MTU);
-    db<Protocol>(INF) << "[Protocol] NIC::receive returned size " << std::to_string(packet_size) << "\n";
 
-    if (packet_size < static_cast<int>(sizeof(Header))) {
-        db<Protocol>(ERR) << "[Protocol] Packet size too small\n";
-        return 0;
+    if (packet_size < 0) {
+        db<Protocol>(ERR) << "[Protocol] failed to receive message.\n";
+        return -1;
     }
 
-    db<Protocol>(INF) << "[Protocol] Received packet from " << Ethernet::mac_to_string(src_mac) << " to " << Ethernet::mac_to_string(dst_mac) << "\n";
-    db<Protocol>(INF) << "[Protocol] Packet size: " << packet_size << "\n";
+    if (packet_size < static_cast<int>(sizeof(Header))) {
+        db<Protocol>(ERR) << "[Protocol] received undersized packet.\n";
+        return -1;
+    }
+
+    db<Protocol>(INF) << "[Protocol] received packet from " << Ethernet::mac_to_string(src_mac) << " to " << Ethernet::mac_to_string(dst_mac) << " with size " << packet_size << "\n";
 
     // Interpretar como Packet
     Packet* pkt = reinterpret_cast<Packet*>(temp_buffer);
@@ -296,23 +282,23 @@ template <typename NIC>
 void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     db<Protocol>(TRC) << "Protocol<NIC>::update() called!\n";
     
-    // Extracting Ethernet Frame to check source MAC
-    Ethernet::Frame* frame = buf->data();
-    Ethernet::Address src_mac = frame->src;
-    Ethernet::Address my_mac = _nic->address(); // Get NIC's MAC address
+    // Extracting MAC Addresses to compare
+    Physical_Address src_mac = buf->data()->src;
+    Physical_Address my_mac = _nic->address();
 
-    // Extracting packet from buffer payload
-    Packet* packet = reinterpret_cast<Packet*>(frame->payload);
+    // Extracting packet from frame payload
+    Packet* packet = reinterpret_cast<Packet*>(buf->data()->payload);
     
     // Extracting dst port from packet header
     Port dst_port = packet->header()->to_port();
 
-    // --- Security Check: Drop external packets to broadcast port 0 --- 
+    // --- Security Check: Drop external packets to broadcast port --- 
     if (src_mac != my_mac && dst_port == 0) {
         db<Protocol>(WRN) << "[Protocol] Dropping external packet (src=" << Ethernet::mac_to_string(src_mac) << ") destined for broadcast port 0.\n";
         _nic->free(buf); // Free the buffer
         return;          // Do not process further
     }
+
     // ------------------------------------------------------------------
     // If we have observers, notify them based on destination port (broadcast handled by notify)
     // Let reference counting handle buffer cleanup if notified.
@@ -322,6 +308,7 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     } else {
         db<Protocol>(INF) << "[Protocol] Received packet for port " << dst_port << "\n";
     }
+
     if (!Protocol::_observed.notify(dst_port, buf)) { // Use port for notification
         db<Protocol>(INF) << "[Protocol] data received, but no one was notified for port " << dst_port << ". Freeing buffer.\n";
         // No observers for this specific port (and not broadcast, or broadcast had no observers)
@@ -329,7 +316,6 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     }
 }
 
-// Add implementation for Protocol::free
 template <typename NIC>
 void Protocol<NIC>::free(Buffer* buf) {
     if (_nic) {
@@ -349,6 +335,6 @@ template <typename NIC>
 const typename Protocol<NIC>::Address Protocol<NIC>::Address::BROADCAST = 
     typename Protocol<NIC>::Address(
         Ethernet::BROADCAST, // MAC broadcast
-        Protocol<NIC>::Address::NULL_VALUE // ou um valor reservado, como "porta broadcast"
+        0 // Broadcast port
     );
 #endif // PROTOCOL_H

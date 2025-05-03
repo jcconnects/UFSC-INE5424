@@ -10,10 +10,8 @@
 #include <fstream>
 #include <filesystem>
 
-#include "initializer.h"
 #include "vehicle.h"
 #include "debug.h"
-#include "component.h"
 #include "components/ecu_component.h"
 #include "components/camera_component.h"
 #include "components/lidar_component.h"
@@ -31,30 +29,26 @@ void run_vehicle(Vehicle* v) {
     int lifetime = dist_lifetime(gen);
     unsigned int vehicle_id = v->id(); // Store ID before deletion
 
-    // Create components in the specified order
-    // Order determines the port assigned by Vehicle::next_component_address()
-    // ECU1 -> Port 0
-    // ECU2 -> Port 1
-    // Camera -> Port 2
-    // Lidar -> Port 3
-    // INS -> Port 4
-    // Battery -> Port 5
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating ECU1 component\n";
-    Initializer::create_component<ECUComponent>(v, "ECU1");
+    v->create_component<ECUComponent>("ECU1", Vehicle::Ports::ECU1);
+
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating ECU2 component\n";
-    Initializer::create_component<ECUComponent>(v, "ECU2");
+    v->create_component<ECUComponent>("ECU2", Vehicle::Ports::ECU2);
+
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating Lidar component\n";
-    Initializer::create_component<LidarComponent>(v, "Lidar");
+    v->create_component<LidarComponent>("Lidar");
+
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating INS component\n";
-    Initializer::create_component<INSComponent>(v, "INS");
+    v->create_component<INSComponent>("INS");
+
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] creating Battery component\n";
-    Initializer::create_component<BatteryComponent>(v, "Battery");
+    v->create_component<BatteryComponent>("Battery");
 
     v->start();
-    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] starting. Lifetime: " << lifetime << "s\n";
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] started.\n";
 
     // Wait for vehicle lifetime to end
-    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] sleeping for lifetime: " << lifetime << "s\n";
+    db<Vehicle>(INF) << "[Vehicle " << v->id() << "] sleeping for " << lifetime << "s\n";
     sleep(lifetime);
     db<Vehicle>(INF) << "[Vehicle " << v->id() << "] lifetime ended. Stopping vehicle.\n";
 
@@ -65,7 +59,6 @@ void run_vehicle(Vehicle* v) {
         
         // Clean up vehicle (will delete components)
         delete v;
-        v = nullptr; // Good practice to null pointer after delete
         
         db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] Vehicle object deleted and terminated cleanly.\n";
     } catch (const std::exception& e) {
@@ -80,7 +73,7 @@ int main(int argc, char* argv[]) {
     
     TEST_LOG("Application started!");
 
-    unsigned int n_vehicles = 200;
+    unsigned int n_vehicles = 100;
 
     // Create logs directory if it doesn't exist
     std::filesystem::create_directory("logs");
@@ -98,7 +91,11 @@ int main(int argc, char* argv[]) {
         }
 
         if (pid == 0) {
-            std::string log_file = "./logs/vehicle_" + std::to_string(id) + ".log";
+            std::string vehicle_dir = "logs/vehicle_" + std::to_string(id);
+            std::filesystem::create_directory(vehicle_dir);
+            std::filesystem::permissions(vehicle_dir,  std::filesystem::perms::others_all);
+            
+            std::string log_file = "./logs/vehicle_" + std::to_string(id) + "/vehicle_" + std::to_string(id) + ".log";
             Debug::set_log_file(log_file);
 
             std::string log_message = "[Child " + std::to_string(getpid()) + "] creating vehicle " + std::to_string(id);
@@ -106,7 +103,7 @@ int main(int argc, char* argv[]) {
             // Child processes don't share logger, so we still need to use cout here
             std::cout << log_message << std::endl;
             
-            Vehicle* v = Initializer::create_vehicle(id);
+            Vehicle* v = new Vehicle(id);
             run_vehicle(v);
             
             Debug::close_log_file();

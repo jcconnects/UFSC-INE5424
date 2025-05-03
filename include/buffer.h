@@ -12,14 +12,15 @@ class Buffer{
 
     public:
         Buffer();
-        Buffer(const void* data, unsigned int size);
         ~Buffer();
 
         T* data();
         void setData(const void* data, unsigned int size);
         const unsigned int size() const;
-        void setSize(unsigned int size);
         void clear();
+    
+    private:
+        void setSize(unsigned int size);
 
     private:
         std::uint8_t _data[MAX_SIZE];
@@ -32,18 +33,16 @@ Buffer<T>::Buffer() : _size(0) {
 }
 
 template <typename T>
-Buffer<T>::Buffer(const void* data, unsigned int size) {
-    setData(data, size);
-}
-
-template <typename T>
 Buffer<T>::~Buffer() {
     clear();
 }
 
 template <typename T>
 T* Buffer<T>::data() {
-    return reinterpret_cast<T*>(&_data);
+    if (_size == 0)
+        return nullptr;
+        
+    return reinterpret_cast<T*>(_data);
 }
 
 template <typename T>
@@ -59,7 +58,7 @@ void Buffer<T>::setData(const void* data, unsigned int size) {
 
 template <typename T>
 void Buffer<T>::setSize(unsigned int size) {
-    _size = (size > MAX_SIZE) ? MAX_SIZE : size; // Ensures that it does not exceed MTU
+    _size = (size > MAX_SIZE) ? MAX_SIZE : size; // Ensures that it does not exceed MAX_SIZE
 }
 
 template <typename T>
