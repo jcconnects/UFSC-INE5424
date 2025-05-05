@@ -32,19 +32,23 @@ class Debug;
 template <typename Channel>
 class Communicator;
 
+class Message;
+
 class Vehicle;
 
 class Component;
 
-class LidarComponent;
-
-class INSComponent;
+class BatteryComponent;
 
 class CameraComponent;
 
 class ECUComponent;
 
-class BatteryComponent;
+class GatewayComponent;
+
+class INSComponent;
+
+class LidarComponent;
 
 
 // Traits definition
@@ -57,7 +61,7 @@ struct Traits {
 template<>
 struct Traits<SocketEngine> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static constexpr const char* DEFAULT_INTERFACE_NAME = "test-dummy0";
     
     static const char* INTERFACE_NAME() {
@@ -77,7 +81,7 @@ struct Traits<SharedMemoryEngine> : public Traits<void>
 template <typename ExternalEngine, typename InternalEngine>
 struct Traits<NIC<ExternalEngine, InternalEngine>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static const unsigned int SEND_BUFFERS = 512;
     static const unsigned int RECEIVE_BUFFERS = 512;
 };
@@ -86,7 +90,7 @@ struct Traits<NIC<ExternalEngine, InternalEngine>> : public Traits<void>
 template <>
 struct Traits<Protocol<NIC<SocketEngine, SharedMemoryEngine>>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 888; // Example value
 };
 
@@ -97,25 +101,32 @@ struct Traits<Communicator<Channel>> : public Traits<void>
     static const bool debugged = true;
 };
 
+// Traits for message class
+template <>
+struct Traits<Message> : public Traits<void>
+{
+    static constexpr unsigned int MAC_SIZE = 16;
+};
+
 // Traits for Vehicle class
 template<>
 struct Traits<Vehicle> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Component class
 template <>
 struct Traits<Component> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for BatteryComponent class
 template <>
 struct Traits<BatteryComponent>: public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for CameraComponent class
@@ -129,7 +140,13 @@ struct Traits<CameraComponent>: public Traits<void>
 template <>
 struct Traits<ECUComponent>: public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
+};
+
+template <>
+struct Traits<GatewayComponent>: public Traits<void>
+{
+    static const bool debugged = false;
 };
 
 // Traits for INSComponent class
@@ -143,7 +160,7 @@ struct Traits<INSComponent> : public Traits<void>
 template <>
 struct Traits<LidarComponent> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 
@@ -151,10 +168,10 @@ struct Traits<LidarComponent> : public Traits<void>
 template<>
 struct Traits<Debug> : public Traits<void>
 {
-    static const bool error = true;
-    static const bool warning = true;
+    static const bool error = false;
+    static const bool warning = false;
     static const bool info = true;
-    static const bool trace = true;
+    static const bool trace = false;
 };
 
 
