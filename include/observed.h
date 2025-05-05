@@ -25,6 +25,7 @@ class Conditionally_Data_Observed {
         void attach(Observer* o, Condition c);
         void detach(Observer* o, Condition c);
         bool notify(Condition c, T* d);
+        bool notifyAll(T* d);
 
     protected:
         Observers _observers;
@@ -54,6 +55,19 @@ bool Conditionally_Data_Observed<T, C>::notify(C c, T* d) {
 
     return notified;
 }
+
+template <typename T, typename C>
+bool Conditionally_Data_Observed<T, C>::notifyAll(T* d) {
+    bool notified = false;
+
+    for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+        (*obs)->update(obs->rank(), d);
+        notified = true;
+    }
+
+    return notified;
+}
+
 /****************************************************************************/
 
 
