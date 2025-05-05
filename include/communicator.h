@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <atomic>
 
+#include "message.h"
 #include "traits.h"
 #include "debug.h"
 
@@ -17,42 +18,14 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         typedef typename Channel::Address Address;
         typedef typename Channel::Port Port;
         
-        static constexpr const unsigned int MAX_MESSAGE_SIZE = Channel::MTU; // Maximum message size in bytes
-        
-        class Message {
-            friend class Communicator<Channel>;
-
-            private:
-                // Constructors
-                Message(const void* data, unsigned int size, const Address& origin);
-                
-            public:
-                Message();
-                ~Message() = default;
-            
-                // Getters
-                const void* data() const; // Returns const void* for generic access
-                const unsigned int size() const;
-                
-                // Setters
-                void setData(const void* data, unsigned int size);
-
-                // Origin Address getter/setter
-                const Address& origin() const;
-                void origin(const Address& addr);
-
-            private:
-                std::uint8_t _data[MAX_MESSAGE_SIZE];
-                unsigned int _size;
-                Address _origin;
-        };
+        static constexpr const unsigned int MAX_MESSAGE_SIZE; // Maximum message size in bytes
 
         // Constructor and Destructor
         Communicator(Channel* channel, Address address);
         ~Communicator();
         
         // Message creation
-        Message* new_message(const void* data, unsigned int size);
+        Message new_message(Message::Type message_type, std::uint32_t type, unsigned int period = 0, const void* value_data = nullptr, const unsigned int value_size = 0);
 
         // Communication methods
         bool send(const Message* message, const Address& destination = Channel::Address::BROADCAST);
@@ -85,44 +58,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
 
 // Add the definition for the static constexpr member
 template <typename Channel>
-constexpr const unsigned int Communicator<Channel>::MAX_MESSAGE_SIZE;
-
-/*************** Message Implementation ******************/
-template <typename Channel>
-Communicator<Channel>::Message::Message() :_size(0), _origin() {
-    std::memset(_data, 0, MAX_MESSAGE_SIZE);
-}
-
-template<typename Channel>
-Communicator<Channel>::Message::Message(const void* data, unsigned int size, const Address& origin) : _size(size), _origin(origin) {
-    std::memcpy(_data, data, _size);
-}
-
-template<typename Channel>
-const void* Communicator<Channel>::Message::data() const{
-    return static_cast<const void*>(_data);
-}
-
-template <typename Channel>
-const unsigned int Communicator<Channel>::Message::size() const {
-    return _size;
-}
-
-template <typename Channel>
-void Communicator<Channel>::Message::setData(const void* data, unsigned int size) {
-    _size = size;
-    std::memcpy(_data, data, _size);
-}
-
-template <typename Channel>
-const typename Communicator<Channel>::Address& Communicator<Channel>::Message::origin() const {
-    return _origin;
-}
-
-template <typename Channel>
-void Communicator<Channel>::Message::origin(const Address& addr) {
-    _origin = addr;
-}
+constexpr const unsigned int Communicator<Channel>::MAX_MESSAGE_SIZE  = Channel::MTU;;
 
 /*************** Communicator Implementation *****************/
 template <typename Channel>
@@ -148,22 +84,18 @@ Communicator<Channel>::~Communicator() {
 }
 
 template <typename Channel>
-typename Communicator<Channel>::Message* Communicator<Channel>::new_message(const void* data, unsigned int size) {
-    if (size > MAX_MESSAGE_SIZE) {
-        db<Communicator>(WRN) << "[Communicator] attempted creating message with oversize.\n";
-        return nullptr;
+Message Communicator<Channel>::new_message(Message::Type message_type, std::uint32_t type, unsigned int period, const void* value_data, const unsigned int value_size) {
+    switch (message_type)
+    {
+        case Message::Type::INTEREST:
+            return Message(message_type, _address, type, period=period);
+            break;
+        case Message::Type::RESPONSE:
+            return Message(message_type, _address, type, value_data=value_data, value_size=value_size);
+        default:
+            return Message();
+            break;
     }
-
-    if (size == 0) {
-        return new Message();
-    }
-
-    if (data == nullptr) {
-        db<Communicator>(WRN) << "[Communicator] attempted creating message with null data.\n";
-        return nullptr;
-    }
-
-    return new Message(data, size, _address);
 }
 
 template <typename Channel>
@@ -179,6 +111,16 @@ bool Communicator<Channel>::send(const Message* message, const Address& destinat
     if (!message) {
         db<Communicator>(ERR) << "[Communicator] Null message pointer in send\n";
         return false;
+    }
+
+    if (message->size() == 0) {
+        db<Communicator>(ERR) << "[Communicator] message is empty!\n";
+        return false;
+    }
+
+    if (message->size() > MAX_MESSAGE_SIZE) {
+        db<Communicator>(ERR) << "[Communicator] message too big!\n";
+        return false; 
     }
     
     try {
