@@ -20,7 +20,7 @@ class Protocol: private NIC::Observer
         
         typedef typename NIC::DataBuffer Buffer;
         typedef typename NIC::Address Physical_Address;
-        typedef unsigned int Port;
+        typedef std::uint16_t Port;
         
         // Change to use Concurrent_Observer for Communicator interactions
         typedef Conditional_Data_Observer<Buffer, Port> Observer;
@@ -294,13 +294,6 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     // Extracting dst port from packet header
     Port dst_port = packet->header()->to_port();
 
-    // --- Security Check: Drop external packets to broadcast port --- 
-    if (src_mac != my_mac && dst_port == 0) {
-        db<Protocol>(WRN) << "[Protocol] Dropping external packet (src=" << Ethernet::mac_to_string(src_mac) << ") destined for broadcast port 0.\n";
-        _nic->free(buf); // Free the buffer
-        return;          // Do not process further
-    }
-
     // ------------------------------------------------------------------
     // If we have observers, notify them based on destination port (broadcast handled by notify)
     // Let reference counting handle buffer cleanup if notified.
@@ -311,10 +304,23 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
         db<Protocol>(INF) << "[Protocol] Received packet for port " << dst_port << "\n";
     }
 
-    if (!Protocol::_observed.notify(dst_port, buf)) { // Use port for notification
-        db<Protocol>(INF) << "[Protocol] data received, but no one was notified for port " << dst_port << ". Freeing buffer.\n";
-        // No observers for this specific port (and not broadcast, or broadcast had no observers)
-        _nic->free(buf);
+    // --- Security Check: Drop external packets to broadcast port --- 
+    /* External broadcast is a packet with to_port equals 0. We got
+       to consider cases when there's listeners on this port. That
+       means external broadcast should be handled by application, not API */
+
+    // Internal Broadcast
+    if (src_mac == my_mac && dst_port == 0) {
+        if (!Protocol::_observed.notifyAll(buf)) { // Notify all observers
+            db<Protocol>(INF) << "[Protocol] broadcast data received, but no one was notified.\n";
+            _nic->free(buf);
+        }
+    } else {
+        if (!Protocol::_observed.notify(dst_port, buf)) { // Use port for notification
+            db<Protocol>(INF) << "[Protocol] data received, but no one was notified for port " << dst_port << ". Freeing buffer.\n";
+            // No observers for this specific port (and not broadcast, or broadcast had no observers)
+            _nic->free(buf);
+        }
     }
 }
 
