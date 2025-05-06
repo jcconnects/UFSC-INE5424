@@ -14,246 +14,338 @@
 #include <vector>
 #include <functional> // For std::function
 #include <sstream> // For std::stringstream
+#include <filesystem>
 
-// Include types.h for constants and forward declarations
-#include "types.h"
-
-// Include necessary headers 
-#include "protocol.h"
-#include "nic.h"
-#include "socketEngine.h" 
-#include "sharedMemoryEngine.h"
+// Include necessary headers
 #include "communicator.h"
-#include "address.h" // Include the address.h for TheAddress
 #include "debug.h" // Include for db<> logging
 
 // Forward declarations
 class Vehicle;
-// TheMessage is already defined in message.h - don't redefine
+
+template <typename Engine1, typename Engine2>
+class NIC;
+
+template <typename NIC>
+class Protocol;
+
+class SocketEngine;
+
+class SharedMemoryEngine;
+
 
 class Component {
-public:
-    // Constructor uses concrete types
-    Component(Vehicle* vehicle, const std::string& name, TheProtocol* protocol, TheAddress address);
+    public:
+        typedef NIC<SocketEngine, SharedMemoryEngine> VehicleNIC;
+        typedef Protocol<VehicleNIC> VehicleProt;
+        typedef Communicator<VehicleProt> Comms;
+        typedef Comms::Address Address;
 
-    // Virtual destructor for proper cleanup of derived classes
-    virtual ~Component() = default;
+        // Constructor uses concrete types
+        Component(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name);
 
-    // Start method - Creates and launches the component's thread
-    virtual void start();
+        // Virtual destructor for proper cleanup of derived classes
+        virtual ~Component();
 
-    // Stop method - Signals the thread to stop and joins it
-    virtual void stop();
+        // Start method - Creates and launches the component's thread
+        void start();
 
-    // Pure virtual run method - must be implemented by derived classes with the component's main loop
-    virtual void run() = 0;
+        // Stop method - Signals the thread to stop and joins it
+        void stop();
 
-    // Accessors
-    bool running() const { return _running.load(std::memory_order_acquire); }
-    const std::string& getName() { return _name; }
-    Vehicle* vehicle() const { return _vehicle; };
-    std::ofstream* log_file() { return &_log_file; };
+        // Pure virtual run method - must be implemented by derived classes with the component's main loop
+        virtual void run() = 0;
 
-    // Concrete send and receive methods using defined types
-    int send(const TheAddress& destination, const void* data, unsigned int size);
-    int receive(void* data, unsigned int max_size, TheAddress* source_address = nullptr); // Optional source addr
+        // Getters
+        const bool running() const;
+        const std::string& getName() const;
+        const Vehicle* vehicle() const;
+        std::ofstream* log_file();
+        const Address& address() const;
 
-protected:
-    // Helper function to be called by the pthread_create
-    static void* thread_entry_point(void* arg);
+        // Concrete send and receive methods using defined types
+        int send(const void* data, unsigned int size, Address destination = Address::BROADCAST);
+        int receive(void* data, unsigned int max_size, Address* source_address = nullptr); // Optional source addr
 
-    // Common members
-    Vehicle* _vehicle;
-    std::string _name;
-    std::atomic<bool> _running;
-    pthread_t _thread;
+    protected:
+        // Helper function to be called by the pthread_create
+        static void* thread_entry_point(void* arg);
 
-    // Type-safe communicator storage and protocol pointer
-    std::unique_ptr<TheCommunicator> _communicator;
-    TheProtocol* _protocol; // Pointer to Vehicle's protocol instance
+        // Common members
+        const Vehicle* _vehicle;
+        std::string _name;
+        std::atomic<bool> _running;
+        pthread_t _thread;
 
-    // CSV logging functionality
-    std::ofstream _log_file;
-    void open_log_file(const std::string& filename_prefix);
-    void close_log_file();
+        // Type-safe communicator storage
+        Comms* _communicator;
 
-private:
-    // Prevent copying and assignment
-    Component(const Component&) = delete;
-    Component& operator=(const Component&) = delete;
+        // CSV logging functionality
+        std::string _filename;
+        std::string _log_dir;
+        std::ofstream _log_file;
+        void open_log_file();
+        void close_log_file();
+        std::string initialize_log_directory(unsigned int vehicle_id);
+
+    private:
+        // Prevent copying and assignment
+        Component(const Component&) = delete;
+        Component& operator=(const Component&) = delete;
 };
 
-// --- Implementation ---
 
-// Constructor
-Component::Component(Vehicle* vehicle, const std::string& name, TheProtocol* protocol, TheAddress address)
-    : _vehicle(vehicle),
-      _name(name),
-      _running(false),
-      _thread(0), // Initialize thread handle
-      _protocol(protocol)
-{
-    if (!_protocol) {
-        throw std::invalid_argument("Component requires a non-null protocol instance.");
-    }
+/************* Component Implementation ******************/
+Component::Component(Vehicle* vehicle,  const unsigned int vehicle_id, const std::string& name) : _vehicle(vehicle), _name(name), _running(false), _thread(0) {
     if (!_vehicle) {
          throw std::invalid_argument("Component requires a non-null vehicle instance.");
     }
-    // Create the communicator for this component instance
-    _communicator = std::make_unique<TheCommunicator>(_protocol, address);
-    db<Component>(INF) << "Component '" << _name << "' created with address " << address << "\n";
+
+    // Communicator will be created in each specific component Constructor, due to port setting";
+
+    // Setting log filename
+    _filename = _name + std::to_string(vehicle_id) + "_log.csv";
+    _log_dir = initialize_log_directory(vehicle_id);
 }
 
-// Start method
+Component::~Component() {
+    delete _communicator;
+}
+
 void Component::start() {
-    db<Component>(TRC) << "Component::start() called for " << "Vehicle " << vehicle() << " " << getName() << "\n";
+    db<Component>(TRC) << "Component::start() called for compoenent " << getName() << ".\n";
+
     if (running()) {
-        db<Component>(WRN) << "Component " << "Vehicle " << vehicle() << " " << getName() << " already running.\n";
+        db<Component>(WRN) << "[Component] start() called when component" << getName() << " is already running.\n";
         return;
     }
+
     _running.store(true, std::memory_order_release);
+
     int rc = pthread_create(&_thread, nullptr, Component::thread_entry_point, this);
     if (rc) {
-        db<Component>(ERR) << "ERROR; return code from pthread_create() is " << rc << " for " << "Vehicle " << vehicle() << " " << getName() << "\n";
+        db<Component>(ERR) << "[Component] return code from pthread_create() is " << rc << " for "<< getName() << "\n";
         _running.store(false);
         throw std::runtime_error("Failed to create component thread for " + getName());
     }
-     db<Component>(INF) << "Component " << "Vehicle " << vehicle() << " " << getName() << " thread created successfully.\n";
+     db<Component>(INF) << "Component " << getName() << " thread created successfully.\n";
 }
 
-// Stop method
 void Component::stop() {
-    db<Component>(TRC) << "Component::stop() called for component " << _name << "\n";
-    if (running()) {
-        // Signal the communicator to interrupt blocking calls
-        _running.store(false, std::memory_order_release);
-        if (_communicator) {
-            db<Component>(INF) << "Component '" << _name << "' closing communicator.\n";
-            _communicator->close();
-        }
-        if (_thread != 0) {
-            int join_rc = pthread_join(_thread, nullptr);
-            if (join_rc == 0) {
-                 db<Component>(INF) << "Component '" << _name << "' thread joined.\n";
-            } else {
-                 db<Component>(ERR) << "Component '" << _name << "' failed to join thread! Error code: " << join_rc << "\n";
-                 // Consider logging errno or using strerror(join_rc) if applicable
-            }
-             _thread = 0; // Reset thread handle after join
-        }
-    } else {
-         db<Component>(WRN) << "Component::stop() called but component " << _name << " was not running.\n";
+    db<Component>(TRC) << "Component::stop() called for component " << getName() << "\n";
+
+    if (!running()) {
+        db<Component>(WRN) << "[Component] stop() called for component " << getName() << " when it is already stopped.\n";
+        return;
     }
-    db<Component>(INF) << "Vehicle: " << _vehicle << " Component '" << _name << "' stopping.\n";
+
+    // Fisrt set its own running state
+    _running.store(false, std::memory_order_release);
+    
+    // Then stops communicator, releasing any blocked threads
+    _communicator->close();
+    db<Component>(INF) << "[Component] Communicator closed for component" << getName() << ".\n";
+    
+    // Then join thread
+    if (_thread != 0) {
+        int join_rc = pthread_join(_thread, nullptr);
+
+        if (join_rc == 0) {
+                db<Component>(INF) << "[Component] thread joined for component " << getName() << ".\n";
+        } else {
+                db<Component>(ERR) << "[Component] failed to join thread for component " << getName() << "! Error code: " << join_rc << "\n";
+                // Consider logging errno or using strerror(join_rc) if applicable
+        }
+
+        _thread = 0; // Reset thread handle after join
+    }
+
     close_log_file(); // Close log file after stopping
+    db<Component>(INF) << "[Component] " << getName() <<" stopped.\n";
 }
 
-// Static thread entry point
 void* Component::thread_entry_point(void* arg) {
     Component* self = static_cast<Component*>(arg);
-    db<Component>(INF) << "Component '" << self->getName() << "' thread starting execution.\n";
+
+    db<Component>(INF) << "[Component] " << self->getName() << " thread starting execution.\n";
+
     try {
         self->run(); // Call the derived class's implementation
     } catch (const std::exception& e) {
-        db<Component>(ERR) << "Component '" << self->getName() << "' thread caught exception: " << e.what() << "\n";
+        db<Component>(ERR) << "[Component] " << self->getName() << " thread caught exception: " << e.what() << "\n";
     } catch (...) {
-        db<Component>(ERR) << "Component '" << self->getName() << "' thread caught unknown exception.\n";
+        db<Component>(ERR) << "[Component] '" << self->getName() << " thread caught unknown exception.\n";
     }
-    db<Component>(INF) << "Component '" << self->getName() << "' thread finished execution.\n";
-    self->_running.store(false, std::memory_order_relaxed); // Ensure running is false on exit
+
+    db<Component>(INF) << "[Component] " << self->getName() << " thread finished execution.\n";
     return nullptr;
 }
 
 
-// Send method
-int Component::send(const TheAddress& destination, const void* data, unsigned int size) {
-    if (size > TheCommunicator::MAX_MESSAGE_SIZE) {
-        db<Component>(ERR) << "Vehicle " << vehicle() << " " << getName() << "::send error: message size (" << size << ") exceeds MAX_MESSAGE_SIZE (" << TheCommunicator::MAX_MESSAGE_SIZE << ").\n";
-        return -1; // Indicate error
-    }
-
-    // Construct message directly with data
-    TheMessage msg(data, size);
-    // msg.set_data(data, size); // REMOVED: Use constructor instead
-
-    // Assuming Communicator::send is modified to take destination
-    if (_communicator->send(destination, &msg)) {
-        // Use INF log level from debug.h
-        db<Component>(INF) << "Vehicle " << vehicle() << " " << getName() << "::send successful (" << msg.size() << " bytes to " << destination << ").\n";
+int Component::send(const void* data, unsigned int size, Address destination) {
+    
+    // Create response message with the data
+    Message msg = _communicator->new_message(
+        Message::Type::RESPONSE,  // Using RESPONSE type for raw data
+        0,                        // Default type
+        0,                        // No period for responses
+        data,                     // The data to send
+        size                      // Size of the data
+    );
+    
+    // Send the message
+    if (_communicator->send(msg, destination)) {
+        db<Component>(INF) << "[Component] " << getName() << " sent " << size << " bytes to " << destination.to_string() << ".\n";
         return size; // Return bytes sent on success
     } else {
-        db<Component>(ERR) << "Vehicle " << vehicle() << " " << getName() << "::send failed.\n";
-        return -1; // Indicate error
+        db<Component>(ERR) << "[Component] " << getName() << " failed to send message.\n";
+        return 0; // Indicate error
     }
-    // Added default return path for safety, though above logic should cover it.
-    // return -1; // Can be removed if the if/else guarantees a return
 }
 
 // Receive method
-int Component::receive(void* data, unsigned int max_size, TheAddress* source_address) {
-     // Removed the initial running() check. The loop in the derived run() method should handle this.
-     // The check after the blocking call remains important.
-    if (!_communicator) {
-        db<Component>(ERR) << "Vehicle " << vehicle() << " " << getName() << "::receive called but communicator is null!\n";
-        return 0; // Or throw
-    }
+int Component::receive(void* data, unsigned int max_size, Address* source_address) {
+    db<Component>(TRC) << "[Component] " << getName() << " receive called!\n";
 
-    TheMessage msg;
-    db<Component>(TRC) << "Vehicle " << vehicle() << " " << getName() << "::receive waiting for message...\n";
+    // Creating a message for receiving
+    Message msg = _communicator->new_message(Message::Type::RESPONSE, 0);
 
-    // Assuming Communicator::receive signature is:
-    // bool receive(MessageType* message, AddressType* source = nullptr);
-    if (!_communicator->receive(&msg, source_address)) {
-        // Check if we stopped while waiting
+    if (!_communicator->receive(&msg)) {
+        // Check if we stopped while waiting (only for log purposes)
         if (!running()) {
-            db<Component>(INF) << "Vehicle " << vehicle() << " " << getName() << "::receive interrupted by stop().\n";
-            return -1; // Indicate stopped
+            db<Component>(INF) << "[Component] " << getName() << " receive interrupted by stop().\n";
         }
-        // Only log warning if the component thinks it should still be running
-        db<Component>(WRN) << "Vehicle " << vehicle() << " " << getName() << "::receive failed or timed out.\n";
-        return 0; // Indicate receive error/timeout
+
+        db<Component>(WRN) << "[Component] " << getName() << " receive failed.\n";
+        return 0; // Indicate error
     }
 
-    db<Component>(TRC) << "Vehicle " << vehicle() << " " << getName() << "::receive received message of size " << msg.size() << (source_address ? " from " + std::string(source_address->to_string()) : "") << "\n";
+    // Sets source address
+    if (source_address)
+        *source_address = msg.origin();
 
+    db<Component>(TRC) << "[Component] " << getName() << " received message of size " << msg.size() << ".\n";
 
-    if (msg.size() > max_size) {
-        db<Component>(ERR) << "Vehicle " << vehicle() << " " << getName() << "::receive buffer too small (" << max_size << " bytes) for received message (" << msg.size() << " bytes).\n";
+    // For RESPONSE messages, check the value
+    if (msg.message_type() == Message::Type::RESPONSE) {
+        const std::uint8_t* value_data = msg.value();
+        unsigned int value_size = msg.size(); // This isn't quite right, but we need to estimate
+
+        if (value_size > max_size) {
+            db<Component>(ERR) << "[Component] "<< getName() << " buffer too small (" << max_size << " bytes) for received message (" << value_size << " bytes).\n";
+            return 0; // Indicate error
+        }
+
+        if (value_data) {
+            // Copy message value to data pointer
+            std::memcpy(data, value_data, value_size);
+            db<Component>(INF) << "[Component]" << getName() << " received data as RESPONSE\n";
+            return value_size;
+        }
+    } 
+    
+    // For any other message type or if no value data
+    const void* msg_data = msg.data();
+    unsigned int msg_size = msg.size();
+    
+    if (msg_size > max_size) {
+        db<Component>(ERR) << "[Component] "<< getName() << " buffer too small (" << max_size << " bytes) for received message (" << msg_size << " bytes).\n";
         // Data is lost here! Consider alternatives if partial data is useful.
-        return 0; // Indicate error (buffer overflow)
+        return 0; // Indicate error
     }
 
-    std::memcpy(data, msg.data(), msg.size());
-    // Use TRC level and fix DEB typo
-    db<Component>(TRC) << "Vehicle " << vehicle() << " " << getName() << "::receive successfully processed message (" << msg.size() << " bytes copied).\n";
-    db<Component>(INF) << "Vehicle " << vehicle() << " " << getName() << ":: received data: " << std::string(static_cast<const char*>(data), msg.size()) << "\n"; // Log received data
-    return msg.size(); // Return bytes received
+    // Copy raw message data
+    std::memcpy(data, msg_data, msg_size);
+    db<Component>(INF) << "[Component]" << getName() << " received raw message data\n";
+
+    // Return bytes received
+    return msg_size;
 }
 
-// Logging methods - updated to use prefix
-void Component::open_log_file(const std::string& filename_prefix) {
-    close_log_file(); // Ensure any previous file is closed
-    std::string log_dir = "./logs"; // TODO: Make configurable?
-    // Potential improvement: Create logs directory if it doesn't exist
-    std::string filename = log_dir + "/" + filename_prefix + "_" + getName() + ".csv";
-    _log_file.open(filename);
-    if (!_log_file.is_open()) {
-         db<Component>(ERR) << "Vehicle " << vehicle() << " " << getName() << " failed to open log file: " << filename << "\n";
-    } else {
-         db<Component>(INF) << "Vehicle " << vehicle() << " " << getName() << " opened log file: " << filename << "\n";
-         // Derived classes should write headers immediately after calling this in their constructor
+// Logging methods
+void Component::open_log_file() {
+    // Ensure any previous file is closed
+    close_log_file(); 
+
+    try {
+        std::string filepath = _log_dir + _filename;
+        _log_file.open(filepath);
+
+        if (!_log_file.is_open()) {
+            db<Component>(ERR) << "[Component] " << getName() << " failed to open log file: " << filepath << "\n";
+            db<Component>(ERR) << "[Component] " << getName() << " will log to standard output instead.\n";
+        } else {
+            db<Component>(INF) << "[Component] " << getName() << " opened log file: " << filepath << "\n";
+        }
+    } catch (const std::exception& e) {
+        db<Component>(ERR) << "[Component] " << getName() << " error opening log file: " << e.what() << "\n";
     }
+    
+    // Derived classes should write headers immediately after calling this in their constructor
 }
 
 void Component::close_log_file() {
     if (_log_file.is_open()) {
-         db<Component>(INF) << "Vehicle " << vehicle() << " " << getName() << " closing log file.\n";
         _log_file.close();
+        db<Component>(INF) << "[Component] " << getName() << " log file closed.\n";
     }
 }
 
-// Include message.h for TheMessage implementation
-// This breaks the circular dependency by including it after the Component class declaration
-#include "message.h"
+const bool Component::running() const {
+    return _running.load(std::memory_order_acquire);
+}
 
+const std::string& Component::getName() const {
+    return _name;
+}
+
+const Vehicle* Component::vehicle() const {
+    return _vehicle;
+}
+
+std::ofstream* Component::log_file() {
+    return &_log_file;
+}
+
+const Component::Address& Component::address() const {
+    return _communicator->address();
+}
+
+// Helper method to initialize log directory
+std::string Component::initialize_log_directory(unsigned int vehicle_id) {
+    std::string log_dir;
+    
+    // First try the Docker container's logs directory
+    if (std::filesystem::exists("/app/logs")) {
+        log_dir = "/app/logs/vehicle_" + std::to_string(vehicle_id) + "/";
+    } else {
+        // Try to use tests/logs directory instead of current directory
+        if (!std::filesystem::exists("tests/logs")) {
+            try {
+                std::filesystem::create_directories("tests/logs");
+            } catch (...) {
+                // Ignore errors, will fall back if needed
+            }
+        }
+        
+        if (std::filesystem::exists("tests/logs")) {
+            log_dir = "tests/logs/vehicle_" + std::to_string(vehicle_id) + "/";
+        } else {
+            // Last resort fallback to current directory
+            log_dir = "./";
+        }
+    }
+    
+    // Create the directory if it doesn't exist
+    if (log_dir != "./") {
+        try {
+            std::filesystem::create_directories(log_dir);
+        } catch (...) {
+            // If we can't create the directory, fall back to current directory
+            log_dir = "./";
+        }
+    }
+    
+    return log_dir;
+}
 #endif // COMPONENT_H 
