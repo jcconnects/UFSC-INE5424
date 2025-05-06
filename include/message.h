@@ -42,20 +42,19 @@ class Message {
         const Type& message_type() const;
         const Origin& origin() const;
         const std::uint64_t& timestamp() const;
-        const std::uint32_t& type() const;
+        const std::uint32_t& unit_type() const;
         const unsigned int period() const;
         const std::uint8_t* value() const;
-        const void* data();
-        const unsigned int size();
+        const void* data() const;
+        const unsigned int size() const;
         static Message deserialize(const void* serialized, const unsigned int size);
     
     private:
-        friend Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine>>>;
-        friend Message Message::deserialize(const void*, const unsigned int);
+        friend class Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine>>>;
 
         // Private constructors (idea is that only communicator and Message::deserealize are allowed to create messages)
         Message() = default;
-        Message(Type message_type, const Origin& origin, std::uint32_t type, unsigned int period = 0, const void* value_data = nullptr, const unsigned int value_size = 0);
+        Message(Type message_type, const Origin& origin, std::uint32_t unit_type, unsigned int period = 0, const void* value_data = nullptr, const unsigned int value_size = 0);
     
 
         /* Setters
@@ -64,7 +63,7 @@ class Message {
         void message_type(const Type message_type);
         void origin(const Origin& addr);
         void timestamp(const std::uint64_t& timestamp);
-        void type(const std::uint32_t& type);
+        void unit_type(const std::uint32_t& type);
         void period(const std::uint32_t& period);
         void value(const void* data, const unsigned int size);
         void serialize();
@@ -87,7 +86,7 @@ class Message {
         Type _message_type;
         Origin _origin;
         std::uint64_t _timestamp;
-        std::uint32_t _type;
+        std::uint32_t _unit_type;
         std::uint32_t _period;                 // INTEREST
         std::vector<std::uint8_t> _value;      // RESPONSE
         // std::vector<std::uint8_t> _mac;     // INTEREST and RESPONSE
@@ -100,13 +99,13 @@ class Message {
 /********* Message Implementation *********/
 // const unsigned int Message::MAC_SIZE = Traits<Message>::MAC_SIZE;
 
-Message::Message(Type message_type, const Origin& origin, std::uint32_t type, unsigned int period, const void* value_data, const unsigned int value_size) {
+Message::Message(Type message_type, const Origin& origin, std::uint32_t unit_type, unsigned int period, const void* value_data, const unsigned int value_size) {
     auto now_system = std::chrono::system_clock::now();
     _timestamp = std::chrono::duration_cast<std::chrono::microseconds>(now_system.time_since_epoch()).count();
 
     _message_type = message_type;
     _origin = origin;
-    _type = type;
+    _unit_type = unit_type;
     _period = period;
     
     if (_message_type == Type::RESPONSE && !value_data && value_size > 0)
@@ -125,8 +124,8 @@ const std::uint64_t& Message::timestamp() const {
     return _timestamp;
 }
 
-const std::uint32_t& Message::type() const {
-    return _type;
+const std::uint32_t& Message::unit_type() const {
+    return _unit_type;
 }
 
 const unsigned int Message::period() const {
@@ -137,17 +136,17 @@ const std::uint8_t* Message::value() const {
     return _value.data();
 }
 
-const void* Message::data() {
+const void* Message::data() const {
     // Ensures message is serialized
-    serialize();
+    const_cast<Message*>(this)->serialize();
 
     // Returns serialized message
     return static_cast<const void*>(_serialized_data.data());
 }
 
-const unsigned int Message::size() {
+const unsigned int Message::size() const {
     // Ensure message is serialized
-    serialize();
+    const_cast<Message*>(this)->serialize();
 
     // Returns serialized message size
     return static_cast<const unsigned int>(_serialized_data.size());
@@ -163,7 +162,7 @@ Message Message::deserialize(const void* serialized, const unsigned int size) {
     msg.message_type(static_cast<Type>(extract_uint8t(bytes, offset, size)));
     msg.origin(extract_address(bytes, offset, size));
     msg.timestamp(extract_uint64t(bytes, offset, size));
-    msg.type(extract_uint32t(bytes, offset, size));
+    msg.unit_type(extract_uint32t(bytes, offset, size));
 
     if (msg.message_type() == Type::INTEREST) {
         msg.period(extract_uint32t(bytes, offset, size));
@@ -193,8 +192,8 @@ void Message::timestamp(const std::uint64_t& timestamp) {
     _timestamp = timestamp;
 }
 
-void Message::type(const std::uint32_t& type) {
-    _type = type;
+void Message::unit_type(const std::uint32_t& unit_type) {
+    _unit_type = unit_type;
 }
 
 void Message::period(const std::uint32_t& period) {
@@ -217,7 +216,7 @@ void Message::serialize() {
     append_uint8t(static_cast<uint8_t>(_message_type)); // C++ can't handle bits
     append_address(_origin);
     append_uint64t(_timestamp);
-    append_uint32t(_type);
+    append_uint32t(_unit_type);
 
     if (_message_type == Type::INTEREST)
         append_uint32t(_period);

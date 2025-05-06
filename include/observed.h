@@ -61,7 +61,7 @@ bool Conditionally_Data_Observed<T, C>::notifyAll(T* d) {
     bool notified = false;
 
     for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-        (*obs)->update(obs->rank(), d);
+        (*obs)->update((*obs)->rank(), d);
         notified = true;
     }
 

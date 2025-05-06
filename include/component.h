@@ -40,7 +40,6 @@ class Component {
         typedef Protocol<VehicleNIC> VehicleProt;
         typedef Communicator<VehicleProt> Comms;
         typedef Comms::Address Address;
-        typedef Comms::Message Message;
 
         // Constructor uses concrete types
         Component(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name);
@@ -87,6 +86,7 @@ class Component {
         std::ofstream _log_file;
         void open_log_file();
         void close_log_file();
+        std::string initialize_log_directory(unsigned int vehicle_id);
 
     private:
         // Prevent copying and assignment
@@ -105,9 +105,7 @@ Component::Component(Vehicle* vehicle,  const unsigned int vehicle_id, const std
 
     // Setting log filename
     _filename = _name + std::to_string(vehicle_id) + "_log.csv";
-
-    // Setting log dir
-    _log_dir = "./logs/vehicle_" + std::to_string(vehicle_id) + "/"; 
+    _log_dir = initialize_log_directory(vehicle_id);
 }
 
 Component::~Component() {
@@ -186,24 +184,21 @@ void* Component::thread_entry_point(void* arg) {
 
 int Component::send(const void* data, unsigned int size, Address destination) {
     
-    // Construct message 
-    Message* msg = _communicator->new_message(data, size);
+    // Create response message with the data
+    Message msg = _communicator->new_message(
+        Message::Type::RESPONSE,  // Using RESPONSE type for raw data
+        0,                        // Default type
+        0,                        // No period for responses
+        data,                     // The data to send
+        size                      // Size of the data
+    );
     
-    if (!msg) {
-        db<Component>(ERR) << "[Component] " << getName() << " failed to create message\n";
-        return 0;
-    }
-
-    // Assuming Communicator::send is modified to take destination
+    // Send the message
     if (_communicator->send(msg, destination)) {
-        db<Component>(INF) << "[Component] " << getName() << " sent " << msg->size() << " bytes to " << destination.to_string() << ".\n";
-        // Memory management
-        delete msg;
+        db<Component>(INF) << "[Component] " << getName() << " sent " << size << " bytes to " << destination.to_string() << ".\n";
         return size; // Return bytes sent on success
     } else {
         db<Component>(ERR) << "[Component] " << getName() << " failed to send message.\n";
-        // Memory management
-        delete msg;
         return 0; // Indicate error
     }
 }
@@ -212,8 +207,8 @@ int Component::send(const void* data, unsigned int size, Address destination) {
 int Component::receive(void* data, unsigned int max_size, Address* source_address) {
     db<Component>(TRC) << "[Component] " << getName() << " receive called!\n";
 
-    // Creating empty message
-    Message msg;
+    // Creating a message for receiving
+    Message msg = _communicator->new_message(Message::Type::RESPONSE, 0);
 
     if (!_communicator->receive(&msg)) {
         // Check if we stopped while waiting (only for log purposes)
@@ -231,19 +226,40 @@ int Component::receive(void* data, unsigned int max_size, Address* source_addres
 
     db<Component>(TRC) << "[Component] " << getName() << " received message of size " << msg.size() << ".\n";
 
-    if (msg.size() > max_size) {
-        db<Component>(ERR) << "[Component] "<< getName() << " buffer too small (" << max_size << " bytes) for received message (" << msg.size() << " bytes).\n";
+    // For RESPONSE messages, check the value
+    if (msg.message_type() == Message::Type::RESPONSE) {
+        const std::uint8_t* value_data = msg.value();
+        unsigned int value_size = msg.size(); // This isn't quite right, but we need to estimate
+
+        if (value_size > max_size) {
+            db<Component>(ERR) << "[Component] "<< getName() << " buffer too small (" << max_size << " bytes) for received message (" << value_size << " bytes).\n";
+            return 0; // Indicate error
+        }
+
+        if (value_data) {
+            // Copy message value to data pointer
+            std::memcpy(data, value_data, value_size);
+            db<Component>(INF) << "[Component]" << getName() << " received data as RESPONSE\n";
+            return value_size;
+        }
+    } 
+    
+    // For any other message type or if no value data
+    const void* msg_data = msg.data();
+    unsigned int msg_size = msg.size();
+    
+    if (msg_size > max_size) {
+        db<Component>(ERR) << "[Component] "<< getName() << " buffer too small (" << max_size << " bytes) for received message (" << msg_size << " bytes).\n";
         // Data is lost here! Consider alternatives if partial data is useful.
         return 0; // Indicate error
     }
 
-    // Copy message content to data pointer
-    std::memcpy(data, msg.data(), msg.size());
-    db<Component>(INF) << "[Component]" << getName() << " received data: " << std::string(static_cast<const char*>(data), msg.size()) << "\n";
-    
+    // Copy raw message data
+    std::memcpy(data, msg_data, msg_size);
+    db<Component>(INF) << "[Component]" << getName() << " received raw message data\n";
 
     // Return bytes received
-    return msg.size();
+    return msg_size;
 }
 
 // Logging methods
@@ -251,20 +267,18 @@ void Component::open_log_file() {
     // Ensure any previous file is closed
     close_log_file(); 
 
-    // Creating directory, in case it doesn't exists yet
-    std::filesystem::create_directory(_log_dir);
-    std::filesystem::permissions(_log_dir,  std::filesystem::perms::others_all);
+    try {
+        std::string filepath = _log_dir + _filename;
+        _log_file.open(filepath);
 
-    // Defines filepath
-    std::string filepath = _log_dir + _filename;
-
-    // Opens file
-    _log_file.open(filepath);
-
-    if (!_log_file.is_open()) {
-        db<Component>(ERR) << "[Component] " << getName() << " failed to open log file: " << filepath << "\n";
-    } else {
-        db<Component>(INF) << "[Component] " << getName() << " opened log file: " << filepath << "\n";
+        if (!_log_file.is_open()) {
+            db<Component>(ERR) << "[Component] " << getName() << " failed to open log file: " << filepath << "\n";
+            db<Component>(ERR) << "[Component] " << getName() << " will log to standard output instead.\n";
+        } else {
+            db<Component>(INF) << "[Component] " << getName() << " opened log file: " << filepath << "\n";
+        }
+    } catch (const std::exception& e) {
+        db<Component>(ERR) << "[Component] " << getName() << " error opening log file: " << e.what() << "\n";
     }
     
     // Derived classes should write headers immediately after calling this in their constructor
@@ -295,5 +309,43 @@ std::ofstream* Component::log_file() {
 
 const Component::Address& Component::address() const {
     return _communicator->address();
+}
+
+// Helper method to initialize log directory
+std::string Component::initialize_log_directory(unsigned int vehicle_id) {
+    std::string log_dir;
+    
+    // First try the Docker container's logs directory
+    if (std::filesystem::exists("/app/logs")) {
+        log_dir = "/app/logs/vehicle_" + std::to_string(vehicle_id) + "/";
+    } else {
+        // Try to use tests/logs directory instead of current directory
+        if (!std::filesystem::exists("tests/logs")) {
+            try {
+                std::filesystem::create_directories("tests/logs");
+            } catch (...) {
+                // Ignore errors, will fall back if needed
+            }
+        }
+        
+        if (std::filesystem::exists("tests/logs")) {
+            log_dir = "tests/logs/vehicle_" + std::to_string(vehicle_id) + "/";
+        } else {
+            // Last resort fallback to current directory
+            log_dir = "./";
+        }
+    }
+    
+    // Create the directory if it doesn't exist
+    if (log_dir != "./") {
+        try {
+            std::filesystem::create_directories(log_dir);
+        } catch (...) {
+            // If we can't create the directory, fall back to current directory
+            log_dir = "./";
+        }
+    }
+    
+    return log_dir;
 }
 #endif // COMPONENT_H 

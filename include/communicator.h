@@ -18,7 +18,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         typedef typename Channel::Address Address;
         typedef typename Channel::Port Port;
         
-        static constexpr const unsigned int MAX_MESSAGE_SIZE; // Maximum message size in bytes
+        static constexpr const unsigned int MAX_MESSAGE_SIZE = Channel::MTU; // Maximum message size in bytes
 
         // Constructor and Destructor
         Communicator(Channel* channel, Address address);
@@ -28,7 +28,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         Message new_message(Message::Type message_type, std::uint32_t type, unsigned int period = 0, const void* value_data = nullptr, const unsigned int value_size = 0);
 
         // Communication methods
-        bool send(const Message* message, const Address& destination = Channel::Address::BROADCAST);
+        bool send(const Message& message, const Address& destination = Channel::Address::BROADCAST);
         bool receive(Message* message);
         
         // Method to close the communicator and unblock any pending receive calls
@@ -55,10 +55,6 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         Address _address;
         std::atomic<bool> _closed;
 };
-
-// Add the definition for the static constexpr member
-template <typename Channel>
-constexpr const unsigned int Communicator<Channel>::MAX_MESSAGE_SIZE  = Channel::MTU;;
 
 /*************** Communicator Implementation *****************/
 template <typename Channel>
@@ -88,18 +84,16 @@ Message Communicator<Channel>::new_message(Message::Type message_type, std::uint
     switch (message_type)
     {
         case Message::Type::INTEREST:
-            return Message(message_type, _address, type, period=period);
-            break;
+            return Message(message_type, _address, type, period);
         case Message::Type::RESPONSE:
-            return Message(message_type, _address, type, value_data=value_data, value_size=value_size);
+            return Message(message_type, _address, type, 0, value_data, value_size);
         default:
             return Message();
-            break;
     }
 }
 
 template <typename Channel>
-bool Communicator<Channel>::send(const Message* message, const Address& destination) {
+bool Communicator<Channel>::send(const Message& message, const Address& destination) {
     db<Communicator>(TRC) << "Communicator<Channel>::send() called!\n";
     
     // Check if communicator is closed before attempting to send
@@ -108,24 +102,19 @@ bool Communicator<Channel>::send(const Message* message, const Address& destinat
         return false;
     }
     
-    if (!message) {
-        db<Communicator>(ERR) << "[Communicator] Null message pointer in send\n";
-        return false;
-    }
-
-    if (message->size() == 0) {
+    if (message.size() == 0) {
         db<Communicator>(ERR) << "[Communicator] message is empty!\n";
         return false;
     }
 
-    if (message->size() > MAX_MESSAGE_SIZE) {
+    if (message.size() > MAX_MESSAGE_SIZE) {
         db<Communicator>(ERR) << "[Communicator] message too big!\n";
         return false; 
     }
     
     try {
         // Use the provided destination address instead of BROADCAST
-        int result = _channel->send(_address, destination, message->data(), message->size());
+        int result = _channel->send(_address, destination, message.data(), message.size());
         db<Communicator>(INF) << "[Communicator] Channel::send() return value " << std::to_string(result) << "\n";
         
         if (result <= 0) {
@@ -180,13 +169,12 @@ bool Communicator<Channel>::receive(Message* message) {
             return false;
         }
 
-        // Sets message content
-        message->setData(static_cast<void*>(temp_data), size);
+        // Deserialize the raw data into the message
+        *message = Message::deserialize(temp_data, size);
 
-        // --- Populate Origin Address --- 
+        // Sets message origin address
         message->origin(from);
         db<Communicator>(INF) << "[Communicator] Received message origin set to: " << from << "\n";
-        // -----------------------------
 
         return true;
     
