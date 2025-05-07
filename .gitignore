@@ -57,3 +57,5 @@ Thumbs.db
 *.log
 tests/logs/*
 termination_logs/*
+out/
+*.svg
