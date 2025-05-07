@@ -58,3 +58,15 @@ The complete identification of communication actors is essential for the proper 
 At this stage, messages must include, in addition to the byte array (now termed the "payload"), at least information about their origin to enable responses:
 
 M = {origin, payload}
+
+### 3. Time-Triggered Publish-Subscribe Messages**
+
+Communication agents, whether components of an autonomous system or autonomous systems communicating with each other, interact through Interest and Response messages in a model similar to publish-subscribe, but without explicit publications. When an agent wants a piece of data, it sends an Interest message (all messages are sent via broadcast) that uniquely identifies the type of data it is interested in. Agents that receive the Interest message and are capable of producing data of that type periodically send Response messages. In this way, each message must carry a code capable of identifying its nature. This can be achieved through the Transducer Electronic Data Sheet (TEDS) codes from the IEEE 1451 standard. Furthermore, each Interest message must specify the period at which agents should send responses, and each relevant agent must manage the interval accordingly. Event-driven communication is not foreseen for this project. At this stage, the temporal synchronization of the machines involved in the communication can be assumed.
+
+Interest messages, therefore, must have the following structure:
+
+I = {origin, type, period} // period in us from now
+
+While Response messages have:
+
+R = {origin, type, value}
