@@ -3,16 +3,14 @@
 
 #include <chrono>
 #include <random>
-#include <unistd.h>
-#include <thread>
 #include <string>
-#include <sstream>
 #include <vector>
 #include <iomanip> // For std::fixed, std::setprecision
-#include <cmath>   // For M_PI if needed, though using numeric literal is safer
+#include <cmath>   // For math operations
 
 #include "component.h"
 #include "debug.h"
+#include "teds.h"
 
 // Constants
 constexpr double PI_INS = 3.14159265358979323846;
@@ -23,131 +21,178 @@ constexpr double DEG_TO_RAD_INS = PI_INS / 180.0;
 class INSComponent : public Component {
     public:
         static const unsigned int PORT;
+        
+        // INS position data structure
+        struct GPSPositionData {
+            double latitude_rad;   // Latitude in radians (-PI/2 to PI/2)
+            double longitude_rad;  // Longitude in radians (-PI to PI)
+            double altitude_m;     // Altitude in meters
+            double velocity_mps;   // Velocity in meters per second
+            double heading_rad;    // Heading in radians (0 to 2*PI)
+            
+            // Serialization helper
+            static std::vector<std::uint8_t> serialize(const GPSPositionData& data) {
+                std::vector<std::uint8_t> result(sizeof(GPSPositionData));
+                std::memcpy(result.data(), &data, sizeof(GPSPositionData));
+                return result;
+            }
+            
+            // Deserialization helper
+            static GPSPositionData deserialize(const std::vector<std::uint8_t>& bytes) {
+                GPSPositionData data;
+                if (bytes.size() >= sizeof(GPSPositionData)) {
+                    std::memcpy(&data, bytes.data(), sizeof(GPSPositionData));
+                }
+                return data;
+            }
+        };
 
         INSComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, VehicleProt* protocol);
 
-        ~INSComponent() override = default;
+        ~INSComponent() = default;
 
         void run() override;
+        
+    protected:
+        // Override produce_data_for_response to generate GPS position data
+        bool produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) override;
 
     private:
         // Random number generation
-        std::random_device _rd;
         std::mt19937 _gen;
         std::uniform_real_distribution<> _lat_dist;
         std::uniform_real_distribution<> _lon_dist;
         std::uniform_real_distribution<> _alt_dist;
         std::uniform_real_distribution<> _vel_dist;
-        std::uniform_real_distribution<> _accel_dist;
-        std::uniform_real_distribution<> _gyro_dist;
         std::uniform_real_distribution<> _heading_dist;
-        std::uniform_int_distribution<> _delay_dist;
+        
+        // Current GPS position data
+        GPSPositionData _current_data;
+        
+        // Update the simulated GPS position data
+        void update_gps_data();
 };
 
 /********** INS Component Implementation ***********/
-const unsigned int INSComponent::PORT = static_cast<unsigned int>(Vehicle::Ports::INS);
+const unsigned int INSComponent::PORT = 104; // Example port for INS
 
-INSComponent::INSComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, VehicleProt* protocol) : Component(vehicle, vehicle_id, name),
-    _gen(_rd()),
+INSComponent::INSComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, VehicleProt* protocol) 
+    : Component(vehicle, vehicle_id, name),
+    _gen(std::random_device{}()),
     // Define realistic ranges for dummy data
     _lat_dist(-PI_INS/2.0, PI_INS/2.0), // Latitude in radians (-90 to +90 deg)
-    _lon_dist(-PI_INS, PI_INS),          // Longitude in radians (-180 to +180 deg)
-    _alt_dist(0.0, 500.0),       // Altitude meters
-    _vel_dist(0.0, 30.0),        // Velocity m/s
-    _accel_dist(-2.0 * G_TO_MS2_INS, 2.0 * G_TO_MS2_INS), // Acceleration m/s^2 (+/- 2g)
-    _gyro_dist(-PI_INS, PI_INS),        // Gyro rad/s (+/- 180 deg/s)
-    _heading_dist(0, 2.0 * PI_INS),  // Heading rad (0 to 360 deg)
-    _delay_dist(90, 110)        // Milliseconds delay (INS typically ~10Hz)
+    _lon_dist(-PI_INS, PI_INS),         // Longitude in radians (-180 to +180 deg)
+    _alt_dist(0.0, 500.0),              // Altitude meters
+    _vel_dist(0.0, 30.0),               // Velocity m/s
+    _heading_dist(0, 2.0 * PI_INS)      // Heading rad (0 to 360 deg)
 {
+    // Initialize as a producer of GPS_POSITION data
+    _produced_data_type = DataTypeId::GPS_POSITION;
+    
     // Sets CSV result header
     open_log_file();
     if (_log_file.is_open()) {
         _log_file.seekp(0);
-        _log_file << "timestamp_us,source_vehicle,message_id,event_type,destination_address,latitude_rad,longitude_rad,altitude_m,velocity_mps,accel_x_mps2,accel_y_mps2,accel_z_mps2,gyro_x_radps,gyro_y_radps,gyro_z_radps,heading_rad\n";
+        _log_file << "timestamp_us,latitude_rad,longitude_rad,altitude_m,velocity_mps,heading_rad\n";
         _log_file.flush();
     }
+    
+    // Initialize with random GPS data
+    update_gps_data();
 
     // Sets own address
-    Address addr(_vehicle->address(), INSComponent::PORT);
+    Address addr(_vehicle->address().paddr(), PORT);
 
     // Sets own communicator
     _communicator = new Comms(protocol, addr);
+    if (_communicator) {
+        _communicator->set_owner_component(this);
+    }
+    
+    db<INSComponent>(INF) << "INS Component initialized as producer of type " 
+                         << static_cast<int>(_produced_data_type) << "\n";
 }
 
 void INSComponent::run() {
-    db<INSComponent>(INF) << "[INSComponent] " << Component::getName() << " thread running.\n";
-
-    // Message counter
-    int counter = 1;
-
+    db<INSComponent>(INF) << "INS component " << getName() << " starting main run loop.\n";
+    
+    // Send REG_PRODUCER message to Gateway
+    Message reg_msg = _communicator->new_message(
+        Message::Type::REG_PRODUCER,
+        _produced_data_type
+    );
+    
+    // Send to Gateway (port 0)
+    Address gateway_addr(_vehicle->address().paddr(), 0);
+    _communicator->send(reg_msg, gateway_addr);
+    
+    db<INSComponent>(INF) << "INS sent REG_PRODUCER for type " 
+                         << static_cast<int>(_produced_data_type) 
+                         << " to Gateway.\n";
+    
+    // Main loop - update sensor data periodically
+    // Note: The actual periodic response sending is handled by producer_response_thread
     while (running()) {
-        auto now_system = std::chrono::system_clock::now();
-        auto time_us_system = std::chrono::duration_cast<std::chrono::microseconds>(now_system.time_since_epoch()).count();
-
-        // Generate dummy INS data
-        double lat = _lat_dist(_gen);
-        double lon = _lon_dist(_gen);
-        double alt = _alt_dist(_gen);
-        double vel = _vel_dist(_gen);
-        double accel_x = _accel_dist(_gen);
-        double accel_y = _accel_dist(_gen);
-        double accel_z = _accel_dist(_gen);
-        double gyro_x = _gyro_dist(_gen);
-        double gyro_y = _gyro_dist(_gen);
-        double gyro_z = _gyro_dist(_gen);
-        double heading = _heading_dist(_gen);
-
-        std::stringstream payload_ss;
-        payload_ss << std::fixed << std::setprecision(8) // High precision for GPS/IMU
-                << "INSData: {"
-                << "Lat: " << lat << ", Lon: " << lon << ", Alt: " << alt
-                << ", Vel: " << std::setprecision(3) << vel // Lower precision for others
-                << ", Accel: [" << accel_x << ", " << accel_y << ", " << accel_z << "]"
-                << ", Gyro: [" << std::setprecision(5) << gyro_x << ", " << gyro_y << ", " << gyro_z << "]"
-                << ", Heading: " << heading
-                << "}";
-        std::string payload = payload_ss.str();
-
-        // Construct the full message string
-        std::string msg = "[" + Component::getName() + "] Vehicle " + std::to_string(vehicle()->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_us_system) + ": " + payload;
-
-        // 1. Send to local ECU1
-        Address ecu1_address(_vehicle->address(), static_cast<unsigned int>(Vehicle::Ports::ECU1)); 
-
-        db<INSComponent>(INF) << "[INSComponent] " << Component::getName() << " sending message " << counter << " to ECU1: " << ecu1_address.to_string() << "\n";
-        int bytes_sent_local = send(msg.c_str(), msg.size(), ecu1_address);
-
-        if (bytes_sent_local > 0) {
-            db<INSComponent>(INF) << "[INSComponent] " << Component::getName() << " message " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
-            
-            _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_local," << ecu1_address.to_string() << "," << std::fixed << std::setprecision(8) << lat << "," << lon << "," << std::setprecision(3) << alt << "," << vel << "," << accel_x << "," << accel_y << "," << accel_z << "," << std::setprecision(5) << gyro_x << "," << gyro_y << "," << gyro_z << "," << heading << "\n";
-            _log_file.flush();
-
-        } else if(running()) {
-            db<INSComponent>(ERR) << "[INSComponent] " << Component::getName() << " failed to send message " << counter << " locally to " << ecu1_address.to_string() << "!\n";
-        }
-
-        // 2. Send to broadcast address
-        db<INSComponent>(TRC) << "[INSComponent] " << Component::getName() << " broadcasting message " << counter << ".\n";
-        int bytes_sent_bcast = send(msg.c_str(), msg.size());
+        // Update simulated GPS data
+        update_gps_data();
         
-        if (bytes_sent_bcast > 0) {
-            db<INSComponent>(INF) << "[INSComponent] " << Component::getName() << " message " << counter << " broadcasted! (" << bytes_sent_bcast << " bytes)\n";
-            // Could log broadcast sends too, but might be redundant with local send log
-            // _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_broadcast," << _broadcast_address << ",...";
-            // _log_file.flush();
-        } else if(running()) {
-            db<INSComponent>(ERR) << "[INSComponent] " << Component::getName() << " failed to broadcast message " << counter << "!\n";
+        // Log current data
+        if (_log_file.is_open()) {
+            auto now = std::chrono::high_resolution_clock::now();
+            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                now.time_since_epoch()).count();
+                
+            _log_file << now_us << ","
+                     << std::fixed << std::setprecision(8)  // High precision for GPS coordinates
+                     << _current_data.latitude_rad << ","
+                     << _current_data.longitude_rad << ","
+                     << std::setprecision(3)  // Lower precision for other metrics
+                     << _current_data.altitude_m << ","
+                     << _current_data.velocity_mps << ","
+                     << std::setprecision(5)  // Medium precision for heading
+                     << _current_data.heading_rad << "\n";
+            _log_file.flush();
         }
-
-        counter++;
-
-        // Wait for a delay
-        int wait_time_ms = _delay_dist(_gen);
-        std::this_thread::sleep_for(std::chrono::milliseconds(wait_time_ms));
+        
+        // Sleep for a bit - actual response rate is determined by consumer periods
+        usleep(100000); // 100ms
     }
+    
+    db<INSComponent>(INF) << "INS component " << getName() << " exiting main run loop.\n";
+}
 
-    db<INSComponent>(INF) << "[" << Component::getName() << "] thread terminated.\n";
+void INSComponent::update_gps_data() {
+    // Generate new simulated data
+    _current_data.latitude_rad = _lat_dist(_gen);
+    _current_data.longitude_rad = _lon_dist(_gen);
+    _current_data.altitude_m = _alt_dist(_gen);
+    _current_data.velocity_mps = _vel_dist(_gen);
+    _current_data.heading_rad = _heading_dist(_gen);
+    
+    // Convert to degrees for logging (more human-readable)
+    double lat_deg = _current_data.latitude_rad * 180.0 / PI_INS;
+    double lon_deg = _current_data.longitude_rad * 180.0 / PI_INS;
+    double heading_deg = _current_data.heading_rad * 180.0 / PI_INS;
+    
+    db<INSComponent>(TRC) << "INS updated position data: lat=" 
+                         << std::fixed << std::setprecision(6) << lat_deg << "°, lon="
+                         << lon_deg << "°, alt=" << std::setprecision(1)
+                         << _current_data.altitude_m << "m, vel="
+                         << _current_data.velocity_mps << "m/s, heading="
+                         << std::setprecision(1) << heading_deg << "°\n";
+}
+
+bool INSComponent::produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) {
+    // Only respond to requests for our produced data type
+    if (type != DataTypeId::GPS_POSITION) {
+        return false;
+    }
+    
+    // Serialize the current GPS position data
+    out_value = GPSPositionData::serialize(_current_data);
+    
+    db<INSComponent>(INF) << "INS produced position data with size " << out_value.size() << " bytes\n";
+    return true;
 }
 
 #endif // INS_COMPONENT_H 

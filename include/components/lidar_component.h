@@ -1,129 +1,172 @@
 #ifndef LIDAR_COMPONENT_H
 #define LIDAR_COMPONENT_H
 
-
 #include <chrono>
-#include <random>
-#include <unistd.h>
-#include <thread>
 #include <string>
-#include <sstream>
+#include <array>
+#include <cmath>
+#include <random>
 #include <vector>
-#include <iomanip> // For std::fixed, std::setprecision
 
 #include "component.h"
 #include "debug.h"
+#include "teds.h"
 
 class LidarComponent : public Component {
     public:
+        // Define the port
         static const unsigned int PORT;
+        
+        // Lidar data structure
+        struct ObstacleDistanceData {
+            float distance_meters;
+            float angle_degrees;
+            uint8_t confidence; // 0-100
+            
+            // Serialization helper
+            static std::vector<std::uint8_t> serialize(const ObstacleDistanceData& data) {
+                std::vector<std::uint8_t> result(sizeof(ObstacleDistanceData));
+                std::memcpy(result.data(), &data, sizeof(ObstacleDistanceData));
+                return result;
+            }
+            
+            // Deserialization helper
+            static ObstacleDistanceData deserialize(const std::vector<std::uint8_t>& bytes) {
+                ObstacleDistanceData data;
+                if (bytes.size() >= sizeof(ObstacleDistanceData)) {
+                    std::memcpy(&data, bytes.data(), sizeof(ObstacleDistanceData));
+                }
+                return data;
+            }
+        };
 
-        LidarComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, VehicleProt* protocol);
+        LidarComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
+                       const std::string& name, VehicleProt* protocol);
 
-        ~LidarComponent() override = default;
+        ~LidarComponent() = default;
 
         void run() override;
-
+        
+    protected:
+        // Override produce_data_for_response to generate lidar data
+        bool produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) override;
+        
     private:
-        // Random number generation
-        std::random_device _rd;
-        std::mt19937 _gen;
-        std::uniform_real_distribution<> _coord_dist;
-        std::uniform_real_distribution<> _intensity_dist;
-        std::uniform_int_distribution<> _num_points_dist;
-        std::uniform_int_distribution<> _delay_dist;
+        // Random number generator for simulated data
+        std::mt19937 _rng;
+        std::uniform_real_distribution<float> _dist_dist; // Distance distribution
+        std::uniform_real_distribution<float> _angle_dist; // Angle distribution 
+        std::uniform_int_distribution<uint8_t> _confidence_dist; // Confidence distribution
+        
+        // Current obstacle data
+        ObstacleDistanceData _current_data;
+        
+        // Update the simulated obstacle data
+        void update_obstacle_data();
 };
 
-/********** Lidar Component Implementation ***********/
-const unsigned int LidarComponent::PORT = static_cast<unsigned int>(Vehicle::Ports::LIDAR);
+/******** Lidar Component Implementation *******/
+const unsigned int LidarComponent::PORT = 101; // Example port for Lidar
 
-LidarComponent::LidarComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, VehicleProt* protocol) : Component(vehicle, vehicle_id, name),
-    _gen(_rd()),
-    _coord_dist(-50.0, 50.0),   // Example Lidar range meters
-    _intensity_dist(0.1, 1.0), // Example intensity value
-    _num_points_dist(20, 50), // Number of points per scan
-    _delay_dist(80, 180)      // Milliseconds delay between scans
+LidarComponent::LidarComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
+                              const std::string& name, VehicleProt* protocol) 
+    : Component(vehicle, vehicle_id, name), 
+      _rng(std::random_device{}()),
+      _dist_dist(0.5f, 50.0f),       // 0.5 to 50 meters
+      _angle_dist(-180.0f, 180.0f),  // -180 to 180 degrees
+      _confidence_dist(60, 100)      // 60% to 100% confidence
 {
-    // Sets CSV result header
+    // Initialize as a producer of OBSTACLE_DISTANCE data
+    _produced_data_type = DataTypeId::OBSTACLE_DISTANCE;
+    
+    // Set up logging
     open_log_file();
     if (_log_file.is_open()) {
         _log_file.seekp(0);
-        _log_file << "timestamp_us,source_vehicle,message_id,event_type,destination_address,payload\n";
+        _log_file << "timestamp_us,distance_m,angle_deg,confidence\n";
         _log_file.flush();
     }
 
-    // Sets own address
-    Address addr(_vehicle->address(), LidarComponent::PORT);
-
-    // Sets own communicator
+    // Initialize with a random obstacle data
+    update_obstacle_data();
+    
+    // Set up communicator with lidar port
+    Address addr(_vehicle->address().paddr(), PORT);
     _communicator = new Comms(protocol, addr);
+    if (_communicator) {
+        _communicator->set_owner_component(this);
+    }
+    
+    db<LidarComponent>(INF) << "Lidar Component initialized as producer of type " 
+                           << static_cast<int>(_produced_data_type) << "\n";
 }
 
 void LidarComponent::run() {
-    db<LidarComponent>(INF) << "[LidarComponent] " << Component::getName() << " thread running.\n";
-
-    // Message counter
-    int counter = 1;
-
+    db<LidarComponent>(INF) << "Lidar component " << getName() << " starting main run loop.\n";
+    
+    // Send REG_PRODUCER message to Gateway
+    Message reg_msg = _communicator->new_message(
+        Message::Type::REG_PRODUCER,
+        _produced_data_type
+    );
+    
+    // Send to Gateway (port 0)
+    Address gateway_addr(_vehicle->address().paddr(), 0);
+    _communicator->send(reg_msg, gateway_addr);
+    
+    db<LidarComponent>(INF) << "Lidar sent REG_PRODUCER for type " 
+                           << static_cast<int>(_produced_data_type) 
+                           << " to Gateway.\n";
+    
+    // Main loop - update sensor data periodically
+    // Note: The actual periodic response sending is handled by producer_response_thread
     while (running()) {
-        auto now_system = std::chrono::system_clock::now();
-        auto time_us_system = std::chrono::duration_cast<std::chrono::microseconds>(now_system.time_since_epoch()).count();
-
-        // Generate dummy point cloud data (simplified)
-        std::stringstream payload_ss;
-        payload_ss << std::fixed << std::setprecision(3); // Use more precision for point clouds
-        int num_points = _num_points_dist(_gen);
-        payload_ss << "PointCloud: {num_points: " << num_points << ", points: [";
-        for (int i = 0; i < num_points; ++i) {
-            double x = _coord_dist(_gen);
-            double y = _coord_dist(_gen);
-            double z = _coord_dist(_gen) / 5.0; // Smaller Z range typically
-            double intensity = _intensity_dist(_gen);
-            payload_ss << (i > 0 ? ", " : "") << "[" << x << ", " << y << ", " << z << ", " << intensity << "]";
-        }
-
-        payload_ss << "]}";
-        std::string payload = payload_ss.str();
-
-        // Construct the full message string
-        std::string msg = "[" + Component::getName() + "] Vehicle " + std::to_string(vehicle()->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_us_system) + ": " + payload;
-
-        // 1. Send to local ECU2
-        Address ecu2_address(_vehicle->address(), static_cast<unsigned int>(Vehicle::Ports::ECU2));
-
-        db<LidarComponent>(INF) << "[LidarComponent] " << Component::getName() << " sending message " << counter << " to ECU2: " << ecu2_address.to_string() << "\n";
-        int bytes_sent_local = send(msg.c_str(), msg.size(), ecu2_address);
-
-        if (bytes_sent_local > 0) {
-            db<LidarComponent>(INF) << "[LidarComponent] " << Component::getName() << " message " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
-            _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_local," << ecu2_address.to_string() << ",\"" << "PointCloud: " << num_points << " points" << "\"\n";
+        // Update simulated obstacle data
+        update_obstacle_data();
+        
+        // Log current data
+        if (_log_file.is_open()) {
+            auto now = std::chrono::high_resolution_clock::now();
+            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                now.time_since_epoch()).count();
+                
+            _log_file << now_us << ","
+                     << _current_data.distance_meters << ","
+                     << _current_data.angle_degrees << ","
+                     << static_cast<int>(_current_data.confidence) << "\n";
             _log_file.flush();
-
-        } else if(running()) {
-            db<LidarComponent>(ERR) << "[LidarComponent] " << Component::getName() << " failed to send message " << counter << " locally to " << ecu2_address.to_string() << "!\n";
         }
-
-
-        // 2. Send to broadcast address
-        db<LidarComponent>(INF) << "[LidarComponent] " << Component::getName() << " broadcasting message " << counter << ".\n";
-        int bytes_sent_bcast = send(msg.c_str(), msg.size());
-
-        if (bytes_sent_bcast > 0) {
-            db<LidarComponent>(INF) << "[" << Component::getName() << "] msg " << counter << " broadcast! (" << bytes_sent_bcast << " bytes)\n";
-            _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_broadcast," << Address::BROADCAST.to_string() << ",\"" << "PointCloud: " << num_points << " points" << "\"\n"; // Log summary
-            _log_file.flush();
-        } else if(running()) {
-            db<LidarComponent>(ERR) << "[LidarComponent] " << Component::getName() << " failed to broadcast message " << counter << "!\n";
-        }
-
-        counter++;
-
-        // Wait for a random delay
-        int wait_time_ms = _delay_dist(_gen);
-        std::this_thread::sleep_for(std::chrono::milliseconds(wait_time_ms));
+        
+        // Sleep for a bit - actual response rate is determined by consumer periods
+        usleep(100000); // 100ms
     }
+    
+    db<LidarComponent>(INF) << "Lidar component " << getName() << " exiting main run loop.\n";
+}
 
-    db<LidarComponent>(INF) << "[LidarComponent] " << Component::getName() << " thread terminated.\n";
+void LidarComponent::update_obstacle_data() {
+    // Generate new simulated data
+    _current_data.distance_meters = _dist_dist(_rng);
+    _current_data.angle_degrees = _angle_dist(_rng);
+    _current_data.confidence = _confidence_dist(_rng);
+    
+    db<LidarComponent>(TRC) << "Lidar updated obstacle data: dist=" 
+                           << _current_data.distance_meters << "m, angle="
+                           << _current_data.angle_degrees << "°, conf="
+                           << static_cast<int>(_current_data.confidence) << "%\n";
+}
+
+bool LidarComponent::produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) {
+    // Only respond to requests for our produced data type
+    if (type != DataTypeId::OBSTACLE_DISTANCE) {
+        return false;
+    }
+    
+    // Serialize the current obstacle data
+    out_value = ObstacleDistanceData::serialize(_current_data);
+    
+    db<LidarComponent>(INF) << "Lidar produced data with size " << out_value.size() << " bytes\n";
+    return true;
 }
 
 #endif // LIDAR_COMPONENT_H 

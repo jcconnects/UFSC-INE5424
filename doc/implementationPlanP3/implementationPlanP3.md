@@ -30,6 +30,7 @@ This document outlines the implementation plan for Project Stage 3 (P3), focusin
     *   When a producer receives multiple `INTEREST` messages for its `DataTypeId` with different periods, it will calculate the **Greatest Common Divisor (GCD)** of all active requested periods.
     *   The producer will then send `RESPONSE` messages (logical broadcast) at this GCD period.
     *   A dedicated thread within the producer component will manage this periodic sending.
+    *   The producer will detect and process `INTEREST` messages for its `_produced_data_type` directly in the `component_dispatcher_routine`, which will update the list of requested periods and recalculate the GCD.
 
 3.  **Consumer Behavior:**
     *   A consumer component can be interested in multiple `DataTypeId`s, each with a specific desired period.
@@ -41,6 +42,7 @@ This document outlines the implementation plan for Project Stage 3 (P3), focusin
     *   The `GatewayComponent` will maintain a registry mapping `DataTypeId`s to the internal `Protocol::Port`s of the components that produce them.
     *   Consumer components will send `INTEREST` messages as a logical broadcast to a fixed port, **Port 0**, targeting the `GatewayComponent` (physical destination: Ethernet broadcast).
     *   The `GatewayComponent` (listening on Port 0 of its vehicle's MAC address) will receive these *external* `INTEREST` messages.
+    *   The `GatewayComponent` will override the `component_dispatcher_routine` method to directly process incoming `REG_PRODUCER` and `INTEREST` messages without relying on typed handlers.
     *   Upon receiving an external `INTEREST` for a `DataTypeId X`:
         *   The `GatewayComponent` will consult its registry.
         *   For each registered internal `Protocol::Port` of a producer for `DataTypeId X`, the Gateway will send a *new, targeted* `INTEREST` message (logical unicast) directly to that `ProducerComponent`'s `Port` (on the Gateway's own vehicle MAC address).
@@ -128,6 +130,8 @@ The placement of message filtering mechanisms is critical for balancing efficien
         *   `void component_dispatcher_routine();` (static, takes `this` as arg)
         *   Protected method:
             `void register_interest_handler(DataTypeId type, std::uint32_t period_us, std::function<void(const Message&)> callback);`
+        *   **Updated Component Dispatcher Routine:**
+            The `component_dispatcher_routine` will now check for `INTEREST` messages that match a producer's `_produced_data_type` and handle them directly by updating `_received_interest_periods` and calling `update_gcd_period()`.
     *   **Specifically for Consumers (managed by `register_interest_handler`):**
         *   `struct InterestRequest { DataTypeId type; std::uint32_t period_us; std::uint64_t last_accepted_response_time_us; bool interest_sent; };`
         *   `std::vector<InterestRequest> _active_interests;` (This list will be accessible by the `Communicator` for filtering).
@@ -155,6 +159,17 @@ The placement of message filtering mechanisms is critical for balancing efficien
     *   Loop while `_running`.
     *   `Message raw_msg;`
     *   `if (_communicator->receive(&raw_msg)) { // This receive is now filtered by Communicator`
+        *   For producers: Check if this is an `INTEREST` message for this producer's `_produced_data_type`:
+            ```cpp
+            if (_produced_data_type != DataTypeId::UNKNOWN && 
+                message.message_type() == Message::Type::INTEREST &&
+                message.unit_type() == _produced_data_type) {
+                
+                // Add this period to our received_interest_periods if not already present
+                _received_interest_periods.push_back(message.period());
+                update_gcd_period();
+            }
+            ```
         *   `Message* heap_msg = new Message(raw_msg);`
         *   `if (!_internal_typed_observed.notify(heap_msg->unit_type(), heap_msg)) { delete heap_msg; }`
     *   `}`
@@ -231,37 +246,54 @@ The placement of message filtering mechanisms is critical for balancing efficien
 
 *   **Add Internal Registry:**
     *   `std::map<DataTypeId, std::vector<Protocol::Port>> _producer_registry;`
-*   Constructor:
+*   **Constructor:**
     *   Ensure its `_communicator` is initialized to listen on Port 0.
         `_communicator = new Comms(_vehicle->protocol(), VehicleProt::Address(_vehicle->address().paddr(), 0));`
-*   `run()` or equivalent logic in `component_dispatcher_routine`:
-    *   Receives messages via its `_communicator`.
-    *   **Handle Producer Registration:**
-        *   If an incoming `Message reg_msg` is of `Message::Type::REG_PRODUCER`:
-            *   `DataTypeId produced_type = static_cast<DataTypeId>(reg_msg.unit_type());`
-            *   `Protocol::Port producer_port = reg_msg.origin().port();`
-            *   `_producer_registry[produced_type].push_back(producer_port);`
-            *   `// Optional: Add logic to prevent duplicate port entries for the same type.`
-            *   `db<GatewayComponent>(INF) << "Registered producer for type " << (int)produced_type << " on port " << producer_port << " from origin " << reg_msg.origin().to_string() <<".
+*   **Override `component_dispatcher_routine`:**
+    * The Gateway will override the base `component_dispatcher_routine` to directly process incoming messages based on their type, rather than relying on typed handlers.
+    * This ensures the Gateway can handle all `REG_PRODUCER` and `INTEREST` messages without needing to register handlers for each possible `DataTypeId`.
+    ```cpp
+    void GatewayComponent::component_dispatcher_routine() override {
+        // Receive messages
+        while (_dispatcher_running.load()) {
+            // ... receive message ...
+            
+            // Process based on message type
+            if (message.message_type() == Message::Type::REG_PRODUCER) {
+                handle_reg_producer(message);
+            } 
+            else if (message.message_type() == Message::Type::INTEREST) {
+                handle_interest(message);
+            }
+        }
+    }
+    ```
+*   **Handle Producer Registration:**
+    *   If an incoming `Message reg_msg` is of `Message::Type::REG_PRODUCER`:
+        *   `DataTypeId produced_type = static_cast<DataTypeId>(reg_msg.unit_type());`
+        *   `Protocol::Port producer_port = reg_msg.origin().port();`
+        *   `_producer_registry[produced_type].push_back(producer_port);`
+        *   `// Optional: Add logic to prevent duplicate port entries for the same type.`
+        *   `db<GatewayComponent>(INF) << "Registered producer for type " << (int)produced_type << " on port " << producer_port << " from origin " << reg_msg.origin().to_string() <<".
 ";`
-    *   **Handle External `INTEREST` and Relay Targetedly:**
-        *   If an incoming `Message external_interest_msg` is of `Message::Type::INTEREST`:
-            *   `DataTypeId requested_type = static_cast<DataTypeId>(external_interest_msg.unit_type());`
-            *   `unsigned int period = external_interest_msg.period();`
-            *   `db<GatewayComponent>(INF) << "Gateway received EXTERNAL INTEREST for type " << (int)requested_type << " from " << external_interest_msg.origin().to_string() << ".
+*   **Handle External `INTEREST` and Relay Targetedly:**
+    *   If an incoming `Message external_interest_msg` is of `Message::Type::INTEREST`:
+        *   `DataTypeId requested_type = static_cast<DataTypeId>(external_interest_msg.unit_type());`
+        *   `unsigned int period = external_interest_msg.period();`
+        *   `db<GatewayComponent>(INF) << "Gateway received EXTERNAL INTEREST for type " << (int)requested_type << " from " << external_interest_msg.origin().to_string() << ".
 ";`
-            *   `if (_producer_registry.count(requested_type)) {`
-                *   `for (Protocol::Port target_producer_port : _producer_registry[requested_type]) {`
-                    *   `Message internal_interest = _communicator->new_message(Message::Type::INTEREST, static_cast<std::uint32_t>(requested_type), period);`
-                    *   `// Target is specific producer port on own vehicle's MAC`
-                    *   `_communicator->send(internal_interest, Protocol::Address(_vehicle->address().paddr(), target_producer_port));`
-                    *   `db<GatewayComponent>(INF) << "Gateway relayed INTEREST for type " << (int)requested_type << " to internal port " << target_producer_port << ".
-";`
-                *   `}`
-            *   `} else {`
-                *   `db<GatewayComponent>(WRN) << "Gateway: No local producer registered for type " << (int)requested_type << ".
+        *   `if (_producer_registry.count(requested_type)) {`
+            *   `for (Protocol::Port target_producer_port : _producer_registry[requested_type]) {`
+                *   `Message internal_interest = _communicator->new_message(Message::Type::INTEREST, static_cast<std::uint32_t>(requested_type), period);`
+                *   `// Target is specific producer port on own vehicle's MAC`
+                *   `_communicator->send(internal_interest, Protocol::Address(_vehicle->address().paddr(), target_producer_port));`
+                *   `db<GatewayComponent>(INF) << "Gateway relayed INTEREST for type " << (int)requested_type << " to internal port " << target_producer_port << ".
 ";`
             *   `}`
+        *   `} else {`
+            *   `db<GatewayComponent>(WRN) << "Gateway: No local producer registered for type " << (int)requested_type << ".
+";`
+        *   `}`
 
 ### 3.5. `protocol.h`
 

@@ -35,7 +35,9 @@ GComm -> GComm : Deserialize "reg_msg_obj" from buffer.\nFilter: "msg_type == RE
 GComm -> GDisp : Queue "eth_frame_reg_buf" by calling "Observer::update(c,buf)".
 
 GDisp -> GComm : "receive(reg_msg_obj_final)"
-GDisp -> GComp : Process registration:\n"_producer_registry[reg_msg_obj_final.unit_type()].push_back(reg_msg_obj_final.origin().port())"
+GDisp -> GDisp : Identify message type: REG_PRODUCER
+GDisp -> GComp : Directly call "handle_reg_producer(reg_msg_obj_final)"
+GComp -> GComp : Process registration:\n"_producer_registry[reg_msg_obj_final.unit_type()].push_back(reg_msg_obj_final.origin().port())"
 note right GComp: Stores mapping: "DataTypeId_Produced -> Port_Producer"
 
 == Consumer Sends EXTERNAL INTEREST ==
@@ -58,7 +60,9 @@ GComm -> GComm : Deserialize "ext_interest_msg_obj" from buffer.\nFilter: "msg_t
 GComm -> GDisp : Queue "eth_frame_ext_interest_buf" by calling "Observer::update(c,buf)".
 
 GDisp -> GComm : "receive(ext_interest_obj_final)"
-GDisp -> GComp : Process external INTEREST:\n"requested_type = ext_interest_obj_final.unit_type()"\n"period = ext_interest_obj_final.period()"
+GDisp -> GDisp : Identify message type: INTEREST
+GDisp -> GComp : Directly call "handle_interest(ext_interest_obj_final)"
+GComp -> GComp : Process external INTEREST:\n"requested_type = ext_interest_obj_final.unit_type()"\n"period = ext_interest_obj_final.period()"
 GComp -> GComp : Lookup "requested_type" in "_producer_registry"
 
 loop for each "target_producer_port" found in registry for "requested_type"
@@ -73,9 +77,9 @@ loop for each "target_producer_port" found in registry for "requested_type"
     PComm -> PDisp : If filters pass, Queue "buf_internal_interest" for PDisp by calling "Observer::update(c,buf)".
 
     PDisp -> PComm : "receive(final_internal_interest_obj)"
-    PDisp -> PComp : Process "final_internal_interest_obj".
-    PComp -> PComp : Add "period" to "_received_interest_periods".
-    PComp -> PComp : "update_gcd_period()".
+    PDisp -> PDisp : Directly check message type (INTEREST) and unit_type against _produced_data_type
+    PDisp -> PComp : If match, add period to "PComp._received_interest_periods" and call "update_gcd_period()"
+    PComp -> PComp : Update "_current_gcd_period_us" using GCD algorithm
     PComp -> PRespT : (Re)start or Signal "_producer_response_thread" with new GCD.
 end
 

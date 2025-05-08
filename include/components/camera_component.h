@@ -2,134 +2,176 @@
 #define CAMERA_COMPONENT_H
 
 #include <chrono>
-#include <random>
-#include <unistd.h> // For usleep
-#include <thread>   // For std::this_thread::sleep_for
 #include <string>
-#include <sstream>  // For string formatting
 #include <vector>
-#include <iomanip> // For std::fixed, std::setprecision
+#include <random>
 
 #include "component.h"
 #include "debug.h"
-
+#include "teds.h"
 
 class CameraComponent : public Component {
     public:
+        // Define the port
         static const unsigned int PORT;
+        
+        // Camera temperature data structure
+        struct TemperatureData {
+            float temperature_celsius;
+            float humidity_percent;
+            uint8_t status; // 0-255 (0=error, 1=normal, 2=warning, 3=critical)
+            
+            // Serialization helper
+            static std::vector<std::uint8_t> serialize(const TemperatureData& data) {
+                std::vector<std::uint8_t> result(sizeof(TemperatureData));
+                std::memcpy(result.data(), &data, sizeof(TemperatureData));
+                return result;
+            }
+            
+            // Deserialization helper
+            static TemperatureData deserialize(const std::vector<std::uint8_t>& bytes) {
+                TemperatureData data;
+                if (bytes.size() >= sizeof(TemperatureData)) {
+                    std::memcpy(&data, bytes.data(), sizeof(TemperatureData));
+                }
+                return data;
+            }
+        };
 
-        CameraComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, VehicleProt* protocol);
+        CameraComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
+                       const std::string& name, VehicleProt* protocol);
 
-        ~CameraComponent() override = default;
+        ~CameraComponent() = default;
 
         void run() override;
-
+        
+    protected:
+        // Override produce_data_for_response to generate temperature data
+        bool produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) override;
+        
     private:
-        // Random number generation for dummy data and delay
-        std::random_device _rd;
-        std::mt19937 _gen;
-        std::uniform_real_distribution<> _coord_dist;
-        std::uniform_real_distribution<> _size_dist;
-        std::uniform_int_distribution<> _label_dist;
-        std::uniform_int_distribution<> _delay_dist;
-
-        const std::vector<std::string> _labels = {"car", "pedestrian", "bicycle", "traffic_light"};
+        // Random number generator for simulated data
+        std::mt19937 _rng;
+        std::uniform_real_distribution<float> _temp_dist;  // Temperature distribution
+        std::uniform_real_distribution<float> _humidity_dist;  // Humidity distribution
+        std::uniform_int_distribution<uint8_t> _status_dist;  // Status distribution
+        
+        // Current temperature data
+        TemperatureData _current_data;
+        
+        // Update the simulated temperature data
+        void update_temperature_data();
 };
 
-/******** Camera Component Implementation *********/
-const unsigned int CameraComponent::PORT = static_cast<unsigned int>(Vehicle::Ports::CAMERA);
+/******** Camera Component Implementation *******/
+const unsigned int CameraComponent::PORT = 102; // Example port for Camera
 
-CameraComponent::CameraComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, VehicleProt* protocol) : Component(vehicle, vehicle_id, name),
-    _gen(_rd()),
-    _coord_dist(0.0, 1920.0), // Example camera resolution width
-    _size_dist(50.0, 300.0),   // Example bounding box size
-    _label_dist(0, _labels.size() - 1),
-    _delay_dist(50, 150) // Milliseconds delay between sends
+CameraComponent::CameraComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
+                                const std::string& name, VehicleProt* protocol) 
+    : Component(vehicle, vehicle_id, name),
+      _rng(std::random_device{}()),
+      _temp_dist(35.0f, 80.0f),      // 35-80°C (cameras can get hot)
+      _humidity_dist(30.0f, 70.0f),  // 30-70% humidity
+      _status_dist(1, 3)             // Status: 1=normal, 2=warning, 3=critical
 {
-    // Sets CSV result header
+    // Initialize as a producer of TEMPERATURE_SENSOR data
+    _produced_data_type = DataTypeId::TEMPERATURE_SENSOR;
+    
+    // Set up logging
     open_log_file();
     if (_log_file.is_open()) {
         _log_file.seekp(0);
-        _log_file << "timestamp_us,source_vehicle,message_id,event_type,destination_address,payload\n";
+        _log_file << "timestamp_us,temperature_celsius,humidity_percent,status\n";
         _log_file.flush();
     }
 
-    // Sets own address
-    Address addr(_vehicle->address(), CameraComponent::PORT);
-
-    // Sets own communicator
+    // Initialize with a random temperature data
+    update_temperature_data();
+    
+    // Set up communicator with camera port
+    Address addr(_vehicle->address().paddr(), PORT);
     _communicator = new Comms(protocol, addr);
+    if (_communicator) {
+        _communicator->set_owner_component(this);
+    }
+    
+    db<CameraComponent>(INF) << "Camera Component initialized as producer of type " 
+                           << static_cast<int>(_produced_data_type) << "\n";
 }
 
 void CameraComponent::run() {
-    db<CameraComponent>(INF) << "[CameraComponent] " << Component::getName() << " thread running.\n";
+    db<CameraComponent>(INF) << "Camera component " << getName() << " starting main run loop.\n";
     
-    // Message counter
-    int counter = 1;
-
+    // Send REG_PRODUCER message to Gateway
+    Message reg_msg = _communicator->new_message(
+        Message::Type::REG_PRODUCER,
+        _produced_data_type
+    );
+    
+    // Send to Gateway (port 0)
+    Address gateway_addr(_vehicle->address().paddr(), 0);
+    _communicator->send(reg_msg, gateway_addr);
+    
+    db<CameraComponent>(INF) << "Camera sent REG_PRODUCER for type " 
+                           << static_cast<int>(_produced_data_type) 
+                           << " to Gateway.\n";
+    
+    // Main loop - update sensor data periodically
+    // Note: The actual periodic response sending is handled by producer_response_thread
     while (running()) {
-        auto now_system = std::chrono::system_clock::now();
-        auto time_us_system = std::chrono::duration_cast<std::chrono::microseconds>(now_system.time_since_epoch()).count();
-
-        // Generate dummy detection data
-        std::stringstream payload_ss;
-        payload_ss << std::fixed << std::setprecision(2);
-        int num_detections = _label_dist(_gen) + 1; // Generate 1 to N detections
-        payload_ss << "Detections: [";
-        for (int i = 0; i < num_detections; ++i) {
-            double x = _coord_dist(_gen);
-            double y = _coord_dist(_gen);
-            double w = _size_dist(_gen);
-            double h = _size_dist(_gen);
-            std::string label = _labels[_label_dist(_gen)];
-            payload_ss << (i > 0 ? ", " : "") << "{label: " << label << ", bbox: [" << x << ", " << y << ", " << w << ", " << h << "]}";
-        }
-        payload_ss << "]";
-        std::string payload = payload_ss.str();
-
-        // Construct the full message string including metadata
-        std::string msg = "[" + Component::getName() + "] Vehicle " + std::to_string(vehicle()->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_us_system) + ": " + payload;
-
-        // 1. Send to local ECU1
-        Address ecu1_address(_vehicle->address(), static_cast<unsigned int>(Vehicle::Ports::ECU1));
-        db<CameraComponent>(INF) << "[CameraComponent] " << Component::getName() << " sending message " << counter << " to ECU1: " << ecu1_address.to_string() << "\n";
-
+        // Update simulated temperature data
+        update_temperature_data();
         
-        int bytes_sent_local = send(msg.c_str(), msg.size(), ecu1_address);
-
-        if (bytes_sent_local > 0) {
-            db<CameraComponent>(INF) << "[CameraComponent] " << Component::getName() << " message " << counter << " sent locally! (" << bytes_sent_local << " bytes)\n";
-
-            // File is already open (on constructor)
-            _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_local," << ecu1_address.to_string() << ",\"" << payload << "\"\n";
+        // Log current data
+        if (_log_file.is_open()) {
+            auto now = std::chrono::high_resolution_clock::now();
+            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                now.time_since_epoch()).count();
+                
+            _log_file << now_us << ","
+                     << _current_data.temperature_celsius << ","
+                     << _current_data.humidity_percent << ","
+                     << static_cast<int>(_current_data.status) << "\n";
             _log_file.flush();
+        }
         
-        } else if (running()){ // Only log error if still supposed to be running
-            db<CameraComponent>(ERR) << "[CameraComponent] " << Component::getName() << " failed to send message " << counter << " locally to " << ecu1_address.to_string() << "!\n";
-        }
-
-        // 2. Send to broadcast address
-        db<CameraComponent>(INF) << "[CameraComponent] " << Component::getName() << "] broadcasting message " << counter << ".\n";
-        int bytes_sent_bcast = send(msg.c_str(), msg.size());
-
-        if (bytes_sent_bcast > 0) {
-            db<CameraComponent>(INF) << "[CameraComponent] " << Component::getName() << " message " << counter << " broadcasted! (" << bytes_sent_bcast << " bytes)\n";
-
-            // File is already open (on constructor)
-            _log_file << time_us_system << "," << vehicle()->id() << "," << counter << ",send_broadcast," << Address::BROADCAST.to_string() << ",\"" << payload << "\"\n";
-            _log_file.flush();
-
-        } else if (running()) {
-            db<CameraComponent>(ERR) << "[CameraComponent] " << Component::getName() << " failed to broadcast message " << counter << "!\n";
-        }
-
-        counter++;
-
-        // Wait for a random delay
-        int wait_time_ms = _delay_dist(_gen);
-        std::this_thread::sleep_for(std::chrono::milliseconds(wait_time_ms));
+        // Sleep for a bit - actual response rate is determined by consumer periods
+        usleep(150000); // 150ms
     }
-
-    db<CameraComponent>(INF) << "[" << Component::getName() << "] thread terminated.\n";
+    
+    db<CameraComponent>(INF) << "Camera component " << getName() << " exiting main run loop.\n";
 }
+
+void CameraComponent::update_temperature_data() {
+    // Generate new simulated data
+    _current_data.temperature_celsius = _temp_dist(_rng);
+    _current_data.humidity_percent = _humidity_dist(_rng);
+    _current_data.status = _status_dist(_rng);
+    
+    // Adjust status based on temperature (higher temp = higher chance of warning/critical)
+    if (_current_data.temperature_celsius > 70.0f) {
+        _current_data.status = 3; // Critical
+    } else if (_current_data.temperature_celsius > 60.0f) {
+        _current_data.status = 2; // Warning
+    }
+    
+    db<CameraComponent>(TRC) << "Camera updated temperature data: temp=" 
+                           << _current_data.temperature_celsius << "°C, humidity="
+                           << _current_data.humidity_percent << "%, status="
+                           << static_cast<int>(_current_data.status) << "\n";
+}
+
+bool CameraComponent::produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) {
+    // Only respond to requests for our produced data type
+    if (type != DataTypeId::TEMPERATURE_SENSOR) {
+        return false;
+    }
+    
+    // Serialize the current temperature data
+    out_value = TemperatureData::serialize(_current_data);
+    
+    db<CameraComponent>(INF) << "Camera produced temperature data with size " << out_value.size() << " bytes\n";
+    return true;
+}
+
 #endif // CAMERA_COMPONENT_H 
