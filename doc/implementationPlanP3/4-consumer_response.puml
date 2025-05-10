@@ -1,0 +1,36 @@
+@startuml Consumer Response Flow
+
+title Consumer Receives Response
+
+participant ConsumerComponent as CComp
+participant CComp_Dispatcher as CDisp <<Thread>>
+participant CComp_Comm as CComm <<Communicator>>
+participant CComp_Handler as CHandler <<TypedDataHandler>>
+participant ProtocolLayer as Proto
+participant NICLayer as NIC
+participant Network
+
+== Consumer Receives RESPONSE ==
+
+Network -> NIC : (Consumer's NIC) Receives Frame
+NIC -> Proto : (Consumer's Protocol) "update(PROTO_ID, eth_frame_response_buf)"
+Proto -> CComm : "update(CComp_Port, eth_frame_response_buf)"
+CComm -> CComm : Deserialize "response_msg_temp" from buffer.
+CComm -> CComm : Filter 1 (Type): Check "response_msg_temp.type" against "CComp._active_interests".
+CComm -> CComm : Filter 2 (Period): "current_time - req.last_accepted_response_time_us >= req.period_us".
+alt Filter 1 & 2 Passed
+    CComm -> CDisp : Queue "eth_frame_response_buf" for CDisp via "Observer::update(c,buf)".
+else Filter Failed
+    CComm -> Proto : "free(eth_frame_response_buf)"
+end
+
+CDisp -> CComm : "receive(filtered_response_obj)"
+CDisp -> CDisp : "heap_msg = new Message(filtered_response_obj)"
+CDisp -> CComp : "_internal_typed_observed.notify(filtered_response_obj.type(), heap_msg)"
+CComp -> CHandler : (for DataTypeId X) "update(DataTypeId X, heap_msg)"
+
+CHandler -> CHandler : "processing_loop()" unblocks, gets "heap_msg".
+CHandler -> CComp : "callback_func(*heap_msg)" executed.
+CHandler -> CHandler : "delete heap_msg".
+
+@enduml 

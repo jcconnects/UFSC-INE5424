@@ -1,0 +1,63 @@
+@startuml Consumer External Interest Flow
+
+title Consumer Sends External Interest
+
+participant Vehicle as Veh
+participant ConsumerComponent as CComp
+participant CComp_Handler as CHandler <<TypedDataHandler>>
+participant CComp_Comm as CComm <<Communicator>>
+participant GatewayComponent as GComp
+participant GComp_Dispatcher as GDisp <<Thread>>
+participant GComp_Comm as GComm <<Communicator>>
+participant ProducerComponent as PComp
+participant PComp_Dispatcher as PDisp <<Thread>>
+participant PComp_Comm as PComm <<Communicator>>
+participant PComp_RespThread as PRespT <<Thread>>
+participant ProtocolLayer as Proto
+participant NICLayer as NIC
+participant Network
+
+== Consumer Sends EXTERNAL INTEREST ==
+
+Veh -> CComp : Start Component (via "create_component" & "start_components")
+CComp -> CComp : User calls "register_interest_handler(DataTypeId X, Period P, callback_func)"
+CComp -> CHandler : Create(DataTypeId X, callback_func)
+CHandler -> CHandler : _thread.start(processing_loop)
+CComp -> CComm : "new_message(INTEREST, DataTypeId X, Period P)"
+CComm -> CComm : Create "external_interest_msg"
+CComp -> CComm : "send(external_interest_msg, BROADCAST_MAC:Port_Gateway_0)"
+CComm -> Proto : "send(CComp_Addr, BROADCAST_MAC:0, interest_payload, size)"
+Proto -> NIC : "send(eth_frame_ext_interest)"
+NIC -> Network : Transmit Ethernet Frame (Physical Broadcast)
+
+Network -> NIC : (Gateway's NIC) Receives Frame
+NIC -> Proto : (Gateway's Protocol) "update(PROTO_ID, eth_frame_ext_interest_buf)"
+Proto -> GComm : "update(Port 0, eth_frame_ext_interest_buf)"
+GComm -> GComm : Deserialize "ext_interest_msg_obj" from buffer.\nFilter: "msg_type == INTEREST".
+GComm -> GDisp : Queue "eth_frame_ext_interest_buf" by calling "Observer::update(c,buf)".
+
+GDisp -> GComm : "receive(ext_interest_obj_final)"
+GDisp -> GDisp : Identify message type: INTEREST
+GDisp -> GComp : Directly call "handle_interest(ext_interest_obj_final)"
+GComp -> GComp : Process external INTEREST:\n"requested_type = ext_interest_obj_final.unit_type()"\n"period = ext_interest_obj_final.period()"
+GComp -> GComp : Lookup "requested_type" in "_producer_registry"
+
+loop for each "target_producer_port" found in registry for "requested_type"
+    GDisp -> GComm : "new_message(INTEREST, requested_type, period)"
+    note right: Origin = GComp Address (from GComm._address)
+    GComm -> GComm : Create "internal_interest_msg"
+    GDisp -> GComm : "send(internal_interest_msg, MAC_VEHICLE:target_producer_port)"
+    GComm -> Proto : "send(GComp_Addr, MAC_VEHICLE:target_producer_port, internal_interest_payload, size)"
+    Proto -> PComm : (of specific producer) "update(target_producer_port, buf_internal_interest)"
+    note left of PComm: This is PComm's Observer::update() method for its specific port.
+    PComm -> PComm : Deserialize "internal_interest_msg_obj" from buffer.\nFilter: "msg_type == INTEREST" & "DataTypeId" matches "PComm._owner_component._produced_data_type".
+    PComm -> PDisp : If filters pass, Queue "buf_internal_interest" for PDisp by calling "Observer::update(c,buf)".
+
+    PDisp -> PComm : "receive(final_internal_interest_obj)"
+    PDisp -> PDisp : Directly check message type (INTEREST) and unit_type against _produced_data_type
+    PDisp -> PComp : If match, add period to "PComp._received_interest_periods" and call "update_gcd_period()"
+    PComp -> PComp : Update "_current_gcd_period_us" using GCD algorithm
+    PComp -> PRespT : (Re)start or Signal "_producer_response_thread" with new GCD.
+end
+
+@enduml 
