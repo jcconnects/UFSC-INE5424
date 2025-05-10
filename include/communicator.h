@@ -5,6 +5,7 @@
 #include <atomic>
 #include <chrono>
 
+#include "component.h"
 #include "message.h"
 #include "traits.h"
 #include "debug.h"
@@ -228,7 +229,6 @@ void Communicator<Channel>::update(typename Channel::Observed* obs, typename Cha
     }
     
     try {
-        // Deserialize message header to check message type and unit type
         // We need enough bytes for a message header (type, origin, timestamp, unit_type)
         if (buf->size() < 16) { // Minimum size check for header
             db<Communicator>(WRN) << "[Communicator] Message too small for header, passing through\n";
@@ -236,6 +236,7 @@ void Communicator<Channel>::update(typename Channel::Observed* obs, typename Cha
             return;
         }
         
+        // Deserialize message header to check message type and unit type
         // Create a temporary buffer to peek at the header without modifying the original buffer
         std::uint8_t temp_header[16];
         _channel->peek(buf, temp_header, 16);
@@ -258,71 +259,68 @@ void Communicator<Channel>::update(typename Channel::Observed* obs, typename Cha
         // Apply filtering logic based on the component's role and message type
         bool should_deliver = false;
         
-        // Check if this is a Gateway component (port 0)
-        bool is_gateway = (_address.port() == 0);
+        ComponentType comp_type = _owner_component->type();
         
-        // Check if this is a producer component
-        bool is_producer = false;
-        bool is_consumer = false;
-        
-        if (_owner_component) {
-            // Access the component's _produced_data_type if it's a producer
-            // This approach assumes Component exposes these members or has accessors
-            // We'll need to define these in Component or find another way to check
-            
-            // For now, we can use external_component API to get this information
-            // We'll need to implement these methods in Component
-            is_producer = (_owner_component->get_produced_data_type() != DataTypeId::UNKNOWN);
-            is_consumer = !_owner_component->_active_interests.empty();
-        }
-        
-        if (is_gateway) {
-            // Gateway accepts all INTEREST and REG_PRODUCER messages
-            should_deliver = (msg_type == Message::Type::INTEREST || msg_type == Message::Type::REG_PRODUCER);
-        }
-        else if (is_producer) {
-            // Producer components care about INTEREST messages for their data type
-            if (msg_type == Message::Type::INTEREST) {
-                DataTypeId produced_type = _owner_component->get_produced_data_type();
-                should_deliver = (unit_type == produced_type);
-            }
-        }
-        else if (is_consumer) {
-            // Consumer components care about RESPONSE messages for their interests
-            if (msg_type == Message::Type::RESPONSE) {
-                // Check if this response matches any active interest
-                auto now = std::chrono::high_resolution_clock::now();
-                auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
-                    now.time_since_epoch()).count();
+        switch (comp_type) {
+            case ComponentType::GATEWAY:
+                // Gateway accepts all INTEREST and REG_PRODUCER messages
+                should_deliver = (msg_type == Message::Type::INTEREST || 
+                                 msg_type == Message::Type::REG_PRODUCER);
+                break;
                 
-                // Iterate through active interests
-                for (auto& interest : _owner_component->_active_interests) {
-                    if (interest.type == unit_type) {
-                        // Check if we're due for a new response based on period
-                        if (now_us - interest.last_accepted_response_time_us >= interest.period_us) {
-                            // Update last accepted response time
-                            interest.last_accepted_response_time_us = now_us;
-                            should_deliver = true;
-                            break;
+            case ComponentType::PRODUCER:
+            case ComponentType::PRODUCER_CONSUMER:
+                // Producer components care about INTEREST messages for their data type
+                if (msg_type == Message::Type::INTEREST) {
+                    DataTypeId produced_type = _owner_component->get_produced_data_type();
+                    should_deliver = (unit_type == produced_type);
+                }
+                
+                // If it's a PRODUCER_CONSUMER, fall through to also check CONSUMER logic
+                if (comp_type == ComponentType::PRODUCER && !should_deliver) {
+                    break;
+                }
+                // Fall through if PRODUCER_CONSUMER
+                
+            case ComponentType::CONSUMER:
+                // Consumer components care about RESPONSE messages for their interests
+                if (msg_type == Message::Type::RESPONSE && !should_deliver) {
+                    // Apply period-based filtering
+                    auto now = std::chrono::high_resolution_clock::now();
+                    auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                        now.time_since_epoch()).count();
+                    
+                    // Iterate through active interests
+                    for (auto& interest : _owner_component->_active_interests) {
+                        if (interest.type == unit_type) {
+                            if (now_us - interest.last_accepted_response_time_us >= interest.period_us) {
+                                interest.last_accepted_response_time_us = now_us;
+                                should_deliver = true;
+                                break;
+                            }
                         }
                     }
                 }
-            }
+                break;
+                
+            default:
+                // For UNKNOWN component type, don't filter
+                should_deliver = true;
+                break;
         }
         
-        // Deliver the message if it passed our filters
+        // Handle delivery or discard
         if (should_deliver) {
             Observer::update(c, buf);
+            db<Communicator>(INF) << "[Communicator] Message passed filter, delivered to component\n";
         } else {
             // Free the buffer if we're not delivering it
             _channel->free(buf);
-            db<Communicator>(INF) << "[Communicator] Filtered out message type " 
-                                 << static_cast<int>(msg_type) << " with unit type " 
-                                 << static_cast<int>(unit_type) << "\n";
+            db<Communicator>(INF) << "[Communicator] Message filtered out, not delivered to component\n";
         }
     } catch (const std::exception& e) {
-        db<Communicator>(ERR) << "[Communicator] Error in update filtering: " << e.what() << "\n";
-        // On exception, fall back to regular update behavior
+        // Fall back to regular update behavior on error
+        db<Communicator>(ERR) << "[Communicator] Error during filtering: " << e.what() << ", passing through\n";
         Observer::update(c, buf);
     }
 }

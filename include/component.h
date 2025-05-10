@@ -30,6 +30,15 @@
 class Vehicle;
 class TypedDataHandler; // Added Forward Declaration
 
+// Define ComponentType enum
+enum class ComponentType : std::uint8_t {
+    UNKNOWN = 0,
+    GATEWAY,
+    PRODUCER,
+    CONSUMER,
+    PRODUCER_CONSUMER // Dual role component
+};
+
 // Make Communicator a friend class to access component state for filtering
 template <typename Channel>
 class Communicator;
@@ -75,6 +84,9 @@ class Component {
         const Vehicle* vehicle() const;
         std::ofstream* log_file();
         const Address& address() const;
+        
+        // Get component role for filtering
+        ComponentType type() const { return determine_component_type(); }
 
         // Concrete send and receive methods using defined types
         // These will be updated/augmented by P3 specific send/receive patterns for Interest/Response
@@ -95,6 +107,9 @@ class Component {
     protected:
         // Helper function to be called by the pthread_create for the main run() thread
         static void* thread_entry_point(void* arg);
+        
+        // Helper method to determine component type
+        ComponentType determine_component_type() const;
 
         // Common members
         const Vehicle* _vehicle;
@@ -308,6 +323,29 @@ void* Component::thread_entry_point(void* arg) {
 
     db<Component>(INF) << "[Component] " << self->getName() << " thread finished execution.\n";
     return nullptr;
+}
+
+ComponentType Component::determine_component_type() const {
+    // Port 0 is always a Gateway
+    if (_communicator && _communicator->address().port() == 0) {
+        return ComponentType::GATEWAY;
+    }
+    
+    // Check if component is a producer
+    bool is_producer = (_produced_data_type != DataTypeId::UNKNOWN);
+    
+    // Check if component is a consumer
+    bool is_consumer = !_active_interests.empty();
+    
+    if (is_producer && is_consumer) {
+        return ComponentType::PRODUCER_CONSUMER;
+    } else if (is_producer) {
+        return ComponentType::PRODUCER;
+    } else if (is_consumer) {
+        return ComponentType::CONSUMER;
+    }
+                
+    return ComponentType::UNKNOWN;
 }
 
 
