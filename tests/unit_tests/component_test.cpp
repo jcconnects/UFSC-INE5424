@@ -6,6 +6,9 @@
 #include <cstring> // For strlen and strcmp
 #include <sstream> // For TEST_LOG
 
+#include "../../include/socketEngine.h"
+#include "../../include/sharedMemoryEngine.h"
+#include "../../include/nic.h"
 #include "../../include/component.h"
 #include "../../include/vehicle.h"
 #include "../../include/initializer.h"

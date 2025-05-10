@@ -12,6 +12,7 @@
 #include "../../include/protocol.h"
 #include "../../include/nic.h"
 #include "../../include/socketEngine.h"
+#include "../../include/sharedMemoryEngine.h"
 #include "../../include/ethernet.h"
 #include "../../include/traits.h"
 #include "../../include/debug.h"
@@ -23,22 +24,23 @@ public:
     ProtocolTestEngine() : SocketEngine() {}
     virtual ~ProtocolTestEngine() = default;
     
-protected:
-    // Implementation of the pure virtual method required by SocketEngine
-    void handleSignal() override {
-        // Implementation not needed for this test
-    }
+};
+
+class ProcolTestEngine2 : public SharedMemoryEngine {
+public:
+    ProcolTestEngine2() : SharedMemoryEngine() {}
+    virtual ~ProcolTestEngine2() = default;
 };
 
 // Define required trait specialization for our test
 // Note: This must be a template specialization, not a namespace
-template<> struct Traits<Protocol<NIC<ProtocolTestEngine>>> : public Traits<void> {
+template<> struct Traits<Protocol<NIC<ProtocolTestEngine, ProcolTestEngine2>>> : public Traits<void> {
     static const bool debugged = false;  // Turn off debugging for Protocol
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 0x1234;
 };
 
-// Turn off debugging for NIC<ProtocolTestEngine>
-template<> struct Traits<NIC<ProtocolTestEngine>> : public Traits<void> {
+// Turn off debugging for NIC<ProtocolTestEngine, ProcolTestEngine2>
+template<> struct Traits<NIC<ProtocolTestEngine, ProcolTestEngine2>> : public Traits<void> {
     static const bool debugged = false;
     static const unsigned int SEND_BUFFERS = 16;
     static const unsigned int RECEIVE_BUFFERS = 16;
@@ -96,7 +98,7 @@ private:
 
 class Initializer {
 public:
-    typedef NIC<ProtocolTestEngine> NICType;
+    typedef NIC<ProtocolTestEngine, ProcolTestEngine2> NICType;
     typedef Protocol<NICType> ProtocolType;
 
     static NICType* create_nic(unsigned int id) {
@@ -212,7 +214,8 @@ int main() {
         
         // Test 4: Receive functionality
         char received_data[100] = {0};
-        int bytes_received = proto2->receive(observer2->last_buffer, src_addr, received_data, sizeof(received_data));
+        // receive(Buffer* buf, Address *from, void* data, unsigned int size);
+        int bytes_received = proto2->receive(observer2->last_buffer, &src_addr, received_data, sizeof(received_data));
         
         TEST_ASSERT(bytes_received > 0, "Receive should return a positive number of bytes");
         TEST_LOG("Received " + std::to_string(bytes_received) + " bytes");
@@ -265,7 +268,7 @@ int main() {
     
     if (received) {
         std::vector<char> received_large(large_size);
-        int bytes_received = proto2->receive(observer2->last_buffer, src_addr, received_large.data(), received_large.size());
+        int bytes_received = proto2->receive(observer2->last_buffer, &src_addr, received_large.data(), received_large.size());
         
         TEST_ASSERT(bytes_received > 0, "Receive should return a positive number of bytes for large data");
         TEST_ASSERT(static_cast<size_t>(bytes_received) <= large_size, "Received bytes should not exceed sent bytes");

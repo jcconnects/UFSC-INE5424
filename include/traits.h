@@ -18,7 +18,7 @@ inline std::string get_interface_name() {
 }
 
 // Foward Declarations
-template <typename NIC>
+template <typename GenericNIC>
 class Protocol;
 
 template <typename ExternalEngine, typename InternalEngine>
