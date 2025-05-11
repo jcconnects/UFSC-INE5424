@@ -559,6 +559,7 @@ void Component::register_interest_handler(DataTypeId type, std::uint32_t period_
     );
     
     // Send to broadcast address
+    _communicator->add_interest(type);
     _communicator->send(interest_msg, Address::BROADCAST);
     
     // Mark interest as sent
