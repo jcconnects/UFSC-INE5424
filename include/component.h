@@ -20,7 +20,7 @@
 // namespace fs = std::filesystem;
 
 // Include necessary headers
-#include "communicator.h" // Includes message.h implicitly
+#include "communicator.h" // Includes message.h implicitly and defines ComponentType enum
 #include "debug.h" // Include for db<> logging
 #include "teds.h" // Added for DataTypeId
 #include "observed.h" // Added for Conditionally_Data_Observed
@@ -30,14 +30,7 @@
 class Vehicle;
 class TypedDataHandler; // Added Forward Declaration
 
-// Define ComponentType enum
-enum class ComponentType : std::uint8_t {
-    UNKNOWN = 0,
-    GATEWAY,
-    PRODUCER,
-    CONSUMER,
-    PRODUCER_CONSUMER // Dual role component
-};
+// ComponentType enum is now defined in communicator.h - do not redefine it here
 
 // Forward declare Communicator template
 template <typename Channel>

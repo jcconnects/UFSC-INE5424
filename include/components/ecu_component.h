@@ -23,7 +23,7 @@ class ECUComponent : public Component {
 
     private:
         // Interest period for requesting obstacle data (in microseconds)
-        static const std::uint32_t OBSTACLE_DATA_PERIOD_US = 300000; // 300ms
+        inline static const std::uint32_t OBSTACLE_DATA_PERIOD_US = 300000; // 300ms
         
         // Latest received obstacle data
         struct {
@@ -71,11 +71,8 @@ ECUComponent::ECUComponent(Vehicle* vehicle, const unsigned int vehicle_id, cons
     Address addr(vehicle->address(), static_cast<unsigned int>(port));
 
     // Sets own communicator
-    _communicator = new Comms(protocol, addr);
-    if (_communicator) {
-        _communicator->set_owner_component(this);
-    }
-    
+    _communicator = new Comms(protocol, addr, ComponentType::CONSUMER, DataTypeId::OBSTACLE_DISTANCE);
+
     db<ECUComponent>(INF) << "ECU Component initialized, ready to register interests\n";
 }
 
@@ -194,7 +191,7 @@ void ECUComponent::handle_obstacle_data(const Message& message) {
 
 bool ECUComponent::parse_obstacle_data(const Message& message, ObstacleData& out_data) {
     // Verify this is the right message type and has valid data
-    if (message.type() != Message::Type::RESPONSE || 
+    if (message.message_type() != Message::Type::RESPONSE || 
         message.unit_type() != DataTypeId::OBSTACLE_DISTANCE) {
         return false;
     }
@@ -215,7 +212,7 @@ bool ECUComponent::parse_obstacle_data(const Message& message, ObstacleData& out
 
 void ECUComponent::log_message(const Message& message, const std::chrono::microseconds& recv_time,
                               const std::chrono::microseconds& timestamp, const std::string& message_details) {
-    auto message_type = message.type();
+    auto message_type = message.message_type();
     auto origin = message.origin();
     auto type_id = message.unit_type();
     auto latency_us = recv_time.count() - timestamp.count();

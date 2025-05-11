@@ -17,4 +17,14 @@ enum class DataTypeId : std::uint32_t {
     CUSTOM_SENSOR_DATA_B
 };
 
+// Add comparison operator to allow comparing DataTypeId with integer literals
+inline bool operator==(const DataTypeId& lhs, const int rhs) {
+    return static_cast<std::uint32_t>(lhs) == static_cast<std::uint32_t>(rhs);
+}
+
+// Add reverse comparison operator for symmetry
+inline bool operator==(const int lhs, const DataTypeId& rhs) {
+    return rhs == lhs;
+}
+
 #endif // TEDS_H 

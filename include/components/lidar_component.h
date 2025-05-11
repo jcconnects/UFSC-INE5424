@@ -91,11 +91,8 @@ LidarComponent::LidarComponent(Vehicle* vehicle, const unsigned int vehicle_id,
     update_obstacle_data();
     
     // Set up communicator with lidar port
-    Address addr(_vehicle->address().paddr(), PORT);
-    _communicator = new Comms(protocol, addr);
-    if (_communicator) {
-        _communicator->set_owner_component(this);
-    }
+    Address addr(_vehicle->address(), PORT);
+    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, DataTypeId::OBSTACLE_DISTANCE);
     
     db<LidarComponent>(INF) << "Lidar Component initialized as producer of type " 
                            << static_cast<int>(_produced_data_type) << "\n";
@@ -111,7 +108,7 @@ void LidarComponent::run() {
     );
     
     // Send to Gateway (port 0)
-    Address gateway_addr(_vehicle->address().paddr(), 0);
+    Address gateway_addr(_vehicle->address(), 0);
     _communicator->send(reg_msg, gateway_addr);
     
     db<LidarComponent>(INF) << "Lidar sent REG_PRODUCER for type " 

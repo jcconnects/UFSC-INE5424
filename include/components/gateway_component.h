@@ -57,13 +57,10 @@ GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_
     }
 
     // Sets own address using Port 0 (Gateway's well-known port)
-    Address addr(_vehicle->address().paddr(), PORT);
+    Address addr(_vehicle->address(), PORT);
 
     // Sets own communicator
-    _communicator = new Comms(protocol, addr);
-    if (_communicator) {
-        _communicator->set_owner_component(this);
-    }
+    _communicator = new Comms(protocol, addr, ComponentType::GATEWAY, DataTypeId::OBSTACLE_DISTANCE);
     
     db<GatewayComponent>(INF) << "Gateway component initialized on port " << PORT << "\n";
 }
@@ -138,7 +135,7 @@ void GatewayComponent::component_dispatcher_routine() {
                 _log_file << recv_time.count() << ","
                          << message.origin().to_string() << ","
                          << "UNKNOWN" << "," // Component type not tracked currently
-                         << message.origin().paddr() << ","
+                         << message.origin() << ","
                          << message.timestamp() << ","
                          << static_cast<int>(message.message_type()) << ","
                          << message.timestamp() << ","
@@ -179,7 +176,7 @@ void GatewayComponent::process_message(const Message& message, const std::chrono
         _log_file << recv_time.count() << ","
                  << message.origin().to_string() << ","
                  << "UNKNOWN" << "," // Component type not tracked currently
-                 << message.origin().paddr() << ","
+                 << message.origin() << ","
                  << message.timestamp() << ","
                  << static_cast<int>(message.message_type()) << ","
                  << message.timestamp() << ","
@@ -249,7 +246,7 @@ void GatewayComponent::handle_interest(const Message& message) {
             );
             
             // Send to the specific producer
-            Address target(_vehicle->address().paddr(), target_producer_port);
+            Address target(_vehicle->address(), target_producer_port);
             _communicator->send(internal_interest, target);
             
             db<GatewayComponent>(INF) << "Gateway relayed INTEREST for type " 

@@ -89,11 +89,8 @@ CameraComponent::CameraComponent(Vehicle* vehicle, const unsigned int vehicle_id
     update_temperature_data();
     
     // Set up communicator with camera port
-    Address addr(_vehicle->address().paddr(), PORT);
-    _communicator = new Comms(protocol, addr);
-    if (_communicator) {
-        _communicator->set_owner_component(this);
-    }
+    Address addr(_vehicle->address(), PORT);
+    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, DataTypeId::TEMPERATURE_SENSOR);
     
     db<CameraComponent>(INF) << "Camera Component initialized as producer of type " 
                            << static_cast<int>(_produced_data_type) << "\n";
@@ -109,7 +106,7 @@ void CameraComponent::run() {
     );
     
     // Send to Gateway (port 0)
-    Address gateway_addr(_vehicle->address().paddr(), 0);
+    Address gateway_addr(_vehicle->address(), 0);
     _communicator->send(reg_msg, gateway_addr);
     
     db<CameraComponent>(INF) << "Camera sent REG_PRODUCER for type " 

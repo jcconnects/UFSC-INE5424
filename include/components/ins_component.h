@@ -101,13 +101,10 @@ INSComponent::INSComponent(Vehicle* vehicle, const unsigned int vehicle_id, cons
     update_gps_data();
 
     // Sets own address
-    Address addr(_vehicle->address().paddr(), PORT);
+    Address addr(_vehicle->address(), PORT);
 
     // Sets own communicator
-    _communicator = new Comms(protocol, addr);
-    if (_communicator) {
-        _communicator->set_owner_component(this);
-    }
+    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, DataTypeId::GPS_POSITION);
     
     db<INSComponent>(INF) << "INS Component initialized as producer of type " 
                          << static_cast<int>(_produced_data_type) << "\n";
@@ -123,7 +120,7 @@ void INSComponent::run() {
     );
     
     // Send to Gateway (port 0)
-    Address gateway_addr(_vehicle->address().paddr(), 0);
+    Address gateway_addr(_vehicle->address(), 0);
     _communicator->send(reg_msg, gateway_addr);
     
     db<INSComponent>(INF) << "INS sent REG_PRODUCER for type " 
