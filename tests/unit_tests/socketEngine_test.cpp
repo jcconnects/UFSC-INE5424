@@ -5,7 +5,11 @@
 #include "test_utils.h"
 #include "socketEngine.h"
 #include "ethernet.h"
-#include <linux/if_ether.h> // For ETH_FRAME_LEN
+
+// Define Ethernet frame length constant only if not already defined
+#ifndef ETH_FRAME_LEN
+#define ETH_FRAME_LEN (Ethernet::MTU + Ethernet::HEADER_SIZE)
+#endif
 
 // Concrete implementation of SocketEngine for testing
 class TestSocketEngine : public SocketEngine {
@@ -37,6 +41,11 @@ public:
         }
     }
 
+    // Implementation of the pure virtual function
+    void handleExternal(Ethernet::Frame* frame, unsigned int size) override {
+        received_frames++;
+    }
+
 private:
     int signal_count;
     int received_frames;
@@ -61,8 +70,8 @@ int main() {
     TEST_ASSERT(engineB.getIfIndex() > 0, "EngineB interface index should be valid");
     
     // Log MAC addresses (should be the same since both use the same interface)
-    Ethernet::Address macA = engineA.getMacAddress();
-    Ethernet::Address macB = engineB.getMacAddress();
+    Ethernet::Address macA = engineA.mac_address();
+    Ethernet::Address macB = engineB.mac_address();
     
     TEST_LOG("EngineA MAC Address: " + Ethernet::mac_to_string(macA));
     TEST_LOG("EngineB MAC Address: " + Ethernet::mac_to_string(macB));
