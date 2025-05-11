@@ -5,16 +5,16 @@
 #include <thread>
 #include <sstream>
 
+#include "../test_utils.h"
+#include "../../include/initializer.h"
 #include "../../include/component.h"
 #include "../../include/vehicle.h"
-#include "../../include/initializer.h"
-#include "../test_utils.h"
 
 // Component that allocates memory to check for leaks
 class MemoryTestComponent : public Component {
 public:
-    MemoryTestComponent(Vehicle* vehicle, const std::string& name, TheProtocol* protocol, TheAddress address)
-        : Component(vehicle, name, protocol, address) {
+    MemoryTestComponent(Vehicle* vehicle, unsigned int vehicle_id, const std::string& name, Vehicle::VehicleProt* protocol)
+        : Component(vehicle, vehicle_id, name) {
         // Allocate some memory to track
         for (int i = 0; i < 5; i++) {
             data_blocks.push_back(std::make_unique<char[]>(1024 * 1024)); // 1MB blocks
@@ -46,17 +46,13 @@ void test_component_memory_management() {
         TEST_LOG(ss.str());
 
         // Create a vehicle
-        Vehicle* vehicle = Initializer::create_vehicle(i);
+        Vehicle* vehicle = new Vehicle(i);
         TEST_ASSERT(vehicle != nullptr, "Vehicle creation failed");
 
         // Create memory-intensive components
         for (int j = 0; j < 3; j++) {
-            MemoryTestComponent* comp = Initializer::create_component<MemoryTestComponent>(
-                vehicle, "MemTest" + std::to_string(j));
-            TEST_ASSERT(comp != nullptr, "Component creation failed");
-
-            // Start each component
-            comp->start();
+            vehicle->create_component<MemoryTestComponent>("MemTest" + std::to_string(j));
+            TEST_LOG("Created MemoryTestComponent " + std::to_string(j));
         }
         
         // Let them run briefly
@@ -80,16 +76,13 @@ void test_vehicle_component_ownership() {
     TEST_INIT("Vehicle Component Ownership");
 
     // Create a vehicle
-    Vehicle* vehicle = Initializer::create_vehicle(1);
+    Vehicle* vehicle = new Vehicle(1);
     TEST_ASSERT(vehicle != nullptr, "Vehicle creation failed");
 
     // Create several test components
-    std::vector<MemoryTestComponent*> components;
     for (int i = 0; i < 5; i++) {
-        MemoryTestComponent* comp = Initializer::create_component<MemoryTestComponent>(
-            vehicle, "OwnershipTest" + std::to_string(i));
-        TEST_ASSERT(comp != nullptr, "Component creation failed");
-        components.push_back(comp);
+        vehicle->create_component<MemoryTestComponent>("OwnershipTest" + std::to_string(i));
+        TEST_LOG("Created MemoryTestComponent " + std::to_string(i));
     }
     
     // Start all components
