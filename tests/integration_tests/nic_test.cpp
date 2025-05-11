@@ -9,13 +9,14 @@
 #include <vector>
 #include "../../include/nic.h"
 #include "../../include/socketEngine.h"
+#include "../../include/sharedMemoryEngine.h"
 #include "../../include/ethernet.h"
 #include "../../include/traits.h"
 #include "test_utils.h"
 
 class Initializer {
     public:
-        typedef NIC<SocketEngine> NICType;
+        typedef NIC<SocketEngine, SharedMemoryEngine> NICType;
 
         Initializer() = default;
 
@@ -52,7 +53,7 @@ struct StatsSnapshot {
 };
 
 // Helper function to get stats snapshot
-StatsSnapshot getStats(NIC<SocketEngine>* nic) {
+StatsSnapshot getStats(NIC<SocketEngine, SharedMemoryEngine>* nic) {
     const auto& stats = nic->statistics();
     StatsSnapshot snapshot;
     // Direct access instead of using statistics() method and atomic loads
@@ -70,8 +71,8 @@ int main() {
     
     TEST_LOG("Creating NIC instance");
     
-    // Use the actual NIC with SocketEngine
-    typedef NIC<SocketEngine> NIC_Engine;
+    // Use the actual NIC with SocketEngine and MockInternalEngine
+    typedef NIC<SocketEngine, SharedMemoryEngine> NIC_Engine;
     NIC_Engine* nic = Initializer::create_nic(1); // Use factory method with ID 1
     
     // Test 1: Address functions
@@ -109,7 +110,12 @@ int main() {
     TEST_ASSERT(memcmp(frame->src.bytes, nic->address().bytes, 6) == 0, "Source address should match NIC address");
     TEST_ASSERT(memcmp(frame->dst.bytes, dstAddr.bytes, 6) == 0, "Destination address should match provided address");
     TEST_ASSERT(frame->prot == prot, "Protocol should match provided protocol");
-    TEST_ASSERT(buf->size() == size, "Buffer size should match requested size");
+    
+    // Update buffer size assertion to account for Ethernet header
+    unsigned int expected_size = size + Ethernet::HEADER_SIZE;
+    TEST_LOG("Buffer requested size: " + std::to_string(size) + ", actual size: " + std::to_string(buf->size()) + 
+             ", header size: " + std::to_string(Ethernet::HEADER_SIZE));
+    TEST_ASSERT(buf->size() == expected_size, "Buffer size should match requested size plus header size");
     
     // Test free buffer
     TEST_LOG("Freeing buffer");
@@ -160,7 +166,15 @@ int main() {
     TEST_LOG("Statistics after null send: tx_drops=" + std::to_string(updatedStats.tx_drops));
     TEST_ASSERT(updatedStats.tx_drops > 0, "tx_drops should be incremented after failed send");
     
-    // Clean up
+    // Test running status
+    TEST_LOG("Testing running status");
+    TEST_ASSERT(nic->running() == true, "NIC should be running after initialization");
+    
+    // Clean up - explicitly stop the NIC before deleting
+    TEST_LOG("Stopping NIC instance");
+    nic->stop();
+    
+    // Delete the NIC instance
     TEST_LOG("Cleaning up NIC instance");
     delete nic;
     
