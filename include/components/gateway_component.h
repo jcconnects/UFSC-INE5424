@@ -13,6 +13,7 @@
 
 class GatewayComponent : public Component {
     public:
+        typedef std::uint16_t Port;
         static const unsigned int PORT;
 
         GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
@@ -25,7 +26,7 @@ class GatewayComponent : public Component {
         
     protected:
         // Override component_dispatcher_routine to directly handle Gateway-specific messages
-        void component_dispatcher_routine() override;
+        void component_dispatcher_routine();
         
     private:
         // Registry mapping DataTypeId to producer ports

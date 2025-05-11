@@ -119,34 +119,34 @@ struct Traits<Vehicle> : public Traits<void>
 template <>
 struct Traits<Component> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for BatteryComponent class
 template <>
 struct Traits<BatteryComponent>: public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for CameraComponent class
 template <>
 struct Traits<CameraComponent>: public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for ECUComponent class
 template <>
 struct Traits<ECUComponent>: public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 template <>
 struct Traits<GatewayComponent>: public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for INSComponent class
@@ -160,7 +160,7 @@ struct Traits<INSComponent> : public Traits<void>
 template <>
 struct Traits<LidarComponent> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 
