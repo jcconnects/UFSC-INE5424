@@ -4,13 +4,25 @@
 #include <stdexcept>
 #include <atomic>
 #include <chrono>
+#include <algorithm>
 
-#include "componentType.h" // Include for ComponentType
-#include "teds.g"
+// Forward declare ComponentType with full definition to match component.h
+enum class ComponentType : std::uint8_t {
+    UNKNOWN = 0,
+    GATEWAY,
+    PRODUCER,
+    CONSUMER,
+    PRODUCER_CONSUMER // Dual role component
+};
+
+// Include other required headers
+#include "teds.h"
 #include "message.h"
 #include "traits.h"
 #include "debug.h"
 
+// Forward declaration for circular dependency
+class Component;
 
 template <typename Channel>
 class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data, typename Channel::Observer::Observing_Condition>
@@ -42,23 +54,28 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         const bool is_closed();
 
         // Address getter
-        const Address& address() const;
+        const typename Channel::Address& address() const;
         
         // Deleted copy constructor and assignment operator to prevent copying
         Communicator(const Communicator&) = delete;
         Communicator& operator=(const Communicator&) = delete;
 
-        void add_interest(DataTypeId type);
-        void remove_interest(DataTypeId type);
+        bool add_interest(DataTypeId type);
+        bool remove_interest(DataTypeId type);
         void clear_interests() { _interests.clear(); }
         
+    protected:
+        struct Interest {
+            DataTypeId type;
+            std::uint64_t last_accepted_response_time_us = 0;
+            std::uint64_t period_us = 0;
+        };
+        
     private:
-
         using Observer::update;
         // Update method for Observer pattern
-        void update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition c, Buffer* buf);
+        void update(typename Channel::Observer::Observing_Condition c, typename Channel::Observer::Observed_Data* buf);
 
-    private:
         Channel* _channel;
         Address _address;
         std::atomic<bool> _closed;
@@ -67,18 +84,11 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         DataTypeId _owner_data_type;
         std::vector<Interest> _interests; // List of interests for filtering
 
-    protected:
-        struct Interest {
-            DataTypeId type;
-            std::uint64_t last_accepted_response_time_us = 0;
-        };
-
-
 };
 
 /*************** Communicator Implementation *****************/
 template <typename Channel>
-Communicator<Channel>::Communicator(Channel* channel, Address address, ComponentType owner_type = ComponentType::UNKNOWN, DataTypeId owner_data_type = DataTypeId::UNKNOWN) 
+Communicator<Channel>::Communicator(Channel* channel, Address address, ComponentType owner_type, DataTypeId owner_data_type) 
     : Observer(address.port()), _channel(channel), _address(address), _closed(false), 
       _owner_type(owner_type), _owner_data_type(owner_data_type) {
     db<Communicator>(TRC) << "Communicator<Channel>::Communicator() called!\n";
@@ -217,7 +227,7 @@ void Communicator<Channel>::close() {
     _closed.store(true, std::memory_order_release);
     
     // Signal any threads waiting on receive to wake up *without data*
-    update(nullptr, _address.port(), nullptr);
+    update(_address.port(), nullptr);
 }
 
 template <typename Channel>
@@ -226,7 +236,7 @@ const bool Communicator<Channel>::is_closed() {
 }
 
 template <typename Channel>
-void Communicator<Channel>::update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition c, Buffer* buf) {
+void Communicator<Channel>::update(typename Channel::Observer::Observing_Condition c, typename Channel::Observer::Observed_Data* buf) {
     db<Communicator>(TRC) << "Communicator<Channel>::update() called!\n";
     
     // If buf is null or we have no owner component, proceed with standard update
@@ -278,12 +288,11 @@ void Communicator<Channel>::update(typename Channel::Observed* obs, typename Cha
             case ComponentType::PRODUCER:
                 // Producer components care about INTEREST messages for their data type
                 if (msg_type == Message::Type::INTEREST) {
-                    DataTypeId produced_type = owner_data_type;
-                    should_deliver = (unit_type == produced_type);
+                    should_deliver = (unit_type == _owner_data_type);
                 }
                 
                 // If it's a PRODUCER_CONSUMER, fall through to also check CONSUMER logic
-                if (comp_type == ComponentType::PRODUCER) {
+                if (_owner_type == ComponentType::PRODUCER) {
                     break;
                 }
                 // Fall through if PRODUCER_CONSUMER
@@ -348,8 +357,8 @@ bool Communicator<Channel>::add_interest(DataTypeId type) {
         }
     }
     
-    // Add new interest
-    _interests.push_back({type, 0});
+    // Add new interest with default period of 0 (no filtering)
+    _interests.push_back({type, 0, 0});
     db<Communicator>(INF) << "[Communicator] Interest added for type " << static_cast<int>(type) << "\n";
     return true;
 }

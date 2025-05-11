@@ -33,7 +33,8 @@ public:
                      std::function<void(const Message&)> callback_func, 
                      Component* parent_component,
                      Conditionally_Data_Observed<Message, DataTypeId>* observed)
-    : _callback_func(callback_func),
+    : Concurrent_Observer<Message, DataTypeId>(type),
+      _callback_func(callback_func),
       _parent_component(parent_component),
       _handler_running(false),
       _thread_id(0),
@@ -94,7 +95,7 @@ public:
             _handler_running.store(false);
             
             // Post to the semaphore to unblock updated() if it's waiting
-            Concurrent_Observer<Message, DataTypeId>::wakeup();
+            this->update(_type, nullptr);
         }
     }
 

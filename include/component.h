@@ -39,27 +39,27 @@ enum class ComponentType : std::uint8_t {
     PRODUCER_CONSUMER // Dual role component
 };
 
-// Make Communicator a friend class to access component state for filtering
+// Forward declare Communicator template
 template <typename Channel>
 class Communicator;
 
-template <typename Engine1, typename Engine2>
+template <typename Engine1 = void, typename Engine2 = void> 
 class NIC;
 
-template <typename NIC>
+template <typename T>
 class Protocol;
 
 class SocketEngine;
 
 class SharedMemoryEngine;
 
-
 class Component {
     public:
         typedef NIC<SocketEngine, SharedMemoryEngine> VehicleNIC;
         typedef Protocol<VehicleNIC> VehicleProt;
         typedef Communicator<VehicleProt> Comms;
-        typedef Comms::Address Address;
+        // Forward declare the Address type instead of trying to access it directly
+        typedef typename VehicleProt::Address Address;
         // Message class is now directly accessible via #include "message.h" (through communicator.h)
 
         // Constructor uses concrete types

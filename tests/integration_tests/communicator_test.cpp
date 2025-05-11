@@ -1,19 +1,13 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <atomic>
-#include <iostream>
 #include <chrono> // For sleep_for
 #include <cstring> // For strlen
 
 #include "../testcase.h"
 #include "test_utils.h"
-#include "message.h"
-#include "communicator.h"
-#include "protocol.h"
-#include "nic.h"
-#include "socketEngine.h"
-#include "ethernet.h"
 #include "initializer.h"
+#include "communicator.h"
 
 #define DEFINE_TEST(name) registerTest(#name, [this]() { this->name(); });
 
@@ -44,13 +38,13 @@ class TestCommunicator : public TestCase, public Initializer {
         void test_receive_when_closed();
     
     private:
-        static NIC<SocketEngine>* _nic;
-        static Protocol<NIC<SocketEngine>>* _protocol;
-        Communicator<Protocol<NIC<SocketEngine>>>* _comms;
+        static NIC<SocketEngine, SharedMemoryEngine>* _nic;
+        static Protocol<NIC<SocketEngine, SharedMemoryEngine>>* _protocol;
+        Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine>>>* _comms;
 };
 
-NIC<SocketEngine>* TestCommunicator::_nic;
-Protocol<NIC<SocketEngine>>* TestCommunicator::_protocol;
+NIC<SocketEngine, SharedMemoryEngine>* TestCommunicator::_nic;
+Protocol<NIC<SocketEngine, SharedMemoryEngine>>* TestCommunicator::_protocol;
 
 TestCommunicator::TestCommunicator() {
     DEFINE_TEST(test_creation_with_null_channel);
@@ -87,7 +81,7 @@ void TestCommunicator::tearDownClass() {
 
 /****** FIXTURES METHODS *******/
 void TestCommunicator::setUp() {
-    _comms = new Communicator<Protocol<NIC<SocketEngine>>>(_protocol, Protocol<NIC<SocketEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine>>::Address::NULL_VALUE));
+    _comms = new Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine>>>(_protocol, Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address::NULL_VALUE));
 }
 
 void TestCommunicator::tearDown() {
@@ -98,7 +92,7 @@ void TestCommunicator::tearDown() {
 /************ TESTS ************/
 void TestCommunicator::test_creation_with_null_channel() {
     // Exercise SUT
-    assert_throw<std::invalid_argument>([] { Communicator<Protocol<NIC<SocketEngine>>>(nullptr, Protocol<NIC<SocketEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine>>::Address::NULL_VALUE)); });
+    assert_throw<std::invalid_argument>([] { Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine>>>(nullptr, Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address::NULL_VALUE)); });
 }
 
 void TestCommunicator::test_close() {
@@ -112,10 +106,10 @@ void TestCommunicator::test_close() {
 void TestCommunicator::test_send_valid_message() {
     // Inline Fixture
     std::string data = "teste";
-    Message<Protocol<NIC<SocketEngine>>::MTU> msg(data.c_str(), data.size());
+    Message msg(Message::Type::RESPONSE, Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address::NULL_VALUE), DataTypeId::UNKNOWN, 0, data.c_str(), data.size());
 
     // Exercise SUT
-    bool result = _comms->send(&msg);
+    bool result = _comms->send(msg);
 
     // Result Verification
     assert_true(result, "Communicator failed to send valid message!");
@@ -123,31 +117,42 @@ void TestCommunicator::test_send_valid_message() {
 
 void TestCommunicator::test_send_empty_message() {
     // Inline Fixture
-    Message<Protocol<NIC<SocketEngine>>::MTU> msg;
+    Message msg(Message::Type::RESPONSE, Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address::NULL_VALUE), DataTypeId::UNKNOWN, 0, nullptr, 0);
 
     // Exercise SUT
-    bool result = _comms->send(&msg);
+    bool result = _comms->send(msg);
 
     // Result Verification
     assert_false(result, "Communicator sent empty message, which should not happen!");
 }
 
 void TestCommunicator::test_send_null_message() {
-    // Exercise SUT
-    bool result = _comms->send(nullptr);
+    // We cannot pass nullptr to a reference parameter, so we'll test this
+    // condition differently by checking if the method implementation handles
+    // messages with empty data properly.
+    
+    // Create a message with null pointer for data
+    Message msg(Message::Type::RESPONSE, Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address::NULL_VALUE), DataTypeId::UNKNOWN, 0, nullptr, 0);
+    
+    // Force serialized data to be empty
+    // Note: In a real scenario, we'd need to mock Message or modify the implementation
+    // Since we cannot directly manipulate private members, we'll rely on send's check for size()
+
+    // Exercise SUT - this will call msg.size() which should return 0 if properly implemented
+    bool result = _comms->send(msg);
 
     // Result Verification
-    assert_false(result, "Communicator sent null message, which should not happen!");
+    assert_false(result, "Communicator sent null or empty message, which should not happen!");
 }
 
 void TestCommunicator::test_send_when_closed() {
     // Inline Fixture
     _comms->close();
     std::string data = "teste";
-    Message<Protocol<NIC<SocketEngine>>::MTU> msg(data.c_str(), data.size());
+    Message msg(Message::Type::RESPONSE, Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address::NULL_VALUE), DataTypeId::UNKNOWN, 0, data.c_str(), data.size());
 
     // Exercise SUT
-    bool result = _comms->send(&msg);
+    bool result = _comms->send(msg);
 
     // Result Verification
     assert_false(result, "Communicator sent message when closed, which should not happen!");
@@ -155,20 +160,21 @@ void TestCommunicator::test_send_when_closed() {
 
 void TestCommunicator::test_receive_valid_message() {
     // Inline Fixture
-    NIC<SocketEngine>* sender_nic = create_nic();
+    NIC<SocketEngine, SharedMemoryEngine>* sender_nic = create_nic();
     Ethernet::Address sender_addr = {{0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E}};
     sender_nic->setAddress(sender_addr);
 
-    Protocol<NIC<SocketEngine>>* sender_protocol = create_protocol(sender_nic);
+    Protocol<NIC<SocketEngine, SharedMemoryEngine>>* sender_protocol = create_protocol(sender_nic);
     
-    Communicator<Protocol<NIC<SocketEngine>>> sender_comms(sender_protocol, Protocol<NIC<SocketEngine>>::Address(sender_nic->address(), Protocol<NIC<SocketEngine>>::Address::NULL_VALUE));
+    Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine>>> sender_comms(sender_protocol, Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address(sender_nic->address(), Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address::NULL_VALUE));
 
     std::string data = "teste";
-    Message<Protocol<NIC<SocketEngine>>::MTU> send_msg(data.c_str(), data.size());
+    Message send_msg(Message::Type::RESPONSE, Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address(sender_nic->address(), Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address::NULL_VALUE), DataTypeId::UNKNOWN, 0, data.c_str(), data.size());
 
-    sender_comms.send(&send_msg);
+    sender_comms.send(send_msg);
 
-    Message<Protocol<NIC<SocketEngine>>::MTU> msg;
+    // Use a proper constructor for the receiving message
+    Message msg(Message::Type::INTEREST, Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address::NULL_VALUE), DataTypeId::UNKNOWN);
 
     // Exercise SUT
     bool result = _comms->receive(&msg);
@@ -196,7 +202,7 @@ void TestCommunicator::test_receive_null_message() {
 void TestCommunicator::test_receive_when_closed() {
     // Inline Fixture
     _comms->close();
-    Message<Protocol<NIC<SocketEngine>>::MTU> msg;
+    Message msg(Message::Type::INTEREST, Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address(_nic->address(), Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address::NULL_VALUE), DataTypeId::UNKNOWN);
 
     // Exercise SUT
     bool result = _comms->receive(&msg);

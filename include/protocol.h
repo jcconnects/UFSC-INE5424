@@ -98,6 +98,9 @@ class Protocol: private NIC::Observer
         
         int send(Address from, Address to, const void* data, unsigned int size);
         int receive(Buffer* buf, Address *from, void* data, unsigned int size);
+        
+        // Add peek method to read data from a buffer without consuming it
+        int peek(Buffer* buf, void* data, unsigned int size);
 
         static void attach(Observer* obs, Address address);
         static void detach(Observer* obs, Address address);
@@ -262,6 +265,29 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
     std::memcpy(data, pkt->template data<void>(), payload_size);
 
     return payload_size;
+}
+
+template <typename NIC>
+int Protocol<NIC>::peek(Buffer* buf, void* data, unsigned int size) {
+    db<Protocol>(TRC) << "Protocol<NIC>::peek() called!\n";
+    
+    if (!buf || !data) {
+        db<Protocol>(ERR) << "[Protocol] peek received null buffer or data pointer\n";
+        return -1;
+    }
+    
+    // Get pointer to the packet within the Ethernet frame's payload
+    Packet* packet = reinterpret_cast<Packet*>(buf->data()->payload);
+    
+    // Calculate available data size (limited by packet size and requested size)
+    unsigned int available_size = std::min(packet->size(), size);
+    
+    // Copy data to the provided buffer without modifying the original
+    std::memcpy(data, packet->template data<void>(), available_size);
+    
+    db<Protocol>(INF) << "[Protocol] peeked " << available_size << " bytes from buffer\n";
+    
+    return available_size;
 }
 
 template <typename NIC>

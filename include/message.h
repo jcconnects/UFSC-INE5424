@@ -13,7 +13,7 @@
 // foward declarations
 class SocketEngine;
 
-class SharedmemoryEngine;
+class SharedMemoryEngine;
 
 template <typename ExternalEngine, typename InternalEngine>
 class NIC;
