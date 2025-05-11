@@ -40,7 +40,7 @@ public:
     Message(Type msg_type, const Origin& orig, DataTypeId dtype, 
             unsigned int per = 0, const void* val = nullptr, 
             unsigned int val_size = 0)
-        : _msg_type(msg_type), _orig(orig), _dtype(dtype), _timestamp(0), _period(per)
+        : _msg_type(msg_type), _orig(orig), _timestamp(0), _dtype(dtype), _period(per)
     {
         _timestamp = std::chrono::duration_cast<std::chrono::microseconds>(
                       std::chrono::system_clock::now().time_since_epoch()).count();

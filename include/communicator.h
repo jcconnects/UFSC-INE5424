@@ -5,13 +5,12 @@
 #include <atomic>
 #include <chrono>
 
-#include "component.h"
+#include "componentType.h" // Include for ComponentType
+#include "teds.g"
 #include "message.h"
 #include "traits.h"
 #include "debug.h"
 
-// Forward declaration for Component to avoid circular dependency
-class Component;
 
 template <typename Channel>
 class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data, typename Channel::Observer::Observing_Condition>
@@ -26,7 +25,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         static constexpr const unsigned int MAX_MESSAGE_SIZE = Channel::MTU; // Maximum message size in bytes
 
         // Constructor and Destructor
-        Communicator(Channel* channel, Address address, Component* owner = nullptr);
+        Communicator(Channel* channel, Address address, ComponentType owner_type = ComponentType::UNKNOWN, DataTypeId owner_data_type = DataTypeId::UNKNOWN);
         ~Communicator();
         
         // Message creation
@@ -45,13 +44,14 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         // Address getter
         const Address& address() const;
         
-        // Set owner component - can be used after construction if needed
-        void set_owner_component(Component* owner);
-        
         // Deleted copy constructor and assignment operator to prevent copying
         Communicator(const Communicator&) = delete;
         Communicator& operator=(const Communicator&) = delete;
 
+        void add_interest(DataTypeId type);
+        void remove_interest(DataTypeId type);
+        void clear_interests() { _interests.clear(); }
+        
     private:
 
         using Observer::update;
@@ -62,13 +62,25 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         Channel* _channel;
         Address _address;
         std::atomic<bool> _closed;
-        Component* _owner_component; // Owner component reference for P3 filtering
+        // Owner component reference for P3 filtering
+        ComponentType _owner_type;
+        DataTypeId _owner_data_type;
+        std::vector<Interest> _interests; // List of interests for filtering
+
+    protected:
+        struct Interest {
+            DataTypeId type;
+            std::uint64_t last_accepted_response_time_us = 0;
+        };
+
+
 };
 
 /*************** Communicator Implementation *****************/
 template <typename Channel>
-Communicator<Channel>::Communicator(Channel* channel, Address address, Component* owner) 
-    : Observer(address.port()), _channel(channel), _address(address), _closed(false), _owner_component(owner) {
+Communicator<Channel>::Communicator(Channel* channel, Address address, ComponentType owner_type = ComponentType::UNKNOWN, DataTypeId owner_data_type = DataTypeId::UNKNOWN) 
+    : Observer(address.port()), _channel(channel), _address(address), _closed(false), 
+      _owner_type(owner_type), _owner_data_type(owner_data_type) {
     db<Communicator>(TRC) << "Communicator<Channel>::Communicator() called!\n";
     if (!channel) {
         throw std::invalid_argument("Channel pointer cannot be null");
@@ -87,11 +99,6 @@ Communicator<Channel>::~Communicator() {
     db<Communicator>(INF) << "[Communicator] detached from Channel\n";
     
     db<Communicator>(INF) << "[Communicator] destroyed!\n";
-}
-
-template <typename Channel>
-void Communicator<Channel>::set_owner_component(Component* owner) {
-    _owner_component = owner;
 }
 
 template <typename Channel>
@@ -223,7 +230,7 @@ void Communicator<Channel>::update(typename Channel::Observed* obs, typename Cha
     db<Communicator>(TRC) << "Communicator<Channel>::update() called!\n";
     
     // If buf is null or we have no owner component, proceed with standard update
-    if (!buf || !_owner_component) {
+    if (!buf) {
         Observer::update(c, buf);
         return;
     }
@@ -259,25 +266,24 @@ void Communicator<Channel>::update(typename Channel::Observed* obs, typename Cha
         // Apply filtering logic based on the component's role and message type
         bool should_deliver = false;
         
-        ComponentType comp_type = _owner_component->type();
         
-        switch (comp_type) {
+        switch (_owner_type) {
             case ComponentType::GATEWAY:
                 // Gateway accepts all INTEREST and REG_PRODUCER messages
                 should_deliver = (msg_type == Message::Type::INTEREST || 
                                  msg_type == Message::Type::REG_PRODUCER);
                 break;
-                
-            case ComponentType::PRODUCER:
+            
             case ComponentType::PRODUCER_CONSUMER:
+            case ComponentType::PRODUCER:
                 // Producer components care about INTEREST messages for their data type
                 if (msg_type == Message::Type::INTEREST) {
-                    DataTypeId produced_type = _owner_component->get_produced_data_type();
+                    DataTypeId produced_type = owner_data_type;
                     should_deliver = (unit_type == produced_type);
                 }
                 
                 // If it's a PRODUCER_CONSUMER, fall through to also check CONSUMER logic
-                if (comp_type == ComponentType::PRODUCER && !should_deliver) {
+                if (comp_type == ComponentType::PRODUCER) {
                     break;
                 }
                 // Fall through if PRODUCER_CONSUMER
@@ -291,7 +297,7 @@ void Communicator<Channel>::update(typename Channel::Observed* obs, typename Cha
                         now.time_since_epoch()).count();
                     
                     // Iterate through active interests
-                    for (auto& interest : _owner_component->_active_interests) {
+                    for (auto& interest : _interests) {
                         if (interest.type == unit_type) {
                             if (now_us - interest.last_accepted_response_time_us >= interest.period_us) {
                                 interest.last_accepted_response_time_us = now_us;
@@ -328,6 +334,42 @@ void Communicator<Channel>::update(typename Channel::Observed* obs, typename Cha
 template <typename Channel>
 const typename Communicator<Channel>::Address& Communicator<Channel>::address() const {
     return _address;
+}
+
+template <typename Channel>
+bool Communicator<Channel>::add_interest(DataTypeId type) {
+    db<Communicator>(TRC) << "Communicator<Channel>::add_interest() called!\n";
+    
+    // Check if the interest already exists
+    for (const auto& interest : _interests) {
+        if (interest.type == type) {
+            db<Communicator>(WRN) << "[Communicator] Interest already exists for type " << static_cast<int>(type) << "\n";
+            return false;
+        }
+    }
+    
+    // Add new interest
+    _interests.push_back({type, 0});
+    db<Communicator>(INF) << "[Communicator] Interest added for type " << static_cast<int>(type) << "\n";
+    return true;
+}
+
+template <typename Channel>
+bool Communicator<Channel>::remove_interest(DataTypeId type) {
+    db<Communicator>(TRC) << "Communicator<Channel>::remove_interest() called!\n";
+    
+    // Find and remove the interest
+    auto it = std::remove_if(_interests.begin(), _interests.end(), 
+                             [type](const Interest& interest) { return interest.type == type; });
+    
+    if (it != _interests.end()) {
+        _interests.erase(it, _interests.end());
+        db<Communicator>(INF) << "[Communicator] Interest removed for type " << static_cast<int>(type) << "\n";
+        return true;
+    }
+    
+    db<Communicator>(WRN) << "[Communicator] No interest found for type " << static_cast<int>(type) << "\n";
+    return false;
 }
 
 #endif // COMMUNICATOR_H
