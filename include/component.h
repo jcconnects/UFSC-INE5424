@@ -94,7 +94,6 @@ class Component {
         friend class Communicator;
 
     protected:
-        virtual void specific_start();
         // Helper function to be called by the pthread_create for the main run() thread
         static void* thread_entry_point(void* arg);
         
@@ -144,7 +143,7 @@ class Component {
 
         // --- P3 Dispatcher Methods ---
         static void* component_dispatcher_launcher(void* context);
-        void component_dispatcher_routine();
+        virtual void component_dispatcher_routine();
 
         // --- P3 Producer Methods ---
         static void* producer_response_launcher(void* context);
@@ -182,10 +181,6 @@ Component::~Component() {
 }
 
 void Component::start() {
-    specific_start();
-}
-
-void Component::specific_start() {
     db<Component>(TRC) << "Component::start() called for component " << getName() << ".\n";
 
     if (running()) {
