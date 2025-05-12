@@ -18,9 +18,7 @@
 
 // Remove namespace alias to fix linter errors
 // namespace fs = std::filesystem;
-
-// Include necessary headers
-#include "communicator.h" // Includes message.h implicitly and defines ComponentType enum
+#include "communicator.h" // Includes message.h implicitly
 #include "debug.h" // Include for db<> logging
 #include "teds.h" // Added for DataTypeId
 #include "observed.h" // Added for Conditionally_Data_Observed
@@ -30,29 +28,27 @@
 class Vehicle;
 class TypedDataHandler; // Added Forward Declaration
 
-// ComponentType enum is now defined in communicator.h - do not redefine it here
-
-// Forward declare Communicator template
+// Make Communicator a friend class to access component state for filtering
 template <typename Channel>
 class Communicator;
 
-template <typename Engine1 = void, typename Engine2 = void> 
+template <typename Engine1, typename Engine2>
 class NIC;
 
-template <typename T>
+template <typename NIC>
 class Protocol;
 
 class SocketEngine;
 
 class SharedMemoryEngine;
 
+
 class Component {
     public:
         typedef NIC<SocketEngine, SharedMemoryEngine> VehicleNIC;
         typedef Protocol<VehicleNIC> VehicleProt;
         typedef Communicator<VehicleProt> Comms;
-        // Forward declare the Address type instead of trying to access it directly
-        typedef typename VehicleProt::Address Address;
+        typedef Comms::Address Address;
         // Message class is now directly accessible via #include "message.h" (through communicator.h)
 
         // Constructor uses concrete types
@@ -98,6 +94,7 @@ class Component {
         friend class Communicator;
 
     protected:
+        virtual void specific_start();
         // Helper function to be called by the pthread_create for the main run() thread
         static void* thread_entry_point(void* arg);
         
@@ -185,6 +182,10 @@ Component::~Component() {
 }
 
 void Component::start() {
+    specific_start();
+}
+
+void Component::specific_start() {
     db<Component>(TRC) << "Component::start() called for component " << getName() << ".\n";
 
     if (running()) {

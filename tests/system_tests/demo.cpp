@@ -58,8 +58,8 @@ void run_vehicle(Vehicle* v) {
     v->create_component<ECUComponent>("ECU1", Vehicle::Ports::ECU1);
     v->create_component<ECUComponent>("ECU2", Vehicle::Ports::ECU2);
     v->create_component<LidarComponent>("Lidar");
-    v->create_component<INSComponent>("INS");
-    v->create_component<BatteryComponent>("Battery");
+    // v->create_component<INSComponent>("INS");
+    // v->create_component<BatteryComponent>("Battery");
 
     // Start the vehicle
     v->start();

@@ -23,10 +23,15 @@ class GatewayComponent : public Component {
         ~GatewayComponent() = default;
 
         void run() override;
+        // Hide start() method to prevent direct calls
+        // This is to ensure that the dispatcher thread is started correctly
+        void specific_start() override;
         
     protected:
-        // Override component_dispatcher_routine to directly handle Gateway-specific messages
+        // Hide component_dispatcher_routine to directly handle Gateway-specific messages
         void component_dispatcher_routine();
+        // Dispatcher thread launcher
+        static void* component_dispatcher_launcher(void* context);
         
     private:
         // Registry mapping DataTypeId to producer ports
@@ -82,6 +87,65 @@ void GatewayComponent::run() {
     }
     
     db<GatewayComponent>(INF) << "Gateway component " << getName() << " exiting main run loop.\n";
+}
+
+void* GatewayComponent::component_dispatcher_launcher(void* context) {
+    GatewayComponent* self = static_cast<GatewayComponent*>(context);
+    if (self) {
+        db<GatewayComponent>(INF) << "Component GatewayComponent dispatcher thread starting.\n";
+        self->component_dispatcher_routine();
+        db<GatewayComponent>(INF) << "Component GatewayComponent dispatcher thread exiting.\n";
+    }
+    return nullptr;
+}
+
+void GatewayComponent::specific_start() {
+    db<GatewayComponent>(TRC) << "GatewayComponent::start() called.\n";
+
+    if (running()) {
+        db<GatewayComponent>(WRN) << "[GatewayComponent] start() called when GatewayComponent is already running.\n";
+        return;
+    }
+
+    _running.store(true, std::memory_order_release);
+    
+    // Start dispatcher thread
+    _dispatcher_running.store(true);
+    int disp_rc = pthread_create(&_component_dispatcher_thread_id, nullptr, 
+                                component_dispatcher_launcher, this);
+    if (disp_rc) {
+        db<GatewayComponent>(ERR) << "[GatewayComponent] Failed to create dispatcher thread for " << getName() 
+                          << ", error code: " << disp_rc << "\n";
+        _dispatcher_running.store(false);
+        _running.store(false);
+        throw std::runtime_error("Failed to create dispatcher thread for " + getName());
+    }
+    db<GatewayComponent>(INF) << "GatewayComponent GatewayComponent dispatcher thread created successfully.\n";
+    
+    // Check if this is a producer component and start producer thread if needed
+    if (_produced_data_type != DataTypeId::UNKNOWN) {
+        start_producer_response_thread();
+    }
+
+    // Create main thread for run() method
+    int rc = pthread_create(&_thread, nullptr, Component::thread_entry_point, this);
+    if (rc) {
+        db<GatewayComponent>(ERR) << "[GatewayComponent] return code from pthread_create() is " << rc << " for GatewayComponent\n";
+        
+        // Clean up dispatcher thread if main thread creation fails
+        _dispatcher_running.store(false);
+        pthread_join(_component_dispatcher_thread_id, nullptr);
+        _component_dispatcher_thread_id = 0;
+        
+        // Stop producer thread if it was started
+        if (_producer_thread_running.load()) {
+            stop_producer_response_thread();
+        }
+        
+        _running.store(false);
+        throw std::runtime_error("Failed to create component thread for GatewayComponent");
+    }
+    db<GatewayComponent>(INF) << "GatewayComponent GatewayComponent thread created successfully.\n";
 }
 
 void GatewayComponent::component_dispatcher_routine() {
