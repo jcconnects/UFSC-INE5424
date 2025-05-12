@@ -91,6 +91,7 @@ void GatewayComponent::component_dispatcher_routine() {
     std::uint8_t raw_buffer[1024]; // Adjust size as needed based on your MTU
     
     while (_dispatcher_running.load()) {
+        db<GatewayComponent>(ERR) << "Gateway " << getName() << "started routine" << "\n";
         // Receive raw message
         Address source;
         int recv_size = receive(raw_buffer, sizeof(raw_buffer), &source);
