@@ -14,6 +14,8 @@
 #include "components/lidar_component.h"
 #include "components/battery_component.h"
 #include "components/gateway_component.h"
+#include "components/basic_producer.h"
+#include "components/basic_consumer.h"
 #include "test_utils.h"
 
 // Helper function to set up a vehicle log directory
@@ -55,11 +57,14 @@ void run_vehicle(Vehicle* v) {
     // Create all components
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] creating components\n";
     v->create_component<GatewayComponent>("Gateway");
-    v->create_component<ECUComponent>("ECU1", Vehicle::Ports::ECU1);
-    v->create_component<ECUComponent>("ECU2", Vehicle::Ports::ECU2);
-    v->create_component<LidarComponent>("Lidar");
+    // v->create_component<ECUComponent>("ECU1", Vehicle::Ports::ECU1);
+    // v->create_component<ECUComponent>("ECU2", Vehicle::Ports::ECU2);
+    // v->create_component<LidarComponent>("Lidar");
     // v->create_component<INSComponent>("INS");
     // v->create_component<BatteryComponent>("Battery");
+
+    v->create_component<BasicProducer>("BasicProducer");
+    v->create_component<BasicConsumer>("BasicConsumer");
 
     // Start the vehicle
     v->start();
@@ -86,7 +91,7 @@ int main(int argc, char* argv[]) {
     TEST_LOG("Application started!");
 
     // Set number of test vehicles
-    const unsigned int n_vehicles = 3;
+    const unsigned int n_vehicles = 2;
 
     // Ensure tests/logs directory exists
     try {
