@@ -62,12 +62,12 @@ GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_
 
     // Sets own communicator
     _communicator = new Comms(protocol, addr, ComponentType::GATEWAY, DataTypeId::OBSTACLE_DISTANCE);
-    
-    db<GatewayComponent>(INF) << "Gateway component initialized on port " << PORT << "\n";
+
+    db<GatewayComponent>(INF) << "[Gateway] " << getName() << " initialized on port " << PORT << "\n";
 }
 
 void GatewayComponent::run() {
-    db<GatewayComponent>(INF) << "Gateway component " << getName() << " starting main run loop.\n";
+    db<GatewayComponent>(INF) << "[Gateway] " << getName() << " starting main run loop.\n";
     
     // The main Gateway logic is handled in component_dispatcher_routine override
     while (running()) {
@@ -76,22 +76,22 @@ void GatewayComponent::run() {
         
         // Log current registry status
         for (const auto& entry : _producer_registry) {
-            db<GatewayComponent>(INF) << "Registry: Type " << static_cast<int>(entry.first) 
+            db<GatewayComponent>(INF) << "[Gateway] Registry: Type " << static_cast<int>(entry.first) 
                                      << " has " << entry.second.size() << " producers\n";
         }
     }
     
-    db<GatewayComponent>(INF) << "Gateway component " << getName() << " exiting main run loop.\n";
+    db<GatewayComponent>(INF) << "[Gateway] " << getName() << " exiting main run loop.\n";
 }
 
 void GatewayComponent::component_dispatcher_routine() {
-    db<GatewayComponent>(TRC) << "Gateway " << getName() << " dispatcher routine started.\n";
+    db<GatewayComponent>(TRC) << "[Gateway] " << getName() << " dispatcher routine started.\n";
     
     // Buffer for raw messages
     std::uint8_t raw_buffer[1024]; // Adjust size as needed based on your MTU
     
     while (_dispatcher_running.load()) {
-        db<GatewayComponent>(ERR) << "Gateway " << getName() << "started routine" << "\n";
+        db<GatewayComponent>(ERR) << "[Gateway] " << getName() << " started routine" << "\n";
         // Receive raw message
         Address source;
         int recv_size = receive(raw_buffer, sizeof(raw_buffer), &source);
@@ -104,7 +104,7 @@ void GatewayComponent::component_dispatcher_routine() {
             
             // Handle error or timeout
             if (recv_size < 0) {
-                db<GatewayComponent>(ERR) << "Gateway " << getName() << " dispatcher receive error: " << recv_size << "\n";
+                db<GatewayComponent>(ERR) << "[Gateway] " << getName() << " dispatcher receive error: " << recv_size << "\n";
             }
             
             // Continue to next iteration
@@ -147,11 +147,11 @@ void GatewayComponent::component_dispatcher_routine() {
             }
             
         } catch (const std::exception& e) {
-            db<GatewayComponent>(ERR) << "Gateway " << getName() << " dispatcher exception: " << e.what() << "\n";
+            db<GatewayComponent>(ERR) << "[Gateway] " << getName() << " dispatcher exception: " << e.what() << "\n";
         }
     }
     
-    db<GatewayComponent>(TRC) << "Gateway " << getName() << " dispatcher routine exiting.\n";
+    db<GatewayComponent>(TRC) << "[Gateway] " << getName() << " dispatcher routine exiting.\n";
 }
 
 void GatewayComponent::process_message(const Message& message, const std::chrono::microseconds& recv_time) {
@@ -167,7 +167,7 @@ void GatewayComponent::process_message(const Message& message, const std::chrono
             
         default:
             // Not a message type handled by Gateway
-            db<GatewayComponent>(WRN) << "Gateway received unhandled message type: " 
+            db<GatewayComponent>(WRN) << "[Gateway] received unhandled message type: " 
                                      << static_cast<int>(message.message_type()) << "\n";
             break;
     }
@@ -208,11 +208,11 @@ void GatewayComponent::handle_reg_producer(const Message& message) {
     
     if (!already_registered) {
         ports.push_back(producer_port);
-        db<GatewayComponent>(INF) << "Registered producer for type " << static_cast<int>(produced_type) 
+        db<GatewayComponent>(INF) << "[Gateway] Registered producer for type " << static_cast<int>(produced_type) 
                                  << " on port " << producer_port << " from " 
                                  << message.origin().to_string() << "\n";
     } else {
-        db<GatewayComponent>(INF) << "Producer already registered for type " << static_cast<int>(produced_type) 
+        db<GatewayComponent>(INF) << "[Gateway] Producer already registered for type " << static_cast<int>(produced_type) 
                                  << " on port " << producer_port << "\n";
     }
 }
@@ -224,7 +224,7 @@ void GatewayComponent::handle_interest(const Message& message) {
     // Extract the requested period
     std::uint32_t period = message.period();
     
-    db<GatewayComponent>(INF) << "Gateway received INTEREST for type " << static_cast<int>(requested_type) 
+    db<GatewayComponent>(INF) << "[Gateway] received INTEREST for type " << static_cast<int>(requested_type) 
                              << " with period " << period << " from " 
                              << message.origin().to_string() << "\n";
     
@@ -251,12 +251,12 @@ void GatewayComponent::handle_interest(const Message& message) {
             Address target(_vehicle->address(), target_producer_port);
             _communicator->send(internal_interest, target);
             
-            db<GatewayComponent>(INF) << "Gateway relayed INTEREST for type " 
+            db<GatewayComponent>(INF) << "[Gateway] relayed INTEREST for type " 
                                      << static_cast<int>(requested_type) 
                                      << " to internal port " << target_producer_port << "\n";
         }
     } else {
-        db<GatewayComponent>(WRN) << "Gateway: No local producer registered for type " 
+        db<GatewayComponent>(WRN) << "[Gateway] No local producer registered for type " 
                                  << static_cast<int>(requested_type) << "\n";
     }
 }
