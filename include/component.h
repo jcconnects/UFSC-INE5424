@@ -15,6 +15,10 @@
 #include <functional> // For std::function
 #include <sstream> // For std::stringstream
 #include <sys/stat.h> // For mkdir
+#include <linux/types.h>
+#include <linux/sched.h>
+#include <time.h>
+#include <sys/syscall.h>
 
 // Remove namespace alias to fix linter errors
 // namespace fs = std::filesystem;
@@ -42,6 +46,47 @@ class SocketEngine;
 
 class SharedMemoryEngine;
 
+// Define syscall numbers for SCHED_DEADLINE if not already defined
+#ifndef SCHED_DEADLINE
+#define SCHED_DEADLINE 6
+#endif
+
+#ifndef __NR_sched_setattr
+#ifdef __x86_64__
+#define __NR_sched_setattr 314
+#define __NR_sched_getattr 315
+#elif __i386__
+#define __NR_sched_setattr 351
+#define __NR_sched_getattr 352
+#elif __arm__
+#define __NR_sched_setattr 380
+#define __NR_sched_getattr 381
+#elif __aarch64__
+#define __NR_sched_setattr 274
+#define __NR_sched_getattr 275
+#endif
+#endif
+
+// Define struct for sched_attr if not already defined
+struct sched_attr {
+    __u32 size;
+    __u32 sched_policy;
+    __u64 sched_flags;
+    __s32 sched_nice;
+    __u32 sched_priority;
+    __u64 sched_runtime;
+    __u64 sched_deadline;
+    __u64 sched_period;
+};
+
+// Define syscall functions for sched_deadline
+static inline int sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags) {
+    return syscall(__NR_sched_setattr, pid, attr, flags);
+}
+
+static inline int sched_getattr(pid_t pid, struct sched_attr *attr, unsigned int size, unsigned int flags) {
+    return syscall(__NR_sched_getattr, pid, attr, size, flags);
+}
 
 class Component {
     public:
@@ -93,6 +138,9 @@ class Component {
         template <typename Channel>
         friend class Communicator;
 
+        // Add helper method to check for SCHED_DEADLINE capability
+        bool has_deadline_scheduling_capability();
+
     protected:
         // Helper function to be called by the pthread_create for the main run() thread
         static void* thread_entry_point(void* arg);
@@ -140,6 +188,7 @@ class Component {
         std::atomic<std::uint32_t> _current_gcd_period_us {0};
         pthread_t _producer_response_thread_id {0};
         std::atomic<bool> _producer_thread_running {false};
+        std::atomic<bool> _has_dl_capability {false}; // Store SCHED_DEADLINE capability state
 
         // --- P3 Dispatcher Methods ---
         static void* component_dispatcher_launcher(void* context);
@@ -667,11 +716,83 @@ void* Component::producer_response_launcher(void* context) {
 void Component::producer_response_routine() {
     db<Component>(TRC) << "Component " << getName() << " producer response routine started.\n";
     
+    // Set up clock for timing
+    struct timespec next_period;
+    clock_gettime(CLOCK_MONOTONIC, &next_period);
+    
     while (_producer_thread_running.load()) {
         // Check if we have a valid period to use
         std::uint32_t current_period = _current_gcd_period_us.load();
         
         if (current_period > 0) {
+            // Check if we have SCHED_DEADLINE capability
+            if (_has_dl_capability.load()) {
+                // Set up SCHED_DEADLINE parameters based on our GCD period
+                struct sched_attr attr;
+                memset(&attr, 0, sizeof(attr));
+                attr.size = sizeof(attr);
+                attr.sched_policy = SCHED_DEADLINE;
+                
+                // Runtime is the execution time allocated for this task (in ns)
+                // We'll allocate 80% of the period for runtime to be safe
+                uint64_t runtime_ns = (current_period * 1000) * 0.8;
+                
+                // Period and deadline are set to the GCD period (in ns)
+                uint64_t period_ns = current_period * 1000;
+                
+                attr.sched_runtime = runtime_ns;
+                attr.sched_period = period_ns;
+                attr.sched_deadline = period_ns; // deadline = period for our use case
+                
+                // Apply SCHED_DEADLINE to current thread
+                int ret = sched_setattr(0, &attr, 0);
+                if (ret < 0) {
+                    db<Component>(WRN) << "Component " << getName() 
+                                     << " failed to set SCHED_DEADLINE (error " << errno 
+                                     << "), falling back to usleep-based timing.\n";
+                    _has_dl_capability.store(false); // Update capability state
+                } else {
+                    // Using SCHED_DEADLINE for timing - the kernel will handle the scheduling
+                    
+                    while (_producer_thread_running.load() && _current_gcd_period_us.load() == current_period) {
+                        // Generate response data
+                        std::vector<std::uint8_t> response_data;
+                        
+                        // Call the virtual method that derived classes will override
+                        if (produce_data_for_response(_produced_data_type, response_data)) {
+                            // Create a RESPONSE message
+                            Message response_msg = _communicator->new_message(
+                                Message::Type::RESPONSE,
+                                _produced_data_type,
+                                0, // No period for responses
+                                response_data.data(),
+                                response_data.size()
+                            );
+                            
+                            // Send to broadcast address
+                            _communicator->send(response_msg, Address::BROADCAST);
+                            
+                            db<Component>(INF) << "Component " << getName() << " sent RESPONSE for data type " 
+                                              << static_cast<int>(_produced_data_type) << " with " 
+                                              << response_data.size() << " bytes.\n";
+                        } else {
+                            db<Component>(WRN) << "Component " << getName() << " failed to produce data for type " 
+                                              << static_cast<int>(_produced_data_type) << ".\n";
+                        }
+                        
+                        // Let the SCHED_DEADLINE scheduler handle the timing
+                        sched_yield();
+                    }
+                    
+                    // Reset to normal scheduling when we exit the inner loop
+                    struct sched_param param;
+                    param.sched_priority = 0;
+                    pthread_setschedparam(pthread_self(), SCHED_OTHER, &param);
+                    continue; // Skip the fallback code below
+                }
+            }
+            
+            // Fallback to usleep-based timing
             // Generate response data
             std::vector<std::uint8_t> response_data;
             
@@ -697,7 +818,7 @@ void Component::producer_response_routine() {
                                   << static_cast<int>(_produced_data_type) << ".\n";
             }
             
-            // Sleep for the current GCD period
+            // Sleep for the current GCD period using usleep (fallback)
             usleep(current_period);
         } else {
             // No valid period, sleep a bit and check again
@@ -716,8 +837,27 @@ void Component::start_producer_response_thread() {
     if (!_producer_thread_running.load() && _produced_data_type != DataTypeId::UNKNOWN) {
         _producer_thread_running.store(true);
         
-        int rc = pthread_create(&_producer_response_thread_id, nullptr, 
+        // Check for SCHED_DEADLINE capability
+        _has_dl_capability.store(has_deadline_scheduling_capability());
+        if (_has_dl_capability.load()) {
+            db<Component>(INF) << "Component " << getName() << " has SCHED_DEADLINE capability.\n";
+        } else {
+            db<Component>(WRN) << "Component " << getName() << " will fall back to usleep-based timing.\n";
+        }
+        
+        // Create thread attributes
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        
+        // Set detach state to joinable (default, but being explicit)
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+        
+        // Create the thread with default settings - SCHED_DEADLINE will be set inside the thread
+        int rc = pthread_create(&_producer_response_thread_id, &attr, 
                                Component::producer_response_launcher, this);
+        
+        // Clean up thread attributes
+        pthread_attr_destroy(&attr);
         
         if (rc) {
             db<Component>(ERR) << "[Component] Failed to create producer thread for " << getName() 
@@ -802,6 +942,41 @@ std::uint32_t Component::calculate_gcd(std::uint32_t a, std::uint32_t b) {
     }
     
     return a;
+}
+
+// Add helper method to check for SCHED_DEADLINE capability
+bool Component::has_deadline_scheduling_capability() {
+    // Try to set SCHED_DEADLINE parameters with minimal values
+    struct sched_attr attr;
+    memset(&attr, 0, sizeof(attr));
+    attr.size = sizeof(attr);
+    attr.sched_policy = SCHED_DEADLINE;
+    attr.sched_runtime = 1000;        // 1 microsecond runtime
+    attr.sched_period = 10000;        // 10 microsecond period
+    attr.sched_deadline = 10000;      // 10 microsecond deadline
+    
+    // Try setting it on current thread temporarily
+    int result = sched_setattr(0, &attr, 0);
+    
+    // If it works, reset back to normal
+    if (result == 0) {
+        struct sched_param param;
+        param.sched_priority = 0;
+        pthread_setschedparam(pthread_self(), SCHED_OTHER, &param);
+        return true;
+    }
+    
+    // If EPERM, we don't have the capability
+    if (errno == EPERM) {
+        db<Component>(WRN) << "Component " << getName() 
+                         << " lacks CAP_SYS_NICE capability for SCHED_DEADLINE. "
+                         << "Consider using: sudo setcap cap_sys_nice+ep <executable>\n";
+    } else {
+        db<Component>(WRN) << "Component " << getName()
+                         << " SCHED_DEADLINE test failed with error: " << errno << "\n";
+    }
+    
+    return false;
 }
 
 #endif // COMPONENT_H 
