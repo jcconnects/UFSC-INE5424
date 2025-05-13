@@ -6,6 +6,8 @@
 #include <vector>
 #include <random>
 #include <chrono>
+#include <fstream>
+#include <map>
 
 #include "vehicle.h"
 #include "debug.h"
@@ -45,6 +47,57 @@ std::string setup_log_directory(unsigned int vehicle_id) {
     }
 }
 
+// Helper function to verify logs contain expected P3 messages
+bool verify_logs(unsigned int num_vehicles) {
+    db<Vehicle>(INF) << "Verifying logs for P3 functionality...\n";
+    bool success = true;
+    
+    // Keywords to search for in logs that indicate P3 functionality
+    std::vector<std::string> p3_keywords = {
+        "sent REG_PRODUCER",
+        "received INTEREST",
+        "sending RESPONSE",
+        "received RESPONSE",
+        "relaying INTEREST"
+    };
+    
+    for (unsigned int id = 1; id <= num_vehicles; id++) {
+        std::string log_path = "tests/logs/vehicle_" + std::to_string(id) + "/vehicle_" + std::to_string(id) + ".log";
+        std::ifstream log_file(log_path);
+        
+        if (!log_file.is_open()) {
+            db<Vehicle>(ERR) << "Failed to open log file: " << log_path << "\n";
+            success = false;
+            continue;
+        }
+        
+        // Track which P3 functionalities were observed
+        std::map<std::string, bool> observed;
+        for (const auto& keyword : p3_keywords) {
+            observed[keyword] = false;
+        }
+        
+        std::string line;
+        while (std::getline(log_file, line)) {
+            for (const auto& keyword : p3_keywords) {
+                if (line.find(keyword) != std::string::npos) {
+                    observed[keyword] = true;
+                }
+            }
+        }
+        
+        // Report missing functionality
+        for (const auto& [keyword, found] : observed) {
+            if (!found) {
+                db<Vehicle>(ERR) << "Vehicle " << id << " logs missing evidence of: " << keyword << "\n";
+                success = false;
+            }
+        }
+    }
+    
+    return success;
+}
+
 void run_vehicle(Vehicle* v) {
     db<Vehicle>(TRC) << "run_vehicle() called!\n";
 
@@ -56,16 +109,19 @@ void run_vehicle(Vehicle* v) {
 
     // Create all components
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] creating components\n";
+    
+    // Create Gateway first (needed for Producer registration)
     v->create_component<GatewayComponent>("Gateway");
-    // v->create_component<ECUComponent>("ECU1", Vehicle::Ports::ECU1);
-    // v->create_component<ECUComponent>("ECU2", Vehicle::Ports::ECU2);
-    // v->create_component<LidarComponent>("Lidar");
-    // v->create_component<INSComponent>("INS");
-    // v->create_component<BatteryComponent>("Battery");
-
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] created Gateway component\n";
+    
+    // Create Producer next so it can register
     v->create_component<BasicProducer>("BasicProducer");
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] created BasicProducer component\n";
+    
+    // Create Consumer last to send interests
     v->create_component<BasicConsumer>("BasicConsumer");
-
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] created BasicConsumer component\n";
+    
     // Start the vehicle
     v->start();
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] started for " << lifetime << "s lifetime\n";
@@ -88,7 +144,7 @@ void run_vehicle(Vehicle* v) {
 
 int main(int argc, char* argv[]) {
     TEST_INIT("system_demo");
-    TEST_LOG("Application started!");
+    TEST_LOG("Starting P3 API validation test with basic components...");
 
     // Set number of test vehicles
     const unsigned int n_vehicles = 2;
@@ -158,6 +214,17 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    TEST_LOG(successful ? "Application completed successfully!" : "Application terminated with errors!");
+    // Verify test results by analyzing logs
+    TEST_LOG("Vehicles have terminated, analyzing logs to verify P3 functionality...");
+    bool logs_valid = verify_logs(n_vehicles);
+    
+    if (!logs_valid) {
+        TEST_LOG("WARNING: Log verification found missing P3 operations!");
+        successful = false;
+    } else {
+        TEST_LOG("All P3 API functions successfully observed in logs!");
+    }
+
+    TEST_LOG(successful ? "P3 API validation completed successfully!" : "P3 API validation test FAILED!");
     return successful ? 0 : -1;
 }
