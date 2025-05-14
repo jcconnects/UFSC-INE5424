@@ -1,183 +1,224 @@
-#define TEST_MODE 1
-
-#include <iostream>
-#include <string>
-#include <cassert>
 #include <cstring>
-#include <thread>
-#include <chrono>
-#include <vector>
-#include "../../include/nic.h"
-#include "../../include/socketEngine.h"
-#include "../../include/sharedMemoryEngine.h"
-#include "../../include/ethernet.h"
-#include "../../include/traits.h"
-#include "test_utils.h"
+#include <string>
+#include "initializer.h"
+#include "../testcase.h"
 
-class Initializer {
+class NICTest : public TestCase {
     public:
-        typedef NIC<SocketEngine, SharedMemoryEngine> NICType;
+        typedef Initializer::NIC_T NIC;
 
-        Initializer() = default;
+        NICTest();
+        ~NICTest() = default;
 
-        ~Initializer() = default;
+        void setUp() override;
+        void tearDown() override;
 
-        // Start the vehicle process
-        static NICType* create_nic(unsigned int id);
+        /* TESTS */
+        void test_set_address();
+        void test_stop();
+
+        void test_allocate_buffer();
+        void test_allocate_empty_buffer();
+        void test_allocate_way_too_big_buffer();
+        void test_allocate_buffer_when_stopped();
+        void test_release_buffer();
+        void test_release_buffer_with_all_free();
+
+        void test_send_internal();
+        void test_send_external();
+        void test_send_when_stopped();
+        void test_send_null_buffer();
+
+        void test_receive();
+        void test_receive_when_stopped();
+        void test_receive_null_buffer();
+    
+    private:
+        NIC* _nic;
 };
 
-/********** Initializer Implementation ***********/
-Initializer::NICType* Initializer::create_nic(unsigned int id) {
-    // Setting Vehicle virtual MAC Address
-    Ethernet::Address addr;
-    addr.bytes[0] = 0x02; // local, unicast
-    addr.bytes[1] = 0x00;
-    addr.bytes[2] = 0x00;
-    addr.bytes[3] = 0x00;
-    addr.bytes[4] = (id >> 8) & 0xFF;
-    addr.bytes[5] = id & 0xFF;
-
-    NICType* nic = new NICType();
-    nic->setAddress(addr);
-    return nic;
+NICTest::NICTest() {
+    DEFINE_TEST(test_set_address);
+    DEFINE_TEST(test_stop);
+    DEFINE_TEST(test_allocate_buffer);
+    DEFINE_TEST(test_allocate_empty_buffer);
+    DEFINE_TEST(test_allocate_way_too_big_buffer);
+    DEFINE_TEST(test_allocate_buffer_when_stopped);
+    DEFINE_TEST(test_release_buffer);
+    DEFINE_TEST(test_send_internal);
+    DEFINE_TEST(test_send_external);
+    DEFINE_TEST(test_send_when_stopped);
+    DEFINE_TEST(test_send_null_buffer);
+    DEFINE_TEST(test_receive);
+    DEFINE_TEST(test_receive_when_stopped);
+    DEFINE_TEST(test_receive_null_buffer);
 }
 
-// Helper struct to hold statistics values (non-atomic)
-struct StatsSnapshot {
-    unsigned int packets_sent;
-    unsigned int packets_received;
-    unsigned int bytes_sent;
-    unsigned int bytes_received;
-    unsigned int tx_drops;
-    unsigned int rx_drops;
-};
-
-// Helper function to get stats snapshot
-StatsSnapshot getStats(NIC<SocketEngine, SharedMemoryEngine>* nic) {
-    const auto& stats = nic->statistics();
-    StatsSnapshot snapshot;
-    // Direct access instead of using statistics() method and atomic loads
-    snapshot.packets_sent = stats.packets_sent.load();
-    snapshot.packets_received = stats.packets_received.load();
-    snapshot.bytes_sent = stats.bytes_sent.load();
-    snapshot.bytes_received = stats.bytes_received.load();
-    snapshot.tx_drops = stats.tx_drops.load();
-    snapshot.rx_drops = stats.rx_drops.load();
-    return snapshot;
+/******* FIXTURES METHODS ******/
+void NICTest::setUp() {
+    _nic = Initializer::create_nic();
 }
+
+void NICTest::tearDown() {
+    _nic->stop();
+    delete _nic;
+}
+/*******************************/
+
+/************ TESTS ************/
+void NICTest::test_set_address() {
+    // Exercise SUT
+    _nic->setAddress(NIC::BROADCAST);
+
+    // Result Verification
+    assert_equal(NIC::mac_to_string(NIC::BROADCAST), NIC::mac_to_string(_nic->address()), "NIC address was not setted");
+}
+
+void NICTest::test_stop() {
+    // Exercise SUT
+    _nic->stop();
+
+    // Result Verification
+    assert_false(_nic->running(), "NIC is still running after stop is called");
+}
+
+void NICTest::test_allocate_buffer() {
+    // Exercise SUT
+    NIC::DataBuffer* buf = _nic->alloc(NIC::BROADCAST, 888, 10);
+
+    // Result Verification
+    assert_true(buf != nullptr, "NIC did not allocate buffer for valid parameters");
+}
+
+void NICTest::test_allocate_empty_buffer() {
+    // Exercise SUT
+    NIC::DataBuffer* buf = _nic->alloc(NIC::BROADCAST, 888, 0);
+
+    // Result Verification
+    assert_true(buf == nullptr, "NIC allocated buffer with size equal to 0");
+}
+
+void NICTest::test_allocate_way_too_big_buffer() {
+    // Exercise SUT
+    NIC::DataBuffer* buf = _nic->alloc(NIC::BROADCAST, 888, NIC::MTU+1);
+    
+    // Result Verification
+    assert_true(buf == nullptr, "NIC allocated buffer with size bigger than MTU");
+}
+
+void NICTest::test_allocate_buffer_when_stopped() {
+    // Inline Setup
+    _nic->stop();
+    
+    // Exercise SUT
+    NIC::DataBuffer* buf = _nic->alloc(NIC::BROADCAST, 888, 10);
+    
+    // Result Verification
+    assert_true(buf == nullptr, "NIC allocated buffer while stopped");
+}
+
+void NICTest::test_release_buffer() {
+    // Inline Setup
+    NIC::DataBuffer* buf = _nic->alloc(NIC::BROADCAST, 888, 10);
+
+    // Exercise SUT
+    _nic->free(buf);
+
+    // Result Verification
+    assert_true(buf->size() == 0, "NIC did not cleared the buffer");
+    assert_equal(NIC::N_BUFFERS, _nic->buffer_pool_size(), "Buffer was cleared, but was not added to the free buffers queue");
+}
+
+void NICTest::test_send_internal() {
+    // Inline Setup
+    NIC::DataBuffer* buf = _nic->alloc(_nic->address(), 888, 10);
+
+    // Exercise SUT
+    int result = _nic->send(buf);
+
+    // Result Verification
+    assert_equal(buf->size(), static_cast<unsigned int>(result), "NIC failed to send valid buffer with internal engine");
+}
+
+void NICTest::test_send_external() {
+    // Inline Setup
+    NIC::DataBuffer* buf = _nic->alloc(NIC::BROADCAST, 888, 10);
+
+    // Exercise SUT
+    int result = _nic->send(buf);
+
+    // Result Verification
+    assert_equal(10+NIC::HEADER_SIZE, static_cast<unsigned int>(result), "NIC failed to send valid buffer with external engine");
+}
+
+void NICTest::test_send_when_stopped() {
+    // Inline Setup
+    NIC::DataBuffer* buf = _nic->alloc(NIC::BROADCAST, 888, 10);
+    _nic->stop();
+
+    // Exercise SUT
+    int result = _nic->send(buf);
+
+    // Result Verification
+    assert_equal(-1, result, "NIC sent buffer, even though it was stopped");
+}
+
+void NICTest::test_send_null_buffer() {
+    // Exercise SUT
+    int result = _nic->send(nullptr);
+
+    // Result Verification
+    assert_equal(-1, result, "NIC sent null buffer");
+}
+
+void NICTest::test_receive() {
+    // Inline Setup
+    std::string msg = "test message";
+    NIC::DataBuffer* buf = _nic->alloc(NIC::BROADCAST, 888, msg.size());
+    std::memcpy(buf->data()->payload, msg.c_str(), msg.size());
+    std::uint8_t temp_buffer[msg.size()];
+
+    // Exercise SUT
+    int result = _nic->receive(buf, nullptr, nullptr, temp_buffer, msg.size());
+
+    // Result Verification
+    char* received_str = reinterpret_cast<char*>(temp_buffer);
+    std::string received_msg(received_str, result);
+
+    assert_equal(msg, received_msg, "NIC failed to extract message from frame");
+}
+
+void NICTest::test_receive_when_stopped() {
+    // Inline Setup
+    std::string msg = "test message";
+    NIC::DataBuffer* buf = _nic->alloc(NIC::BROADCAST, 888, msg.size());
+    std::memcpy(buf->data()->payload, msg.c_str(), msg.size());
+    std::uint8_t temp_buffer[msg.size()];
+    _nic->stop();
+
+    // Exercise SUT
+    int result = _nic->receive(buf, nullptr, nullptr, temp_buffer, msg.size());
+
+    // Result Verification
+    assert_equal(msg.size(), static_cast<unsigned int>(result), "NIC failed to extract buffer content while stopped");
+}
+
+void NICTest::test_receive_null_buffer() {
+    // Inline Setup
+    std::string msg = "test message";
+    std::uint8_t temp_buffer[msg.size()];
+    
+    // Exercise SUT
+    int result = _nic->receive(nullptr, nullptr, nullptr, temp_buffer, msg.size());
+
+    // Result Verification
+    assert_equal(-1, result, "NIC extracted null buffer");
+}
+/*******************************/
+
 
 int main() {
-    TEST_INIT("nic_test");
-    
-    TEST_LOG("Creating NIC instance");
-    
-    // Use the actual NIC with SocketEngine and MockInternalEngine
-    typedef NIC<SocketEngine, SharedMemoryEngine> NIC_Engine;
-    NIC_Engine* nic = Initializer::create_nic(1); // Use factory method with ID 1
-    
-    // Test 1: Address functions
-    TEST_LOG("Testing address functions");
-    
-    // Get default address
-    auto defaultAddr = nic->address();
-    TEST_LOG("Default address: " + Ethernet::mac_to_string(defaultAddr));
-    TEST_ASSERT(defaultAddr != Ethernet::NULL_ADDRESS, "Default address should not be null");
-    
-    // Set new address
-    Ethernet::Address testAddr = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55};
-    nic->setAddress(testAddr);
-    TEST_LOG("Set address to: " + Ethernet::mac_to_string(testAddr));
-    
-    // Verify address was set correctly
-    auto currentAddr = nic->address();
-    TEST_LOG("Current address: " + Ethernet::mac_to_string(currentAddr));
-    TEST_ASSERT(memcmp(currentAddr.bytes, testAddr.bytes, 6) == 0, "Address should be updated to match the set address");
-    
-    // Test 2: Buffer allocation and management
-    TEST_LOG("Testing buffer allocation and freeing");
-    
-    // Allocate a buffer
-    Ethernet::Address dstAddr = {0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB};
-    Ethernet::Protocol prot = 0x0800; // IPv4 protocol number
-    unsigned int size = 100;
-    
-    TEST_LOG("Allocating buffer for frame");
-    auto buf = nic->alloc(dstAddr, prot, size);
-    TEST_ASSERT(buf != nullptr, "Buffer allocation should succeed");
-    
-    // Verify buffer properties
-    Ethernet::Frame* frame = buf->data();
-    TEST_ASSERT(memcmp(frame->src.bytes, nic->address().bytes, 6) == 0, "Source address should match NIC address");
-    TEST_ASSERT(memcmp(frame->dst.bytes, dstAddr.bytes, 6) == 0, "Destination address should match provided address");
-    TEST_ASSERT(frame->prot == prot, "Protocol should match provided protocol");
-    
-    // Update buffer size assertion to account for Ethernet header
-    unsigned int expected_size = size + Ethernet::HEADER_SIZE;
-    TEST_LOG("Buffer requested size: " + std::to_string(size) + ", actual size: " + std::to_string(buf->size()) + 
-             ", header size: " + std::to_string(Ethernet::HEADER_SIZE));
-    TEST_ASSERT(buf->size() == expected_size, "Buffer size should match requested size plus header size");
-    
-    // Test free buffer
-    TEST_LOG("Freeing buffer");
-    nic->free(buf);
-    
-    // Allocate multiple buffers to ensure reuse works
-    std::vector<NIC_Engine::DataBuffer*> buffers;
-    TEST_LOG("Allocating multiple buffers");
-    for (int i = 0; i < 5; i++) {
-        auto b = nic->alloc(dstAddr, prot, size);
-        TEST_ASSERT(b != nullptr, "Buffer allocation should succeed");
-        buffers.push_back(b);
-    }
-    
-    // Free all buffers
-    TEST_LOG("Freeing all buffers");
-    for (auto b : buffers) {
-        nic->free(b);
-    }
-    
-    // Test 3: Statistics tracking
-    TEST_LOG("Testing statistics tracking");
-    
-    // Get initial statistics
-    StatsSnapshot initialStats = getStats(nic);
-    TEST_LOG("Initial statistics: packets_sent=" + std::to_string(initialStats.packets_sent) + 
-        ", packets_received=" + std::to_string(initialStats.packets_received) +
-        ", bytes_sent=" + std::to_string(initialStats.bytes_sent) + 
-        ", bytes_received=" + std::to_string(initialStats.bytes_received) +
-        ", tx_drops=" + std::to_string(initialStats.tx_drops) + 
-        ", rx_drops=" + std::to_string(initialStats.rx_drops));
-    
-    // All statistics should start at zero
-    TEST_ASSERT(initialStats.packets_sent == 0, "Initial packets_sent should be 0");
-    TEST_ASSERT(initialStats.packets_received == 0, "Initial packets_received should be 0");
-    TEST_ASSERT(initialStats.bytes_sent == 0, "Initial bytes_sent should be 0");
-    TEST_ASSERT(initialStats.bytes_received == 0, "Initial bytes_received should be 0");
-    TEST_ASSERT(initialStats.tx_drops == 0, "Initial tx_drops should be 0");
-    TEST_ASSERT(initialStats.rx_drops == 0, "Initial rx_drops should be 0");
-    
-    // Test error condition - should increment tx_drops
-    TEST_LOG("Testing tx_drops increment with null buffer");
-    int result = nic->send(nullptr);
-    TEST_ASSERT(result == -1, "Send with null buffer should return -1");
-    
-    // Verify tx_drops was incremented
-    StatsSnapshot updatedStats = getStats(nic);
-    TEST_LOG("Statistics after null send: tx_drops=" + std::to_string(updatedStats.tx_drops));
-    TEST_ASSERT(updatedStats.tx_drops > 0, "tx_drops should be incremented after failed send");
-    
-    // Test running status
-    TEST_LOG("Testing running status");
-    TEST_ASSERT(nic->running() == true, "NIC should be running after initialization");
-    
-    // Clean up - explicitly stop the NIC before deleting
-    TEST_LOG("Stopping NIC instance");
-    nic->stop();
-    
-    // Delete the NIC instance
-    TEST_LOG("Cleaning up NIC instance");
-    delete nic;
-    
-    std::cout << "NIC test passed successfully!" << std::endl;
+    NICTest test;
+    test.run();
     return 0;
 }

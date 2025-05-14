@@ -57,6 +57,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         int receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size);
         DataBuffer* alloc(Address dst, Protocol_Number prot, unsigned int size);
         void free(DataBuffer* buf);
+        const unsigned int buffer_pool_size();
         const Address& address();
         void setAddress(Address address);
         const Statistics& statistics();
@@ -75,7 +76,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         Address _address;
         Statistics _statistics;
         DataBuffer _buffer[N_BUFFERS];
-        std::queue<DataBuffer*> _free_buffers;
+        std::queue<DataBuffer*> _buffer_pool;
         std::atomic<bool> _running;
         sem_t _buffer_sem;
         sem_t _binary_sem;
@@ -88,7 +89,7 @@ NIC<ExternalEngine, InternalEngine>::NIC() {
 
     for (unsigned int i = 0; i < N_BUFFERS; ++i) {
         _buffer[i] = DataBuffer();
-        _free_buffers.push(&_buffer[i]);
+        _buffer_pool.push(&_buffer[i]);
     }
     db<NIC>(INF) << "[NIC] " << std::to_string(N_BUFFERS) << " buffers created\n";
 
@@ -312,6 +313,18 @@ void NIC<ExternalEngine, InternalEngine>::handleInternal(DataBuffer* buf) {
 template <typename ExternalEngine, typename InternalEngine>
 typename NIC<ExternalEngine, InternalEngine>::DataBuffer* NIC<ExternalEngine, InternalEngine>::alloc(Address dst, Protocol_Number prot, unsigned int size) {
     db<NIC>(TRC) << "[NIC] alloc() called!\n";
+
+    // Check if buffer size is zero
+    if (size == 0) {
+        db<NIC>(ERR) << "[NIC] alloc() called with zero size, returning nullptr\n";
+        return nullptr;
+    }
+
+    // Check if buffer size is greater than max frame size
+    if (size > MAX_FRAME_SIZE) {
+        db<NIC>(ERR) << "[NIC] alloc() called with size greater than max frame size, returning nullptr\n";
+        return nullptr;
+    }
     
     // Acquire free buffers counter semaphore
     sem_wait(&_buffer_sem);
@@ -325,8 +338,8 @@ typename NIC<ExternalEngine, InternalEngine>::DataBuffer* NIC<ExternalEngine, In
     
     // Remove first buffer of the free buffers queue
     sem_wait(&_binary_sem);
-    DataBuffer* buf = _free_buffers.front();
-    _free_buffers.pop();
+    DataBuffer* buf = _buffer_pool.front();
+    _buffer_pool.pop();
     sem_post(&_binary_sem);
 
     // Set Frame
@@ -359,13 +372,19 @@ void NIC<ExternalEngine, InternalEngine>::free(DataBuffer* buf) {
     
     // Add to free buffers queue
     sem_wait(&_binary_sem);
-    _free_buffers.push(buf);
+    _buffer_pool.push(buf);
     sem_post(&_binary_sem);
     
     // Increase free buffers counter
     sem_post(&_buffer_sem);
 
     db<NIC>(INF) << "[NIC] buffer released\n";
+}
+
+// Get the size of the buffer pool
+template <typename ExternalEngine, typename InternalEngine>
+const unsigned int NIC<ExternalEngine, InternalEngine>::buffer_pool_size() {
+    return _buffer_pool.size();
 }
 
 // Explicitly stop the NIC and its underlying ExternalEngine
@@ -414,5 +433,8 @@ template <typename ExternalEngine, typename InternalEngine>
 const typename NIC<ExternalEngine, InternalEngine>::Statistics& NIC<ExternalEngine, InternalEngine>::statistics() {
     return _statistics;
 }
+
+template <typename ExternalEngine, typename InternalEngine>
+const unsigned int NIC<ExternalEngine, InternalEngine>::N_BUFFERS;
 
 #endif // NIC_H

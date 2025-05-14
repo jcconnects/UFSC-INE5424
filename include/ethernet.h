@@ -30,7 +30,7 @@ class Ethernet {
             Address dst;
             Address src;
             Protocol prot;
-            std::uint8_t payload[MTU];
+            std::uint8_t payload[MTU - sizeof(Address)*2 - sizeof(Protocol)]; // Because the frame should be the MTU size, so the payload should be the MTU size minus the header size
         } __attribute__((packed));
 
         static std::string mac_to_string(Address addr) {
