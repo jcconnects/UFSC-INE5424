@@ -53,32 +53,14 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
 
     public:
         ~NIC();
-        
-        // Send a pre-allocated buffer
         int send(DataBuffer* buf);
-
-        // Process a received buffer
         int receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size);
-        
-        // Allocate a buffer for sending
         DataBuffer* alloc(Address dst, Protocol_Number prot, unsigned int size);
-        
-        // Release a buffer after use
         void free(DataBuffer* buf);
-        
-        // Get the local address
         const Address& address();
-        
-        // Set the local address
         void setAddress(Address address);
-        
-        // Get network statistics
         const Statistics& statistics();
-        
-        // Explicitly stop the NIC and its underlying ExternalEngine
         void stop();
-        
-        // Return wheater NIC is still active or not
         const bool running();
 
         // Attach/detach observers
@@ -90,7 +72,6 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         void handleInternal(DataBuffer* buf) override;
 
     private:
-
         Address _address;
         Statistics _statistics;
         DataBuffer _buffer[N_BUFFERS];
@@ -138,6 +119,7 @@ NIC<ExternalEngine, InternalEngine>::~NIC() {
 
 }
 
+// Send a pre-allocated buffer
 template <typename ExternalEngine, typename InternalEngine>
 int NIC<ExternalEngine, InternalEngine>::send(DataBuffer* buf) {
     db<NIC>(TRC) << "[NIC] send() called!\n";
@@ -179,6 +161,7 @@ int NIC<ExternalEngine, InternalEngine>::send(DataBuffer* buf) {
     return result;
 }
 
+// Process a received buffer
 template <typename ExternalEngine, typename InternalEngine>
 int NIC<ExternalEngine, InternalEngine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size) {
     db<NIC>(TRC) << "[NIC] receive() called!\n";
@@ -297,6 +280,7 @@ void NIC<ExternalEngine, InternalEngine>::handleInternal(DataBuffer* buf) {
     }
 }
 
+// Allocate a buffer for sending
 template <typename ExternalEngine, typename InternalEngine>
 typename NIC<ExternalEngine, InternalEngine>::DataBuffer* NIC<ExternalEngine, InternalEngine>::alloc(Address dst, Protocol_Number prot, unsigned int size) {
     db<NIC>(TRC) << "[NIC] alloc() called!\n";
@@ -332,6 +316,7 @@ typename NIC<ExternalEngine, InternalEngine>::DataBuffer* NIC<ExternalEngine, In
     return buf;
 }
 
+// Release a buffer after use
 template <typename ExternalEngine, typename InternalEngine>
 void NIC<ExternalEngine, InternalEngine>::free(DataBuffer* buf) {
     db<NIC>(TRC) << "[NIC] free() called!\n";
@@ -355,6 +340,7 @@ void NIC<ExternalEngine, InternalEngine>::free(DataBuffer* buf) {
     db<NIC>(INF) << "[NIC] buffer released\n";
 }
 
+// Explicitly stop the NIC and its underlying ExternalEngine
 template <typename ExternalEngine, typename InternalEngine>
 void NIC<ExternalEngine, InternalEngine>::stop() {
     db<NIC>(TRC) << "[NIC] stop() called!\n";
@@ -374,11 +360,13 @@ void NIC<ExternalEngine, InternalEngine>::stop() {
     db<NIC>(INF) << "[NIC] All engines stopped\n";
 }
 
+// Get the local address
 template <typename ExternalEngine, typename InternalEngine>
 const typename NIC<ExternalEngine, InternalEngine>::Address& NIC<ExternalEngine, InternalEngine>::address() {
     return _address;
 }
 
+// Set the local address
 template <typename ExternalEngine, typename InternalEngine>
 void NIC<ExternalEngine, InternalEngine>::setAddress(Address address) {
     db<NIC>(TRC) << "[NIC] setAddress() called!\n";
@@ -387,11 +375,13 @@ void NIC<ExternalEngine, InternalEngine>::setAddress(Address address) {
     db<NIC>(INF) << "[NIC] address setted: " << Ethernet::mac_to_string(address) << "\n";
 }
 
+// Return wheater NIC is still active or not
 template<typename ExternalEngine, typename InternalEngine>
 const bool NIC<ExternalEngine, InternalEngine>::running() {
     return _running.load(std::memory_order_acquire);
 }
 
+// Get network statistics
 template <typename ExternalEngine, typename InternalEngine>
 const typename NIC<ExternalEngine, InternalEngine>::Statistics& NIC<ExternalEngine, InternalEngine>::statistics() {
     return _statistics;
