@@ -331,7 +331,7 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
         
         // Get the list of observers that might need this message
         // We can't use notifyAll directly because we need to clone the buffer for each observer
-        typedef Ordered_List<typename Observer::Observer, Port> ObserverList;
+        typedef Ordered_List<typename Observed::Observer, Port> ObserverList;
         ObserverList& observers = _observed.get_observers();
         bool any_notified = false;
         
@@ -351,7 +351,7 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
             } else {
                 // Clone the buffer for subsequent observers
                 // Note: This assumes NIC::alloc creates a properly sized buffer
-                observer_buf = _nic->alloc(buf->data()->dst, prot, buf->size() - sizeof(Ethernet::Header));
+                observer_buf = _nic->alloc(buf->data()->dst, prot, buf->size() - Ethernet::HEADER_SIZE);
                 if (!observer_buf) {
                     db<Protocol>(ERR) << "[Protocol] Failed to allocate buffer for broadcast clone\n";
                     continue;
