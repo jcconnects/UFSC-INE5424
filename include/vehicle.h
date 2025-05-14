@@ -9,10 +9,10 @@
 
 #include "debug.h"
 #include "initializer.h"
-#include "component.h"
 #include "teds.h" // For DataTypeId
 
-// Forward declarations
+// Forward declarations 
+class Component;
 class BasicProducer;
 class BasicConsumer;
 class GatewayComponent;
@@ -99,14 +99,10 @@ class Vehicle {
 
         std::atomic<bool> _running;
         std::vector<std::unique_ptr<Component>> _components;
-
-        // Implementation for get_all_component_addresses
-        std::vector<Address> get_all_component_addresses() const;
-
-        // Include component headers at the end to avoid circular dependencies
-        #include "components/basic_consumer.h"
-        #include "components/gateway_component.h" // Needed for GatewayComponent::PORT in the implementation below
 };
+
+// Include component.h after all the forward declarations
+#include "component.h"
 
 /******** Vehicle Implementation *********/
 Vehicle::Vehicle(unsigned int id) : _id(id), _running(false)
@@ -184,7 +180,8 @@ void Vehicle::stop() {
 
 template <typename ComponentType, typename... Args>
 void Vehicle::create_component(const std::string& name, Args&&... args) {
-    _components.push_back(std::make_unique<ComponentType>(this, id(), name, protocol(), std::forward<Args>(args)...));   
+    std::unique_ptr<Component> component = std::make_unique<ComponentType>(this, id(), name, protocol(), std::forward<Args>(args)...);
+    _components.push_back(std::move(component));
 }
 
 void Vehicle::start_components() {
@@ -258,45 +255,25 @@ Component* Vehicle::get_component(const std::string& name) {
     return nullptr;
 }
 
-// Implementation for get_all_component_addresses
+// Implementation for get_all_component_addresses - now with proper includes
 std::vector<Vehicle::Address> Vehicle::get_all_component_addresses() const {
     std::vector<Address> addresses;
     for (const auto& comp_ptr : _components) {
         if (comp_ptr) { 
             // Exclude the Gateway's own port. Assumes Component::address() gives the component's listening address.
-            // And GatewayComponent::PORT is the well-known port for gateways.
-            if (comp_ptr->address().port() != GatewayComponent::PORT) {
-                 addresses.push_back(comp_ptr->address());
+            // Use the GATEWAY_PORT constant from Component as GatewayComponent::PORT might not be accessible
+            if (comp_ptr->address().port() != Component::GATEWAY_PORT) {
+                 // Extract just the MAC address part (paddr) from the component address
+                 addresses.push_back(comp_ptr->address().paddr());
             }
         }
     }
     return addresses;
 }
 
-// Include component headers at the end to avoid circular dependencies
+// Include component headers after implementation
 #include "components/basic_producer.h"
 #include "components/basic_consumer.h"
 #include "components/gateway_component.h"
 
 #endif // VEHICLE_H
-
-// Inline implementation for Vehicle::get_all_component_addresses
-// Requires full definition of Component (for address()) and GatewayComponent (for PORT)
-// component.h should be included by any .cpp file that includes vehicle.h before it.
-// gateway_component.h is now included above.
-
-inline std::vector<Vehicle::Address> Vehicle::get_all_component_addresses() const {
-    std::vector<Address> addresses;
-    // Ensure _components is accessible and Component::address() is callable
-    // Ensure GatewayComponent::PORT is accessible
-    for (const auto& comp_ptr : _components) { // _components is private, this needs to be in a source file or a friend
-        if (comp_ptr) { 
-            // Accessing comp_ptr->address() requires Component definition
-            // Accessing GatewayComponent::PORT requires GatewayComponent definition
-            if (comp_ptr->address().port() != GatewayComponent::PORT) {
-                 addresses.push_back(comp_ptr->address());
-            }
-        }
-    }
-    return addresses;
-}

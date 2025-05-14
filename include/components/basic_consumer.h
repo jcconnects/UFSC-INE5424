@@ -6,19 +6,33 @@
 #include <mutex>
 #include <vector>
 
-// Component has all necessary forward declarations and includes
-#include "component.h"
+// Forward declarations and minimal includes
 #include "debug.h"
 #include "teds.h"
+#include "message.h"
+#include "ethernet.h"
+
+// Forward declarations
+class Vehicle;
+class SocketEngine;
+class SharedMemoryEngine;
+
+template <typename Engine1, typename Engine2>
+class NIC;
+
+template <typename NIC>
+class Protocol;
+
+class Component;
 
 class BasicConsumer : public Component {
     public:
         // Define the port
-        static const unsigned int PORT;
+        static const unsigned int PORT = 106; // Unique port for Test Consumer
 
         // Basic constructor
         BasicConsumer(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, 
-                    VehicleProt* protocol);
+                      Protocol<NIC<SocketEngine, SharedMemoryEngine>>* protocol);
 
         ~BasicConsumer() = default;
 
@@ -49,11 +63,12 @@ class BasicConsumer : public Component {
                         const std::chrono::microseconds& timestamp, const std::string& message_details);
 };
 
-/*********** Test Consumer Implementation **********/
-const unsigned int BasicConsumer::PORT = 106; // Unique port for Test Consumer
+// Now include component.h for the implementation
+#include "component.h"
 
+/*********** Test Consumer Implementation **********/
 BasicConsumer::BasicConsumer(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, 
-                           VehicleProt* protocol) 
+                           Protocol<NIC<SocketEngine, SharedMemoryEngine>>* protocol) 
     : Component(vehicle, vehicle_id, name) 
 {
     // Sets CSV result Header
@@ -162,7 +177,6 @@ void BasicConsumer::handle_test_data(const Message& message) {
                          << " and unit type " << static_cast<int>(message.unit_type()) << "\n";
     
     // Log the raw message details
-    const void* value_data = message.value();
     std::size_t value_size = message.value_size();
     
     db<BasicConsumer>(INF) << "[Basic Consumer] Received message value_size=" << value_size
@@ -248,8 +262,7 @@ void BasicConsumer::log_message(const Message& message, const std::chrono::micro
     db<BasicConsumer>(TRC) << "[Basic Consumer] " << getName() << " received " << message_type_str 
                          << " from " << origin.to_string()
                          << " for type " << static_cast<int>(type_id)
-                         << " with latency " << latency_us << "us: " 
-                         << message_details << "\n";
+                         << " with latency " << latency_us << "us\n";
 }
 
 #endif // TEST_CONSUMER_H

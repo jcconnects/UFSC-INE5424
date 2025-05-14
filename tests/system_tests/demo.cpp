@@ -58,7 +58,6 @@ bool verify_logs(unsigned int num_vehicles) {
     
     // Keywords to search for in logs that indicate P3 functionality
     std::vector<std::string> p3_keywords = {
-        "sent REG_PRODUCER",
         "received INTEREST",
         "sending RESPONSE",
         "received RESPONSE",

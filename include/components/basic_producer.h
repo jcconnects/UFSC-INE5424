@@ -76,13 +76,6 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
 void BasicProducer::run() {
     db<BasicProducer>(INF) << "[Basic Producer] component " << getName() << " starting main run loop.\n";
     
-    // With hardcoded approach, we don't need to send registration messages
-    // The Gateway knows about us through the Vehicle's producer map
-    
-    // Start response thread immediately since we're considered always registered
-    start_producer_response_thread();
-    db<BasicProducer>(INF) << "[Basic Producer] started response thread automatically\n";
-    
     // Main loop - update sensor data periodically
     while (running()) {
         // Update simulated test data

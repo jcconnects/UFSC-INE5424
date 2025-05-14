@@ -8,19 +8,31 @@
 #include <sstream>
 #include <algorithm>
 
-#include "component.h"
-#include "debug.h"
+// Include only the necessary headers and forward declare the rest
 #include "teds.h"
 #include "message.h"
-#include "vehicle.h"
+#include "debug.h"
+#include "ethernet.h"
+
+// Forward declarations
+class Vehicle;
+class SocketEngine;
+class SharedMemoryEngine;
+
+template <typename Engine1, typename Engine2>
+class NIC;
+
+template <typename NIC>
+class Protocol;
+
+class Component;
 
 class GatewayComponent : public Component {
     public:
-        typedef std::uint16_t Port;
-        static const unsigned int PORT;
+        static const unsigned int PORT = 0; // Gateway always uses Port 0
 
         GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
-                         const std::string& name, VehicleProt* protocol);
+                         const std::string& name, Protocol<NIC<SocketEngine, SharedMemoryEngine>>* protocol);
 
         // Use default destructor instead of empty implementation
         ~GatewayComponent() = default;
@@ -28,29 +40,21 @@ class GatewayComponent : public Component {
         void run() override;
         
     protected:
-        // Hide component_dispatcher_routine to directly handle Gateway-specific messages
+        // Override component_dispatcher_routine to directly handle Gateway-specific messages
         void component_dispatcher_routine() override;
         
     private:
         // Helper methods to handle specific message types
         void handle_interest(const Message& message);
         void handle_response(const Message& message);
-        
-        // REMOVED: Get producer port for a given data type using vehicle's hardcoded mappings
-        // std::uint16_t get_producer_port(DataTypeId type) const; 
-        
-        // REMOVED: Get consumer ports interested in a given data type
-        // std::vector<std::uint16_t> get_consumer_ports(DataTypeId type) const;
-        
-        // REMOVED: Map to track which data types are requested by which consumer ports
-        // std::map<DataTypeId, std::vector<std::uint16_t>> _consumer_interests;
 };
 
-/******** Gateway Component Implementation *******/
-const unsigned int GatewayComponent::PORT = 0; // Gateway always uses Port 0
+// Move implementation to a separate .cpp file
+#include "component.h"  // Now can safely include Component
 
+// Implement the constructor
 GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
-                                  const std::string& name, VehicleProt* protocol) 
+                                  const std::string& name, Protocol<NIC<SocketEngine, SharedMemoryEngine>>* protocol) 
     : Component(vehicle, vehicle_id, name) 
 {
     // Sets CSV result Header
@@ -88,9 +92,6 @@ void GatewayComponent::run() {
 
 void GatewayComponent::component_dispatcher_routine() {
     db<GatewayComponent>(TRC) << "[Gateway] " << getName() << " dispatcher routine started.\n";
-    
-    // Buffer for raw messages
-    // std::uint8_t raw_buffer[1024]; // Not used if receive directly populates Message
     
     while (_dispatcher_running.load()) {
         Message message = _communicator->new_message(Message::Type::RESPONSE, DataTypeId::UNKNOWN); // Default message
@@ -164,7 +165,7 @@ void GatewayComponent::handle_interest(const Message& message) {
 
     // Simply forward the message as a broadcast - Protocol layer will handle delivery
     // to all interested components
-    Address broadcast_addr(Ethernet::Address::BROADCAST, 0); // Port 0 is broadcast
+    Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
     _communicator->send(message, broadcast_addr);
     
     db<GatewayComponent>(INF) << "[Gateway] INTEREST relayed via Protocol layer broadcast\n";
@@ -181,7 +182,7 @@ void GatewayComponent::handle_response(const Message& message) {
 
     // Simply forward the message as a broadcast - Protocol layer will handle delivery
     // to all interested components
-    Address broadcast_addr(Ethernet::Address::BROADCAST, 0); // Port 0 is broadcast
+    Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
     _communicator->send(message, broadcast_addr);
     
     db<GatewayComponent>(INF) << "[Gateway] RESPONSE relayed via Protocol layer broadcast\n";

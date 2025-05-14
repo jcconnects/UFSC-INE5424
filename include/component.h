@@ -27,8 +27,10 @@
 #include "teds.h" // Added for DataTypeId
 #include "observed.h" // Added for Conditionally_Data_Observed
 #include "TypedDataHandler.h" // Include for TypedDataHandler
-#include "ethernet.h" // For Ethernet::Address::BROADCAST
-#include "components/gateway_component.h" // For GatewayComponent::PORT
+#include "ethernet.h" // For Ethernet::BROADCAST
+
+// Forward declaration for GatewayComponent - removed direct include
+class GatewayComponent;
 
 // Forward declarations
 class Vehicle;
@@ -97,6 +99,9 @@ class Component {
         typedef Communicator<VehicleProt> Comms;
         typedef Comms::Address Address;
         // Message class is now directly accessible via #include "message.h" (through communicator.h)
+
+        // Define GatewayComponent::PORT constant to resolve dependencies - made public
+        static const unsigned int GATEWAY_PORT = 0;
 
         // Constructor uses concrete types
         Component(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name);
@@ -208,261 +213,230 @@ class Component {
         // Virtual method for generating response data - Producers will override
         virtual bool produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) { return false; }
 
-        // Virtual method that can be overridden by producer components to handle registration acknowledgments
+        // Virtual hook for when a producer's registration is confirmed (e.g., ack from Gateway)
         virtual void on_producer_registration_confirmed() {
-            // Base implementation does nothing
+            db<Component>(INF) << "[Component] " << getName() << " Producer response mechanism activated.\n";
         }
-
-    private:
-        // Prevent copying and assignment
-        Component(const Component&) = delete;
-        Component& operator=(const Component&) = delete;
 };
 
+#include "vehicle.h" // Now that all dependencies are resolved, include vehicle.h for implementation
 
-/************* Component Implementation ******************/
-Component::Component(Vehicle* vehicle,  const unsigned int vehicle_id, const std::string& name) : _vehicle(vehicle), _name(name), _running(false), _thread(0) {
-    if (!_vehicle) {
-         throw std::invalid_argument("Component requires a non-null vehicle instance.");
-    }
-
-    // Communicator will be created in each specific component Constructor, due to port setting";
-
-    // Setting log filename
-    _filename = _name + std::to_string(vehicle_id) + "_log.csv";
+// Component implementation
+Component::Component(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name) 
+    : _vehicle(vehicle), _name(name), _running(false)
+{
+    db<Component>(TRC) << "[Component] Constructor called for component " << name << "\n";
+    
+    // Initialize log file directory
     _log_dir = initialize_log_directory(vehicle_id);
+    _filename = _log_dir + "/" + _name + ".csv";
+    
+    // Set up the Gateway's address using the vehicle address and PORT 0
+    _gateway_address = Address(_vehicle->address(), GATEWAY_PORT); // Gateway uses PORT 0
+    
+    db<Component>(INF) << "[Component] Component " << name << " created with Gateway at " 
+                      << _gateway_address.to_string() << "\n";
 }
 
 Component::~Component() {
-    delete _communicator;
-}
-
-void Component::start() {
-    db<Component>(TRC) << "[Component] start() called for component " << getName() << ".\n";
-
+    db<Component>(TRC) << "[Component] Destructor called for component " << _name << "\n";
+    
+    // Ensure component is stopped before destruction - may already have been called
     if (running()) {
-        db<Component>(WRN) << "[Component] start() called when component" << getName() << " is already running.\n";
-        return;
+        stop();
     }
-
-
-    _gateway_address = Address(_communicator->address().paddr(), 0);
-    _running.store(true, std::memory_order_release);
     
-    // Start dispatcher thread
-    _dispatcher_running.store(true);
-    int disp_rc = pthread_create(&_component_dispatcher_thread_id, nullptr, 
-                                Component::component_dispatcher_launcher, this);
-    if (disp_rc) {
-        db<Component>(ERR) << "[Component] Failed to create dispatcher thread for " << getName() 
-                          << ", error code: " << disp_rc << "\n";
-        _dispatcher_running.store(false);
-        _running.store(false);
-        throw std::runtime_error("Failed to create dispatcher thread for " + getName());
-    }
-    db<Component>(INF) << "[Component] " << getName() << " dispatcher thread created successfully.\n";
+    // Close log file if open
+    close_log_file();
     
-    // Create main thread for run() method
-    int rc = pthread_create(&_thread, nullptr, Component::thread_entry_point, this);
-    if (rc) {
-        db<Component>(ERR) << "[Component] return code from pthread_create() is " << rc << " for "<< getName() << "\n";
-        
-        // Clean up dispatcher thread if main thread creation fails
-        _dispatcher_running.store(false);
-        pthread_join(_component_dispatcher_thread_id, nullptr);
-        _component_dispatcher_thread_id = 0;
-        
-        _running.store(false);
-        throw std::runtime_error("Failed to create component thread for " + getName());
+    // Clean up communicator if it exists
+    if (_communicator) {
+        delete _communicator;
+        _communicator = nullptr;
     }
-    db<Component>(INF) << "[Component] " << getName() << " thread created successfully.\n";
+    
+    db<Component>(INF) << "[Component] Component " << _name << " destroyed\n";
 }
 
-void Component::stop() {
-    db<Component>(TRC) << "[Component] stop() called for component " << getName() << "\n";
+// Entry point for component thread
+void* Component::thread_entry_point(void* arg) {
+    Component* component = static_cast<Component*>(arg);
+    if (component) {
+        try {
+            db<Component>(TRC) << "[Component] Thread entry point for " << component->getName() << "\n";
+            component->run();
+        } catch (const std::exception& e) {
+            db<Component>(ERR) << "[Component] " << component->getName() 
+                              << " thread exception: " << e.what() << "\n";
+        }
+    }
+    return nullptr;
+}
 
-    if (!running()) {
-        db<Component>(WRN) << "[Component] stop() called for component " << getName() << " when it is already stopped.\n";
+// Start method - creates the component's thread
+void Component::start() {
+    db<Component>(TRC) << "[Component] start() called for " << _name << "\n";
+    if (running()) {
+        db<Component>(WRN) << "[Component] " << _name << " already running\n";
         return;
     }
+    
+    // Start main thread
+    _running.store(true, std::memory_order_release);
+    int result = pthread_create(&_thread, nullptr, thread_entry_point, this);
+    if (result != 0) {
+        _running.store(false, std::memory_order_release);
+        throw std::runtime_error(std::string("Failed to create thread for component ") + _name);
+    }
+    
+    // Launch the dispatcher thread
+    _dispatcher_running.store(true, std::memory_order_release);
+    result = pthread_create(&_component_dispatcher_thread_id, nullptr, component_dispatcher_launcher, this);
+    if (result != 0) {
+        _dispatcher_running.store(false, std::memory_order_release);
+        db<Component>(ERR) << "[Component] " << _name << " Failed to create dispatcher thread\n";
+    }
+    
+    // For producer components, start the response thread
+    if (_produced_data_type != DataTypeId::UNKNOWN) {
+        start_producer_response_thread();
+    }
+    
+    db<Component>(INF) << "[Component] " << _name << " started\n";
+}
 
-    // Set running state to false
-    _running.store(false, std::memory_order_release);
-    
-    // Stop dispatcher thread
-    _dispatcher_running.store(false);
-    
-    // Stop producer thread if running
-    if (_producer_thread_running.load()) {
-        stop_producer_response_thread();
+// Stop method - signals the thread to stop and joins it
+void Component::stop() {
+    db<Component>(TRC) << "[Component] stop() called for " << _name << "\n";
+    if (!running()) {
+        db<Component>(WRN) << "[Component] " << _name << " already stopped\n";
+        return;
     }
     
-    // Then stops communicator, releasing any blocked threads
-    _communicator->close();
-    db<Component>(INF) << "[Component] Communicator closed for component" << getName() << ".\n";
-    
-    // Join dispatcher thread
-    if (_component_dispatcher_thread_id != 0) {
-        int join_rc = pthread_join(_component_dispatcher_thread_id, nullptr);
-        if (join_rc == 0) {
-            db<Component>(INF) << "[Component] Dispatcher thread joined for component " << getName() << ".\n";
-        } else {
-            db<Component>(ERR) << "[Component] Failed to join dispatcher thread for component " 
-                              << getName() << "! Error code: " << join_rc << "\n";
-        }
-        _component_dispatcher_thread_id = 0;
-    }
-    
-    // Stop and join all handler threads
+    // First, stop all interest handler processing threads
     for (auto& handler : _typed_data_handlers) {
         handler->stop_processing_thread();
     }
     
-    for (pthread_t thread_id : _handler_threads_ids) {
-        if (thread_id != 0) {
-            pthread_join(thread_id, nullptr);
-        }
+    // Clean up handler threads
+    for (auto& thread_id : _handler_threads_ids) {
+        pthread_join(thread_id, nullptr);
     }
-    
-    // Clear handlers and thread IDs
-    _typed_data_handlers.clear();
     _handler_threads_ids.clear();
     
-    // Then join main thread
-    if (_thread != 0) {
-        int join_rc = pthread_join(_thread, nullptr);
-
-        if (join_rc == 0) {
-                db<Component>(INF) << "[Component] thread joined for component " << getName() << ".\n";
-        } else {
-                db<Component>(ERR) << "[Component] failed to join thread for component " << getName() << "! Error code: " << join_rc << "\n";
-                // Consider logging errno or using strerror(join_rc) if applicable
-        }
-
-        _thread = 0; // Reset thread handle after join
+    // Set dispatcher running flag to false
+    _dispatcher_running.store(false, std::memory_order_release);
+    
+    // Close communicator to unblock any threads waiting in receive()
+    if (_communicator) {
+        _communicator->close();
+        db<Component>(TRC) << "[Component] " << _name << " communicator closed\n";
     }
-
-    close_log_file(); // Close log file after stopping
-    db<Component>(INF) << "[Component] " << getName() <<" stopped.\n";
+    
+    // Now join dispatcher thread
+    if (_component_dispatcher_thread_id != 0) {
+        pthread_join(_component_dispatcher_thread_id, nullptr);
+        _component_dispatcher_thread_id = 0;
+    }
+    
+    // Stop producer thread if active
+    if (_producer_thread_running.load(std::memory_order_acquire)) {
+        stop_producer_response_thread();
+    }
+    
+    // Stop main thread
+    _running.store(false, std::memory_order_release);
+    pthread_join(_thread, nullptr);
+    
+    db<Component>(INF) << "[Component] " << _name << " stopped\n";
 }
 
-void* Component::thread_entry_point(void* arg) {
-    Component* self = static_cast<Component*>(arg);
-
-    db<Component>(INF) << "[Component] " << self->getName() << " thread starting execution.\n";
-
-    try {
-        self->run(); // Call the derived class's implementation
-    } catch (const std::exception& e) {
-        db<Component>(ERR) << "[Component] " << self->getName() << " thread caught exception: " << e.what() << "\n";
-    } catch (...) {
-        db<Component>(ERR) << "[Component] '" << self->getName() << " thread caught unknown exception.\n";
-    }
-
-    db<Component>(INF) << "[Component] " << self->getName() << " thread finished execution.\n";
-    return nullptr;
-}
-
+// Helper method to determine component type
 ComponentType Component::determine_component_type() const {
-    // Port 0 is always a Gateway
-    if (_communicator && _communicator->address().port() == 0) {
+    // Determine component type from class type or configuration
+    // This is a simplified example - in reality, use RTTI or type hints
+    if (_name.find("Gateway") != std::string::npos) {
         return ComponentType::GATEWAY;
     }
-    
-    // Check if component is a producer
-    bool is_producer = (_produced_data_type != DataTypeId::UNKNOWN);
-    
-    // Check if component is a consumer
-    bool is_consumer = !_active_interests.empty();
-    
-    if (is_producer && is_consumer) {
-        return ComponentType::PRODUCER_CONSUMER;
-    } else if (is_producer) {
+    else if (_name.find("Producer") != std::string::npos || _produced_data_type != DataTypeId::UNKNOWN) {
         return ComponentType::PRODUCER;
-    } else if (is_consumer) {
+    }
+    else if (_name.find("Consumer") != std::string::npos || !_active_interests.empty()) {
         return ComponentType::CONSUMER;
     }
-                
-    return ComponentType::UNKNOWN;
+    else {
+        // Determine type based on the component's behavior
+        // Default to UNKNOWN if type cannot be determined
+        return ComponentType::UNKNOWN;
+    }
 }
 
+// send method implementation
 int Component::send(const void* data, unsigned int size, Address destination) {
+    if (!_communicator) {
+        db<Component>(ERR) << "[Component] " << _name << " send() failed: communicator not initialized\n";
+        return -1;
+    }
     
-    // Create response message with the data
-    Message msg = _communicator->new_message(
-        Message::Type::RESPONSE,  // Using RESPONSE type for raw data
-        DataTypeId::UNKNOWN,      // Changed from 0 to DataTypeId::UNKNOWN
-        0,                        // No period for responses
-        data,                     // The data to send
-        size                      // Size of the data
-    );
+    if (!data || size == 0) {
+        db<Component>(ERR) << "[Component] " << _name << " send() failed: invalid data or size\n";
+        return -1;
+    }
+    
+    db<Component>(TRC) << "[Component] " << _name << " sending " << size 
+                      << " bytes to " << destination.to_string() << "\n";
+    
+    // Create a message object for sending
+    Message message = _communicator->new_message(Message::Type::RESPONSE, DataTypeId::UNKNOWN, 0, data, size);
     
     // Send the message
-    if (_communicator->send(msg, destination)) {
-        db<Component>(INF) << "[Component] " << getName() << " sent " << size << " bytes to " << destination.to_string() << ".\n";
-        return size; // Return bytes sent on success
-    } else {
-        db<Component>(ERR) << "[Component] " << getName() << " failed to send message.\n";
-        return 0; // Indicate error
+    if (_communicator->send(message, destination)) {
+        return size;
     }
+    return -1;
 }
 
-// Receive method
+// receive method implementation
 int Component::receive(Message* msg) {
-    db<Component>(TRC) << "[Component] " << getName() << " receive called!\n";
-
-    if (!_communicator->receive(msg)) {
-        // Check if we stopped while waiting (only for log purposes)
-        if (!running()) {
-            db<Component>(INF) << "[Component] " << getName() << " receive interrupted by stop().\n";
-        }
-
-        db<Component>(WRN) << "[Component] " << getName() << " receive failed.\n";
-        return 0; // Indicate error
-    }
-
-    db<Component>(TRC) << "[Component] " << getName() << " received message of size " << msg->size() << ".\n";
-
-    // For RESPONSE messages, check the value
-    if (msg->message_type() == Message::Type::RESPONSE) {
-        db<Component>(TRC) << "[Component] " << getName() << " received RESPONSE message.\n";
-        return msg->size(); // Indicate errora
+    if (!_communicator) {
+        db<Component>(ERR) << "[Component] " << _name << " receive() failed: communicator not initialized\n";
+        return -1;
     }
     
-    // For any other message type or if no value data
-    unsigned int msg_size = msg->size();
-    db<Component>(INF) << "[Component]" << getName() << " received raw message data\n";
-
-    // Return bytes received
-    return msg_size;
+    if (!msg) {
+        db<Component>(ERR) << "[Component] " << _name << " receive() failed: invalid message pointer\n";
+        return -1;
+    }
+    
+    // Call receive without timeout since it's not supported
+    if (_communicator->receive(msg)) {
+        db<Component>(TRC) << "[Component] " << _name << " received message from " 
+                          << msg->origin().to_string() << "\n";
+        return msg->value_size(); // Use public value_size() method
+    }
+    
+    return -1;
 }
 
-// Logging methods
+// Open the CSV log file for output
 void Component::open_log_file() {
-    // Ensure any previous file is closed
-    close_log_file(); 
-
     try {
-        std::string filepath = _log_dir + _filename;
-        _log_file.open(filepath);
-
+        _log_file.open(_filename); // Open in append mode
         if (!_log_file.is_open()) {
-            db<Component>(ERR) << "[Component] " << getName() << " failed to open log file: " << filepath << "\n";
-            db<Component>(ERR) << "[Component] " << getName() << " will log to standard output instead.\n";
+            db<Component>(ERR) << "[Component] " << _name << " Failed to open log file: " << _filename << "\n";
         } else {
-            db<Component>(INF) << "[Component] " << getName() << " opened log file: " << filepath << "\n";
+            db<Component>(INF) << "[Component] " << _name << " Opened log file: " << _filename << "\n";
         }
     } catch (const std::exception& e) {
-        db<Component>(ERR) << "[Component] " << getName() << " error opening log file: " << e.what() << "\n";
+        db<Component>(ERR) << "[Component] " << _name << " Exception opening log file: " << e.what() << "\n";
     }
-    
-    // Derived classes should write headers immediately after calling this in their constructor
 }
 
+// Close the CSV log file
 void Component::close_log_file() {
     if (_log_file.is_open()) {
         _log_file.close();
-        db<Component>(INF) << "[Component] " << getName() << " log file closed.\n";
+        db<Component>(INF) << "[Component] " << _name << " Closed log file\n";
     }
 }
 
@@ -479,515 +453,438 @@ const Vehicle* Component::vehicle() const {
 }
 
 std::ofstream* Component::log_file() {
+    if (!_log_file.is_open()) {
+        open_log_file();
+    }
     return &_log_file;
 }
 
 const Component::Address& Component::address() const {
+    if (!_communicator) {
+        // No communicator, but need to return something - return default address
+        static const Address default_addr;
+        return default_addr;
+    }
     return _communicator->address();
 }
 
-// Helper method to initialize log directory
+// Create log directory structure
 std::string Component::initialize_log_directory(unsigned int vehicle_id) {
-    std::string log_dir;
+    // Try in priority order: Docker logs dir, tests/logs dir, current dir
+    std::string base_dir = "tests/logs";
     
-    // First try the Docker container's logs directory
+    // Create vehicle-specific directory
+    std::string vehicle_dir = base_dir + "/vehicle_" + std::to_string(vehicle_id);
+    
     struct stat info;
-    if (stat("/app/logs", &info) == 0 && (info.st_mode & S_IFDIR)) {
-        log_dir = "/app/logs/vehicle_" + std::to_string(vehicle_id) + "/";
-    } else {
-        // Try to use tests/logs directory instead of current directory
-        if (stat("tests/logs", &info) != 0 || !(info.st_mode & S_IFDIR)) {
-            try {
-                // Create directory with permissions 0755 (rwxr-xr-x)
-                mkdir("tests/logs", 0755);
-            } catch (...) {
-                // Ignore errors, will fall back if needed
-            }
-        }
-        
-        if (stat("tests/logs", &info) == 0 && (info.st_mode & S_IFDIR)) {
-            log_dir = "tests/logs/vehicle_" + std::to_string(vehicle_id) + "/";
-        } else {
-            // Last resort fallback to current directory
-            log_dir = "./";
+    if (stat(vehicle_dir.c_str(), &info) != 0) {
+        // Directory doesn't exist, try to create it
+        if (mkdir(vehicle_dir.c_str(), 0777) != 0) {
+            db<Component>(ERR) << "[Component] Failed to create directory: " << vehicle_dir << "\n";
+            return base_dir; // Fallback to base dir
         }
     }
     
-    // Create the directory if it doesn't exist
-    if (log_dir != "./") {
-        try {
-            // Create vehicle-specific directory with permissions 0755 (rwxr-xr-x)
-            mkdir(log_dir.c_str(), 0755);
-        } catch (...) {
-            // If we can't create the directory, fall back to current directory
-            log_dir = "./";
+    // Create component directory for complex components that need multiple log files
+    std::string component_dir = vehicle_dir + "/" + _name;
+    if (stat(component_dir.c_str(), &info) != 0) {
+        if (mkdir(component_dir.c_str(), 0777) != 0) {
+            db<Component>(WRN) << "[Component] Failed to create component directory: " << component_dir << "\n";
+            return vehicle_dir; // Fallback to vehicle dir
         }
     }
     
-    return log_dir;
+    db<Component>(INF) << "[Component] Using log directory: " << vehicle_dir << "\n";
+    return vehicle_dir;
 }
 
-// Implement register_interest_handler
-void Component::register_interest_handler(DataTypeId type, std::uint32_t period_us, std::function<void(const Message&)> callback) {
-    db<Component>(TRC) << "[Component] register_interest_handler(" << static_cast<int>(type) << ", " << period_us << ")\n";
+// P3 API: Register interest in a data type with a callback for handling responses
+void Component::register_interest_handler(DataTypeId type, std::uint32_t period_us, 
+                                         std::function<void(const Message&)> callback) {
+    if (type == DataTypeId::UNKNOWN) {
+        db<Component>(ERR) << "[Component] " << _name << " Cannot register interest in UNKNOWN data type\n";
+        return;
+    }
     
-    // Create a new interest request
-    InterestRequest request;
-    request.type = type;
-    request.period_us = period_us;
-    request.last_accepted_response_time_us = 0;
-    request.interest_sent = false;
-    request.callback = callback;
+    // Check if we already have an interest for this type
+    for (auto& interest : _active_interests) {
+        if (interest.type == type) {
+            db<Component>(WRN) << "[Component] " << _name << " Already registered interest in data type " 
+                              << static_cast<int>(type) << ", updating period and callback\n";
+            interest.period_us = period_us;
+            interest.callback = callback;
+            return;
+        }
+    }
     
     // Add to active interests
+    InterestRequest request{type, period_us, 0, false, callback};
     _active_interests.push_back(request);
     
-    // Create a TypedDataHandler for this interest
-    auto handler = std::make_unique<TypedDataHandler>(
-        type, 
-        callback, 
-        this, 
-        &_internal_typed_observed
-    );
+    // Create and send INTEREST message to Gateway
+    // Use a temporary variable to store the period, since we can't modify the message directly
+    Message interest_message = _communicator->new_message(Message::Type::INTEREST, type, period_us);
     
-    // Start the handler's processing thread
-    handler->start_processing_thread();
+    // Send to Gateway component
+    Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
+    _communicator->send(interest_message, broadcast_addr);
     
-    // Store the thread ID for later joining
-    _handler_threads_ids.push_back(handler->get_thread_id());
-    
-    // Store the handler
-    _typed_data_handlers.push_back(std::move(handler));
-    
-    // Send initial interest message
-    Message interest_msg = _communicator->new_message(
-        Message::Type::INTEREST,
-        type,
-        period_us
-    );
-    
-    // Send to broadcast address on port 0 - Protocol layer will handle delivery
-    Address broadcast_addr(Ethernet::Address::BROADCAST, 0); // Port 0 is broadcast
-    _communicator->add_interest(type, period_us);
-    _communicator->send(interest_msg, broadcast_addr);
-    
-    // Mark interest as sent
-    _active_interests.back().interest_sent = true;
-    
-    db<Component>(INF) << "[Component] " << getName() << " registered interest in data type " 
-                      << static_cast<int>(type) << " with period " << period_us << " microseconds\n";
+    db<Component>(INF) << "[Component] " << _name << " Sent INTEREST for data type " 
+                      << static_cast<int>(type) << " with period " << period_us << "us\n";
 }
 
-// Implement component_dispatcher_launcher
+// Entry point for component dispatcher thread
 void* Component::component_dispatcher_launcher(void* context) {
-    Component* self = static_cast<Component*>(context);
-    if (self) {
-        db<Component>(INF) << "[Component] " << self->getName() << " dispatcher thread starting.\n";
-        self->component_dispatcher_routine();
-        db<Component>(INF) << "[Component] " << self->getName() << " dispatcher thread exiting.\n";
+    Component* component = static_cast<Component*>(context);
+    if (component) {
+        try {
+            db<Component>(TRC) << "[Component] Dispatcher thread starting for " << component->getName() << "\n";
+            component->component_dispatcher_routine();
+        } catch (const std::exception& e) {
+            db<Component>(ERR) << "[Component] " << component->getName() 
+                              << " dispatcher thread exception: " << e.what() << "\n";
+        }
     }
     return nullptr;
 }
 
-// Implement component_dispatcher_routine
+// Default implementation of component_dispatcher_routine
 void Component::component_dispatcher_routine() {
-    db<Component>(TRC) << "[Component] " << getName() << " dispatcher routine started.\n";
+    db<Component>(TRC) << "[Component] " << _name << " dispatcher routine started\n";
     
-    // Buffer for raw messages
-    std::uint8_t raw_buffer[1024]; // Adjust size as needed based on your MTU
-    
+    // This is a generic implementation that all components use to listen for messages
+    // In the P3 architecture, producers receive INTERESTs, consumers receive RESPONSEs
     while (_dispatcher_running.load()) {
-        // Receive raw message
-        Message message = _communicator->new_message(Message::Type::RESPONSE, DataTypeId::UNKNOWN); // Changed from 0 to DataTypeId::UNKNOWN
-        int recv_size = receive(&message);
+        // Create a message to hold received data
+        Message message = _communicator->new_message(Message::Type::INTEREST, DataTypeId::UNKNOWN);
         
-        if (recv_size <= 0) {
+        // Blocking receive without timeout (API doesn't support timeout)
+        if (_communicator->receive(&message)) {
+            // Handle based on message type
+            Message::Type msg_type = message.message_type();
+            DataTypeId data_type = message.unit_type();
+            
+            if (msg_type == Message::Type::INTEREST && _produced_data_type != DataTypeId::UNKNOWN) {
+                // INTEREST message for a producer
+                if (data_type == _produced_data_type) {
+                    std::uint32_t period = message.period();
+                    
+                    db<Component>(INF) << "[Component] " << _name << " received INTEREST for data type " 
+                                      << static_cast<int>(data_type) << " with period " << period << "us\n";
+                    
+                    // Store the interest period
+                    bool found = false;
+                    for (auto& p : _received_interest_periods) {
+                        if (p == period) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!found) {
+                        _received_interest_periods.push_back(period);
+                        _current_gcd_period_us.store(update_gcd_period(), std::memory_order_release);
+                        db<Component>(INF) << "[Component] " << _name << " updated GCD period to " 
+                                          << _current_gcd_period_us.load() << "us\n";
+                    }
+
+                    // Start producer response thread if it's not already running
+                    if (!_producer_thread_running.load(std::memory_order_acquire)) {
+                        db<Component>(INF) << "[Component] " << _name << " received first INTEREST, starting producer response thread.\n";
+                        start_producer_response_thread();
+                    }
+
+                } else {
+                    db<Component>(TRC) << "[Component] " << _name << " ignoring INTEREST for unproduced data type " 
+                                      << static_cast<int>(data_type) << "\n";
+                }
+            } 
+            else if (msg_type == Message::Type::RESPONSE) {
+                // RESPONSE message for a consumer
+                // Check if we have an active interest in this data type
+                bool interest_found = false;
+                for (auto& interest : _active_interests) {
+                    if (interest.type == data_type) {
+                        interest_found = true;
+                        
+                        // Mark that we've received a response to our interest
+                        interest.interest_sent = true;
+                        
+                        // Update last accepted response time
+                        interest.last_accepted_response_time_us = 
+                            std::chrono::duration_cast<std::chrono::microseconds>(
+                                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+                        
+                        // Call the callback function if provided
+                        if (interest.callback) {
+                            interest.callback(message);
+                        }
+                        
+                        db<Component>(TRC) << "[Component] " << _name << " dispatched RESPONSE for data type " 
+                                          << static_cast<int>(data_type) << " to callback\n";
+                        break;
+                    }
+                }
+                
+                if (!interest_found) {
+                    db<Component>(TRC) << "[Component] " << _name << " received RESPONSE for data type " 
+                                      << static_cast<int>(data_type) << " but no active interest\n";
+                }
+            }
+            else {
+                db<Component>(TRC) << "[Component] " << _name << " received unhandled message type: " 
+                                  << static_cast<int>(msg_type) << "\n";
+            }
+        } else {
             // Check if we should exit
             if (!_dispatcher_running.load()) {
                 break;
             }
             
-            // Handle error or timeout
-            if (recv_size < 0) {
-                db<Component>(ERR) << "[Component] " << getName() << " dispatcher receive error: " << recv_size << "\n";
-            }
-            
-            // Continue to next iteration
-            continue;
-        }
-        
-        try {
-            
-            // Handle REG_PRODUCER_ACK messages for producers
-            if (message.message_type() == Message::Type::REG_PRODUCER_ACK) {
-                // Check if this component is a producer and verify the data type
-                if ((determine_component_type() == ComponentType::PRODUCER || 
-                     determine_component_type() == ComponentType::PRODUCER_CONSUMER) &&
-                    message.unit_type() == _produced_data_type) {
-                    
-                    db<Component>(INF) << "[Component] " << getName() << " received REG_PRODUCER_ACK for type " 
-                                      << static_cast<int>(_produced_data_type) << "\n";
-                    // Call the virtual method instead of dynamic_cast
-                    on_producer_registration_confirmed();
-                }
-            }
-            
-            // Producer-specific INTEREST handling logic for GCD updates
-            // Check if this is a producer component and if the message is an INTEREST for our data type
-            if (_produced_data_type != DataTypeId::UNKNOWN && 
-                message.message_type() == Message::Type::INTEREST &&
-                message.unit_type() == _produced_data_type) {
-                
-                db<Component>(INF) << "[Component] " << getName() << " component_dispatcher_routine received INTEREST for its produced type " << static_cast<int>(_produced_data_type) << " from origin " << message.origin().to_string() << " with period " << message.period() << "us\n";
-
-                // Add this period to our received_interest_periods if not already present
-                std::uint32_t requested_period = message.period();
-                bool period_exists = false;
-                
-                for (std::uint32_t existing_period : _received_interest_periods) {
-                    if (existing_period == requested_period) {
-                        period_exists = true;
-                        break;
-                    }
-                }
-                
-                if (!period_exists) {
-                    _received_interest_periods.push_back(requested_period);
-                    std::uint32_t old_gcd_period = update_gcd_period();
-                    std::uint32_t new_gcd_period = _current_gcd_period_us.load();
-
-                    if (new_gcd_period != old_gcd_period) {
-                        db<Component>(INF) << "[Component] " << getName() << " dispatcher: GCD changed. Old: " << old_gcd_period 
-                                          << "us, New: " << new_gcd_period << "us. Managing response thread.\n";
-                        if (_producer_thread_running.load()) {
-                            db<Component>(INF) << "[Component] " << getName() << " dispatcher: Stopping existing response thread due to GCD change.\n";
-                            stop_producer_response_thread(); // Signals and joins
-                        }
-                        // If new GCD is valid (>0), a new thread will be started (or restarted)
-                        if (new_gcd_period > 0) {
-                            db<Component>(INF) << "[Component] " << getName() << " dispatcher: Starting/restarting response thread with new GCD " << new_gcd_period << "us.\n";
-                            start_producer_response_thread();
-                        } else {
-                            db<Component>(INF) << "[Component] " << getName() << " dispatcher: New GCD is 0, response thread remains stopped.\n";
-                        }
-                    } else if (new_gcd_period > 0 && !_producer_thread_running.load()) {
-                        // GCD didn't change from a non-zero value, but thread wasn't running (e.g. first interest, or interests were cleared and now one is added back)
-                        db<Component>(INF) << "[Component] " << getName() << " dispatcher: GCD is " << new_gcd_period 
-                                          << "us and thread not running. Starting response thread.\n";
-                        start_producer_response_thread();
-                    } else if (new_gcd_period == 0 && _producer_thread_running.load()) {
-                        // This case should ideally be handled if all interests are removed, leading to GCD=0
-                        db<Component>(INF) << "[Component] " << getName() << " dispatcher: GCD became 0 and thread is running. Stopping response thread.\n";
-                        stop_producer_response_thread();
-                    }
-                }
-            }
-            
-            // Create heap-allocated message for observers
-            Message* heap_msg = new Message(message);
-            
-            // Get the message type for routing
-            DataTypeId msg_type = heap_msg->unit_type();
-            
-            // Notify appropriate typed observers
-            bool delivered = _internal_typed_observed.notify(msg_type, heap_msg);
-            
-            if (!delivered) {
-                // No observer for this type, clean up the heap message
-                delete heap_msg;
-                db<Component>(INF) << "[Component] " << getName() << " received message of type " 
-                                  << static_cast<int>(msg_type) << " but no handler is registered.\n";
-            }
-        } catch (const std::exception& e) {
-            db<Component>(ERR) << "[Component] " << getName() << " dispatcher exception: " << e.what() << "\n";
+            // Small sleep to avoid tight loop on error
+            usleep(1000);  // 1ms sleep
         }
     }
     
-    db<Component>(TRC) << "[Component] " << getName() << " dispatcher routine exiting.\n";
+    db<Component>(TRC) << "[Component] " << _name << " dispatcher routine exiting\n";
 }
 
-// Implement producer_response_launcher
+// Entry point for producer response thread
 void* Component::producer_response_launcher(void* context) {
-    Component* self = static_cast<Component*>(context);
-    if (self) {
-        db<Component>(INF) << "[Component] " << self->getName() << " producer response thread starting.\n";
-        self->producer_response_routine();
-        db<Component>(INF) << "[Component] " << self->getName() << " producer response thread exiting.\n";
+    Component* component = static_cast<Component*>(context);
+    if (component) {
+        try {
+            db<Component>(TRC) << "[Component] Producer response thread starting for " << component->getName() << "\n";
+            component->producer_response_routine();
+        } catch (const std::exception& e) {
+            db<Component>(ERR) << "[Component] " << component->getName() 
+                              << " producer response thread exception: " << e.what() << "\n";
+        }
     }
     return nullptr;
 }
 
-// Implement producer_response_routine
+// Producer response routine - generates periodic responses based on interests
 void Component::producer_response_routine() {
-    db<Component>(TRC) << "[Component] " << getName() << " producer response routine started.\n";
+    db<Component>(TRC) << "[Component] " << _name << " producer response routine started\n";
     
-    // Set up clock for timing
     struct timespec next_period;
     clock_gettime(CLOCK_MONOTONIC, &next_period);
     
-    while (_producer_thread_running.load()) {
-        // Check if we have a valid period to use
-        std::uint32_t current_period = _current_gcd_period_us.load();
+    // Determine if SCHED_DEADLINE is available
+    _has_dl_capability.store(has_deadline_scheduling_capability(), std::memory_order_relaxed);
+    
+    // Use SCHED_DEADLINE if available, otherwise SCHED_FIFO
+    if (_has_dl_capability.load(std::memory_order_relaxed)) {
+        db<Component>(INF) << "[Component] " << _name << " using SCHED_DEADLINE for response generation\n";
         
-        if (current_period > 0) {
-            // Check if we have SCHED_DEADLINE capability
-            if (_has_dl_capability.load()) {
-                // Set up SCHED_DEADLINE parameters based on our GCD period
-                struct sched_attr attr_dl;
-                memset(&attr_dl, 0, sizeof(attr_dl));
-                attr_dl.size = sizeof(attr_dl);
-                attr_dl.sched_policy = SCHED_DEADLINE;
-                
-                // Runtime is the execution time allocated for this task (in ns)
-                // We'll allocate 80% of the period for runtime to be safe
-                uint64_t runtime_ns = (current_period * 1000) * 0.8;
-                
-                // Period and deadline are set to the GCD period (in ns)
-                uint64_t period_ns = current_period * 1000;
-                
-                attr_dl.sched_runtime = runtime_ns;
-                attr_dl.sched_period = period_ns;
-                attr_dl.sched_deadline = period_ns; // deadline = period for our use case
-                
-                db<Component>(TRC) << "[Component] " << getName() << " attempting to set SCHED_DEADLINE with P=" << period_ns << ", D=" << attr_dl.sched_deadline << ", R=" << attr_dl.sched_runtime << " ns\n";
-                // Apply SCHED_DEADLINE to current thread
-                int ret = sched_setattr(0, &attr_dl, 0);
-                if (ret < 0) {
-                    db<Component>(WRN) << "[Component] " << getName() 
-                                     << " failed to set SCHED_DEADLINE (errno " << errno 
-                                     << "), falling back to usleep-based timing for period " << current_period << " us.\n";
-                    _has_dl_capability.store(false); // Update capability state
-                } else {
-                    db<Component>(INF) << "[Component] " << getName() << " SCHED_DEADLINE set successfully for period " << current_period << " us.\n";
-                    // Using SCHED_DEADLINE for timing - the kernel will handle the scheduling
-                    
-                    while (_producer_thread_running.load() && _current_gcd_period_us.load() == current_period) {
-                        // Generate response data
-                        std::vector<std::uint8_t> response_data_dl;
-                        
-                        // Call the virtual method that derived classes will override
-                        if (produce_data_for_response(_produced_data_type, response_data_dl)) {
-                            // Create a RESPONSE message
-                            Message response_msg_dl = _communicator->new_message(
-                                Message::Type::RESPONSE,
-                                _produced_data_type,
-                                0, 
-                                response_data_dl.data(),
-                                response_data_dl.size()
-                            );
-                            
-                            db<Component>(INF) << "[Component] " << getName() << " sending RESPONSE (via SCHED_DEADLINE path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data_dl.size() << " bytes. Current GCD: " << current_period << " us.\n";
-                            
-                            // Send to broadcast address on port 0 - Protocol layer will handle delivery
-                            Address broadcast_addr(Ethernet::Address::BROADCAST, 0); // Port 0 is broadcast
-                            _communicator->send(response_msg_dl, broadcast_addr);
-                        } else {
-                            db<Component>(WRN) << "Producer " << getName() << " failed to produce data (SCHED_DEADLINE path) for type " 
-                                              << static_cast<int>(_produced_data_type) << ".\n";
-                        }
-                        
-                        // Let the SCHED_DEADLINE scheduler handle the timing
-                        sched_yield();
-                    }
-                    
-                    // Reset to normal scheduling when we exit the inner loop
-                    struct sched_param param;
-                    param.sched_priority = 0;
-                    pthread_setschedparam(pthread_self(), SCHED_OTHER, &param);
-                    continue; // Skip the fallback code below
-                }
+        // Setup SCHED_DEADLINE parameters - based on current_gcd_period
+        struct sched_attr attr_dl;
+        memset(&attr_dl, 0, sizeof(attr_dl));
+        attr_dl.size = sizeof(attr_dl);
+        attr_dl.sched_policy = SCHED_DEADLINE;
+        attr_dl.sched_flags = 0;
+        
+        while (_producer_thread_running.load(std::memory_order_acquire)) {
+            // Get the current GCD period
+            std::uint32_t current_period = _current_gcd_period_us.load(std::memory_order_acquire);
+            
+            // If we have no interests yet, sleep and wait
+            if (current_period == 0 || _received_interest_periods.empty()) {
+                usleep(100000); // Sleep for 100ms
+                continue;
             }
             
-            // Fallback to usleep-based timing
-            // Generate response data
-            std::vector<std::uint8_t> response_data;
+            // Update SCHED_DEADLINE parameters based on current period
+            attr_dl.sched_runtime = current_period * 500; // 50% of period in ns
+            attr_dl.sched_deadline = current_period * 1000; // Period in ns
+            attr_dl.sched_period = current_period * 1000; // Period in ns
             
-            // Call the virtual method that derived classes will override
+            // Set scheduling parameters - may fail if not root/CAP_SYS_NICE
+            int result = sched_setattr(0, &attr_dl, 0);
+            if (result < 0) {
+                db<Component>(WRN) << "[Component] " << _name 
+                                  << " failed to set SCHED_DEADLINE, falling back to SCHED_FIFO\n";
+                _has_dl_capability.store(false, std::memory_order_relaxed);
+                break; // Break and fall back to SCHED_FIFO
+            }
+            
+            // Generate response based on the current period
+            std::vector<std::uint8_t> response_data;
             if (produce_data_for_response(_produced_data_type, response_data)) {
-                // Create a RESPONSE message
-                Message response_msg = _communicator->new_message(
-                    Message::Type::RESPONSE,
+                // Create response message with the data
+                Message response = _communicator->new_message(
+                    Message::Type::RESPONSE, 
                     _produced_data_type,
-                    0, // No period for responses
-                    response_data.data(),
-                    response_data.size()
+                    0,  // period is 0 for responses
+                    response_data.data(),  // Pass the data buffer
+                    response_data.size()   // and its size
                 );
                 
-                db<Component>(INF) << "[Component] " << getName() << " sending RESPONSE (via usleep path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data.size() << " bytes. Current GCD: " << current_period << " us.\n";
+                // Send to Gateway for broadcast distribution
+                Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
+                _communicator->send(response, broadcast_addr);
                 
-                // Send to broadcast address on port 0 - Protocol layer will handle delivery
-                Address broadcast_addr(Ethernet::Address::BROADCAST, 0); // Port 0 is broadcast
-                _communicator->send(response_msg, broadcast_addr);
-                
-            } else {
-                db<Component>(WRN) << "[Component] " << getName() << " failed to produce data (usleep path) for type " 
-                                  << static_cast<int>(_produced_data_type) << ".\n";
+                db<Component>(TRC) << "[Component] " << _name << " sent RESPONSE for data type " 
+                                  << static_cast<int>(_produced_data_type) << " with " 
+                                  << response_data.size() << " bytes\n";
             }
             
-            // Wait for the GCD period
+            // Sleep for one period
+            clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_period, NULL);
+            
+            // Calculate next period
+            next_period.tv_nsec += current_period * 1000;
+            if (next_period.tv_nsec >= 1000000000) {
+                next_period.tv_sec += next_period.tv_nsec / 1000000000;
+                next_period.tv_nsec %= 1000000000;
+            }
+        }
+    }
+    else {
+        db<Component>(INF) << "[Component] " << _name << " using SCHED_FIFO for response generation\n";
+        
+        // Setup SCHED_FIFO
+        struct sched_param param;
+        param.sched_priority = 99; // Max RT priority
+        pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
+        
+        // Response generation loop
+        while (_producer_thread_running.load(std::memory_order_acquire)) {
+            // Get the current GCD period
+            std::uint32_t current_period = _current_gcd_period_us.load(std::memory_order_acquire);
+            
+            // If we have no interests yet, sleep and wait
+            if (current_period == 0 || _received_interest_periods.empty()) {
+                usleep(100000); // Sleep for 100ms
+                continue;
+            }
+            
+            // Generate response based on the current period
+            std::vector<std::uint8_t> response_data;
+            if (produce_data_for_response(_produced_data_type, response_data)) {
+                // Create response message with the data
+                Message response = _communicator->new_message(
+                    Message::Type::RESPONSE, 
+                    _produced_data_type,
+                    0,  // period is 0 for responses
+                    response_data.data(),  // Pass the data buffer
+                    response_data.size()   // and its size
+                );
+                
+                // Send to Gateway for broadcast distribution
+                Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
+                _communicator->send(response, broadcast_addr);
+                
+                db<Component>(TRC) << "[Component] " << _name << " sent RESPONSE for data type " 
+                                  << static_cast<int>(_produced_data_type) << " with " 
+                                  << response_data.size() << " bytes\n";
+            }
+            
+            // Sleep for one period using usleep
             usleep(current_period);
-        } else {
-            // No valid period, sleep a bit and check again
-            usleep(100000); // 100ms
         }
     }
     
-    db<Component>(TRC) << "[Component] " << getName() << " producer response routine exiting.\n";
+    db<Component>(TRC) << "[Component] " << _name << " producer response routine exiting\n";
 }
 
-// Implement start_producer_response_thread
+// Start the producer response thread
 void Component::start_producer_response_thread() {
-    db<Component>(TRC) << "[Component] " << getName() << " start_producer_response_thread() called.\n";
-    
-    // Only start if not already running
-    if (!_producer_thread_running.load() && _produced_data_type != DataTypeId::UNKNOWN) {
-        _producer_thread_running.store(true);
-        
-        // Check for SCHED_DEADLINE capability
-        _has_dl_capability.store(has_deadline_scheduling_capability());
-        if (_has_dl_capability.load()) {
-            db<Component>(INF) << "Component " << getName() << " has SCHED_DEADLINE capability.\n";
-        } else {
-            db<Component>(WRN) << "Component " << getName() << " will fall back to usleep-based timing.\n";
-        }
-        
-        // Create thread attributes
-        pthread_attr_t attr;
-        pthread_attr_init(&attr);
-        
-        // Set detach state to joinable (default, but being explicit)
-        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-        
-        // Create the thread with default settings - SCHED_DEADLINE will be set inside the thread
-        int rc = pthread_create(&_producer_response_thread_id, &attr, 
-                               Component::producer_response_launcher, this);
-        
-        // Clean up thread attributes
-        pthread_attr_destroy(&attr);
-        
-        if (rc) {
-            db<Component>(ERR) << "[Component] Failed to create producer thread for " << getName() 
-                              << ", error code: " << rc << "\n";
-            _producer_thread_running.store(false);
-            _producer_response_thread_id = 0;
-        } else {
-            db<Component>(INF) << "[Component] " << getName() << " producer thread created successfully.\n";
-        }
-    } else {
-        if (_producer_thread_running.load()) {
-            db<Component>(WRN) << "[Component] Producer thread already running for " << getName() << ".\n";
-        } else {
-            db<Component>(WRN) << "[Component] Not a producer component (no data type set) for " << getName() << ".\n";
-        }
+    if (_produced_data_type == DataTypeId::UNKNOWN) {
+        db<Component>(WRN) << "[Component] " << _name << " cannot start producer thread, no data type produced\n";
+        return;
     }
+    
+    if (_producer_thread_running.load(std::memory_order_acquire)) {
+        db<Component>(WRN) << "[Component] " << _name << " producer thread already running\n";
+        return;
+    }
+    
+    // Start the producer thread
+    _producer_thread_running.store(true, std::memory_order_release);
+    
+    int result = pthread_create(&_producer_response_thread_id, nullptr, producer_response_launcher, this);
+    if (result != 0) {
+        _producer_thread_running.store(false, std::memory_order_release);
+        db<Component>(ERR) << "[Component] " << _name << " failed to create producer response thread\n";
+        return;
+    }
+    
+    db<Component>(INF) << "[Component] " << _name << " started producer response thread\n";
+    
+    // Call virtual hook for when registration is confirmed (derived classes can override)
+    on_producer_registration_confirmed();
 }
 
-// Implement stop_producer_response_thread
+// Stop the producer response thread
 void Component::stop_producer_response_thread() {
-    db<Component>(TRC) << "[Component] " << getName() << " stop_producer_response_thread() called.\n";
-    
-    if (_producer_thread_running.load()) {
-        // Signal the thread to stop
-        _producer_thread_running.store(false);
-        
-        // Join the thread
-        if (_producer_response_thread_id != 0) {
-            int join_rc = pthread_join(_producer_response_thread_id, nullptr);
-            
-            if (join_rc == 0) {
-                db<Component>(INF) << "[Component] " << getName() << " producer thread joined.\n";
-            } else {
-                db<Component>(ERR) << "[Component] " << getName() << " failed to join producer thread! Error code: " << join_rc << "\n";
-            }
-            
-            _producer_response_thread_id = 0;
-        }
-    } else {
-        db<Component>(WRN) << "[Component] stop_producer_response_thread() called when producer thread is not running for " 
-                         << getName() << ".\n";
+    if (!_producer_thread_running.load(std::memory_order_acquire)) {
+        db<Component>(WRN) << "[Component] " << _name << " producer thread not running\n";
+        return;
     }
+    
+    // Signal the thread to stop
+    _producer_thread_running.store(false, std::memory_order_release);
+    
+    // Join the thread
+    if (_producer_response_thread_id != 0) {
+        pthread_join(_producer_response_thread_id, nullptr);
+        _producer_response_thread_id = 0;
+    }
+    
+    db<Component>(INF) << "[Component] " << _name << " stopped producer response thread\n";
 }
 
-// Implement update_gcd_period
+// Calculate the greatest common divisor (GCD) of all interest periods
 std::uint32_t Component::update_gcd_period() {
-    db<Component>(TRC) << "[Component] " << getName() << " update_gcd_period() called.\n";
-    
-    std::uint32_t old_gcd_period = _current_gcd_period_us.load(); // Store old GCD
-    std::uint32_t new_gcd_period = 0;
-
-    // If no periods, set GCD to 0
     if (_received_interest_periods.empty()) {
-        _current_gcd_period_us.store(0);
-        db<Component>(INF) << "[Component] " << getName() << " has no active interests. GCD set to 0 us.\n";
-        return old_gcd_period; // Return old GCD
+        return 0;
     }
     
-    // Start with the first period
-    new_gcd_period = _received_interest_periods[0];
+    if (_received_interest_periods.size() == 1) {
+        return _received_interest_periods[0];
+    }
     
     // Calculate GCD of all periods
-    for (size_t i = 1; i < _received_interest_periods.size(); ++i) {
-        new_gcd_period = calculate_gcd(new_gcd_period, _received_interest_periods[i]);
+    std::uint32_t result = _received_interest_periods[0];
+    for (size_t i = 1; i < _received_interest_periods.size(); i++) {
+        result = calculate_gcd(result, _received_interest_periods[i]);
     }
     
-    // Store the result
-    _current_gcd_period_us.store(new_gcd_period);
-    
-    if (new_gcd_period != old_gcd_period) {
-        db<Component>(INF) << "[Component] " << getName() << " updated GCD period from " << old_gcd_period << "us to " 
-                          << new_gcd_period << " microseconds.\n";
-    } else {
-        db<Component>(TRC) << "[Component] " << getName() << " GCD period remains " << new_gcd_period << " microseconds.\n";
-    }
-    return old_gcd_period; // Return old GCD
+    return result;
 }
 
-// Implement calculate_gcd
+// Helper function to calculate GCD using Euclidean algorithm
 std::uint32_t Component::calculate_gcd(std::uint32_t a, std::uint32_t b) {
-    // Handle edge cases
-    if (a == 0) return b;
-    if (b == 0) return a;
-    
-    // Euclidean algorithm
     while (b != 0) {
         std::uint32_t temp = b;
         b = a % b;
         a = temp;
     }
-    
     return a;
 }
 
-// Add helper method to check for SCHED_DEADLINE capability
+// Check if SCHED_DEADLINE is available on this system
 bool Component::has_deadline_scheduling_capability() {
-    // Try to set SCHED_DEADLINE parameters with minimal values
+    // Try to set SCHED_DEADLINE with a test struct
     struct sched_attr attr_test;
     memset(&attr_test, 0, sizeof(attr_test));
     attr_test.size = sizeof(attr_test);
     attr_test.sched_policy = SCHED_DEADLINE;
-    attr_test.sched_runtime = 50000;        // 50 microsecond runtime
-    attr_test.sched_period = 100000;        // 100 microsecond period
-    attr_test.sched_deadline = 100000;      // 100 microsecond deadline
-    
-    // Try setting it on current thread temporarily
+    attr_test.sched_runtime = 10000000;  // 10ms
+    attr_test.sched_deadline = 100000000; // 100ms
+    attr_test.sched_period = 100000000;  // 100ms
+
+    // Try to set deadline scheduling - requires CAP_SYS_NICE (e.g., running as root)
     int result = sched_setattr(0, &attr_test, 0);
     
-    // If it works, reset back to normal
     if (result == 0) {
+        // Success, set back to SCHED_OTHER
         struct sched_param param;
         param.sched_priority = 0;
         pthread_setschedparam(pthread_self(), SCHED_OTHER, &param);
         return true;
-    }
-    
-    // If EPERM, we don't have the capability
-    if (errno == EPERM) {
-        db<Component>(WRN) << "[Component] " << getName() 
-                         << " lacks CAP_SYS_NICE capability for SCHED_DEADLINE. "
-                         << "Consider using: sudo setcap cap_sys_nice+ep <executable>\n";
-    } else {
-        db<Component>(WRN) << "[Component] " << getName()
-                         << " SCHED_DEADLINE test failed with error: " << errno << "\n";
     }
     
     return false;

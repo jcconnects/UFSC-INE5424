@@ -117,13 +117,9 @@ Message Communicator<Channel>::new_message(Message::Type message_type, DataTypeI
             return Message(message_type, _address, unit_type, period);
         case Message::Type::RESPONSE:
             return Message(message_type, _address, unit_type, 0, value_data, value_size);
-        case Message::Type::REG_PRODUCER:
-            return Message(message_type, _address, unit_type, 0, nullptr, 0);
-        case Message::Type::REG_PRODUCER_ACK:
-            return Message(message_type, _address, unit_type, 0, nullptr, 0);
         default:
-            db<Communicator>(ERR) << "[Communicator] new_message() called with unknown message type!\n";
-            return Message();
+            db<Communicator>(ERR) << "[Communicator] new_message() called with unknown or deprecated message type!\n";
+            return Message(); // Return a default (invalid) message
     }
 }
 
@@ -246,32 +242,34 @@ void Communicator<Channel>::update(typename Channel::Observer::Observing_Conditi
     }
     
     try {
-        // We need enough bytes for a message header (type, origin, timestamp, unit_type)
-        if (buf->size() < 16) { // Minimum size check for header
-            db<Communicator>(WRN) << "[Communicator] Message too small for header, passing through\n";
+        // Define message field offsets and sizes as compile-time constants for peeking
+        static constexpr std::size_t MSG_TYPE_OFFSET = 0;
+        static constexpr std::size_t MSG_TYPE_SIZE = 1;
+        // Origin Address: offset 1, size 8 - not directly used for this specific peek
+        // Timestamp: offset 9, size 8 - not directly used for this specific peek
+        static constexpr std::size_t UNIT_TYPE_OFFSET = MSG_TYPE_OFFSET + MSG_TYPE_SIZE + 8 /*Origin Size*/ + 8 /*Timestamp Size*/; // 0 + 1 + 8 + 8 = 17
+        static constexpr std::size_t UNIT_TYPE_SIZE = 4;
+
+        const std::size_t min_peek_size = UNIT_TYPE_OFFSET + UNIT_TYPE_SIZE; // 17 + 4 = 21
+
+        if (buf->size() < min_peek_size) { 
+            db<Communicator>(WRN) << "[Communicator] Message too small for required header fields (need " << min_peek_size << "), passing through\n";
             Observer::update(c, buf);
             return;
         }
         
-        // Deserialize message header to check message type and unit type
-        // Create a temporary buffer to peek at the header without modifying the original buffer
-        std::uint8_t temp_header[16];
-        _channel->peek(buf, temp_header, 16);
+        std::uint8_t temp_peek_buffer[min_peek_size]; // Now min_peek_size is a compile-time constant
+        _channel->peek(buf, temp_peek_buffer, min_peek_size);
         
-        // Extract message type and unit type
-        unsigned int offset = 0;
+        unsigned int current_msg_type_offset = MSG_TYPE_OFFSET;
+        Message::Type msg_type = static_cast<Message::Type>(
+            Message::extract_uint8t(temp_peek_buffer, current_msg_type_offset, min_peek_size)
+        );
         
-        // First byte is message type
-        Message::Type msg_type = static_cast<Message::Type>(Message::extract_uint8t(temp_header, offset, 16));
-        
-        // Skip origin (complex structure, we don't need it for filtering)
-        offset = 1 + 8; // Skip type (1) and origin (typically 8 bytes)
-        
-        // Skip timestamp (8 bytes)
-        offset += 8;
-        
-        // Extract unit type (next 4 bytes)
-        DataTypeId unit_type = static_cast<DataTypeId>(Message::extract_uint32t(temp_header, offset, 16));
+        unsigned int current_unit_type_offset = UNIT_TYPE_OFFSET;
+        DataTypeId unit_type = static_cast<DataTypeId>(
+            Message::extract_uint32t(temp_peek_buffer, current_unit_type_offset, min_peek_size)
+        );
         
         // Apply filtering logic based on the component's role and message type
         bool should_deliver = false;
@@ -279,9 +277,8 @@ void Communicator<Channel>::update(typename Channel::Observer::Observing_Conditi
         
         switch (_owner_type) {
             case ComponentType::GATEWAY:
-                // Gateway needs to accept INTEREST, REG_PRODUCER, and RESPONSE messages
+                // Gateway relays INTEREST and RESPONSE messages
                 should_deliver = (msg_type == Message::Type::INTEREST || 
-                                 msg_type == Message::Type::REG_PRODUCER ||
                                  msg_type == Message::Type::RESPONSE);
                 break;
             

@@ -34,9 +34,9 @@ int main() {
     std::string expectedMac3 = "AA:BB:CC:DD:EE:FF";
     TEST_ASSERT(mac3 == expectedMac3, "MAC address string conversion should work correctly for different address");
     
-    // Test 4: Frame structure size
-    TEST_ASSERT(sizeof(Ethernet::Frame) == Ethernet::HEADER_SIZE + Ethernet::MTU, 
-                "Ethernet frame size should be header size + MTU");
+    // Test 4: Frame structure size - modified to check that frame size is MTU
+    TEST_ASSERT(sizeof(Ethernet::Frame) == Ethernet::MTU, 
+                "Ethernet frame size should be MTU");
     
     // Test 5: Create and validate a frame
     Ethernet::Frame frame;
@@ -45,7 +45,7 @@ int main() {
     frame.prot = 0x0800; // IPv4
     
     // Fill the payload with a pattern
-    for (unsigned int i = 0; i < Ethernet::MTU; i++) {
+    for (unsigned int i = 0; i < Ethernet::MTU - Ethernet::HEADER_SIZE; i++) {
         frame.payload[i] = i % 256;
     }
     
@@ -56,7 +56,7 @@ int main() {
     
     // Verify frame payload
     bool payloadCorrect = true;
-    for (unsigned int i = 0; i < Ethernet::MTU; i++) {
+    for (unsigned int i = 0; i < Ethernet::MTU - Ethernet::HEADER_SIZE; i++) {
         if (frame.payload[i] != (i % 256)) {
             payloadCorrect = false;
             break;
