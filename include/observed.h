@@ -26,6 +26,9 @@ class Conditionally_Data_Observed {
         void detach(Observer* o, Condition c);
         bool notify(Condition c, T* d);
         bool notifyAll(T* d);
+        
+        // Add method to get observers list for broadcast cloning
+        Observers& get_observers() { return _observers; }
 
     protected:
         Observers _observers;

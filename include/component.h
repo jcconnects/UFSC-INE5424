@@ -27,6 +27,8 @@
 #include "teds.h" // Added for DataTypeId
 #include "observed.h" // Added for Conditionally_Data_Observed
 #include "TypedDataHandler.h" // Include for TypedDataHandler
+#include "ethernet.h" // For Ethernet::Address::BROADCAST
+#include "components/gateway_component.h" // For GatewayComponent::PORT
 
 // Forward declarations
 class Vehicle;
@@ -564,10 +566,10 @@ void Component::register_interest_handler(DataTypeId type, std::uint32_t period_
         period_us
     );
     
-    // Send to broadcast address
+    // Send to broadcast address on port 0 - Protocol layer will handle delivery
+    Address broadcast_addr(Ethernet::Address::BROADCAST, 0); // Port 0 is broadcast
     _communicator->add_interest(type, period_us);
-    _communicator->send(interest_msg, Address::BROADCAST);
-    _communicator->send(interest_msg, _gateway_address);
+    _communicator->send(interest_msg, broadcast_addr);
     
     // Mark interest as sent
     _active_interests.back().interest_sent = true;
@@ -761,27 +763,24 @@ void Component::producer_response_routine() {
                     
                     while (_producer_thread_running.load() && _current_gcd_period_us.load() == current_period) {
                         // Generate response data
-                        std::vector<std::uint8_t> response_data;
+                        std::vector<std::uint8_t> response_data_dl;
                         
                         // Call the virtual method that derived classes will override
-                        if (produce_data_for_response(_produced_data_type, response_data)) {
+                        if (produce_data_for_response(_produced_data_type, response_data_dl)) {
                             // Create a RESPONSE message
-                            Message response_msg = _communicator->new_message(
+                            Message response_msg_dl = _communicator->new_message(
                                 Message::Type::RESPONSE,
                                 _produced_data_type,
-                                0, // No period for responses
-                                response_data.data(),
-                                response_data.size()
+                                0, 
+                                response_data_dl.data(),
+                                response_data_dl.size()
                             );
                             
-                            db<Component>(INF) << "[Component] " << getName() << " sending RESPONSE (via SCHED_DEADLINE path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data.size() << " bytes. Current GCD: " << current_period << " us.\n";
-                            // Send to broadcast address
-                            _communicator->send(response_msg, Address::BROADCAST);
-                            _communicator->send(response_msg, _gateway_address);
+                            db<Component>(INF) << "[Component] " << getName() << " sending RESPONSE (via SCHED_DEADLINE path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data_dl.size() << " bytes. Current GCD: " << current_period << " us.\n";
                             
-                            // db<Component>(INF) << "Component " << getName() << " sent RESPONSE for data type " 
-                            //                   << static_cast<int>(_produced_data_type) << " with " 
-                            //                   << response_data.size() << " bytes.\n";
+                            // Send to broadcast address on port 0 - Protocol layer will handle delivery
+                            Address broadcast_addr(Ethernet::Address::BROADCAST, 0); // Port 0 is broadcast
+                            _communicator->send(response_msg_dl, broadcast_addr);
                         } else {
                             db<Component>(WRN) << "Producer " << getName() << " failed to produce data (SCHED_DEADLINE path) for type " 
                                               << static_cast<int>(_produced_data_type) << ".\n";
@@ -815,19 +814,17 @@ void Component::producer_response_routine() {
                 );
                 
                 db<Component>(INF) << "[Component] " << getName() << " sending RESPONSE (via usleep path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data.size() << " bytes. Current GCD: " << current_period << " us.\n";
-                // Send to broadcast address
-                _communicator->send(response_msg, Address::BROADCAST);
-                _communicator->send(response_msg, _gateway_address);
                 
-                // db<Component>(INF) << "Component " << getName() << " sent RESPONSE for data type " 
-                //                   << static_cast<int>(_produced_data_type) << " with " 
-                //                   << response_data.size() << " bytes.\n";
+                // Send to broadcast address on port 0 - Protocol layer will handle delivery
+                Address broadcast_addr(Ethernet::Address::BROADCAST, 0); // Port 0 is broadcast
+                _communicator->send(response_msg, broadcast_addr);
+                
             } else {
                 db<Component>(WRN) << "[Component] " << getName() << " failed to produce data (usleep path) for type " 
                                   << static_cast<int>(_produced_data_type) << ".\n";
             }
             
-            // Sleep for the current GCD period using usleep (fallback)
+            // Wait for the GCD period
             usleep(current_period);
         } else {
             // No valid period, sleep a bit and check again

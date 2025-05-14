@@ -87,6 +87,9 @@ class Vehicle {
             return get_producer_port_map();
         }
 
+        // New method to get all component addresses (excluding Gateway)
+        std::vector<Address> get_all_component_addresses() const;
+
     private:
         unsigned int _id;
 
@@ -96,6 +99,13 @@ class Vehicle {
 
         std::atomic<bool> _running;
         std::vector<std::unique_ptr<Component>> _components;
+
+        // Implementation for get_all_component_addresses
+        std::vector<Address> get_all_component_addresses() const;
+
+        // Include component headers at the end to avoid circular dependencies
+        #include "components/basic_consumer.h"
+        #include "components/gateway_component.h" // Needed for GatewayComponent::PORT in the implementation below
 };
 
 /******** Vehicle Implementation *********/
@@ -248,9 +258,45 @@ Component* Vehicle::get_component(const std::string& name) {
     return nullptr;
 }
 
+// Implementation for get_all_component_addresses
+std::vector<Vehicle::Address> Vehicle::get_all_component_addresses() const {
+    std::vector<Address> addresses;
+    for (const auto& comp_ptr : _components) {
+        if (comp_ptr) { 
+            // Exclude the Gateway's own port. Assumes Component::address() gives the component's listening address.
+            // And GatewayComponent::PORT is the well-known port for gateways.
+            if (comp_ptr->address().port() != GatewayComponent::PORT) {
+                 addresses.push_back(comp_ptr->address());
+            }
+        }
+    }
+    return addresses;
+}
+
 // Include component headers at the end to avoid circular dependencies
 #include "components/basic_producer.h"
 #include "components/basic_consumer.h"
 #include "components/gateway_component.h"
 
 #endif // VEHICLE_H
+
+// Inline implementation for Vehicle::get_all_component_addresses
+// Requires full definition of Component (for address()) and GatewayComponent (for PORT)
+// component.h should be included by any .cpp file that includes vehicle.h before it.
+// gateway_component.h is now included above.
+
+inline std::vector<Vehicle::Address> Vehicle::get_all_component_addresses() const {
+    std::vector<Address> addresses;
+    // Ensure _components is accessible and Component::address() is callable
+    // Ensure GatewayComponent::PORT is accessible
+    for (const auto& comp_ptr : _components) { // _components is private, this needs to be in a source file or a friend
+        if (comp_ptr) { 
+            // Accessing comp_ptr->address() requires Component definition
+            // Accessing GatewayComponent::PORT requires GatewayComponent definition
+            if (comp_ptr->address().port() != GatewayComponent::PORT) {
+                 addresses.push_back(comp_ptr->address());
+            }
+        }
+    }
+    return addresses;
+}
