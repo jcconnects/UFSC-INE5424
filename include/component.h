@@ -125,7 +125,7 @@ class Component {
         // Concrete send and receive methods using defined types
         // These will be updated/augmented by P3 specific send/receive patterns for Interest/Response
         int send(const void* data, unsigned int size, Address destination = Address::BROADCAST);
-        int receive(void* data, unsigned int max_size, Address* source_address = nullptr); // Optional source addr
+        int receive(Message* msg); // Optional source addr
 
         // --- P3 Consumer Method - Public API for registering interest in a DataTypeId ---
         void register_interest_handler(DataTypeId type, std::uint32_t period_us, std::function<void(const Message&)> callback);
@@ -156,6 +156,7 @@ class Component {
 
         // Type-safe communicator storage
         Comms* _communicator;
+        Address _gateway_address; // Address of the gateway component
 
         // CSV logging functionality
         std::string _filename;
@@ -242,6 +243,8 @@ void Component::start() {
         return;
     }
 
+
+    _gateway_address = Address(_communicator->address().paddr(), 0);
     _running.store(true, std::memory_order_release);
     
     // Start dispatcher thread
@@ -381,7 +384,6 @@ ComponentType Component::determine_component_type() const {
     return ComponentType::UNKNOWN;
 }
 
-
 int Component::send(const void* data, unsigned int size, Address destination) {
     
     // Create response message with the data
@@ -404,13 +406,10 @@ int Component::send(const void* data, unsigned int size, Address destination) {
 }
 
 // Receive method
-int Component::receive(void* data, unsigned int max_size, Address* source_address) {
+int Component::receive(Message* msg) {
     db<Component>(TRC) << "[Component] " << getName() << " receive called!\n";
 
-    // Creating a message for receiving
-    Message msg = _communicator->new_message(Message::Type::RESPONSE, DataTypeId::UNKNOWN); // Changed from 0 to DataTypeId::UNKNOWN
-
-    if (!_communicator->receive(&msg)) {
+    if (!_communicator->receive(msg)) {
         // Check if we stopped while waiting (only for log purposes)
         if (!running()) {
             db<Component>(INF) << "[Component] " << getName() << " receive interrupted by stop().\n";
@@ -420,42 +419,16 @@ int Component::receive(void* data, unsigned int max_size, Address* source_addres
         return 0; // Indicate error
     }
 
-    // Sets source address
-    if (source_address)
-        *source_address = msg.origin();
-
-    db<Component>(TRC) << "[Component] " << getName() << " received message of size " << msg.size() << ".\n";
+    db<Component>(TRC) << "[Component] " << getName() << " received message of size " << msg->size() << ".\n";
 
     // For RESPONSE messages, check the value
-    if (msg.message_type() == Message::Type::RESPONSE) {
-        const std::uint8_t* value_data = msg.value();
-        unsigned int value_size = msg.value_size(); // Changed from msg.size() to msg.value_size()
-
-        if (value_size > max_size) {
-            db<Component>(ERR) << "[Component] "<< getName() << " buffer too small (" << max_size << " bytes) for received message (" << value_size << " bytes).\n";
-            return 0; // Indicate error
-        }
-
-        if (value_data) {
-            // Copy message value to data pointer
-            std::memcpy(data, value_data, value_size);
-            db<Component>(INF) << "[Component]" << getName() << " received data as RESPONSE\n";
-            return value_size;
-        }
-    } 
+    if (msg->message_type() == Message::Type::RESPONSE) {
+        db<Component>(TRC) << "[Component] " << getName() << " received RESPONSE message.\n";
+        return msg->size(); // Indicate errora
+    }
     
     // For any other message type or if no value data
-    const void* msg_data = msg.data();
-    unsigned int msg_size = msg.size();
-    
-    if (msg_size > max_size) {
-        db<Component>(ERR) << "[Component] "<< getName() << " buffer too small (" << max_size << " bytes) for received message (" << msg_size << " bytes).\n";
-        // Data is lost here! Consider alternatives if partial data is useful.
-        return 0; // Indicate error
-    }
-
-    // Copy raw message data
-    std::memcpy(data, msg_data, msg_size);
+    unsigned int msg_size = msg->size();
     db<Component>(INF) << "[Component]" << getName() << " received raw message data\n";
 
     // Return bytes received
@@ -594,6 +567,7 @@ void Component::register_interest_handler(DataTypeId type, std::uint32_t period_
     // Send to broadcast address
     _communicator->add_interest(type, period_us);
     _communicator->send(interest_msg, Address::BROADCAST);
+    _communicator->send(interest_msg, _gateway_address);
     
     // Mark interest as sent
     _active_interests.back().interest_sent = true;
@@ -622,8 +596,8 @@ void Component::component_dispatcher_routine() {
     
     while (_dispatcher_running.load()) {
         // Receive raw message
-        Address source;
-        int recv_size = receive(raw_buffer, sizeof(raw_buffer), &source);
+        Message message = _communicator->new_message(Message::Type::RESPONSE, DataTypeId::UNKNOWN); // Changed from 0 to DataTypeId::UNKNOWN
+        int recv_size = receive(&message);
         
         if (recv_size <= 0) {
             // Check if we should exit
@@ -641,8 +615,6 @@ void Component::component_dispatcher_routine() {
         }
         
         try {
-            // Deserialize raw message
-            Message message = Message::deserialize(raw_buffer, recv_size);
             
             // Handle REG_PRODUCER_ACK messages for producers
             if (message.message_type() == Message::Type::REG_PRODUCER_ACK) {
@@ -805,6 +777,7 @@ void Component::producer_response_routine() {
                             db<Component>(INF) << "[Component] " << getName() << " sending RESPONSE (via SCHED_DEADLINE path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data.size() << " bytes. Current GCD: " << current_period << " us.\n";
                             // Send to broadcast address
                             _communicator->send(response_msg, Address::BROADCAST);
+                            _communicator->send(response_msg, _gateway_address);
                             
                             // db<Component>(INF) << "Component " << getName() << " sent RESPONSE for data type " 
                             //                   << static_cast<int>(_produced_data_type) << " with " 
@@ -844,6 +817,7 @@ void Component::producer_response_routine() {
                 db<Component>(INF) << "[Component] " << getName() << " sending RESPONSE (via usleep path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data.size() << " bytes. Current GCD: " << current_period << " us.\n";
                 // Send to broadcast address
                 _communicator->send(response_msg, Address::BROADCAST);
+                _communicator->send(response_msg, _gateway_address);
                 
                 // db<Component>(INF) << "Component " << getName() << " sent RESPONSE for data type " 
                 //                   << static_cast<int>(_produced_data_type) << " with " 

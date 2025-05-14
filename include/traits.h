@@ -101,7 +101,7 @@ struct Traits<Protocol<NIC<SocketEngine, SharedMemoryEngine>>> : public Traits<v
 template<typename Channel>
 struct Traits<Communicator<Channel>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for message class
@@ -122,7 +122,7 @@ struct Traits<Vehicle> : public Traits<void>
 template <>
 struct Traits<Component> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for BatteryComponent class
@@ -170,24 +170,24 @@ struct Traits<LidarComponent> : public Traits<void>
 template <>
 struct Traits<BasicProducer> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for BasicConsumer class
 template <>
 struct Traits<BasicConsumer> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Debug class
 template<>
 struct Traits<Debug> : public Traits<void>
 {
-    static const bool error = false;
+    static const bool error = true;
     static const bool warning = true;
     static const bool info = true;
-    static const bool trace = true;
+    static const bool trace = false;
 };
 
 

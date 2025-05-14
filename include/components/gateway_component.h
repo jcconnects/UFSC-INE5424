@@ -31,9 +31,6 @@ class GatewayComponent : public Component {
         void component_dispatcher_routine() override;
         
     private:
-        // Helper method to process and log received messages
-        void process_message(const Message& message, const std::chrono::microseconds& recv_time);
-        
         // Helper methods to handle specific message types
         void handle_interest(const Message& message);
         void handle_response(const Message& message);
@@ -96,8 +93,8 @@ void GatewayComponent::component_dispatcher_routine() {
     
     while (_dispatcher_running.load()) {
         // Receive raw message
-        Address source;
-        int recv_size = receive(raw_buffer, sizeof(raw_buffer), &source);
+        Message message = _communicator->new_message(Message::Type::RESPONSE, DataTypeId::UNKNOWN); // Changed from 0 to
+        int recv_size = receive(&message);
         
         if (recv_size <= 0) {
             // Check if we should exit
@@ -118,9 +115,7 @@ void GatewayComponent::component_dispatcher_routine() {
             // Get current time for latency measurement
             auto recv_time = std::chrono::duration_cast<std::chrono::microseconds>(
                 std::chrono::high_resolution_clock::now().time_since_epoch());
-            
-            // Deserialize raw message
-            Message message = Message::deserialize(raw_buffer, recv_size);
+        
             
             // Process the message directly based on its type
             if (message.message_type() == Message::Type::INTEREST) {
@@ -155,40 +150,6 @@ void GatewayComponent::component_dispatcher_routine() {
     }
     
     db<GatewayComponent>(TRC) << "[Gateway] " << getName() << " dispatcher routine exiting.\n";
-}
-
-void GatewayComponent::process_message(const Message& message, const std::chrono::microseconds& recv_time) {
-    // Process message based on its type
-    switch (message.message_type()) {
-        case Message::Type::INTEREST:
-            handle_interest(message);
-            break;
-            
-        case Message::Type::RESPONSE:
-            handle_response(message);
-            break;
-            
-        default:
-            // Not a message type handled by Gateway
-            db<GatewayComponent>(WRN) << "[Gateway] received unhandled message type: " 
-                                     << static_cast<int>(message.message_type()) << "\n";
-            break;
-    }
-    
-    // Log the message receipt
-    if (_log_file.is_open()) {
-        auto latency_us = recv_time.count() - message.timestamp();
-        _log_file << recv_time.count() << ","
-                 << message.origin().to_string() << ","
-                 << "UNKNOWN" << "," // Component type not tracked currently
-                 << message.origin() << ","
-                 << message.timestamp() << ","
-                 << static_cast<int>(message.message_type()) << ","
-                 << message.timestamp() << ","
-                 << latency_us << ","
-                 << "RAW_NOT_IMPLEMENTED" << "\n";
-        _log_file.flush();
-    }
 }
 
 void GatewayComponent::handle_interest(const Message& message) {
