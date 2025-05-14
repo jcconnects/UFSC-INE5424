@@ -4,10 +4,18 @@
 #include <atomic> // for std::atomic
 #include <vector> // for std::vector
 #include <memory> // for std::unique_ptr
+#include <chrono> // for timeouts
+#include <map> // for component type mapping
 
 #include "debug.h"
 #include "initializer.h"
 #include "component.h"
+#include "teds.h" // For DataTypeId
+
+// Forward declarations
+class BasicProducer;
+class BasicConsumer;
+class GatewayComponent;
 
 template <typename Engine1, typename Engine2>
 class NIC;
@@ -27,8 +35,12 @@ class Vehicle {
         typedef Protocol<VehicleNIC> VehicleProt;
         typedef VehicleNIC::Address Address;
 
-        // Defining component ports
+        // Defining component ports (expanded to include our test components)
         enum class Ports {
+            GATEWAY = 0,        // Gateway is always port 0
+            BASIC_PRODUCER = 105, // Basic producer port from basic_producer.h
+            BASIC_CONSUMER = 106, // Basic consumer port from basic_consumer.h
+            // Legacy ports kept for compatibility
             BROADCAST,
             ECU1,
             ECU2,
@@ -38,7 +50,7 @@ class Vehicle {
             CAMERA
         };
 
-        // Update constructor signature to use the concrete types/aliases
+        // Vehicle constructor
         Vehicle(unsigned int id);
 
         ~Vehicle();
@@ -54,9 +66,26 @@ class Vehicle {
         void start_components();
         void stop_components();
 
+        // Simplified component management
+        void start_component(const std::string& component_name);
+        Component* get_component(const std::string& name);
+
         VehicleProt* protocol() const;
         
         const Address address() const;
+
+        // Returns mapping of data types to producer components for hardcoded configurations
+        static std::map<DataTypeId, Ports> get_producer_port_map() {
+            std::map<DataTypeId, Ports> map;
+            // Add known producer mappings
+            map[DataTypeId::CUSTOM_SENSOR_DATA_A] = Ports::BASIC_PRODUCER;
+            return map;
+        }
+        
+        // Instance method to access the static mapping
+        std::map<DataTypeId, Ports> get_producer_ports() const {
+            return get_producer_port_map();
+        }
 
     private:
         unsigned int _id;
@@ -193,5 +222,35 @@ Vehicle::VehicleProt* Vehicle::protocol() const {
 const Vehicle::Address Vehicle::address() const {
     return _nic->address();
 }
+
+// Add simplified method for component management
+void Vehicle::start_component(const std::string& component_name) {
+    for (auto& comp : _components) {
+        if (comp->getName() == component_name) {
+            if (!comp->running()) {
+                comp->start();
+                db<Vehicle>(INF) << "[Vehicle " << _id << "] component " << comp->getName() << " started\n";
+            } else {
+                db<Vehicle>(WRN) << "[Vehicle " << _id << "] component " << comp->getName() << " already running\n";
+            }
+            return;
+        }
+    }
+    db<Vehicle>(ERR) << "[Vehicle " << _id << "] component " << component_name << " not found\n";
+}
+
+Component* Vehicle::get_component(const std::string& name) {
+    for (auto& comp : _components) {
+        if (comp->getName() == name) {
+            return comp.get();
+        }
+    }
+    return nullptr;
+}
+
+// Include component headers at the end to avoid circular dependencies
+#include "components/basic_producer.h"
+#include "components/basic_consumer.h"
+#include "components/gateway_component.h"
 
 #endif // VEHICLE_H

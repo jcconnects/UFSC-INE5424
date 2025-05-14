@@ -199,11 +199,16 @@ class Component {
         void producer_response_routine();
         void start_producer_response_thread();
         void stop_producer_response_thread();
-        void update_gcd_period();
+        std::uint32_t update_gcd_period();
         static std::uint32_t calculate_gcd(std::uint32_t a, std::uint32_t b);
         
         // Virtual method for generating response data - Producers will override
         virtual bool produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) { return false; }
+
+        // Virtual method that can be overridden by producer components to handle registration acknowledgments
+        virtual void on_producer_registration_confirmed() {
+            // Base implementation does nothing
+        }
 
     private:
         // Prevent copying and assignment
@@ -252,11 +257,6 @@ void Component::start() {
     }
     db<Component>(INF) << "Component " << getName() << " dispatcher thread created successfully.\n";
     
-    // Check if this is a producer component and start producer thread if needed
-    if (_produced_data_type != DataTypeId::UNKNOWN) {
-        start_producer_response_thread();
-    }
-
     // Create main thread for run() method
     int rc = pthread_create(&_thread, nullptr, Component::thread_entry_point, this);
     if (rc) {
@@ -266,11 +266,6 @@ void Component::start() {
         _dispatcher_running.store(false);
         pthread_join(_component_dispatcher_thread_id, nullptr);
         _component_dispatcher_thread_id = 0;
-        
-        // Stop producer thread if it was started
-        if (_producer_thread_running.load()) {
-            stop_producer_response_thread();
-        }
         
         _running.store(false);
         throw std::runtime_error("Failed to create component thread for " + getName());
@@ -597,7 +592,7 @@ void Component::register_interest_handler(DataTypeId type, std::uint32_t period_
     );
     
     // Send to broadcast address
-    _communicator->add_interest(type);
+    _communicator->add_interest(type, period_us);
     _communicator->send(interest_msg, Address::BROADCAST);
     
     // Mark interest as sent
@@ -649,12 +644,28 @@ void Component::component_dispatcher_routine() {
             // Deserialize raw message
             Message message = Message::deserialize(raw_buffer, recv_size);
             
+            // Handle REG_PRODUCER_ACK messages for producers
+            if (message.message_type() == Message::Type::REG_PRODUCER_ACK) {
+                // Check if this component is a producer and verify the data type
+                if ((determine_component_type() == ComponentType::PRODUCER || 
+                     determine_component_type() == ComponentType::PRODUCER_CONSUMER) &&
+                    message.unit_type() == _produced_data_type) {
+                    
+                    db<Component>(INF) << "[Component] " << getName() << " received REG_PRODUCER_ACK for type " 
+                                      << static_cast<int>(_produced_data_type) << "\n";
+                    // Call the virtual method instead of dynamic_cast
+                    on_producer_registration_confirmed();
+                }
+            }
+            
             // Producer-specific INTEREST handling logic for GCD updates
             // Check if this is a producer component and if the message is an INTEREST for our data type
             if (_produced_data_type != DataTypeId::UNKNOWN && 
                 message.message_type() == Message::Type::INTEREST &&
                 message.unit_type() == _produced_data_type) {
                 
+                db<Component>(INF) << "Producer " << getName() << " component_dispatcher_routine received INTEREST for its produced type " << static_cast<int>(_produced_data_type) << " from origin " << message.origin().to_string() << " with period " << message.period() << "us\n";
+
                 // Add this period to our received_interest_periods if not already present
                 std::uint32_t requested_period = message.period();
                 bool period_exists = false;
@@ -668,13 +679,33 @@ void Component::component_dispatcher_routine() {
                 
                 if (!period_exists) {
                     _received_interest_periods.push_back(requested_period);
-                    // Update the GCD period
-                    update_gcd_period();
-                    
-                    db<Component>(INF) << "Producer " << getName() << " received INTEREST for type " 
-                                      << static_cast<int>(_produced_data_type) << " with period " 
-                                      << requested_period << "us. New GCD: " 
-                                      << _current_gcd_period_us.load() << "us\n";
+                    std::uint32_t old_gcd_period = update_gcd_period();
+                    std::uint32_t new_gcd_period = _current_gcd_period_us.load();
+
+                    if (new_gcd_period != old_gcd_period) {
+                        db<Component>(INF) << "Producer " << getName() << " dispatcher: GCD changed. Old: " << old_gcd_period 
+                                          << "us, New: " << new_gcd_period << "us. Managing response thread.\n";
+                        if (_producer_thread_running.load()) {
+                            db<Component>(INF) << "Producer " << getName() << " dispatcher: Stopping existing response thread due to GCD change.\n";
+                            stop_producer_response_thread(); // Signals and joins
+                        }
+                        // If new GCD is valid (>0), a new thread will be started (or restarted)
+                        if (new_gcd_period > 0) {
+                            db<Component>(INF) << "Producer " << getName() << " dispatcher: Starting/restarting response thread with new GCD " << new_gcd_period << "us.\n";
+                            start_producer_response_thread();
+                        } else {
+                            db<Component>(INF) << "Producer " << getName() << " dispatcher: New GCD is 0, response thread remains stopped.\n";
+                        }
+                    } else if (new_gcd_period > 0 && !_producer_thread_running.load()) {
+                        // GCD didn't change from a non-zero value, but thread wasn't running (e.g. first interest, or interests were cleared and now one is added back)
+                        db<Component>(INF) << "Producer " << getName() << " dispatcher: GCD is " << new_gcd_period 
+                                          << "us and thread not running. Starting response thread.\n";
+                        start_producer_response_thread();
+                    } else if (new_gcd_period == 0 && _producer_thread_running.load()) {
+                        // This case should ideally be handled if all interests are removed, leading to GCD=0
+                        db<Component>(INF) << "Producer " << getName() << " dispatcher: GCD became 0 and thread is running. Stopping response thread.\n";
+                        stop_producer_response_thread();
+                    }
                 }
             }
             
@@ -728,10 +759,10 @@ void Component::producer_response_routine() {
             // Check if we have SCHED_DEADLINE capability
             if (_has_dl_capability.load()) {
                 // Set up SCHED_DEADLINE parameters based on our GCD period
-                struct sched_attr attr;
-                memset(&attr, 0, sizeof(attr));
-                attr.size = sizeof(attr);
-                attr.sched_policy = SCHED_DEADLINE;
+                struct sched_attr attr_dl;
+                memset(&attr_dl, 0, sizeof(attr_dl));
+                attr_dl.size = sizeof(attr_dl);
+                attr_dl.sched_policy = SCHED_DEADLINE;
                 
                 // Runtime is the execution time allocated for this task (in ns)
                 // We'll allocate 80% of the period for runtime to be safe
@@ -740,18 +771,20 @@ void Component::producer_response_routine() {
                 // Period and deadline are set to the GCD period (in ns)
                 uint64_t period_ns = current_period * 1000;
                 
-                attr.sched_runtime = runtime_ns;
-                attr.sched_period = period_ns;
-                attr.sched_deadline = period_ns; // deadline = period for our use case
+                attr_dl.sched_runtime = runtime_ns;
+                attr_dl.sched_period = period_ns;
+                attr_dl.sched_deadline = period_ns; // deadline = period for our use case
                 
+                db<Component>(TRC) << "Producer " << getName() << " attempting to set SCHED_DEADLINE with P=" << period_ns << ", D=" << attr_dl.sched_deadline << ", R=" << attr_dl.sched_runtime << " ns\n";
                 // Apply SCHED_DEADLINE to current thread
-                int ret = sched_setattr(0, &attr, 0);
+                int ret = sched_setattr(0, &attr_dl, 0);
                 if (ret < 0) {
                     db<Component>(WRN) << "Component " << getName() 
-                                     << " failed to set SCHED_DEADLINE (error " << errno 
-                                     << "), falling back to usleep-based timing.\n";
+                                     << " failed to set SCHED_DEADLINE (errno " << errno 
+                                     << "), falling back to usleep-based timing for period " << current_period << " us.\n";
                     _has_dl_capability.store(false); // Update capability state
                 } else {
+                    db<Component>(INF) << "Producer " << getName() << " SCHED_DEADLINE set successfully for period " << current_period << " us.\n";
                     // Using SCHED_DEADLINE for timing - the kernel will handle the scheduling
                     
                     while (_producer_thread_running.load() && _current_gcd_period_us.load() == current_period) {
@@ -769,14 +802,15 @@ void Component::producer_response_routine() {
                                 response_data.size()
                             );
                             
+                            db<Component>(INF) << "Producer " << getName() << " sending RESPONSE (via SCHED_DEADLINE path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data.size() << " bytes. Current GCD: " << current_period << " us.\n";
                             // Send to broadcast address
                             _communicator->send(response_msg, Address::BROADCAST);
                             
-                            db<Component>(INF) << "Component " << getName() << " sent RESPONSE for data type " 
-                                              << static_cast<int>(_produced_data_type) << " with " 
-                                              << response_data.size() << " bytes.\n";
+                            // db<Component>(INF) << "Component " << getName() << " sent RESPONSE for data type " 
+                            //                   << static_cast<int>(_produced_data_type) << " with " 
+                            //                   << response_data.size() << " bytes.\n";
                         } else {
-                            db<Component>(WRN) << "Component " << getName() << " failed to produce data for type " 
+                            db<Component>(WRN) << "Producer " << getName() << " failed to produce data (SCHED_DEADLINE path) for type " 
                                               << static_cast<int>(_produced_data_type) << ".\n";
                         }
                         
@@ -807,14 +841,15 @@ void Component::producer_response_routine() {
                     response_data.size()
                 );
                 
+                db<Component>(INF) << "Producer " << getName() << " sending RESPONSE (via usleep path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data.size() << " bytes. Current GCD: " << current_period << " us.\n";
                 // Send to broadcast address
                 _communicator->send(response_msg, Address::BROADCAST);
                 
-                db<Component>(INF) << "Component " << getName() << " sent RESPONSE for data type " 
-                                  << static_cast<int>(_produced_data_type) << " with " 
-                                  << response_data.size() << " bytes.\n";
+                // db<Component>(INF) << "Component " << getName() << " sent RESPONSE for data type " 
+                //                   << static_cast<int>(_produced_data_type) << " with " 
+                //                   << response_data.size() << " bytes.\n";
             } else {
-                db<Component>(WRN) << "Component " << getName() << " failed to produce data for type " 
+                db<Component>(WRN) << "Producer " << getName() << " failed to produce data (usleep path) for type " 
                                   << static_cast<int>(_produced_data_type) << ".\n";
             }
             
@@ -904,28 +939,37 @@ void Component::stop_producer_response_thread() {
 }
 
 // Implement update_gcd_period
-void Component::update_gcd_period() {
-    db<Component>(TRC) << "Component::update_gcd_period() called.\n";
+std::uint32_t Component::update_gcd_period() {
+    db<Component>(TRC) << "Component::update_gcd_period() called for " << getName() << ".\n";
     
+    std::uint32_t old_gcd_period = _current_gcd_period_us.load(); // Store old GCD
+    std::uint32_t new_gcd_period = 0;
+
     // If no periods, set GCD to 0
     if (_received_interest_periods.empty()) {
         _current_gcd_period_us.store(0);
-        return;
+        db<Component>(INF) << "Producer " << getName() << " has no active interests. GCD set to 0 us.\n";
+        return old_gcd_period; // Return old GCD
     }
     
     // Start with the first period
-    std::uint32_t result = _received_interest_periods[0];
+    new_gcd_period = _received_interest_periods[0];
     
     // Calculate GCD of all periods
     for (size_t i = 1; i < _received_interest_periods.size(); ++i) {
-        result = calculate_gcd(result, _received_interest_periods[i]);
+        new_gcd_period = calculate_gcd(new_gcd_period, _received_interest_periods[i]);
     }
     
     // Store the result
-    _current_gcd_period_us.store(result);
+    _current_gcd_period_us.store(new_gcd_period);
     
-    db<Component>(INF) << "Component " << getName() << " updated GCD period to " 
-                      << result << " microseconds.\n";
+    if (new_gcd_period != old_gcd_period) {
+        db<Component>(INF) << "Producer " << getName() << " updated GCD period from " << old_gcd_period << "us to " 
+                          << new_gcd_period << " microseconds.\n";
+    } else {
+        db<Component>(TRC) << "Producer " << getName() << " GCD period remains " << new_gcd_period << " microseconds.\n";
+    }
+    return old_gcd_period; // Return old GCD
 }
 
 // Implement calculate_gcd
@@ -947,16 +991,16 @@ std::uint32_t Component::calculate_gcd(std::uint32_t a, std::uint32_t b) {
 // Add helper method to check for SCHED_DEADLINE capability
 bool Component::has_deadline_scheduling_capability() {
     // Try to set SCHED_DEADLINE parameters with minimal values
-    struct sched_attr attr;
-    memset(&attr, 0, sizeof(attr));
-    attr.size = sizeof(attr);
-    attr.sched_policy = SCHED_DEADLINE;
-    attr.sched_runtime = 1000;        // 1 microsecond runtime
-    attr.sched_period = 10000;        // 10 microsecond period
-    attr.sched_deadline = 10000;      // 10 microsecond deadline
+    struct sched_attr attr_test;
+    memset(&attr_test, 0, sizeof(attr_test));
+    attr_test.size = sizeof(attr_test);
+    attr_test.sched_policy = SCHED_DEADLINE;
+    attr_test.sched_runtime = 50000;        // 50 microsecond runtime
+    attr_test.sched_period = 100000;        // 100 microsecond period
+    attr_test.sched_deadline = 100000;      // 100 microsecond deadline
     
     // Try setting it on current thread temporarily
-    int result = sched_setattr(0, &attr, 0);
+    int result = sched_setattr(0, &attr_test, 0);
     
     // If it works, reset back to normal
     if (result == 0) {

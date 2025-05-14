@@ -9,14 +9,18 @@
 #include <fstream>
 #include <map>
 
+// Include vehicle.h first
 #include "vehicle.h"
+// Then include debug.h
 #include "debug.h"
+
+// Then include component classes
 #include "components/ecu_component.h"
 #include "components/ins_component.h"
 #include "components/lidar_component.h"
 #include "components/battery_component.h"
 #include "components/gateway_component.h"
-#include "components/basic_producer.h"
+// BasicProducer is already included from vehicle.h
 #include "components/basic_consumer.h"
 #include "test_utils.h"
 
@@ -107,22 +111,22 @@ void run_vehicle(Vehicle* v) {
     int lifetime = dist_lifetime(gen);
     unsigned int vehicle_id = v->id(); // Store ID before deletion
 
-    // Create all components
-    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] creating components\n";
+    // Create all components at once without waiting for registration
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] creating all components\n";
     
-    // Create Gateway first (needed for Producer registration)
+    // Step 1: Create Gateway
     v->create_component<GatewayComponent>("Gateway");
-    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] created Gateway component\n";
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] Gateway component created\n";
     
-    // Create Producer next so it can register
+    // Step 2: Create Producer
     v->create_component<BasicProducer>("BasicProducer");
-    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] created BasicProducer component\n";
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] BasicProducer component created\n";
     
-    // Create Consumer last to send interests
+    // Step 3: Create Consumer
     v->create_component<BasicConsumer>("BasicConsumer");
-    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] created BasicConsumer component\n";
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] BasicConsumer component created\n";
     
-    // Start the vehicle
+    // Start all components at once
     v->start();
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] started for " << lifetime << "s lifetime\n";
 

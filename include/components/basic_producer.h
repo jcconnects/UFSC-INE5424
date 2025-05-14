@@ -5,6 +5,7 @@
 #include <string>
 #include <random>
 #include <vector>
+#include <atomic>
 
 #include "component.h"
 #include "debug.h"
@@ -75,22 +76,12 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
 void BasicProducer::run() {
     db<BasicProducer>(INF) << "[Basic Producer] component " << getName() << " starting main run loop.\n";
     
-    // Send REG_PRODUCER message to Gateway
-    Message reg_msg = _communicator->new_message(
-        Message::Type::REG_PRODUCER,
-        _produced_data_type
-    );
+    // With hardcoded approach, we don't need to send registration messages
+    // The Gateway knows about us through the Vehicle's producer map
     
-    // Send to Gateway (port 0)
-    Address gateway_addr(_vehicle->address(), 0);
-    _communicator->send(reg_msg, gateway_addr);
-    
-    db<BasicProducer>(INF) << "[Basic Producer] sent REG_PRODUCER for type " 
-                         << static_cast<int>(_produced_data_type) 
-                         << " to Gateway.\n";
-    
-    // Start the producer response thread that will handle INTEREST messages
+    // Start response thread immediately since we're considered always registered
     start_producer_response_thread();
+    db<BasicProducer>(INF) << "[Basic Producer] started response thread automatically\n";
     
     // Main loop - update sensor data periodically
     while (running()) {
@@ -127,8 +118,10 @@ void BasicProducer::update_test_data() {
 }
 
 bool BasicProducer::produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) {
+    db<BasicProducer>(TRC) << "[Basic Producer] produce_data_for_response called for type " << static_cast<int>(type) << ". Expected: " << static_cast<int>(DataTypeId::CUSTOM_SENSOR_DATA_A) << "\n";
     // Only respond to requests for our produced data type
     if (type != DataTypeId::CUSTOM_SENSOR_DATA_A) {
+        db<BasicProducer>(WRN) << "[Basic Producer] produce_data_for_response rejected due to type mismatch.\n";
         return false;
     }
     
@@ -137,7 +130,7 @@ bool BasicProducer::produce_data_for_response(DataTypeId type, std::vector<std::
     std::memcpy(out_value.data(), &_current_value, sizeof(int));
     std::memcpy(out_value.data() + sizeof(int), &_counter, sizeof(uint32_t));
     
-    db<BasicProducer>(INF) << "[Basic Producer] produced data with size " << out_value.size() << " bytes\n";
+    db<BasicProducer>(INF) << "[Basic Producer] produced data (value=" << _current_value << ", counter=" << _counter << ") with size " << out_value.size() << " bytes for type " << static_cast<int>(type) << "\n";
     return true;
 }
 

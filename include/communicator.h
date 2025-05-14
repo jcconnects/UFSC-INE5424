@@ -60,7 +60,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         Communicator(const Communicator&) = delete;
         Communicator& operator=(const Communicator&) = delete;
 
-        bool add_interest(DataTypeId type);
+        bool add_interest(DataTypeId type, std::uint64_t period_us = 0);
         bool remove_interest(DataTypeId type);
         void clear_interests() { _interests.clear(); }
         
@@ -120,6 +120,8 @@ Message Communicator<Channel>::new_message(Message::Type message_type, DataTypeI
         case Message::Type::RESPONSE:
             return Message(message_type, _address, unit_type, 0, value_data, value_size);
         case Message::Type::REG_PRODUCER:
+            return Message(message_type, _address, unit_type, 0, nullptr, 0);
+        case Message::Type::REG_PRODUCER_ACK:
             return Message(message_type, _address, unit_type, 0, nullptr, 0);
         default:
             db<Communicator>(ERR) << "Communicator::new_message() called with unknown message type!\n";
@@ -279,9 +281,10 @@ void Communicator<Channel>::update(typename Channel::Observer::Observing_Conditi
         
         switch (_owner_type) {
             case ComponentType::GATEWAY:
-                // Gateway accepts all INTEREST and REG_PRODUCER messages
+                // Gateway needs to accept INTEREST, REG_PRODUCER, and RESPONSE messages
                 should_deliver = (msg_type == Message::Type::INTEREST || 
-                                 msg_type == Message::Type::REG_PRODUCER);
+                                 msg_type == Message::Type::REG_PRODUCER ||
+                                 msg_type == Message::Type::RESPONSE);
                 break;
             
             case ComponentType::PRODUCER_CONSUMER:
@@ -308,10 +311,19 @@ void Communicator<Channel>::update(typename Channel::Observer::Observing_Conditi
                     // Iterate through active interests
                     for (auto& interest : _interests) {
                         if (interest.type == unit_type) {
-                            if (now_us - interest.last_accepted_response_time_us >= interest.period_us) {
+                            if (interest.period_us == 0 || // No filtering if period is 0
+                               (now_us - interest.last_accepted_response_time_us >= interest.period_us)) {
                                 interest.last_accepted_response_time_us = now_us;
                                 should_deliver = true;
+                                db<Communicator>(INF) << "[Communicator] RESPONSE message for type " 
+                                                    << static_cast<int>(unit_type) 
+                                                    << " passed period filter (period=" 
+                                                    << interest.period_us << ")\n";
                                 break;
+                            } else {
+                                db<Communicator>(INF) << "[Communicator] RESPONSE message for type "
+                                                    << static_cast<int>(unit_type)
+                                                    << " filtered out due to period restriction\n";
                             }
                         }
                     }
@@ -346,7 +358,7 @@ const typename Communicator<Channel>::Address& Communicator<Channel>::address() 
 }
 
 template <typename Channel>
-bool Communicator<Channel>::add_interest(DataTypeId type) {
+bool Communicator<Channel>::add_interest(DataTypeId type, std::uint64_t period_us) {
     db<Communicator>(TRC) << "Communicator<Channel>::add_interest() called!\n";
     
     // Check if the interest already exists
@@ -357,9 +369,9 @@ bool Communicator<Channel>::add_interest(DataTypeId type) {
         }
     }
     
-    // Add new interest with default period of 0 (no filtering)
-    _interests.push_back({type, 0, 0});
-    db<Communicator>(INF) << "[Communicator] Interest added for type " << static_cast<int>(type) << "\n";
+    // Add new interest with the specified period
+    _interests.push_back({type, 0, period_us});
+    db<Communicator>(INF) << "[Communicator] Interest added for type " << static_cast<int>(type) << " with period " << period_us << " microseconds\n";
     return true;
 }
 

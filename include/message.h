@@ -28,11 +28,11 @@ class Message {
     public:
         /* Definitions */
         enum class Type : std::uint8_t {
-            INTEREST,
-            RESPONSE,
-            REG_PRODUCER, // New type for producer registration with Gateway
-            // PTP,
-            // JOIN,
+            UNKNOWN = 0,
+            INTEREST = 1,
+            RESPONSE = 2,
+            REG_PRODUCER = 3,    // Deprecated but kept for backward compatibility
+            REG_PRODUCER_ACK = 4 // Deprecated but kept for backward compatibility
         };
 
         typedef Protocol<NIC<SocketEngine, SharedMemoryEngine>>::Address Origin;

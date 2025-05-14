@@ -335,8 +335,8 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
        to consider cases when there's listeners on this port. That
        means external broadcast should be handled by application, not API */
 
-    // Internal Broadcast
-    if (src_mac == my_mac && dst_port == 0) {
+    // Handle ALL broadcasts (both internal and external)
+    if (dst_port == 0) {
         if (!Protocol::_observed.notifyAll(buf)) { // Notify all observers
             db<Protocol>(INF) << "[Protocol] broadcast data received, but no one was notified.\n";
             _nic->free(buf);

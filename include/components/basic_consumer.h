@@ -6,6 +6,7 @@
 #include <mutex>
 #include <vector>
 
+// Component has all necessary forward declarations and includes
 #include "component.h"
 #include "debug.h"
 #include "teds.h"
@@ -76,6 +77,8 @@ BasicConsumer::BasicConsumer(Vehicle* vehicle, const unsigned int vehicle_id, co
 void BasicConsumer::run() {
     db<BasicConsumer>(INF) << "[Basic Consumer] component " << getName() << " starting main run loop.\n";
     
+    // No need to delay for producer registration since we use hardcoded components
+
     // Register interest in test data
     register_interest_handler(
         DataTypeId::CUSTOM_SENSOR_DATA_A, 
@@ -158,6 +161,13 @@ void BasicConsumer::handle_test_data(const Message& message) {
                          << static_cast<int>(message.message_type()) 
                          << " and unit type " << static_cast<int>(message.unit_type()) << "\n";
     
+    // Log the raw message details
+    const void* value_data = message.value();
+    std::size_t value_size = message.value_size();
+    
+    db<BasicConsumer>(INF) << "[Basic Consumer] Received message value_size=" << value_size
+                         << ", from=" << message.origin().to_string() << "\n";
+    
     // Parse the test data from the message
     int value;
     uint32_t counter;
@@ -165,6 +175,9 @@ void BasicConsumer::handle_test_data(const Message& message) {
         db<BasicConsumer>(WRN) << "[Basic Consumer] received invalid test data message\n";
         return;
     }
+    
+    db<BasicConsumer>(INF) << "[Basic Consumer] Successfully parsed test data: value=" 
+                         << value << ", counter=" << counter << "\n";
     
     // Update the latest test data
     {
@@ -193,7 +206,9 @@ bool BasicConsumer::parse_test_data(const Message& message, int& out_value, uint
     // Verify this is the right message type and has valid data
     if (message.message_type() != Message::Type::RESPONSE || 
         message.unit_type() != DataTypeId::CUSTOM_SENSOR_DATA_A) {
-        db<BasicConsumer>(WRN) << "[Basic Consumer] parse_test_data() received invalid message type or unit type\n";
+        db<BasicConsumer>(WRN) << "[Basic Consumer] parse_test_data() received invalid message type " 
+                             << static_cast<int>(message.message_type()) 
+                             << " or unit type " << static_cast<int>(message.unit_type()) << "\n";
         return false;
     }
     
@@ -203,12 +218,19 @@ bool BasicConsumer::parse_test_data(const Message& message, int& out_value, uint
     
     // Check size matches our expected data (int + uint32_t)
     if (!value_data || value_size < sizeof(int) + sizeof(uint32_t)) {
+        db<BasicConsumer>(WRN) << "[Basic Consumer] parse_test_data() received invalid message data: " 
+                             << (value_data ? "data not null, " : "data null, ")
+                             << "size=" << value_size << ", expected at least " 
+                             << (sizeof(int) + sizeof(uint32_t)) << " bytes\n";
         return false;
     }
     
     // Copy the data
     std::memcpy(&out_value, value_data, sizeof(int));
     std::memcpy(&out_counter, static_cast<const uint8_t*>(value_data) + sizeof(int), sizeof(uint32_t));
+    
+    db<BasicConsumer>(TRC) << "[Basic Consumer] parse_test_data() successfully extracted value=" 
+                         << out_value << ", counter=" << out_counter << "\n";
     return true;
 }
 

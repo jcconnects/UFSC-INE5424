@@ -5,6 +5,8 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <sstream>
+#include <algorithm>
 
 #include "component.h"
 #include "debug.h"
@@ -29,15 +31,21 @@ class GatewayComponent : public Component {
         void component_dispatcher_routine() override;
         
     private:
-        // Registry mapping DataTypeId to producer ports
-        std::map<DataTypeId, std::vector<Port>> _producer_registry;
-        
         // Helper method to process and log received messages
         void process_message(const Message& message, const std::chrono::microseconds& recv_time);
         
         // Helper methods to handle specific message types
-        void handle_reg_producer(const Message& message);
         void handle_interest(const Message& message);
+        void handle_response(const Message& message);
+        
+        // Get producer port for a given data type using vehicle's hardcoded mappings
+        std::uint16_t get_producer_port(DataTypeId type) const;
+        
+        // Get consumer ports interested in a given data type
+        std::vector<std::uint16_t> get_consumer_ports(DataTypeId type) const;
+        
+        // Map to track which data types are requested by which consumer ports
+        std::map<DataTypeId, std::vector<std::uint16_t>> _consumer_interests;
 };
 
 /******** Gateway Component Implementation *******/
@@ -71,14 +79,10 @@ void GatewayComponent::run() {
     
     // The main Gateway logic is handled in component_dispatcher_routine override
     while (running()) {
-        // This thread just stays alive and occasionally logs status
-        usleep(1000000); // Sleep for 1 second
+        // This thread just stays alive and periodically logs status if needed
+        usleep(5000000); // Sleep for 5 seconds
         
-        // Log current registry status
-        for (const auto& entry : _producer_registry) {
-            db<GatewayComponent>(INF) << "[Gateway] Registry: Type " << static_cast<int>(entry.first) 
-                                     << " has " << entry.second.size() << " producers\n";
-        }
+        db<GatewayComponent>(INF) << "[Gateway] " << getName() << " still running.\n";
     }
     
     db<GatewayComponent>(INF) << "[Gateway] " << getName() << " exiting main run loop.\n";
@@ -91,7 +95,6 @@ void GatewayComponent::component_dispatcher_routine() {
     std::uint8_t raw_buffer[1024]; // Adjust size as needed based on your MTU
     
     while (_dispatcher_running.load()) {
-        db<GatewayComponent>(ERR) << "[Gateway] " << getName() << " started routine" << "\n";
         // Receive raw message
         Address source;
         int recv_size = receive(raw_buffer, sizeof(raw_buffer), &source);
@@ -120,11 +123,11 @@ void GatewayComponent::component_dispatcher_routine() {
             Message message = Message::deserialize(raw_buffer, recv_size);
             
             // Process the message directly based on its type
-            if (message.message_type() == Message::Type::REG_PRODUCER) {
-                handle_reg_producer(message);
-            } 
-            else if (message.message_type() == Message::Type::INTEREST) {
+            if (message.message_type() == Message::Type::INTEREST) {
                 handle_interest(message);
+            }
+            else if (message.message_type() == Message::Type::RESPONSE) {
+                handle_response(message);
             }
             else {
                 db<GatewayComponent>(WRN) << "Gateway received unhandled message type: " 
@@ -157,12 +160,12 @@ void GatewayComponent::component_dispatcher_routine() {
 void GatewayComponent::process_message(const Message& message, const std::chrono::microseconds& recv_time) {
     // Process message based on its type
     switch (message.message_type()) {
-        case Message::Type::REG_PRODUCER:
-            handle_reg_producer(message);
-            break;
-            
         case Message::Type::INTEREST:
             handle_interest(message);
+            break;
+            
+        case Message::Type::RESPONSE:
+            handle_response(message);
             break;
             
         default:
@@ -188,77 +191,136 @@ void GatewayComponent::process_message(const Message& message, const std::chrono
     }
 }
 
-void GatewayComponent::handle_reg_producer(const Message& message) {
-    // Extract the DataTypeId being produced
-    DataTypeId produced_type = message.unit_type();
-    
-    // Extract the producer's port from the message's origin
-    Port producer_port = message.origin().port();
-    
-    // Add to registry (checking for duplicates)
-    bool already_registered = false;
-    auto& ports = _producer_registry[produced_type];
-    
-    for (const auto& port : ports) {
-        if (port == producer_port) {
-            already_registered = true;
-            break;
+void GatewayComponent::handle_interest(const Message& message) {
+    DataTypeId requested_type = message.unit_type();
+    std::uint32_t period = message.period();
+    Address original_requester = message.origin(); // Capture original requester
+
+    db<GatewayComponent>(INF) << "[Gateway] handle_interest: Received INTEREST for type " 
+                             << static_cast<int>(requested_type) << " with period " << period 
+                             << " from original requester: " << original_requester.to_string() << "\n";
+
+    // Track consumer interest if the source port is not 0 (another Gateway)
+    if (original_requester.port() != 0) {
+        // Add to _consumer_interests if not already tracked
+        auto& consumers = _consumer_interests[requested_type];
+        if (std::find(consumers.begin(), consumers.end(), original_requester.port()) == consumers.end()) {
+            consumers.push_back(original_requester.port());
+            db<GatewayComponent>(INF) << "[Gateway] Tracking new consumer interest from port " 
+                                     << original_requester.port() << " for type " 
+                                     << static_cast<int>(requested_type) << "\n";
         }
     }
     
-    if (!already_registered) {
-        ports.push_back(producer_port);
-        db<GatewayComponent>(INF) << "[Gateway] Registered producer for type " << static_cast<int>(produced_type) 
-                                 << " on port " << producer_port << " from " 
-                                 << message.origin().to_string() << "\n";
+    // Get producer port for the requested data type using hardcoded mapping
+    std::uint16_t producer_port = get_producer_port(requested_type);
+    
+    if (producer_port > 0) {  
+        db<GatewayComponent>(INF) << "[Gateway] Found hardcoded producer for type " 
+                               << static_cast<int>(requested_type) 
+                               << " on port " << producer_port << ". Relaying interest.\n";
+        
+        Message internal_interest = _communicator->new_message(
+            Message::Type::INTEREST,
+            requested_type,
+            period
+        );
+        // The origin of this internal_interest will be the Gateway's communicator address
+        
+        Address local_producer_addr(_vehicle->address(), producer_port);
+
+        db<GatewayComponent>(INF) << "[Gateway] Relaying INTEREST for type " << static_cast<int>(requested_type)
+                                 << " (original period: " << period << "us) to local producer on port " 
+                                 << producer_port << " (address: " << local_producer_addr.to_string() << ")\n";
+        
+        bool send_success = _communicator->send(internal_interest, local_producer_addr);
+        if (send_success) {
+            db<GatewayComponent>(INF) << "[Gateway] Successfully sent relayed INTEREST to port " << producer_port << "\n";
+        } else {
+            db<GatewayComponent>(ERR) << "[Gateway] Failed to send relayed INTEREST to port " << producer_port << "\n";
+        }
     } else {
-        db<GatewayComponent>(INF) << "[Gateway] Producer already registered for type " << static_cast<int>(produced_type) 
-                                 << " on port " << producer_port << "\n";
+        db<GatewayComponent>(INF) << "[Gateway] No hardcoded producer registered for type " << static_cast<int>(requested_type) 
+                                 << ". Interest from " << original_requester.to_string() << " will not be relayed locally.\n";
     }
 }
 
-void GatewayComponent::handle_interest(const Message& message) {
-    // Extract the DataTypeId being requested
-    DataTypeId requested_type = message.unit_type();
+void GatewayComponent::handle_response(const Message& message) {
+    DataTypeId response_type = message.unit_type();
     
-    // Extract the requested period
-    std::uint32_t period = message.period();
+    db<GatewayComponent>(INF) << "[Gateway] Received RESPONSE for data type " 
+                             << static_cast<int>(response_type) 
+                             << " from " << message.origin().to_string() << "\n";
     
-    db<GatewayComponent>(INF) << "[Gateway] received INTEREST for type " << static_cast<int>(requested_type) 
-                             << " with period " << period << " from " 
-                             << message.origin().to_string() << "\n";
-    
-    // Check if we have any registered producers for this type
-    if (_producer_registry.count(requested_type) > 0) {
-        const auto& producer_ports = _producer_registry[requested_type];
+    // Find consumers interested in this data type
+    auto it = _consumer_interests.find(response_type);
+    if (it != _consumer_interests.end() && !it->second.empty()) {
+        // Get the value data from the original message
+        const std::uint8_t* value_data = message.value();
+        std::uint32_t value_size = message.value_size();
         
-        if (producer_ports.empty()) {
-            db<GatewayComponent>(WRN) << "No producers registered for type " 
-                                     << static_cast<int>(requested_type) << "\n";
+        db<GatewayComponent>(INF) << "[Gateway] Found " << it->second.size() 
+                                 << " interested consumers for type " 
+                                 << static_cast<int>(response_type)
+                                 << " with data size " << value_size << " bytes\n";
+        
+        if (!value_data || value_size == 0) {
+            db<GatewayComponent>(ERR) << "[Gateway] RESPONSE message has no value data. Cannot relay.\n";
             return;
         }
         
-        // Relay the interest to each registered producer
-        for (const auto& target_producer_port : producer_ports) {
-            // Create a new interest message
-            Message internal_interest = _communicator->new_message(
-                Message::Type::INTEREST,
-                requested_type,
-                period
-            );
+        // Create a new RESPONSE message to relay (with Gateway as origin)
+        Message relayed_response = _communicator->new_message(
+            Message::Type::RESPONSE,
+            response_type,
+            0, // No period for responses
+            value_data,
+            value_size
+        );
+        
+        db<GatewayComponent>(INF) << "[Gateway] Relaying RESPONSE for type " 
+                                 << static_cast<int>(response_type)
+                                 << " to " << it->second.size() << " interested consumers\n";
+        
+        // Forward to each interested consumer
+        for (const auto& consumer_port : it->second) {
+            Address consumer_addr(_vehicle->address(), consumer_port);
             
-            // Send to the specific producer
-            Address target(_vehicle->address(), target_producer_port);
-            _communicator->send(internal_interest, target);
+            db<GatewayComponent>(INF) << "[Gateway] Sending relayed RESPONSE to consumer on port " 
+                                     << consumer_port << "\n";
             
-            db<GatewayComponent>(INF) << "[Gateway] relayed INTEREST for type " 
-                                     << static_cast<int>(requested_type) 
-                                     << " to internal port " << target_producer_port << "\n";
+            bool send_success = _communicator->send(relayed_response, consumer_addr);
+            if (send_success) {
+                db<GatewayComponent>(INF) << "[Gateway] Successfully relayed RESPONSE to consumer on port " 
+                                         << consumer_port << "\n";
+            } else {
+                db<GatewayComponent>(ERR) << "[Gateway] Failed to relay RESPONSE to consumer on port " 
+                                         << consumer_port << "\n";
+            }
         }
     } else {
-        db<GatewayComponent>(WRN) << "[Gateway] No local producer registered for type " 
-                                 << static_cast<int>(requested_type) << "\n";
+        db<GatewayComponent>(INF) << "[Gateway] No local consumers interested in data type " 
+                                 << static_cast<int>(response_type) << "\n";
     }
+}
+
+std::uint16_t GatewayComponent::get_producer_port(DataTypeId type) const {
+    // Use Vehicle's hardcoded mapping to find the producer port for this data type
+    auto producer_map = _vehicle->get_producer_ports();
+    auto it = producer_map.find(type);
+    if (it != producer_map.end()) {
+        return static_cast<std::uint16_t>(it->second); // Convert enum to uint16_t
+    }
+    return 0; // Return 0 if no producer found (invalid port)
+}
+
+std::vector<std::uint16_t> GatewayComponent::get_consumer_ports(DataTypeId type) const {
+    // Check if we have any consumers interested in this data type
+    auto it = _consumer_interests.find(type);
+    if (it != _consumer_interests.end()) {
+        return it->second;
+    }
+    return {}; // Return empty vector if no consumers
 }
 
 #endif // GATEWAY_COMPONENT_H
