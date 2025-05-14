@@ -2,7 +2,8 @@
 #define OBSERVER_H
 
 #include <unistd.h>  // for getpid()
-#include "semaphore_wrapper.h"
+#include <semaphore.h>
+#include <stdexcept>
 #include "list.h"
 
 // Forward declarations for Conditionally_Data_Observed class
@@ -70,14 +71,21 @@ class Concurrent_Observer : public Conditional_Data_Observer<D, C> {
         typedef Concurrent_Observed<D, C> Observed;
     
     public:
-        Concurrent_Observer(C rank) : Conditional_Data_Observer<D, C>(rank) {};
-        ~Concurrent_Observer() = default;
+        Concurrent_Observer(C rank) : Conditional_Data_Observer<D, C>(rank) {
+            if (sem_init(&_semaphore, 0, 0) != 0) {
+                throw std::runtime_error("Failed to create semaphore");
+            }
+        };
+        
+        ~Concurrent_Observer() {
+            sem_destroy(&_semaphore);
+        };
         
         void update(C c, D* d) override;
         D* updated();
         
     private:
-        SemaphoreWrapper _semaphore;
+        sem_t _semaphore;
 };
 
 /***************** CONCURRENT_OBSERVER IMPLEMENTATION *************************/
@@ -91,13 +99,13 @@ void Concurrent_Observer<D, C>::update(C c, D* d) {
             this->_data.insert(d);
         }
         // Post semaphore even for nullptr or broadcast to unblock threads
-        _semaphore.post();
+        sem_post(&_semaphore);
     }
 }
 
 template <typename D, typename C>
 D* Concurrent_Observer<D, C>::updated() {
-    _semaphore.wait();
+    sem_wait(&_semaphore);
     // If the queue is empty, it means we were signaled to unblock but with no data
     // This happens during shutdown
     if (this->_data.empty()) {

@@ -196,12 +196,12 @@ class "Conditionally_Data_Observed<T, Condition>" as ConditionallyDataObserved <
 }
 
 class "Concurrent_Observer<D, C>" as ConcurrentObserver <<Observer>> {
-  - _semaphore: SemaphoreWrapper
+  - _semaphore: sem_t
   + {typedef} Observed_Data
   + {typedef} Observing_Condition
   + {typedef} Observed
   + Concurrent_Observer(rank: C)
-  + ~Concurrent_Observer() = default
+  + ~Concurrent_Observer()
   + update(c: C, d: D*): void override
   + updated(): D*
 }
