@@ -103,7 +103,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
 /*********** NIC Implementation ************/
 template <typename ExternalEngine, typename InternalEngine>
 NIC<ExternalEngine, InternalEngine>::NIC() {
-    db<NIC>(TRC) << "NIC<ExternalEngine, InternalEngine>::NIC() called!\n";
+    db<NIC>(TRC) << "[NIC] Constructor called!\n";
 
     for (unsigned int i = 0; i < N_BUFFERS; ++i) {
         _buffer[i] = DataBuffer();
@@ -128,7 +128,7 @@ NIC<ExternalEngine, InternalEngine>::NIC() {
 
 template <typename ExternalEngine, typename InternalEngine>
 NIC<ExternalEngine, InternalEngine>::~NIC() {
-    db<NIC>(TRC) << "NIC<ExternalEngine, InternalEngine>::~NIC() called!\n";
+    db<NIC>(TRC) << "[NIC] Destructor called!\n";
 
     // ExternalEngine::stop() is now called via _nic->stop() in Vehicle::~Vehicle()
     // so this call is redundant and has been removed
@@ -140,7 +140,7 @@ NIC<ExternalEngine, InternalEngine>::~NIC() {
 
 template <typename ExternalEngine, typename InternalEngine>
 int NIC<ExternalEngine, InternalEngine>::send(DataBuffer* buf) {
-    db<NIC>(TRC) << "NIC<ExternalEngine, InternalEngine>::send() called!\n";
+    db<NIC>(TRC) << "[NIC] send() called!\n";
 
     // Check if ExternalEngine is running before trying to send
     if (!running()) {
@@ -181,7 +181,7 @@ int NIC<ExternalEngine, InternalEngine>::send(DataBuffer* buf) {
 
 template <typename ExternalEngine, typename InternalEngine>
 int NIC<ExternalEngine, InternalEngine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size) {
-    db<NIC>(TRC) << "NIC<ExternalEngine, InternalEngine>::receive() called!\n";
+    db<NIC>(TRC) << "[NIC] receive() called!\n";
 
     // Check weather buffer is null or empty
     if (!buf || !buf->data()) {
@@ -237,7 +237,7 @@ int NIC<ExternalEngine, InternalEngine>::receive(DataBuffer* buf, Address* src, 
 
 template <typename ExternalEngine, typename InternalEngine>
 void NIC<ExternalEngine, InternalEngine>::handleExternal(Ethernet::Frame* frame, unsigned int size) {
-    db<NIC>(TRC) << "NIC::handleExternal() called!\n";
+    db<NIC>(TRC) << "[NIC] handleExternal() called!\n";
     
     // Checks weather NIC is still active
     if (!running()) {
@@ -278,7 +278,7 @@ void NIC<ExternalEngine, InternalEngine>::handleExternal(Ethernet::Frame* frame,
 
 template<typename ExternalEngine, typename InternalEngine>
 void NIC<ExternalEngine, InternalEngine>::handleInternal(DataBuffer* buf) {
-    db<NIC>(TRC) << "NIC::handleInternal() called!\n";
+    db<NIC>(TRC) << "[NIC] handleInternal() called!\n";
 
     // Checks weather NIC is still active
     if (!running()) {
@@ -299,7 +299,7 @@ void NIC<ExternalEngine, InternalEngine>::handleInternal(DataBuffer* buf) {
 
 template <typename ExternalEngine, typename InternalEngine>
 typename NIC<ExternalEngine, InternalEngine>::DataBuffer* NIC<ExternalEngine, InternalEngine>::alloc(Address dst, Protocol_Number prot, unsigned int size) {
-    db<NIC>(TRC) << "NIC<ExternalEngine, InternalEngine>::alloc() called!\n";
+    db<NIC>(TRC) << "[NIC] alloc() called!\n";
     
     // Acquire free buffers counter semaphore
     sem_wait(&_buffer_sem);
@@ -334,7 +334,7 @@ typename NIC<ExternalEngine, InternalEngine>::DataBuffer* NIC<ExternalEngine, In
 
 template <typename ExternalEngine, typename InternalEngine>
 void NIC<ExternalEngine, InternalEngine>::free(DataBuffer* buf) {
-    db<NIC>(TRC) << "NIC<ExternalEngine, InternalEngine>::free() called!\n";
+    db<NIC>(TRC) << "[NIC] free() called!\n";
 
     if (!buf) {
         db<NIC>(ERR) << "[NIC] free() called with null buffer!\n";
@@ -357,7 +357,7 @@ void NIC<ExternalEngine, InternalEngine>::free(DataBuffer* buf) {
 
 template <typename ExternalEngine, typename InternalEngine>
 void NIC<ExternalEngine, InternalEngine>::stop() {
-    db<NIC>(TRC) << "NIC<ExternalEngine, InternalEngine>::stop() called!\n";
+    db<NIC>(TRC) << "[NIC] stop() called!\n";
 
     if (!running()) {
         db<NIC>(WRN) << "[NIC] stop called when NIC is deactivated\n";
@@ -381,7 +381,7 @@ const typename NIC<ExternalEngine, InternalEngine>::Address& NIC<ExternalEngine,
 
 template <typename ExternalEngine, typename InternalEngine>
 void NIC<ExternalEngine, InternalEngine>::setAddress(Address address) {
-    db<NIC>(TRC) << "NIC<ExternalEngine, InternalEngine>::setAddress() called!\n";
+    db<NIC>(TRC) << "[NIC] setAddress() called!\n";
 
     _address = address;
     db<NIC>(INF) << "[NIC] address setted: " << Ethernet::mac_to_string(address) << "\n";

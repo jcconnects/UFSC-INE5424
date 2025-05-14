@@ -91,9 +91,9 @@ template <typename Channel>
 Communicator<Channel>::Communicator(Channel* channel, Address address, ComponentType owner_type, DataTypeId owner_data_type) 
     : Observer(address.port()), _channel(channel), _address(address), _closed(false), 
       _owner_type(owner_type), _owner_data_type(owner_data_type) {
-    db<Communicator>(TRC) << "Communicator<Channel>::Communicator() called!\n";
+    db<Communicator>(TRC) << "[Communicator] Constructor called!\n";
     if (!channel) {
-        throw std::invalid_argument("Channel pointer cannot be null");
+        throw std::invalid_argument("[Communicator] Channel pointer cannot be null");
     }
 
     _channel->attach(this, address);
@@ -102,13 +102,11 @@ Communicator<Channel>::Communicator(Channel* channel, Address address, Component
 
 template <typename Channel>
 Communicator<Channel>::~Communicator() {
-    db<Communicator>(TRC) << "Communicator<Channel>::~Communicator() called!\n";
+    db<Communicator>(TRC) << "[Communicator] Destructor called!\n";
     
     // Detach from channel
     _channel->detach(this, _address);
-    db<Communicator>(INF) << "[Communicator] detached from Channel\n";
-    
-    db<Communicator>(INF) << "[Communicator] destroyed!\n";
+    db<Communicator>(INF) << "[Communicator] detached from Channel!\n";
 }
 
 template <typename Channel>
@@ -124,14 +122,14 @@ Message Communicator<Channel>::new_message(Message::Type message_type, DataTypeI
         case Message::Type::REG_PRODUCER_ACK:
             return Message(message_type, _address, unit_type, 0, nullptr, 0);
         default:
-            db<Communicator>(ERR) << "Communicator::new_message() called with unknown message type!\n";
+            db<Communicator>(ERR) << "[Communicator] new_message() called with unknown message type!\n";
             return Message();
     }
 }
 
 template <typename Channel>
 bool Communicator<Channel>::send(const Message& message, const Address& destination) {
-    db<Communicator>(TRC) << "Communicator<Channel>::send() called!\n";
+    db<Communicator>(TRC) << "[Communicator] send() called!\n";
     
     // Check if communicator is closed before attempting to send
     if (is_closed()) {
@@ -168,7 +166,7 @@ bool Communicator<Channel>::send(const Message& message, const Address& destinat
 
 template <typename Channel>
 bool Communicator<Channel>::receive(Message* message) {
-    db<Communicator>(TRC) << "Communicator<Channel>::receive() called!\n";
+    db<Communicator>(TRC) << "[Communicator] receive() called!\n";
     
     // If communicator is closed, doesn't even try to receive
     if (is_closed()) {
@@ -224,7 +222,7 @@ bool Communicator<Channel>::receive(Message* message) {
 
 template <typename Channel>
 void Communicator<Channel>::close() {
-    db<Communicator>(TRC) << "Communicator<Channel>::close() called!\n";
+    db<Communicator>(TRC) << "[Communicator] close() called!\n";
     
     _closed.store(true, std::memory_order_release);
     
@@ -239,7 +237,7 @@ const bool Communicator<Channel>::is_closed() {
 
 template <typename Channel>
 void Communicator<Channel>::update(typename Channel::Observer::Observing_Condition c, typename Channel::Observer::Observed_Data* buf) {
-    db<Communicator>(TRC) << "Communicator<Channel>::update() called!\n";
+    db<Communicator>(TRC) << "[Communicator] update() called!\n";
     
     // If buf is null or we have no owner component, proceed with standard update
     if (!buf) {
@@ -359,7 +357,7 @@ const typename Communicator<Channel>::Address& Communicator<Channel>::address() 
 
 template <typename Channel>
 bool Communicator<Channel>::add_interest(DataTypeId type, std::uint64_t period_us) {
-    db<Communicator>(TRC) << "Communicator<Channel>::add_interest() called!\n";
+    db<Communicator>(TRC) << "[Communicator] add_interest() called!\n";
     
     // Check if the interest already exists
     for (const auto& interest : _interests) {
@@ -377,7 +375,7 @@ bool Communicator<Channel>::add_interest(DataTypeId type, std::uint64_t period_u
 
 template <typename Channel>
 bool Communicator<Channel>::remove_interest(DataTypeId type) {
-    db<Communicator>(TRC) << "Communicator<Channel>::remove_interest() called!\n";
+    db<Communicator>(TRC) << "[Communicator] remove_interest() called!\n";
     
     // Find and remove the interest
     auto it = std::remove_if(_interests.begin(), _interests.end(), 

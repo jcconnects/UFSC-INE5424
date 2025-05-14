@@ -74,7 +74,7 @@ class SocketEngine{
 SocketEngine::SocketEngine() : _stop_ev(eventfd(0, EFD_NONBLOCK)), _running(false) {};
 
 void SocketEngine::start() {
-    db<SocketEngine>(TRC) << "SocketEngine::start() called!\n";
+    db<SocketEngine>(TRC) << "[SocketEngine] start() called!\n";
 
     setUpSocket();
     setUpEpoll();
@@ -85,7 +85,7 @@ void SocketEngine::start() {
 }
 
 void SocketEngine::stop() {
-    db<SocketEngine>(TRC) << "SocketEngine::run() called!\n";
+    db<SocketEngine>(TRC) << "[SocketEngine] stop() called!\n";
     
     if (!running()) return;
 
@@ -99,7 +99,7 @@ void SocketEngine::stop() {
 }
 
 void SocketEngine::setUpSocket() {
-    db<SocketEngine>(TRC) << "SocketEngine::setUpSocket() called!\n";
+    db<SocketEngine>(TRC) << "[SocketEngine] setUpSocket() called!\n";
 
     // 1. Creating socket
     _sock_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
@@ -154,7 +154,7 @@ void SocketEngine::setUpSocket() {
 }
 
 void SocketEngine::setUpEpoll() {
-    db<SocketEngine>(TRC) << "SocketEngine::setUpEpoll() called!\n";
+    db<SocketEngine>(TRC) << "[SocketEngine] setUpEpoll() called!\n";
 
     // 1. Creating epoll
     _ep_fd = epoll_create1(0);
@@ -186,7 +186,7 @@ void SocketEngine::setUpEpoll() {
 }
 
 SocketEngine::~SocketEngine()  {
-    db<SocketEngine>(TRC) << "SocketEngine::~SocketEngine() called!\n";
+    db<SocketEngine>(TRC) << "[SocketEngine] Destructor called!\n";
 
     close(_sock_fd);
     close(_ep_fd);
@@ -194,7 +194,7 @@ SocketEngine::~SocketEngine()  {
 };
 
 int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
-    db<SocketEngine>(TRC) << "SocketEngine::send() called!\n";
+    db<SocketEngine>(TRC) << "[SocketEngine] send() called!\n";
 
     // Check if engine is running before sending
     if (!running()) {
@@ -229,7 +229,7 @@ int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
 }
 
 void* SocketEngine::run(void* arg)  {
-    db<SocketEngine>(TRC) << "SocketEngine::run() called!\n";
+    db<SocketEngine>(TRC) << "[SocketEngine] run() called!\n";
 
     SocketEngine* engine = static_cast<SocketEngine*>(arg);
 
@@ -266,7 +266,7 @@ void* SocketEngine::run(void* arg)  {
 };
 
 void SocketEngine::receive() {
-    db<SocketEngine>(TRC) << "SocketEngine::receive() called!\n";
+    db<SocketEngine>(TRC) << "[SocketEngine] receive() called!\n";
 
     // Checks weather engine is still active
     if (!running()) {

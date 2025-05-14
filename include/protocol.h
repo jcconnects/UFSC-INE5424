@@ -165,7 +165,7 @@ const std::string Protocol<NIC>::Address::to_string() const {
 /********* Protocol Implementation *********/
 template <typename NIC>
 Protocol<NIC>::Protocol(NIC* nic) : NIC::Observer(PROTO), _nic(nic) {
-    db<Protocol>(TRC) << "Protocol<NIC>::Protocol() called!\n";
+    db<Protocol>(TRC) << "[Protocol] Constructor called!\n";
     
     if (!nic) {
         throw std::invalid_argument("NIC pointer cannot be null");
@@ -177,7 +177,7 @@ Protocol<NIC>::Protocol(NIC* nic) : NIC::Observer(PROTO), _nic(nic) {
 
 template <typename NIC>
 Protocol<NIC>::~Protocol() {
-    db<Protocol>(TRC) << "Protocol<NIC>::~Protocol() called!\n";
+    db<Protocol>(TRC) << "[Protocol] Destructor called!\n";
     
     _nic->detach(this, PROTO);
     db<Protocol>(INF) << "[Protocol] detached from NIC\n";
@@ -185,7 +185,7 @@ Protocol<NIC>::~Protocol() {
 
 template <typename NIC>
 int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int size) {
-    db<Protocol>(TRC) << "Protocol<NIC>::send() called!\n";
+    db<Protocol>(TRC) << "[Protocol] send() called!\n";
 
     db<Protocol>(INF) << "[Protocol] sending from " << from.to_string() << " to " << to.to_string() << "\n";
 
@@ -226,7 +226,7 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
 
 template <typename NIC>
 int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int size) {
-    db<Protocol>(TRC) << "Protocol<NIC>::receive() called!\n";
+    db<Protocol>(TRC) << "[Protocol] receive() called!\n";
 
     typename NIC::Address src_mac;
     typename NIC::Address dst_mac;
@@ -269,7 +269,7 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
 
 template <typename NIC>
 int Protocol<NIC>::peek(Buffer* buf, void* data, unsigned int size) {
-    db<Protocol>(TRC) << "Protocol<NIC>::peek() called!\n";
+    db<Protocol>(TRC) << "[Protocol] peek() called!\n";
     
     if (!buf || !data) {
         db<Protocol>(ERR) << "[Protocol] peek received null buffer or data pointer\n";
@@ -292,7 +292,7 @@ int Protocol<NIC>::peek(Buffer* buf, void* data, unsigned int size) {
 
 template <typename NIC>
 void Protocol<NIC>::attach(Observer* obs, Address address) {
-    db<Protocol>(TRC) << "Protocol<NIC>::attach() called!\n";
+    db<Protocol>(TRC) << "[Protocol] attach() called!\n";
     
     _observed.attach(obs, address.port());
     db<Protocol>(INF) << "[Protocol] Attached observer to port " << address.port() << "\n";
@@ -300,7 +300,7 @@ void Protocol<NIC>::attach(Observer* obs, Address address) {
 
 template <typename NIC>
 void Protocol<NIC>::detach(Observer* obs, Address address) {
-    db<Protocol>(TRC) << "Protocol<NIC>::detach() called!\n";
+    db<Protocol>(TRC) << "[Protocol] detach() called!\n";
 
     _observed.detach(obs, address.port());
     db<Protocol>(INF) << "[Protocol] Detached observer from port " << address.port() << "\n";
@@ -308,7 +308,7 @@ void Protocol<NIC>::detach(Observer* obs, Address address) {
 
 template <typename NIC>
 void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
-    db<Protocol>(TRC) << "Protocol<NIC>::update() called!\n";
+    db<Protocol>(TRC) << "[Protocol] update() called!\n";
     
     // Extracting MAC Addresses to compare
     Physical_Address src_mac = buf->data()->src;

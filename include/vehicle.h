@@ -101,7 +101,7 @@ class Vehicle {
 /******** Vehicle Implementation *********/
 Vehicle::Vehicle(unsigned int id) : _id(id), _running(false)
 {
-    db<Vehicle>(TRC) << "Vehicle::Vehicle() called!\n";
+    db<Vehicle>(TRC) << "[Vehicle] Constructor called!\n";
 
     // Setting vehicle NIC
     _nic = Initializer::create_nic();
@@ -123,7 +123,7 @@ Vehicle::Vehicle(unsigned int id) : _id(id), _running(false)
 }
 
 Vehicle::~Vehicle() {
-    db<Vehicle>(TRC) << "Vehicle::~Vehicle() called for ID " << _id << "!\n";
+    db<Vehicle>(TRC) << "[Vehicle] Destructor called for ID " << _id << "!\n";
 
     // Ensure components and NIC/Protocol are stopped before deletion
     // Explicit stop() might be called externally, but ensure it happens.
@@ -141,7 +141,7 @@ Vehicle::~Vehicle() {
 }
 
 void Vehicle::start() {
-    db<Vehicle>(TRC) << "Vehicle::start() called for ID " << _id << "!\n";
+    db<Vehicle>(TRC) << "[Vehicle] start() called for ID " << _id << "!\n";
     if (running()) {
         db<Vehicle>(WRN) << "[Vehicle " << _id << "] start() called but already running.\n";
         return;
@@ -154,7 +154,7 @@ void Vehicle::start() {
 }
 
 void Vehicle::stop() {
-    db<Vehicle>(TRC) << "Vehicle::stop() called for ID " << _id << "!\n";
+    db<Vehicle>(TRC) << "[Vehicle] stop() called for ID " << _id << "!\n";
 
     if (!running()) {
         db<Vehicle>(WRN) << "[Vehicle " << _id << "] stop() called but not running.\n";
@@ -165,11 +165,11 @@ void Vehicle::stop() {
     _nic->stop();
 
     // Then stops each component
-    db<Vehicle>(INF) << "[Vehicle " << _id << "] Stopping components...\n";
+    db<Vehicle>(INF) << "[Vehicle] [" << _id << "] Stopping components...\n";
     stop_components();
 
     _running.store(false, std::memory_order_release); // Mark vehicle as stopped
-     db<Vehicle>(INF) << "[Vehicle " << _id << "] stopped.\n";
+     db<Vehicle>(INF) << "[Vehicle] [" << _id << "] stopped.\n";
 }
 
 template <typename ComponentType, typename... Args>
@@ -178,33 +178,33 @@ void Vehicle::create_component(const std::string& name, Args&&... args) {
 }
 
 void Vehicle::start_components() {
-    db<Vehicle>(TRC) << "Vehicle::start_components() called for ID " << _id << "!\n";
+    db<Vehicle>(TRC) << "[Vehicle] start_components() called for ID " << _id << "!\n";
     if (_components.empty()) {
-         db<Vehicle>(INF) << "[Vehicle " << _id << "] No components to start.\n";
+         db<Vehicle>(INF) << "[Vehicle] [" << _id << "] No components to start.\n";
          return;
     }
 
-    db<Vehicle>(INF) << "[Vehicle " << _id << "] Starting " << _components.size() << " components...\n";
+    db<Vehicle>(INF) << "[Vehicle] [" << _id << "] Starting " << _components.size() << " components...\n";
     for (const auto& c : _components) {
         c->start(); // Component::start() creates the thread
-        db<Vehicle>(INF) << "[Vehicle " << _id << "] component " << c->getName() << " started\n";
+        db<Vehicle>(INF) << "[Vehicle] [" << _id << "] component " << c->getName() << " started\n";
     }
-    db<Vehicle>(INF) << "[Vehicle " << _id << "] All components requested to start.\n";
+    db<Vehicle>(INF) << "[Vehicle] [" << _id << "] All components requested to start.\n";
 }
 
 void Vehicle::stop_components() {
-    db<Vehicle>(TRC) << "Vehicle::stop_components() called for ID " << _id << "!\n";
+    db<Vehicle>(TRC) << "[Vehicle] stop_components() called for ID " << _id << "!\n";
     if (_components.empty()) {
-         db<Vehicle>(INF) << "[Vehicle " << _id << "] No components to stop.\n";
+         db<Vehicle>(INF) << "[Vehicle] [" << _id << "] No components to stop.\n";
          return;
     }
     // Stop components in reverse order of addition/start
-    db<Vehicle>(INF) << "[Vehicle " << _id << "] Stopping " << _components.size() << " components...\n";
+    db<Vehicle>(INF) << "[Vehicle] [" << _id << "] Stopping " << _components.size() << " components...\n";
     for (const auto& c: _components) {
         c->stop(); // Component::stop() signals and joins the thread
-        db<Vehicle>(TRC) << "[Vehicle " << _id << "] component " << c->getName() << " stopped.\n";
+        db<Vehicle>(TRC) << "[Vehicle] [" << _id << "] component " << c->getName() << " stopped.\n";
     }
-    db<Vehicle>(INF) << "[Vehicle " << _id << "] All components stopped.\n";
+    db<Vehicle>(INF) << "[Vehicle] [" << _id << "] All components stopped.\n";
 }
 
 const unsigned int Vehicle::id() const {
@@ -229,14 +229,14 @@ void Vehicle::start_component(const std::string& component_name) {
         if (comp->getName() == component_name) {
             if (!comp->running()) {
                 comp->start();
-                db<Vehicle>(INF) << "[Vehicle " << _id << "] component " << comp->getName() << " started\n";
+                db<Vehicle>(INF) << "[Vehicle] [" << _id << "] component " << comp->getName() << " started\n";
             } else {
-                db<Vehicle>(WRN) << "[Vehicle " << _id << "] component " << comp->getName() << " already running\n";
+                db<Vehicle>(WRN) << "[Vehicle] [" << _id << "] component " << comp->getName() << " already running\n";
             }
             return;
         }
     }
-    db<Vehicle>(ERR) << "[Vehicle " << _id << "] component " << component_name << " not found\n";
+    db<Vehicle>(ERR) << "[Vehicle] [" << _id << "] component " << component_name << " not found\n";
 }
 
 Component* Vehicle::get_component(const std::string& name) {

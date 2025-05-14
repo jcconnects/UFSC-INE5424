@@ -235,7 +235,7 @@ Component::~Component() {
 }
 
 void Component::start() {
-    db<Component>(TRC) << "Component::start() called for component " << getName() << ".\n";
+    db<Component>(TRC) << "[Component] start() called for component " << getName() << ".\n";
 
     if (running()) {
         db<Component>(WRN) << "[Component] start() called when component" << getName() << " is already running.\n";
@@ -255,7 +255,7 @@ void Component::start() {
         _running.store(false);
         throw std::runtime_error("Failed to create dispatcher thread for " + getName());
     }
-    db<Component>(INF) << "Component " << getName() << " dispatcher thread created successfully.\n";
+    db<Component>(INF) << "[Component] " << getName() << " dispatcher thread created successfully.\n";
     
     // Create main thread for run() method
     int rc = pthread_create(&_thread, nullptr, Component::thread_entry_point, this);
@@ -270,11 +270,11 @@ void Component::start() {
         _running.store(false);
         throw std::runtime_error("Failed to create component thread for " + getName());
     }
-    db<Component>(INF) << "Component " << getName() << " thread created successfully.\n";
+    db<Component>(INF) << "[Component] " << getName() << " thread created successfully.\n";
 }
 
 void Component::stop() {
-    db<Component>(TRC) << "Component::stop() called for component " << getName() << "\n";
+    db<Component>(TRC) << "[Component] stop() called for component " << getName() << "\n";
 
     if (!running()) {
         db<Component>(WRN) << "[Component] stop() called for component " << getName() << " when it is already stopped.\n";
@@ -554,7 +554,7 @@ std::string Component::initialize_log_directory(unsigned int vehicle_id) {
 
 // Implement register_interest_handler
 void Component::register_interest_handler(DataTypeId type, std::uint32_t period_us, std::function<void(const Message&)> callback) {
-    db<Component>(TRC) << "Component::register_interest_handler(" << static_cast<int>(type) << ", " << period_us << ")\n";
+    db<Component>(TRC) << "[Component] register_interest_handler(" << static_cast<int>(type) << ", " << period_us << ")\n";
     
     // Create a new interest request
     InterestRequest request;
@@ -598,7 +598,7 @@ void Component::register_interest_handler(DataTypeId type, std::uint32_t period_
     // Mark interest as sent
     _active_interests.back().interest_sent = true;
     
-    db<Component>(INF) << "Component " << getName() << " registered interest in data type " 
+    db<Component>(INF) << "[Component] " << getName() << " registered interest in data type " 
                       << static_cast<int>(type) << " with period " << period_us << " microseconds\n";
 }
 
@@ -606,16 +606,16 @@ void Component::register_interest_handler(DataTypeId type, std::uint32_t period_
 void* Component::component_dispatcher_launcher(void* context) {
     Component* self = static_cast<Component*>(context);
     if (self) {
-        db<Component>(INF) << "Component " << self->getName() << " dispatcher thread starting.\n";
+        db<Component>(INF) << "[Component] " << self->getName() << " dispatcher thread starting.\n";
         self->component_dispatcher_routine();
-        db<Component>(INF) << "Component " << self->getName() << " dispatcher thread exiting.\n";
+        db<Component>(INF) << "[Component] " << self->getName() << " dispatcher thread exiting.\n";
     }
     return nullptr;
 }
 
 // Implement component_dispatcher_routine
 void Component::component_dispatcher_routine() {
-    db<Component>(TRC) << "Component " << getName() << " dispatcher routine started.\n";
+    db<Component>(TRC) << "[Component] " << getName() << " dispatcher routine started.\n";
     
     // Buffer for raw messages
     std::uint8_t raw_buffer[1024]; // Adjust size as needed based on your MTU
@@ -633,7 +633,7 @@ void Component::component_dispatcher_routine() {
             
             // Handle error or timeout
             if (recv_size < 0) {
-                db<Component>(ERR) << "Component " << getName() << " dispatcher receive error: " << recv_size << "\n";
+                db<Component>(ERR) << "[Component] " << getName() << " dispatcher receive error: " << recv_size << "\n";
             }
             
             // Continue to next iteration
@@ -664,7 +664,7 @@ void Component::component_dispatcher_routine() {
                 message.message_type() == Message::Type::INTEREST &&
                 message.unit_type() == _produced_data_type) {
                 
-                db<Component>(INF) << "Producer " << getName() << " component_dispatcher_routine received INTEREST for its produced type " << static_cast<int>(_produced_data_type) << " from origin " << message.origin().to_string() << " with period " << message.period() << "us\n";
+                db<Component>(INF) << "[Component] " << getName() << " component_dispatcher_routine received INTEREST for its produced type " << static_cast<int>(_produced_data_type) << " from origin " << message.origin().to_string() << " with period " << message.period() << "us\n";
 
                 // Add this period to our received_interest_periods if not already present
                 std::uint32_t requested_period = message.period();
@@ -683,27 +683,27 @@ void Component::component_dispatcher_routine() {
                     std::uint32_t new_gcd_period = _current_gcd_period_us.load();
 
                     if (new_gcd_period != old_gcd_period) {
-                        db<Component>(INF) << "Producer " << getName() << " dispatcher: GCD changed. Old: " << old_gcd_period 
+                        db<Component>(INF) << "[Component] " << getName() << " dispatcher: GCD changed. Old: " << old_gcd_period 
                                           << "us, New: " << new_gcd_period << "us. Managing response thread.\n";
                         if (_producer_thread_running.load()) {
-                            db<Component>(INF) << "Producer " << getName() << " dispatcher: Stopping existing response thread due to GCD change.\n";
+                            db<Component>(INF) << "[Component] " << getName() << " dispatcher: Stopping existing response thread due to GCD change.\n";
                             stop_producer_response_thread(); // Signals and joins
                         }
                         // If new GCD is valid (>0), a new thread will be started (or restarted)
                         if (new_gcd_period > 0) {
-                            db<Component>(INF) << "Producer " << getName() << " dispatcher: Starting/restarting response thread with new GCD " << new_gcd_period << "us.\n";
+                            db<Component>(INF) << "[Component] " << getName() << " dispatcher: Starting/restarting response thread with new GCD " << new_gcd_period << "us.\n";
                             start_producer_response_thread();
                         } else {
-                            db<Component>(INF) << "Producer " << getName() << " dispatcher: New GCD is 0, response thread remains stopped.\n";
+                            db<Component>(INF) << "[Component] " << getName() << " dispatcher: New GCD is 0, response thread remains stopped.\n";
                         }
                     } else if (new_gcd_period > 0 && !_producer_thread_running.load()) {
                         // GCD didn't change from a non-zero value, but thread wasn't running (e.g. first interest, or interests were cleared and now one is added back)
-                        db<Component>(INF) << "Producer " << getName() << " dispatcher: GCD is " << new_gcd_period 
+                        db<Component>(INF) << "[Component] " << getName() << " dispatcher: GCD is " << new_gcd_period 
                                           << "us and thread not running. Starting response thread.\n";
                         start_producer_response_thread();
                     } else if (new_gcd_period == 0 && _producer_thread_running.load()) {
                         // This case should ideally be handled if all interests are removed, leading to GCD=0
-                        db<Component>(INF) << "Producer " << getName() << " dispatcher: GCD became 0 and thread is running. Stopping response thread.\n";
+                        db<Component>(INF) << "[Component] " << getName() << " dispatcher: GCD became 0 and thread is running. Stopping response thread.\n";
                         stop_producer_response_thread();
                     }
                 }
@@ -721,31 +721,31 @@ void Component::component_dispatcher_routine() {
             if (!delivered) {
                 // No observer for this type, clean up the heap message
                 delete heap_msg;
-                db<Component>(INF) << "Component " << getName() << " received message of type " 
+                db<Component>(INF) << "[Component] " << getName() << " received message of type " 
                                   << static_cast<int>(msg_type) << " but no handler is registered.\n";
             }
         } catch (const std::exception& e) {
-            db<Component>(ERR) << "Component " << getName() << " dispatcher exception: " << e.what() << "\n";
+            db<Component>(ERR) << "[Component] " << getName() << " dispatcher exception: " << e.what() << "\n";
         }
     }
     
-    db<Component>(TRC) << "Component " << getName() << " dispatcher routine exiting.\n";
+    db<Component>(TRC) << "[Component] " << getName() << " dispatcher routine exiting.\n";
 }
 
 // Implement producer_response_launcher
 void* Component::producer_response_launcher(void* context) {
     Component* self = static_cast<Component*>(context);
     if (self) {
-        db<Component>(INF) << "Component " << self->getName() << " producer response thread starting.\n";
+        db<Component>(INF) << "[Component] " << self->getName() << " producer response thread starting.\n";
         self->producer_response_routine();
-        db<Component>(INF) << "Component " << self->getName() << " producer response thread exiting.\n";
+        db<Component>(INF) << "[Component] " << self->getName() << " producer response thread exiting.\n";
     }
     return nullptr;
 }
 
 // Implement producer_response_routine
 void Component::producer_response_routine() {
-    db<Component>(TRC) << "Component " << getName() << " producer response routine started.\n";
+    db<Component>(TRC) << "[Component] " << getName() << " producer response routine started.\n";
     
     // Set up clock for timing
     struct timespec next_period;
@@ -775,16 +775,16 @@ void Component::producer_response_routine() {
                 attr_dl.sched_period = period_ns;
                 attr_dl.sched_deadline = period_ns; // deadline = period for our use case
                 
-                db<Component>(TRC) << "Producer " << getName() << " attempting to set SCHED_DEADLINE with P=" << period_ns << ", D=" << attr_dl.sched_deadline << ", R=" << attr_dl.sched_runtime << " ns\n";
+                db<Component>(TRC) << "[Component] " << getName() << " attempting to set SCHED_DEADLINE with P=" << period_ns << ", D=" << attr_dl.sched_deadline << ", R=" << attr_dl.sched_runtime << " ns\n";
                 // Apply SCHED_DEADLINE to current thread
                 int ret = sched_setattr(0, &attr_dl, 0);
                 if (ret < 0) {
-                    db<Component>(WRN) << "Component " << getName() 
+                    db<Component>(WRN) << "[Component] " << getName() 
                                      << " failed to set SCHED_DEADLINE (errno " << errno 
                                      << "), falling back to usleep-based timing for period " << current_period << " us.\n";
                     _has_dl_capability.store(false); // Update capability state
                 } else {
-                    db<Component>(INF) << "Producer " << getName() << " SCHED_DEADLINE set successfully for period " << current_period << " us.\n";
+                    db<Component>(INF) << "[Component] " << getName() << " SCHED_DEADLINE set successfully for period " << current_period << " us.\n";
                     // Using SCHED_DEADLINE for timing - the kernel will handle the scheduling
                     
                     while (_producer_thread_running.load() && _current_gcd_period_us.load() == current_period) {
@@ -802,7 +802,7 @@ void Component::producer_response_routine() {
                                 response_data.size()
                             );
                             
-                            db<Component>(INF) << "Producer " << getName() << " sending RESPONSE (via SCHED_DEADLINE path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data.size() << " bytes. Current GCD: " << current_period << " us.\n";
+                            db<Component>(INF) << "[Component] " << getName() << " sending RESPONSE (via SCHED_DEADLINE path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data.size() << " bytes. Current GCD: " << current_period << " us.\n";
                             // Send to broadcast address
                             _communicator->send(response_msg, Address::BROADCAST);
                             
@@ -841,7 +841,7 @@ void Component::producer_response_routine() {
                     response_data.size()
                 );
                 
-                db<Component>(INF) << "Producer " << getName() << " sending RESPONSE (via usleep path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data.size() << " bytes. Current GCD: " << current_period << " us.\n";
+                db<Component>(INF) << "[Component] " << getName() << " sending RESPONSE (via usleep path) for type " << static_cast<int>(_produced_data_type) << " with " << response_data.size() << " bytes. Current GCD: " << current_period << " us.\n";
                 // Send to broadcast address
                 _communicator->send(response_msg, Address::BROADCAST);
                 
@@ -849,7 +849,7 @@ void Component::producer_response_routine() {
                 //                   << static_cast<int>(_produced_data_type) << " with " 
                 //                   << response_data.size() << " bytes.\n";
             } else {
-                db<Component>(WRN) << "Producer " << getName() << " failed to produce data (usleep path) for type " 
+                db<Component>(WRN) << "[Component] " << getName() << " failed to produce data (usleep path) for type " 
                                   << static_cast<int>(_produced_data_type) << ".\n";
             }
             
@@ -861,12 +861,12 @@ void Component::producer_response_routine() {
         }
     }
     
-    db<Component>(TRC) << "Component " << getName() << " producer response routine exiting.\n";
+    db<Component>(TRC) << "[Component] " << getName() << " producer response routine exiting.\n";
 }
 
 // Implement start_producer_response_thread
 void Component::start_producer_response_thread() {
-    db<Component>(TRC) << "Component::start_producer_response_thread() called.\n";
+    db<Component>(TRC) << "[Component] " << getName() << " start_producer_response_thread() called.\n";
     
     // Only start if not already running
     if (!_producer_thread_running.load() && _produced_data_type != DataTypeId::UNKNOWN) {
@@ -900,7 +900,7 @@ void Component::start_producer_response_thread() {
             _producer_thread_running.store(false);
             _producer_response_thread_id = 0;
         } else {
-            db<Component>(INF) << "Component " << getName() << " producer thread created successfully.\n";
+            db<Component>(INF) << "[Component] " << getName() << " producer thread created successfully.\n";
         }
     } else {
         if (_producer_thread_running.load()) {
@@ -913,7 +913,7 @@ void Component::start_producer_response_thread() {
 
 // Implement stop_producer_response_thread
 void Component::stop_producer_response_thread() {
-    db<Component>(TRC) << "Component::stop_producer_response_thread() called.\n";
+    db<Component>(TRC) << "[Component] " << getName() << " stop_producer_response_thread() called.\n";
     
     if (_producer_thread_running.load()) {
         // Signal the thread to stop
@@ -924,10 +924,9 @@ void Component::stop_producer_response_thread() {
             int join_rc = pthread_join(_producer_response_thread_id, nullptr);
             
             if (join_rc == 0) {
-                db<Component>(INF) << "[Component] Producer thread joined for component " << getName() << ".\n";
+                db<Component>(INF) << "[Component] " << getName() << " producer thread joined.\n";
             } else {
-                db<Component>(ERR) << "[Component] Failed to join producer thread for component " 
-                                  << getName() << "! Error code: " << join_rc << "\n";
+                db<Component>(ERR) << "[Component] " << getName() << " failed to join producer thread! Error code: " << join_rc << "\n";
             }
             
             _producer_response_thread_id = 0;
@@ -940,7 +939,7 @@ void Component::stop_producer_response_thread() {
 
 // Implement update_gcd_period
 std::uint32_t Component::update_gcd_period() {
-    db<Component>(TRC) << "Component::update_gcd_period() called for " << getName() << ".\n";
+    db<Component>(TRC) << "[Component] " << getName() << " update_gcd_period() called.\n";
     
     std::uint32_t old_gcd_period = _current_gcd_period_us.load(); // Store old GCD
     std::uint32_t new_gcd_period = 0;
@@ -948,7 +947,7 @@ std::uint32_t Component::update_gcd_period() {
     // If no periods, set GCD to 0
     if (_received_interest_periods.empty()) {
         _current_gcd_period_us.store(0);
-        db<Component>(INF) << "Producer " << getName() << " has no active interests. GCD set to 0 us.\n";
+        db<Component>(INF) << "[Component] " << getName() << " has no active interests. GCD set to 0 us.\n";
         return old_gcd_period; // Return old GCD
     }
     
@@ -964,10 +963,10 @@ std::uint32_t Component::update_gcd_period() {
     _current_gcd_period_us.store(new_gcd_period);
     
     if (new_gcd_period != old_gcd_period) {
-        db<Component>(INF) << "Producer " << getName() << " updated GCD period from " << old_gcd_period << "us to " 
+        db<Component>(INF) << "[Component] " << getName() << " updated GCD period from " << old_gcd_period << "us to " 
                           << new_gcd_period << " microseconds.\n";
     } else {
-        db<Component>(TRC) << "Producer " << getName() << " GCD period remains " << new_gcd_period << " microseconds.\n";
+        db<Component>(TRC) << "[Component] " << getName() << " GCD period remains " << new_gcd_period << " microseconds.\n";
     }
     return old_gcd_period; // Return old GCD
 }
@@ -1012,11 +1011,11 @@ bool Component::has_deadline_scheduling_capability() {
     
     // If EPERM, we don't have the capability
     if (errno == EPERM) {
-        db<Component>(WRN) << "Component " << getName() 
+        db<Component>(WRN) << "[Component] " << getName() 
                          << " lacks CAP_SYS_NICE capability for SCHED_DEADLINE. "
                          << "Consider using: sudo setcap cap_sys_nice+ep <executable>\n";
     } else {
-        db<Component>(WRN) << "Component " << getName()
+        db<Component>(WRN) << "[Component] " << getName()
                          << " SCHED_DEADLINE test failed with error: " << errno << "\n";
     }
     
