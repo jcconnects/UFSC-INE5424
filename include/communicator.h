@@ -91,7 +91,7 @@ template <typename Channel>
 Communicator<Channel>::Communicator(Channel* channel, Address address, ComponentType owner_type, DataTypeId owner_data_type) 
     : Observer(address.port()), _channel(channel), _address(address), _closed(false), 
       _owner_type(owner_type), _owner_data_type(owner_data_type) {
-    db<Communicator>(TRC) << "[Communicator] Constructor called!\n";
+    db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] Constructor called!\n";
     if (!channel) {
         throw std::invalid_argument("[Communicator] Channel pointer cannot be null");
     }
@@ -102,11 +102,11 @@ Communicator<Channel>::Communicator(Channel* channel, Address address, Component
 
 template <typename Channel>
 Communicator<Channel>::~Communicator() {
-    db<Communicator>(TRC) << "[Communicator] Destructor called!\n";
+    db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] Destructor called!\n";
     
     // Detach from channel
     _channel->detach(this, _address);
-    db<Communicator>(INF) << "[Communicator] detached from Channel!\n";
+    db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] detached from Channel!\n";
 }
 
 template <typename Channel>
@@ -125,35 +125,35 @@ Message Communicator<Channel>::new_message(Message::Type message_type, DataTypeI
 
 template <typename Channel>
 bool Communicator<Channel>::send(const Message& message, const Address& destination) {
-    db<Communicator>(TRC) << "[Communicator] send() called!\n";
+    db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] send() called!\n";
     
     // Check if communicator is closed before attempting to send
     if (is_closed()) {
-        db<Communicator>(WRN) << "[Communicator] send() called when communicator is closed! Returning False\n";
+        db<Communicator>(WRN) << "[Communicator] [" << _address.to_string() << "] send() called when communicator is closed! Returning False\n";
         return false;
     }
     
     if (message.size() == 0) {
-        db<Communicator>(ERR) << "[Communicator] message is empty!\n";
+        db<Communicator>(ERR) << "[Communicator] [" << _address.to_string()  << "] message is empty!\n";
         return false;
     }
 
     if (message.size() > MAX_MESSAGE_SIZE) {
-        db<Communicator>(ERR) << "[Communicator] message too big!\n";
+        db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] message too big!\n";
         return false; 
     }
     
     try {
         // Use the provided destination address instead of BROADCAST
         int result = _channel->send(_address, destination, message.data(), message.size());
-        db<Communicator>(INF) << "[Communicator] Channel::send() return value " << std::to_string(result) << "\n";
+        db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Channel::send() message of size: " << std::to_string(result) << "\n";
         
         if (result <= 0) {
-            db<Communicator>(ERR) << "[Communicator] Failed to send message\n";
+            db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] Failed to send message\n";
             return false;
         }
     } catch (const std::exception& e) {
-        db<Communicator>(ERR) << "[Communicator] Error sending message: " << e.what() << "\n";
+        db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] Error sending message: " << e.what() << "\n";
         return false;
     }
 
@@ -162,28 +162,28 @@ bool Communicator<Channel>::send(const Message& message, const Address& destinat
 
 template <typename Channel>
 bool Communicator<Channel>::receive(Message* message) {
-    db<Communicator>(TRC) << "[Communicator] receive() called!\n";
+    db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] receive() called!\n";
     
     // If communicator is closed, doesn't even try to receive
     if (is_closed()) {
-        db<Communicator>(WRN) << "[Communicator] receive() called while communicator is closed! Returning false\n";
+        db<Communicator>(WRN) << "[Communicator] [" << _address.to_string() << "] receive() called while communicator is closed! Returning false\n";
         return false;
     }
 
     if (!message) {
-        db<Communicator>(ERR) << "[Communicator] Null message pointer in receive\n";
+        db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] Null message pointer in receive\n";
         return false;
     }
     
     Buffer* buf = Observer::updated(); // Blocks until a message is received
-    db<Communicator>(INF) << "[Communicator] buffer retrieved\n";
+    db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] buffer retrieved\n";
 
     if (!buf) {
         // Check if the communicator was closed while waiting
         if (is_closed()) {
-            db<Communicator>(INF) << "[Communicator] receive unblocked due to close(). Returning false.\n";
+            db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] receive unblocked due to close(). Returning false.\n";
         } else {
-             db<Communicator>(ERR) << "[Communicator] received null buffer unexpectedly! Returning false.\n";
+             db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] received null buffer unexpectedly! Returning false.\n";
         }
         return false;
     }
@@ -193,10 +193,10 @@ bool Communicator<Channel>::receive(Message* message) {
         std::uint8_t temp_data[MAX_MESSAGE_SIZE];
 
         int size = _channel->receive(buf, &from, temp_data, buf->size()); // Assuming Channel::receive fills 'from'
-        db<Communicator>(INF) << "[Communicator] Channel::receive() returned " << size << ".\n";
+        db<Communicator>(INF) << "[Communicator] Channel::receive() returned size of message: " << size << ".\n";
 
         if (size <= 0) {
-            db<Communicator>(ERR) << "[Communicator] failed to receive data.\n";
+            db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] failed to receive data.\n";
             return false;
         }
 
@@ -205,12 +205,12 @@ bool Communicator<Channel>::receive(Message* message) {
 
         // Sets message origin address
         message->origin(from);
-        db<Communicator>(INF) << "[Communicator] Received message origin set to: " << from << "\n";
+        db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Received message origin set to: " << from << "\n";
 
         return true;
     
     } catch (const std::exception& e) {
-        db<Communicator>(ERR) << "[Communicator] Error receiving message: " << e.what() << "\n";
+        db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] Error receiving message: " << e.what() << "\n";
         _channel->free(buf); // Free buffer on exception
         return false;
     }
@@ -218,7 +218,7 @@ bool Communicator<Channel>::receive(Message* message) {
 
 template <typename Channel>
 void Communicator<Channel>::close() {
-    db<Communicator>(TRC) << "[Communicator] close() called!\n";
+    db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] close() called!\n";
     
     _closed.store(true, std::memory_order_release);
     
@@ -233,7 +233,7 @@ const bool Communicator<Channel>::is_closed() {
 
 template <typename Channel>
 void Communicator<Channel>::update(typename Channel::Observer::Observing_Condition c, typename Channel::Observer::Observed_Data* buf) {
-    db<Communicator>(TRC) << "[Communicator] update() called!\n";
+    db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] update() called!\n";
     
     // If buf is null or we have no owner component, proceed with standard update
     if (!buf) {
@@ -253,7 +253,7 @@ void Communicator<Channel>::update(typename Channel::Observer::Observing_Conditi
         const std::size_t min_peek_size = UNIT_TYPE_OFFSET + UNIT_TYPE_SIZE; // 17 + 4 = 21
 
         if (buf->size() < min_peek_size) { 
-            db<Communicator>(WRN) << "[Communicator] Message too small for required header fields (need " << min_peek_size << "), passing through\n";
+            db<Communicator>(WRN) << "[Communicator] [" << _address.to_string() << "] Message too small for required header fields (need " << min_peek_size << "), passing through\n";
             Observer::update(c, buf);
             return;
         }
@@ -310,13 +310,13 @@ void Communicator<Channel>::update(typename Channel::Observer::Observing_Conditi
                                (now_us - interest.last_accepted_response_time_us >= interest.period_us)) {
                                 interest.last_accepted_response_time_us = now_us;
                                 should_deliver = true;
-                                db<Communicator>(INF) << "[Communicator] RESPONSE message for type " 
+                                db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] RESPONSE message for type " 
                                                     << static_cast<int>(unit_type) 
                                                     << " passed period filter (period=" 
                                                     << interest.period_us << ")\n";
                                 break;
                             } else {
-                                db<Communicator>(INF) << "[Communicator] RESPONSE message for type "
+                                db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] RESPONSE message for type "
                                                     << static_cast<int>(unit_type)
                                                     << " filtered out due to period restriction\n";
                             }
@@ -334,15 +334,15 @@ void Communicator<Channel>::update(typename Channel::Observer::Observing_Conditi
         // Handle delivery or discard
         if (should_deliver) {
             Observer::update(c, buf);
-            db<Communicator>(INF) << "[Communicator] Message passed filter, delivered to component\n";
+            db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Message passed filter, delivered to component\n";
         } else {
             // Free the buffer if we're not delivering it
             _channel->free(buf);
-            db<Communicator>(INF) << "[Communicator] Message filtered out, not delivered to component\n";
+            db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Message filtered out, not delivered to component\n";
         }
     } catch (const std::exception& e) {
         // Fall back to regular update behavior on error
-        db<Communicator>(ERR) << "[Communicator] Error during filtering: " << e.what() << ", passing through\n";
+        db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] Error during filtering: " << e.what() << ", passing through\n";
         Observer::update(c, buf);
     }
 }
@@ -354,25 +354,25 @@ const typename Communicator<Channel>::Address& Communicator<Channel>::address() 
 
 template <typename Channel>
 bool Communicator<Channel>::add_interest(DataTypeId type, std::uint64_t period_us) {
-    db<Communicator>(TRC) << "[Communicator] add_interest() called!\n";
+    db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] add_interest() called!\n";
     
     // Check if the interest already exists
     for (const auto& interest : _interests) {
         if (interest.type == type) {
-            db<Communicator>(WRN) << "[Communicator] Interest already exists for type " << static_cast<int>(type) << "\n";
+            db<Communicator>(WRN) << "[Communicator] [" << _address.to_string() << "] Interest already exists for type " << static_cast<int>(type) << "\n";
             return false;
         }
     }
     
     // Add new interest with the specified period
     _interests.push_back({type, 0, period_us});
-    db<Communicator>(INF) << "[Communicator] Interest added for type " << static_cast<int>(type) << " with period " << period_us << " microseconds\n";
+    db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Interest added for type " << static_cast<int>(type) << " with period " << period_us << " microseconds\n";
     return true;
 }
 
 template <typename Channel>
 bool Communicator<Channel>::remove_interest(DataTypeId type) {
-    db<Communicator>(TRC) << "[Communicator] remove_interest() called!\n";
+    db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] remove_interest() called!\n";
     
     // Find and remove the interest
     auto it = std::remove_if(_interests.begin(), _interests.end(), 
@@ -380,11 +380,11 @@ bool Communicator<Channel>::remove_interest(DataTypeId type) {
     
     if (it != _interests.end()) {
         _interests.erase(it, _interests.end());
-        db<Communicator>(INF) << "[Communicator] Interest removed for type " << static_cast<int>(type) << "\n";
+        db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Interest removed for type " << static_cast<int>(type) << "\n";
         return true;
     }
     
-    db<Communicator>(WRN) << "[Communicator] No interest found for type " << static_cast<int>(type) << "\n";
+    db<Communicator>(WRN) << "[Communicator] [" << _address.to_string() << "] No interest found for type " << static_cast<int>(type) << "\n";
     return false;
 }
 
