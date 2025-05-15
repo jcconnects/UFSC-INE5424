@@ -209,6 +209,7 @@ class Component {
         void stop_producer_response_thread();
         std::uint32_t update_gcd_period();
         static std::uint32_t calculate_gcd(std::uint32_t a, std::uint32_t b);
+        void store_interest_period(std::uint32_t period);
         
         // Virtual method for generating response data - Producers will override
         virtual bool produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) { return false; }
@@ -573,20 +574,7 @@ void Component::component_dispatcher_routine() {
                                       << static_cast<int>(data_type) << " with period " << period << "us\n";
                     
                     // Store the interest period
-                    bool found = false;
-                    for (auto& p : _received_interest_periods) {
-                        if (p == period) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    
-                    if (!found) {
-                        _received_interest_periods.push_back(period);
-                        _current_gcd_period_us.store(update_gcd_period(), std::memory_order_release);
-                        db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " updated GCD period to " 
-                                          << _current_gcd_period_us.load() << "us\n";
-                    }
+                    store_interest_period(period);
 
                     // Start producer response thread if it's not already running
                     if (!_producer_thread_running.load(std::memory_order_acquire)) {
@@ -858,6 +846,24 @@ std::uint32_t Component::calculate_gcd(std::uint32_t a, std::uint32_t b) {
         a = temp;
     }
     return a;
+}
+
+// Method to store and handle a new interest period
+void Component::store_interest_period(std::uint32_t period) {
+    bool found = false;
+    for (auto& p : _received_interest_periods) {
+        if (p == period) {
+            found = true;
+            break;
+        }
+    }
+    
+    if (!found) {
+        _received_interest_periods.push_back(period);
+        _current_gcd_period_us.store(update_gcd_period(), std::memory_order_release);
+        db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " updated GCD period to " 
+                          << _current_gcd_period_us.load() << "us\n";
+    }
 }
 
 // Check if SCHED_DEADLINE is available on this system
