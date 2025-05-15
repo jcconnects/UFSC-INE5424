@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <atomic>
+#include <ostream>
 
 #include "traits.h"
 #include "debug.h"
@@ -17,26 +18,23 @@ class Protocol: private NIC::Observer
 {
     public:
         static const typename NIC::Protocol_Number PROTO = Traits<Protocol>::ETHERNET_PROTOCOL_NUMBER;
+        static const unsigned int MTU = NIC::MTU - Ethernet::HEADER_SIZE;
         
         typedef typename NIC::DataBuffer Buffer;
         typedef typename NIC::Address Physical_Address;
         typedef std::uint16_t Port;
-        
-        // Change to use Concurrent_Observer for Communicator interactions
         typedef Conditional_Data_Observer<Buffer, Port> Observer;
         typedef Conditionally_Data_Observed<Buffer, Port> Observed;
+        typedef std::uint8_t Data[MTU];
         
         // Header class for protocol messages
         class Header {
             public:
                 Header() : _from_port(0), _to_port(0), _size(0) {}
-                
                 Port from_port() const { return _from_port; }
                 void from_port(Port p) { _from_port = p; }
-                
                 Port to_port() const { return _to_port; }
                 void to_port(Port p) { _to_port = p; }
-                
                 unsigned int size() const { return _size; }
                 void size(unsigned int s) { _size = s; }
                 
@@ -46,16 +44,12 @@ class Protocol: private NIC::Observer
                 unsigned int _size;
         };
         
-        static const unsigned int MTU = NIC::MTU - sizeof(Header);
-        typedef std::uint8_t Data[MTU];
         
         // Packet class that includes header and data
         class Packet: public Header {
             public:
                 Packet() {}
-                
                 Header* header() { return this; }
-                
                 template<typename T>
                 T* data() { return reinterpret_cast<T*>(_data); }
                 
@@ -73,17 +67,12 @@ class Protocol: private NIC::Observer
                 Address();
                 Address(const Null& null);
                 Address(Physical_Address paddr, Port port);
-                
                 void paddr(Physical_Address addr);
                 const Physical_Address& paddr() const;
-
                 void port(Port port);
                 const Port& port() const;
-
                 const std::string to_string() const;
-
                 static const Address BROADCAST;
-                
                 operator bool() const;
                 bool operator==(const Address& a) const;
             
@@ -93,19 +82,12 @@ class Protocol: private NIC::Observer
         };
         
         Protocol(NIC* nic);
-
         ~Protocol();
-        
         int send(Address from, Address to, const void* data, unsigned int size);
         int receive(Buffer* buf, Address *from, void* data, unsigned int size);
-        
-        // Add peek method to read data from a buffer without consuming it
         int peek(Buffer* buf, void* data, unsigned int size);
-
         static void attach(Observer* obs, Address address);
         static void detach(Observer* obs, Address address);
-        
-        // Add buffer free method
         void free(Buffer* buf);
 
     private:
@@ -267,6 +249,7 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
     return payload_size;
 }
 
+// Peek method to read data from a buffer without consuming it
 template <typename NIC>
 int Protocol<NIC>::peek(Buffer* buf, void* data, unsigned int size) {
     db<Protocol>(TRC) << "[Protocol] peek() called!\n";
