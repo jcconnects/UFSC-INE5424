@@ -636,11 +636,6 @@ void Component::component_dispatcher_routine() {
                                   << static_cast<int>(msg_type) << "\n";
             }
         } else {
-            // Check if we should exit
-            if (!_dispatcher_running.load()) {
-                break;
-            }
-            
             // Small sleep to avoid tight loop on error
             usleep(1000);  // 1ms sleep
         }
