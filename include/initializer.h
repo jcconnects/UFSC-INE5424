@@ -20,7 +20,7 @@ class Initializer {
 
     public:
         typedef NIC<SocketEngine, SharedMemoryEngine> NIC_T;
-        typedef Protocol<NIC_T> Protocol_T;
+        typedef Protocol<NIC_T> PROTOCOL_T;
 
 
         Initializer() = default;
@@ -39,7 +39,7 @@ class Initializer {
          * 
          * @return The created Protocol, associated with the network interface passed as a parameter
          */
-        static Protocol_T* create_protocol(NIC_T* nic);
+        static PROTOCOL_T* create_protocol(NIC_T* nic);
 };
 
 /********** Initializer Implementation ***********/
@@ -48,12 +48,12 @@ Initializer::NIC_T* Initializer::create_nic() {
     return new NIC_T();
 }
 
-Initializer::Protocol_T* Initializer::create_protocol(NIC_T* nic) {
+Initializer::PROTOCOL_T* Initializer::create_protocol(NIC_T* nic) {
     if (!nic) {
         throw std::invalid_argument("NIC cannot be null");
     }
 
-    return new Protocol_T(nic);
+    return new PROTOCOL_T(nic);
 }
 
 #endif // INITIALIZER_H
