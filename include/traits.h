@@ -84,7 +84,7 @@ struct Traits<SharedMemoryEngine> : public Traits<void>
 template <typename ExternalEngine, typename InternalEngine>
 struct Traits<NIC<ExternalEngine, InternalEngine>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static const unsigned int SEND_BUFFERS = 512;
     static const unsigned int RECEIVE_BUFFERS = 512;
 };
@@ -171,14 +171,14 @@ struct Traits<LidarComponent> : public Traits<void>
 template <>
 struct Traits<BasicProducer> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for BasicConsumer class
 template <>
 struct Traits<BasicConsumer> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for Debug class

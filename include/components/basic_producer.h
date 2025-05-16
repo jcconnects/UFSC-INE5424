@@ -99,24 +99,6 @@ void BasicProducer::run() {
             _log_file.flush();
         }
         
-        // Manually send a response for debugging/testing
-        std::vector<std::uint8_t> data;
-        if (produce_data_for_response(_produced_data_type, data)) {
-            Message response = _communicator->new_message(
-                Message::Type::RESPONSE,
-                _produced_data_type,
-                0,  // period is 0 for responses
-                data.data(),
-                data.size()
-            );
-            
-            // Send to Gateway for broadcast distribution
-            Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
-            _communicator->send(response, gateway_addr);
-            
-            db<BasicProducer>(INF) << "[Basic Producer] manually sent test RESPONSE message for debugging\n";
-        }
-        
         // Sleep to prevent consuming too much CPU
         usleep(100000); // 100ms update interval
     }
