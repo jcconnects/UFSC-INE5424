@@ -19,6 +19,15 @@
 #include "../../include/components/lidar_component.h"
 #include "../../include/components/ins_component.h"
 #include "../../include/components/battery_component.h"
+#include "../../include/components/gateway_component.h"
+
+// Include basic consumer/producer components
+#include "../../include/components/basic_consumer.h"
+#include "../../include/components/basic_producer.h"
+
+// Include P3 component type and data types
+#include "../../include/componentType.h"
+#include "../../include/teds.h"
 
 // Define the port constants used by components (as they are marked extern in headers)
 const unsigned short ECU1_PORT = 0;
@@ -26,6 +35,9 @@ const unsigned short ECU2_PORT = 1;
 
 int main() {
     TEST_INIT("initializer_test");
+    
+    // Test 1-7: Basic vehicle functionality tests
+    // [Keeping these unchanged since they test basic vehicle functionality]
     
     // Test 1: Create a vehicle with ID 1
     TEST_LOG("Creating vehicle with ID 1");
@@ -133,52 +145,114 @@ int main() {
                     "Sixth byte of MAC should be low byte of ID");
     }
     
-    // Test 8: Test send and receive functionality of created vehicles
-    TEST_LOG("Testing basic send/receive functionality of created vehicles");
-    
-    // We'll restart vehicle1 and vehicle2 for this test
-    vehicle1->start();
-    vehicle2->start();
-    
-    // Note: The send/receive functionality has been removed from the Vehicle class
+    // Skip Test 8 as send/receive functionality was removed from Vehicle
     TEST_LOG("--- Skipping Test 8 (Vehicle Send/Receive Removed) ---");
     
-    // Stop the vehicles again
-    vehicle1->stop();
-    vehicle2->stop();
-    
-    // Test 9: Test Component Creation
-    TEST_LOG("--- Starting Test 9: Component Creation ---");
+    // Test 9: Test Component Creation (Legacy component types)
+    TEST_LOG("--- Starting Test 9: Legacy Component Creation ---");
     Vehicle* vehicle_comp_test = new Vehicle(99); // Use a unique ID
     TEST_ASSERT(vehicle_comp_test != nullptr, "Test vehicle for components should not be null");
 
     // Test creating ECU1
     TEST_LOG("Creating ECUComponent (ECU1)");
-    vehicle_comp_test->create_component<ECUComponent>("TestECU1");
+    auto ecu1 = vehicle_comp_test->create_component<ECUComponent>("TestECU1");
+    TEST_ASSERT(ecu1 != nullptr, "ECU1 component should not be null");
     
     // Test creating ECU2
     TEST_LOG("Creating ECUComponent (ECU2)");
-    vehicle_comp_test->create_component<ECUComponent>("TestECU2");
+    auto ecu2 = vehicle_comp_test->create_component<ECUComponent>("TestECU2");
+    TEST_ASSERT(ecu2 != nullptr, "ECU2 component should not be null");
     
     // Test creating CameraComponent
     TEST_LOG("Creating CameraComponent");
-    vehicle_comp_test->create_component<CameraComponent>("TestCamera");
+    auto camera = vehicle_comp_test->create_component<CameraComponent>("TestCamera");
+    TEST_ASSERT(camera != nullptr, "Camera component should not be null");
     
     // Test creating LidarComponent
     TEST_LOG("Creating LidarComponent");
-    vehicle_comp_test->create_component<LidarComponent>("TestLidar");
+    auto lidar = vehicle_comp_test->create_component<LidarComponent>("TestLidar");
+    TEST_ASSERT(lidar != nullptr, "Lidar component should not be null");
     
     // Test creating INSComponent
     TEST_LOG("Creating INSComponent");
-    vehicle_comp_test->create_component<INSComponent>("TestINS");
+    auto ins = vehicle_comp_test->create_component<INSComponent>("TestINS");
+    TEST_ASSERT(ins != nullptr, "INS component should not be null");
     
     // Test creating BatteryComponent
     TEST_LOG("Creating BatteryComponent");
-    vehicle_comp_test->create_component<BatteryComponent>("TestBattery");
+    auto battery = vehicle_comp_test->create_component<BatteryComponent>("TestBattery");
+    TEST_ASSERT(battery != nullptr, "Battery component should not be null");
     
-    TEST_LOG("Component creation tests finished. Cleaning up component test vehicle.");
+    TEST_LOG("Legacy component creation tests finished. Cleaning up component test vehicle.");
     delete vehicle_comp_test; // This should also delete all components created
-
+    
+    // Test 10: New P3 Component Creation with Roles
+    TEST_LOG("--- Starting Test 10: P3 Component Creation with Roles ---");
+    Vehicle* p3_vehicle = new Vehicle(100);
+    TEST_ASSERT(p3_vehicle != nullptr, "P3 test vehicle should not be null");
+    
+    // Test creating a gateway component
+    TEST_LOG("Creating GatewayComponent");
+    auto gateway = p3_vehicle->create_component<GatewayComponent>("P3Gateway");
+    TEST_ASSERT(gateway != nullptr, "Gateway component should not be null");
+    
+    // Test creating a basic consumer for VEHICLE_SPEED
+    TEST_LOG("Creating BasicConsumer for VEHICLE_SPEED");
+    auto speed_consumer = p3_vehicle->create_component<BasicConsumer<DataTypeId::VEHICLE_SPEED>>("SpeedConsumer");
+    TEST_ASSERT(speed_consumer != nullptr, "Speed consumer component should not be null");
+    TEST_ASSERT(dynamic_cast<BasicConsumer<DataTypeId::VEHICLE_SPEED>*>(speed_consumer) != nullptr, 
+                "Speed consumer should be of correct type");
+    
+    // Test creating a basic producer for ENGINE_RPM
+    TEST_LOG("Creating BasicProducer for ENGINE_RPM");
+    auto rpm_producer = p3_vehicle->create_component<BasicProducer<DataTypeId::ENGINE_RPM>>("RPMProducer");
+    TEST_ASSERT(rpm_producer != nullptr, "RPM producer component should not be null");
+    TEST_ASSERT(dynamic_cast<BasicProducer<DataTypeId::ENGINE_RPM>*>(rpm_producer) != nullptr, 
+                "RPM producer should be of correct type");
+    
+    // Test creating a basic consumer for GPS_POSITION
+    TEST_LOG("Creating BasicConsumer for GPS_POSITION");
+    auto gps_consumer = p3_vehicle->create_component<BasicConsumer<DataTypeId::GPS_POSITION>>("GPSConsumer");
+    TEST_ASSERT(gps_consumer != nullptr, "GPS consumer component should not be null");
+    TEST_ASSERT(dynamic_cast<BasicConsumer<DataTypeId::GPS_POSITION>*>(gps_consumer) != nullptr, 
+                "GPS consumer should be of correct type");
+    
+    // Test creating a basic producer for STEERING_ANGLE
+    TEST_LOG("Creating BasicProducer for STEERING_ANGLE");
+    auto steering_producer = p3_vehicle->create_component<BasicProducer<DataTypeId::STEERING_ANGLE>>("SteeringProducer");
+    TEST_ASSERT(steering_producer != nullptr, "Steering producer component should not be null");
+    TEST_ASSERT(dynamic_cast<BasicProducer<DataTypeId::STEERING_ANGLE>*>(steering_producer) != nullptr, 
+                "Steering producer should be of correct type");
+    
+    // Start and stop the P3 vehicle to test component lifecycle
+    TEST_LOG("Starting P3 vehicle to test component lifecycle");
+    p3_vehicle->start();
+    TEST_ASSERT(p3_vehicle->running(), "P3 vehicle should be running after start");
+    
+    // Allow components time to initialize
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    
+    // Test that all components are running
+    TEST_ASSERT(gateway->running(), "Gateway component should be running");
+    TEST_ASSERT(speed_consumer->running(), "Speed consumer should be running");
+    TEST_ASSERT(rpm_producer->running(), "RPM producer should be running");
+    TEST_ASSERT(gps_consumer->running(), "GPS consumer should be running");
+    TEST_ASSERT(steering_producer->running(), "Steering producer should be running");
+    
+    // Stop the P3 vehicle
+    TEST_LOG("Stopping P3 vehicle");
+    p3_vehicle->stop();
+    TEST_ASSERT(!p3_vehicle->running(), "P3 vehicle should not be running after stop");
+    
+    // Test that all components are stopped
+    TEST_ASSERT(!gateway->running(), "Gateway component should not be running");
+    TEST_ASSERT(!speed_consumer->running(), "Speed consumer should not be running");
+    TEST_ASSERT(!rpm_producer->running(), "RPM producer should not be running");
+    TEST_ASSERT(!gps_consumer->running(), "GPS consumer should not be running");
+    TEST_ASSERT(!steering_producer->running(), "Steering producer should not be running");
+    
+    TEST_LOG("P3 component tests finished. Cleaning up P3 vehicle.");
+    delete p3_vehicle; // This should also delete all P3 components
 
     // Clean up remaining vehicles from previous tests
     TEST_LOG("Cleaning up vehicles from earlier tests");

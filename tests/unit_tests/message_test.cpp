@@ -31,8 +31,8 @@ class Message {
 public:
     enum class Type : std::uint8_t {
         INTEREST,
-        RESPONSE,
-        REG_PRODUCER,
+        RESPONSE
+        // REG_PRODUCER removed as deprecated
     };
     
     typedef TestOrigin Origin;
@@ -250,62 +250,25 @@ int main() {
         TEST_ASSERT(deserialized_resp_msg.value() != nullptr && std::memcmp(deserialized_resp_msg.value(), value2.data(), value2.size()) == 0, "Test 2.7.7: Deserialized RESPONSE value data mismatch");
     }
 
-    // Test 3: Create and verify a REG_PRODUCER message
-    {
-        TestOrigin origin3 = create_test_origin(0x03, 3003);
-        DataTypeId unit_type3 = DataTypeId::SYSTEM_INTERNAL_REG_PRODUCER;
-        // Period and value are not used for REG_PRODUCER
-
-        Message reg_msg(Message::Type::REG_PRODUCER, origin3, unit_type3);
-
-        TEST_ASSERT(reg_msg.message_type() == Message::Type::REG_PRODUCER, "Test 3.1: Message type should be REG_PRODUCER");
-        TEST_ASSERT(memcmp(&reg_msg.origin().paddr(), &origin3.paddr(), sizeof(Ethernet::Address)) == 0, "Test 3.2: Origin MAC should match for REG_PRODUCER");
-        
-        // Fix port comparison
-        uint16_t reg_port = reg_msg.origin().port();
-        uint16_t origin3_port = origin3.port();
-        TEST_ASSERT(reg_port == origin3_port, "Test 3.3: Origin Port should match for REG_PRODUCER");
-        
-        TEST_ASSERT(reg_msg.unit_type() == unit_type3, "Test 3.4: Unit type should be SYSTEM_INTERNAL_REG_PRODUCER");
-        TEST_ASSERT(reg_msg.period() == 0, "Test 3.5: Period should be 0 for REG_PRODUCER");
-        TEST_ASSERT(reg_msg.value() == nullptr, "Test 3.6: Value should be null for REG_PRODUCER");
-        TEST_ASSERT(reg_msg.value_size() == 0, "Test 3.7: Value size should be 0 for REG_PRODUCER");
-
-        // Test 3.8: Serialization and Deserialization
-        const void* serialized_data_reg = reg_msg.data();
-        unsigned int serialized_size_reg = reg_msg.size();
-        TEST_ASSERT(serialized_data_reg != nullptr && serialized_size_reg > 0, "Test 3.8.1: Serialized data for REG_PRODUCER should be valid");
-
-        Message deserialized_reg_msg = Message::deserialize(serialized_data_reg, serialized_size_reg);
-        TEST_ASSERT(deserialized_reg_msg.message_type() == Message::Type::REG_PRODUCER, "Test 3.8.2: Deserialized REG_PRODUCER type mismatch");
-        TEST_ASSERT(memcmp(&deserialized_reg_msg.origin().paddr(), &origin3.paddr(), sizeof(Ethernet::Address)) == 0, "Test 3.8.3: Deserialized REG_PRODUCER MAC mismatch");
-        
-        // Fix port comparison
-        uint16_t deser_reg_port = deserialized_reg_msg.origin().port();
-        TEST_ASSERT(deser_reg_port == origin3_port, "Test 3.8.4: Deserialized REG_PRODUCER Port mismatch");
-        
-        TEST_ASSERT(deserialized_reg_msg.unit_type() == unit_type3, "Test 3.8.5: Deserialized REG_PRODUCER unit_type mismatch");
-    }
-    
-    // Test 4: RESPONSE message with empty value
+    // Test 3: RESPONSE message with empty value
     {
         TestOrigin origin4 = create_test_origin(0x04, 4004);
         DataTypeId unit_type4 = DataTypeId::GPS_POSITION;
         Message response_empty_value_msg(Message::Type::RESPONSE, origin4, unit_type4, 0, nullptr, 0);
 
-        TEST_ASSERT(response_empty_value_msg.message_type() == Message::Type::RESPONSE, "Test 4.1: Empty value RESPONSE type");
-        TEST_ASSERT(response_empty_value_msg.unit_type() == unit_type4, "Test 4.2: Empty value RESPONSE unit_type");
-        TEST_ASSERT(response_empty_value_msg.value() == nullptr, "Test 4.3: Empty value RESPONSE value ptr is null");
-        TEST_ASSERT(response_empty_value_msg.value_size() == 0, "Test 4.4: Empty value RESPONSE value_size is 0");
+        TEST_ASSERT(response_empty_value_msg.message_type() == Message::Type::RESPONSE, "Test 3.1: Empty value RESPONSE type");
+        TEST_ASSERT(response_empty_value_msg.unit_type() == unit_type4, "Test 3.2: Empty value RESPONSE unit_type");
+        TEST_ASSERT(response_empty_value_msg.value() == nullptr, "Test 3.3: Empty value RESPONSE value ptr is null");
+        TEST_ASSERT(response_empty_value_msg.value_size() == 0, "Test 3.4: Empty value RESPONSE value_size is 0");
 
         const void* serialized_data_ev = response_empty_value_msg.data();
         unsigned int serialized_size_ev = response_empty_value_msg.size();
         Message deserialized_ev_msg = Message::deserialize(serialized_data_ev, serialized_size_ev);
 
-        TEST_ASSERT(deserialized_ev_msg.message_type() == Message::Type::RESPONSE, "Test 4.5: Deser Empty value RESPONSE type");
-        TEST_ASSERT(deserialized_ev_msg.unit_type() == unit_type4, "Test 4.6: Deser Empty value RESPONSE unit_type");
-        TEST_ASSERT(deserialized_ev_msg.value() == nullptr, "Test 4.7: Deser Empty value RESPONSE value ptr is null");
-        TEST_ASSERT(deserialized_ev_msg.value_size() == 0, "Test 4.8: Deser Empty value RESPONSE value_size is 0");
+        TEST_ASSERT(deserialized_ev_msg.message_type() == Message::Type::RESPONSE, "Test 3.5: Deser Empty value RESPONSE type");
+        TEST_ASSERT(deserialized_ev_msg.unit_type() == unit_type4, "Test 3.6: Deser Empty value RESPONSE unit_type");
+        TEST_ASSERT(deserialized_ev_msg.value() == nullptr, "Test 3.7: Deser Empty value RESPONSE value ptr is null");
+        TEST_ASSERT(deserialized_ev_msg.value_size() == 0, "Test 3.8: Deser Empty value RESPONSE value_size is 0");
     }
 
     std::cout << "P3 Message tests passed successfully!" << std::endl;

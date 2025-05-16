@@ -1,0 +1,97 @@
+@startuml Gateway Relays Response & Consumer Receives Flow (Inter-Vehicle)
+
+title Gateways on Veh A & B Relay Response; Consumer on Veh A Receives
+
+participant Network #Black
+
+participant GatewayComp_A as "Gateway (Veh A)" #Application
+participant GComm_A as "GComm_A (Veh A)" <<Communicator>>
+participant Proto_A as "Protocol (Veh A)" <<Protocol>>
+participant NIC_A as "NIC (Veh A)" <<NIC>>
+
+participant ConsumerComp_A as "Consumer (Veh A)" #Application
+participant CComm_A as "CComm_A (Veh A)" <<Communicator>>
+
+participant GatewayComp_B as "Gateway (Veh B)" #Application
+participant GComm_B as "GComm_B (Veh B)" <<Communicator>>
+participant Proto_B as "Protocol (Veh B)" <<Protocol>>
+participant NIC_B as "NIC (Veh B)" <<NIC>>
+
+participant ConsumerComp_B as "Consumer (Veh B)" #Application
+note right of ConsumerComp_B : Optional, if interested
+participant CComm_B as "CComm_B (Veh B)" <<Communicator>>
+note right of CComm_B : Optional
+
+box "Vehicle A" #LightBlue
+    participant GatewayComp_A
+    participant GComm_A
+    participant ConsumerComp_A
+    participant CComm_A
+    participant Proto_A
+    participant NIC_A
+end box
+
+box "Vehicle B" #LightGreen
+    participant GatewayComp_B
+    participant GComm_B
+    participant ConsumerComp_B
+    participant CComm_B
+    participant Proto_B
+    participant NIC_B
+end box
+
+== Gateways on Veh A & B Receive RESPONSE (from Network) ==
+
+Network -> NIC_A : (Veh A's NIC) Receives Frame (Response originated by a Producer)
+NIC_A -> Proto_A : "update(eth_frame_response_buf)" (for GatewayComp_A)
+Proto_A -> GComm_A : "update(Port_Gateway_0, eth_frame_response_buf)"
+GComm_A -> GComm_A : Observer::update() unblocks GComm_A::receive()
+activate GatewayComp_A
+GatewayComp_A -> GComm_A : "receive(response_obj_A)"
+GatewayComp_A -> GComm_A : "send(response_obj_A, Address(_vehicle->address(), INTERNAL_BROADCAST_PORT))"
+GComm_A -> Proto_A : "send(response_obj_A, Address(_vehicle->address(), INTERNAL_BROADCAST_PORT))"
+Proto_A -> Proto_A : Uses notifyInternalBroadcast() for Port 1 observers
+deactivate GatewayComp_A
+note right of GatewayComp_A : Relay to internal listeners on Veh A (Port 1)
+
+Network -> NIC_B : (Veh B's NIC) Receives Frame (Response originated by a Producer)
+NIC_B -> Proto_B : "update(eth_frame_response_buf)" (for GatewayComp_B)
+Proto_B -> GComm_B : "update(Port_Gateway_0, eth_frame_response_buf)"
+GComm_B -> GComm_B : Observer::update() unblocks GComm_B::receive()
+activate GatewayComp_B
+GatewayComp_B -> GComm_B : "receive(response_obj_B)"
+GatewayComp_B -> GComm_B : "send(response_obj_B, Address(_vehicle->address(), INTERNAL_BROADCAST_PORT))"
+GComm_B -> Proto_B : "send(response_obj_B, Address(_vehicle->address(), INTERNAL_BROADCAST_PORT))"
+Proto_B -> Proto_B : Uses notifyInternalBroadcast() for Port 1 observers
+deactivate GatewayComp_B
+note right of GatewayComp_B : Relay to internal listeners on Veh B (Port 1)
+
+== Consumer on Veh A Receives Relayed RESPONSE ==
+
+Proto_A -> CComm_A : "update(Port_Internal_Broadcast_1, cloned_resp_buf_A)"
+    CComm_A -> CComm_A : Deserialize, Filter by Component Type, Message Type, DataTypeId, Period
+    alt Filters Passed (for CComp_A)
+        CComm_A -> CComm_A : Observer::update() unblocks CComm_A::receive()
+        activate ConsumerComp_A
+        ConsumerComp_A -> CComm_A : "receive(final_response_A)"
+        ConsumerComp_A -> ConsumerComp_A : "_data_callback(final_response_A)"
+        deactivate ConsumerComp_A
+    else Filters Failed
+        CComm_A -> Proto_A : free(cloned_resp_buf_A)
+    end
+
+== Consumer on Veh B (Optional) Receives Relayed RESPONSE ==
+
+Proto_B -> CComm_B : "update(Port_Internal_Broadcast_1, cloned_resp_buf_B)"
+    CComm_B -> CComm_B : Deserialize, Filter by Component Type, Message Type, DataTypeId, Period
+    alt Filters Passed (for CComp_B)
+        CComm_B -> CComm_B : Observer::update() unblocks CComm_B::receive()
+        activate ConsumerComp_B
+        ConsumerComp_B -> CComm_B : "receive(final_response_B)"
+        ConsumerComp_B -> ConsumerComp_B : "_data_callback(final_response_B)"
+        deactivate ConsumerComp_B
+    else Filters Failed
+        CComm_B -> Proto_B : free(cloned_resp_buf_B)
+    end
+
+@enduml

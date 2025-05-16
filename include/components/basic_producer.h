@@ -14,7 +14,7 @@
 class BasicProducer : public Component {
     public:
         // Define the port
-        static const unsigned int PORT;
+        static inline const unsigned int PORT = 105;
 
         BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id, 
                     const std::string& name, VehicleProt* protocol);
@@ -40,12 +40,12 @@ class BasicProducer : public Component {
         void update_test_data();
 };
 
-/******** Test Producer Implementation *******/
-const unsigned int BasicProducer::PORT = 105; // Unique port for Test Producer
+/******** Basic Producer Implementation *******/
+// const unsigned int BasicProducer::PORT = 105; // This line is removed
 
 BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id, 
                            const std::string& name, VehicleProt* protocol) 
-    : Component(vehicle, vehicle_id, name), 
+    : Component(vehicle, vehicle_id, name, ComponentType::PRODUCER), 
       _rng(std::random_device{}()),
       _value_dist(0, 1000),   // 0 to 1000 range
       _current_value(0),
@@ -65,9 +65,9 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
     // Initialize with random test data
     update_test_data();
     
-    // Set up communicator with test producer port
+    // Set up communicator
     Address addr(_vehicle->address(), PORT);
-    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, DataTypeId::CUSTOM_SENSOR_DATA_A);
+    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, _produced_data_type);
     set_address(addr);
     
     db<BasicProducer>(INF) << "[Basic Producer] initialized as producer of type " 
@@ -77,7 +77,7 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
 void BasicProducer::run() {
     db<BasicProducer>(INF) << "[Basic Producer] component " << getName() << " starting main run loop.\n";
     
-    // Main loop - update sensor data periodically
+    // Main loop - update data and log
     while (running()) {
         // Update simulated test data
         update_test_data();
@@ -94,7 +94,7 @@ void BasicProducer::run() {
             _log_file.flush();
         }
         
-        // Sleep for a bit - actual response rate is determined by consumer periods
+        // Sleep to prevent consuming too much CPU
         usleep(100000); // 100ms update interval
     }
     
@@ -112,19 +112,18 @@ void BasicProducer::update_test_data() {
 }
 
 bool BasicProducer::produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) {
-    db<BasicProducer>(TRC) << "[Basic Producer] produce_data_for_response called for type " << static_cast<int>(type) << ". Expected: " << static_cast<int>(DataTypeId::CUSTOM_SENSOR_DATA_A) << "\n";
     // Only respond to requests for our produced data type
-    if (type != DataTypeId::CUSTOM_SENSOR_DATA_A) {
-        db<BasicProducer>(WRN) << "[Basic Producer] produce_data_for_response rejected due to type mismatch.\n";
+    if (type != _produced_data_type) {
         return false;
     }
     
-    // Create a simple buffer with our two values
+    // Create a buffer with our two values
     out_value.resize(sizeof(int) + sizeof(uint32_t));
     std::memcpy(out_value.data(), &_current_value, sizeof(int));
     std::memcpy(out_value.data() + sizeof(int), &_counter, sizeof(uint32_t));
     
-    db<BasicProducer>(INF) << "[Basic Producer] produced data (value=" << _current_value << ", counter=" << _counter << ") with size " << out_value.size() << " bytes for type " << static_cast<int>(type) << "\n";
+    db<BasicProducer>(INF) << "[Basic Producer] produced data: value=" << _current_value 
+                         << ", counter=" << _counter << "\n";
     return true;
 }
 

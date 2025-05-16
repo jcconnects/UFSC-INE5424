@@ -70,7 +70,7 @@ const unsigned int LidarComponent::PORT = 101; // Example port for Lidar
 
 LidarComponent::LidarComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
                               const std::string& name, VehicleProt* protocol) 
-    : Component(vehicle, vehicle_id, name), 
+    : Component(vehicle, vehicle_id, name, ComponentType::PRODUCER), 
       _rng(std::random_device{}()),
       _dist_dist(0.5f, 50.0f),       // 0.5 to 50 meters
       _angle_dist(-180.0f, 180.0f),  // -180 to 180 degrees

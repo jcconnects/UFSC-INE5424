@@ -40,22 +40,21 @@ class GatewayComponent : public Component {
         void run() override;
         
     protected:
-        // Override component_dispatcher_routine to directly handle Gateway-specific messages
-        void component_dispatcher_routine() override;
+        // Removed: void component_dispatcher_routine() override;
         
     private:
-        // Helper methods to handle specific message types
-        void handle_interest(const Message& message);
-        void handle_response(const Message& message);
+        // Removed: void handle_interest(const Message& message);
+        // Removed: void handle_response(const Message& message);
 };
 
 // Move implementation to a separate .cpp file
 #include "component.h"  // Now can safely include Component
+#include "vehicle.h"    // For _vehicle->protocol()
 
 // Implement the constructor
 GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
                                   const std::string& name, Protocol<NIC<SocketEngine, SharedMemoryEngine>>* protocol) 
-    : Component(vehicle, vehicle_id, name) 
+    : Component(vehicle, vehicle_id, name, ComponentType::GATEWAY) 
 {
     db<GatewayComponent>(TRC) << "[Gateway] constructor called.\n";
     // Sets CSV result Header
@@ -71,132 +70,75 @@ GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_
     db<GatewayComponent>(INF) << "[Gateway] Log created.\n";
 
     // Sets own address using Port 0 (Gateway's well-known port)
-    Address addr(_vehicle->address(), PORT);
+    // The Component base class constructor now uses GATEWAY_PORT for the gateway address
+    // and the component's specific port is set up in the communicator.
+    // The Gateway's specific port for its communicator should be GATEWAY_PORT (0).
+    Address addr(_vehicle->address(), GATEWAY_PORT); // Gateway's own address is on port 0.
 
     db<GatewayComponent>(INF) << "[Gateway] Address set to " << addr.to_string() << "\n";
 
-    // Sets own communicator
-    _communicator = new Comms(protocol, addr, ComponentType::GATEWAY, DataTypeId::OBSTACLE_DISTANCE);
-
+    // Sets own communicator. For Gateway, it listens on GATEWAY_PORT (0).
+    // The DataTypeId here is a placeholder as Gateway doesn't filter by it for reception.
+    _communicator = new Comms(protocol, addr, ComponentType::GATEWAY, DataTypeId::UNKNOWN); 
+    set_address(addr); // Ensure component base knows its actual listening address.
+    
     db<GatewayComponent>(INF) << "[Gateway] " << getName() << " initialized on port " << PORT << "\n";
 }
 
 void GatewayComponent::run() {
     db<GatewayComponent>(INF) << "[Gateway] " << getName() << " starting main run loop.\n";
     
-    // The main Gateway logic is handled in component_dispatcher_routine override
-    while (running()) {
-        // This thread just stays alive and periodically logs status if needed
-        usleep(5000000); // Sleep for 5 seconds
+    // Create a properly initialized Message pointer that we'll use to receive messages
+    Message* received_msg = nullptr;
+    while (running()) { // Use Component's _running flag
+        // Allocate a new Message for each receive call
+        received_msg = new Message(Message::Type::UNKNOWN, Address(), DataTypeId::UNKNOWN);
         
-        db<GatewayComponent>(INF) << "[Gateway] " << getName() << " still running.\n";
+        if (receive(received_msg) >= 0) { // Use Component's receive method and check for non-negative return value
+            db<GatewayComponent>(INF) << "Gateway received msg on Port " << received_msg->origin().port()
+                                      << ", type: " << static_cast<int>(received_msg->message_type()) 
+                                      << ", unit_type: " << static_cast<int>(received_msg->unit_type())
+                                      << " from " << received_msg->origin().to_string() << ". Relaying to Internal Broadcast Port "
+                                      << Component::INTERNAL_BROADCAST_PORT << ".";
+            
+            // Construct the destination address for internal broadcast
+            Address internal_broadcast_addr(_vehicle->address(), Component::INTERNAL_BROADCAST_PORT);
+            
+            db<GatewayComponent>(TRC) << "Gateway attempting to relay message via communicator to " << internal_broadcast_addr.to_string();
+
+            // Use the communicator to send the original message to the internal broadcast address.
+            // The Protocol layer is expected to handle this as a special case for relaying
+            // by distributing the buffer of 'received_msg' to Port 1 observers.
+            // The origin of the message will be preserved as it's part of received_msg.
+            if (!_communicator->send(*received_msg, internal_broadcast_addr)) {
+                db<GatewayComponent>(ERR) << "Gateway failed to relay message to " << internal_broadcast_addr.to_string()
+                                          << " for message from " << received_msg->origin().to_string();
+            }
+            
+            // Clean up the received message
+            delete received_msg;
+            received_msg = nullptr;
+        } else {
+            // Clean up if receive failed
+            delete received_msg;
+            received_msg = nullptr;
+            
+            // Optional: add a small sleep if receive is non-blocking and returns 0 frequently
+            // to prevent busy-waiting if that's the case.
+            // If receive() blocks, this is not strictly necessary.
+            // usleep(1000); // e.g., 1ms sleep
+        }
+    }
+    
+    // Final cleanup just in case
+    if (received_msg) {
+        delete received_msg;
     }
     
     db<GatewayComponent>(INF) << "[Gateway] " << getName() << " exiting main run loop.\n";
 }
 
-void GatewayComponent::component_dispatcher_routine() {
-    db<GatewayComponent>(TRC) << "[Gateway] " << getName() << " dispatcher routine started.\n";
-    
-    while (_dispatcher_running.load()) {
-        Message message = _communicator->new_message(Message::Type::RESPONSE, DataTypeId::UNKNOWN); // Default message
-        int recv_size = receive(&message); // receive is a Component method
-
-        db<GatewayComponent>(TRC) << "[Gateway] " << getName() << " dispatcher received message of size: " 
-                                     << recv_size << "\n";
-        
-        if (recv_size <= 0) {
-            // Check if we should exit
-            if (!_dispatcher_running.load()) {
-                break;
-            }
-            
-            // Handle error or timeout
-            if (recv_size < 0) {
-                db<GatewayComponent>(ERR) << "[Gateway] " << getName() << " dispatcher receive error: " << recv_size << "\n";
-            }
-            
-            // Continue to next iteration
-            continue;
-        }
-        
-        try {
-            // Get current time for latency measurement
-            auto recv_time = std::chrono::duration_cast<std::chrono::microseconds>(
-                std::chrono::high_resolution_clock::now().time_since_epoch());
-                
-            db<GatewayComponent>(INF) << "[Gateway] " << getName() << " dispatcher received message of type: " 
-                                     << static_cast<int>(message.message_type()) << "\n";
-            
-            // Process the message directly based on its type
-            if (message.message_type() == Message::Type::INTEREST) {
-                handle_interest(message);
-            }
-            else if (message.message_type() == Message::Type::RESPONSE) {
-                handle_response(message);
-            }
-            else {
-                db<GatewayComponent>(WRN) << "Gateway received unhandled message type: " 
-                                         << static_cast<int>(message.message_type()) << "\n";
-            }
-            
-            // Log the message receipt
-            if (_log_file.is_open()) {
-                auto latency_us = recv_time.count() - message.timestamp();
-                _log_file << recv_time.count() << ","
-                         << message.origin().to_string() << ","
-                         << "UNKNOWN" << "," // Component type not tracked currently
-                         << message.origin() << ","
-                         << message.timestamp() << ","
-                         << static_cast<int>(message.message_type()) << ","
-                         << message.timestamp() << ","
-                         << latency_us << ","
-                         << "RAW_NOT_IMPLEMENTED" << "\n";
-                _log_file.flush();
-            }
-            
-        } catch (const std::exception& e) {
-            db<GatewayComponent>(ERR) << "[Gateway] " << getName() << " dispatcher exception: " << e.what() << "\n";
-        }
-    }
-    
-    db<GatewayComponent>(TRC) << "[Gateway] " << getName() << " dispatcher routine exiting.\n";
-}
-
-void GatewayComponent::handle_interest(const Message& message) {
-    DataTypeId requested_type = message.unit_type();
-    std::uint32_t period = message.period();
-    Address original_requester = message.origin();
-
-    db<GatewayComponent>(INF) << "[Gateway] handle_interest: Received INTEREST for type " 
-                             << static_cast<int>(requested_type) << " with period " << period 
-                             << " from original requester: " << original_requester.to_string() 
-                             << ". Relaying as broadcast.\n";
-
-    // Simply forward the message as a broadcast - Protocol layer will handle delivery
-    // to all interested components
-    Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
-    _communicator->send(message, broadcast_addr);
-    
-    db<GatewayComponent>(INF) << "[Gateway] INTEREST relayed via Protocol layer broadcast\n";
-}
-
-void GatewayComponent::handle_response(const Message& message) {
-    DataTypeId response_type = message.unit_type();
-    Address original_producer = message.origin();
-    
-    db<GatewayComponent>(INF) << "[Gateway] handle_response: Received RESPONSE for data type " 
-                             << static_cast<int>(response_type) 
-                             << " from " << original_producer.to_string() 
-                             << ". Relaying as broadcast.\n";
-
-    // Simply forward the message as a broadcast - Protocol layer will handle delivery
-    // to all interested components
-    Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
-    _communicator->send(message, broadcast_addr);
-    
-    db<GatewayComponent>(INF) << "[Gateway] RESPONSE relayed via Protocol layer broadcast\n";
-}
+// Removed component_dispatcher_routine, handle_interest, and handle_response
 
 const unsigned int GatewayComponent::PORT = 0; // Gateway always uses Port 0
 

@@ -5,52 +5,21 @@
 #include <string>
 #include <pthread.h>
 #include <fstream>
-#include <memory> // For std::unique_ptr
-#include <stdexcept> // For std::invalid_argument
-#include <cstring> // For std::memcpy
-#include <chrono> // Required by some derived components - TODO: Move time logic later?
-#include <unistd.h> // Required by some derived components - TODO: Move sleep logic later?
-#include <iostream> // For std::cerr
+#include <memory>
+#include <stdexcept>
+#include <cstring>
+#include <chrono>
+#include <unistd.h>
 #include <vector>
-#include <functional> // For std::function
-#include <sstream> // For std::stringstream
-#include <sys/stat.h> // For mkdir
-#include <linux/types.h>
-#include <linux/sched.h>
+#include <functional>
+#include <mutex>
+#include <algorithm>
 #include <time.h>
+#include <sys/stat.h>
+#include <linux/types.h>
 #include <sys/syscall.h>
 
-// Remove namespace alias to fix linter errors
-// namespace fs = std::filesystem;
-#include "communicator.h" // Includes message.h implicitly
-#include "debug.h" // Include for db<> logging
-#include "teds.h" // Added for DataTypeId
-#include "observed.h" // Added for Conditionally_Data_Observed
-#include "TypedDataHandler.h" // Include for TypedDataHandler
-#include "ethernet.h" // For Ethernet::BROADCAST
-
-// Forward declaration for GatewayComponent - removed direct include
-class GatewayComponent;
-
-// Forward declarations
-class Vehicle;
-class TypedDataHandler; // Added Forward Declaration
-
-// Make Communicator a friend class to access component state for filtering
-template <typename Channel>
-class Communicator;
-
-template <typename Engine1, typename Engine2>
-class NIC;
-
-template <typename NIC>
-class Protocol;
-
-class SocketEngine;
-
-class SharedMemoryEngine;
-
-// Define syscall numbers for SCHED_DEADLINE if not already defined
+// Add back the SCHED_DEADLINE support
 #ifndef SCHED_DEADLINE
 #define SCHED_DEADLINE 6
 #endif
@@ -83,7 +52,7 @@ struct sched_attr {
     __u64 sched_period;
 };
 
-// Define syscall functions for sched_deadlinedirectory
+// Define syscall functions for scheduling
 static inline int sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags) {
     return syscall(__NR_sched_setattr, pid, attr, flags);
 }
@@ -92,31 +61,58 @@ static inline int sched_getattr(pid_t pid, struct sched_attr *attr, unsigned int
     return syscall(__NR_sched_getattr, pid, attr, size, flags);
 }
 
+// Remove complex thread management that's no longer needed
+#include "communicator.h"
+#include "debug.h"
+#include "teds.h"
+#include "ethernet.h"
+
+// Forward declarations
+class Vehicle;
+class GatewayComponent;
+
+// Make Communicator a friend class to access component state for filtering
+template <typename Channel>
+class Communicator;
+
+template <typename Engine1, typename Engine2>
+class NIC;
+
+template <typename NIC>
+class Protocol;
+
+class SocketEngine;
+class SharedMemoryEngine;
+
+// Enum ComponentType might need to be defined here or in a common header
+// Assuming communicator.h (which defines it) is included before or by component.h consumers
+// For P3, ComponentType is defined in communicator.h which is included above.
+
 class Component {
     public:
         typedef NIC<SocketEngine, SharedMemoryEngine> VehicleNIC;
         typedef Protocol<VehicleNIC> VehicleProt;
         typedef Communicator<VehicleProt> Comms;
         typedef Comms::Address Address;
-        // Message class is now directly accessible via #include "message.h" (through communicator.h)
 
-        // Define GatewayComponent::PORT constant to resolve dependencies - made public
-        static const unsigned int GATEWAY_PORT = 0;
+        // Define constants for P3 ports
+        inline static const unsigned int GATEWAY_PORT = 0;
+        inline static const unsigned int INTERNAL_BROADCAST_PORT = 1;
+        inline static const unsigned int MIN_COMPONENT_PORT = 2;
 
-        // Constructor uses concrete types
-        Component(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name);
+        // Constructor
+        Component(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, ComponentType component_type);
 
-        // Virtual destructor for proper cleanup of derived classes
+        // Virtual destructor
         virtual ~Component();
 
-        // Start method - Creates and launches the component's thread(s)
+        // Start method - Creates and launches the component's thread
         void start();
 
-        // Stop method - Signals the thread(s) to stop and joins it
+        // Stop method - Signals the thread to stop and joins it
         void stop();
 
-        // Pure virtual run method - must be implemented by derived classes with the component's main loop
-        // This can be re-evaluated for P3 components; might not be the primary execution path for all.
+        // Pure virtual run method - must be implemented by derived classes
         virtual void run() = 0;
 
         // Getters
@@ -127,47 +123,44 @@ class Component {
         const Address& address() const;
         
         // Get component role for filtering
-        ComponentType type() const { return determine_component_type(); }
+        ComponentType type() const;
 
-        // Concrete send and receive methods using defined types
-        // These will be updated/augmented by P3 specific send/receive patterns for Interest/Response
+        // Basic send/receive methods
         int send(const void* data, unsigned int size, Address destination = Address::BROADCAST);
-        int receive(Message* msg); // Optional source addr
+        int receive(Message* msg);
 
-        // --- P3 Consumer Method - Public API for registering interest in a DataTypeId ---
-        void register_interest_handler(DataTypeId type, std::uint32_t period_us, std::function<void(const Message&)> callback);
+        // --- P3 Consumer Method - Register interest in a DataTypeId ---
+        void register_interest(DataTypeId type, std::uint32_t period_us, std::function<void(const Message&)> callback);
+        void send_interest_message();
 
         // P3 Producer/Consumer accessors for Communicator filtering
         DataTypeId get_produced_data_type() const { return _produced_data_type; }
-        bool has_active_interests() const { return !_active_interests.empty(); }
+        DataTypeId get_interest_type() const;
+        std::uint32_t get_interest_period() const;
         
-        // Friend declaration for Communicator to access Component's private members for filtering
+        // Friend declaration for Communicator
         template <typename Channel>
         friend class Communicator;
 
-        // Add helper method to check for SCHED_DEADLINE capability
-        bool has_deadline_scheduling_capability();
-
     protected:
-        // Helper function to be called by the pthread_create for the main run() thread
+        // Thread entry point
         static void* thread_entry_point(void* arg);
         
-        // Helper method to determine component type
-        ComponentType determine_component_type() const;
+        // Update address
         void set_address(const Address& addr) { _address = addr; }
 
         // Common members
         const Vehicle* _vehicle;
         std::string _name;
-        std::atomic<bool> _running; // Overall component operational status
-        pthread_t _thread; // Original main thread for run()
+        std::atomic<bool> _running;
+        pthread_t _thread;
 
         // Type-safe communicator storage
         Comms* _communicator;
-        Address _gateway_address; // Address of the gateway component
+        Address _gateway_address;
         Address _address;
 
-        // CSV logging functionality
+        // CSV logging
         std::string _filename;
         std::string _log_dir;
         std::ofstream _log_file;
@@ -175,58 +168,46 @@ class Component {
         void close_log_file();
         std::string initialize_log_directory(unsigned int vehicle_id);
 
-        // --- P3 Core Members ---
-        Conditionally_Data_Observed<Message, DataTypeId> _internal_typed_observed;
-        pthread_t _component_dispatcher_thread_id {0};
-        std::atomic<bool> _dispatcher_running {false};
-
-        // --- P3 Consumer-Specific Members ---
-        std::vector<std::unique_ptr<TypedDataHandler>> _typed_data_handlers;
-        std::vector<pthread_t> _handler_threads_ids;
-        struct InterestRequest {
-            DataTypeId type;
-            std::uint32_t period_us;
-            std::uint64_t last_accepted_response_time_us = 0;
-            bool interest_sent = false;
-            std::function<void(const Message&)> callback; // Callback associated with this interest
-        };
-        std::vector<InterestRequest> _active_interests;
-
-        // --- P3 Producer-Specific Members ---
-        DataTypeId _produced_data_type = DataTypeId::UNKNOWN; // Derived producer classes will set this
-        std::vector<std::uint32_t> _received_interest_periods;
+        // --- P3 Simple Implementation Members ---
+        
+        // For producers
+        DataTypeId _produced_data_type = DataTypeId::UNKNOWN;
+        std::vector<std::uint32_t> _interest_periods;
+        std::mutex _periods_mutex;
         std::atomic<std::uint32_t> _current_gcd_period_us {0};
-        pthread_t _producer_response_thread_id {0};
+        pthread_t _producer_thread {0};
         std::atomic<bool> _producer_thread_running {false};
-        std::atomic<bool> _has_dl_capability {false}; // Store SCHED_DEADLINE capability state
-
-        // --- P3 Dispatcher Methods ---
-        static void* component_dispatcher_launcher(void* context);
-        virtual void component_dispatcher_routine();
+        std::atomic<bool> _has_dl_capability {false}; // Flag for deadline scheduling capability
+        
+        // For consumers
+        DataTypeId _interested_data_type = DataTypeId::UNKNOWN;
+        std::uint32_t _interested_period_us = 0;
+        std::function<void(const Message&)> _data_callback;
 
         // --- P3 Producer Methods ---
-        static void* producer_response_launcher(void* context);
-        void producer_response_routine();
-        void start_producer_response_thread();
-        void stop_producer_response_thread();
+        static void* producer_thread_launcher(void* context);
+        void producer_routine();
+        void start_producer_thread();
+        void stop_producer_thread();
         std::uint32_t update_gcd_period();
         static std::uint32_t calculate_gcd(std::uint32_t a, std::uint32_t b);
-        void store_interest_period(std::uint32_t period);
+        void handle_interest_period(std::uint32_t period);
+        
+        // Check for deadline scheduling capability
+        bool has_deadline_scheduling_capability();
         
         // Virtual method for generating response data - Producers will override
         virtual bool produce_data_for_response(DataTypeId type, std::vector<std::uint8_t>& out_value) { return false; }
 
-        // Virtual hook for when a producer's registration is confirmed (e.g., ack from Gateway)
-        virtual void on_producer_registration_confirmed() {
-            db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << getName() << " Producer response mechanism activated.\n";
-        }
+    private:
+        ComponentType _component_actual_type; // Store the actual type
 };
 
-#include "vehicle.h" // Now that all dependencies are resolved, include vehicle.h for implementation
+#include "vehicle.h"
 
 // Component implementation
-Component::Component(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name) 
-    : _vehicle(vehicle), _name(name), _running(false)
+Component::Component(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, ComponentType component_type) 
+    : _vehicle(vehicle), _name(name), _running(false), _component_actual_type(component_type)
 {
     db<Component>(TRC) << "[Component] " << name << " Constructor called for component " << "\n";
     
@@ -235,7 +216,7 @@ Component::Component(Vehicle* vehicle, const unsigned int vehicle_id, const std:
     _filename = _log_dir + "/" + _name + ".csv";
     
     // Set up the Gateway's address using the vehicle address and PORT 0
-    _gateway_address = Address(_vehicle->address(), GATEWAY_PORT); // Gateway uses PORT 0
+    _gateway_address = Address(_vehicle->address(), GATEWAY_PORT);
     
     db<Component>(INF) << "[Component] " << name << " created with Gateway at " 
                       << _gateway_address.to_string() << "\n";
@@ -244,7 +225,7 @@ Component::Component(Vehicle* vehicle, const unsigned int vehicle_id, const std:
 Component::~Component() {
     db<Component>(TRC) << "[Component] [" << _address.to_string() << "] Destructor called for component " << _name << "\n";
     
-    // Ensure component is stopped before destruction - may already have been called
+    // Ensure component is stopped before destruction
     if (running()) {
         stop();
     }
@@ -261,7 +242,6 @@ Component::~Component() {
     db<Component>(INF) << "[Component] [" << _address.to_string() << "] Component " << _name << " destroyed\n";
 }
 
-// Entry point for component thread
 void* Component::thread_entry_point(void* arg) {
     Component* component = static_cast<Component*>(arg);
     if (component) {
@@ -276,7 +256,6 @@ void* Component::thread_entry_point(void* arg) {
     return nullptr;
 }
 
-// Start method - creates the component's thread
 void Component::start() {
     db<Component>(TRC) << "[Component] [" << _address.to_string() << "] start() called for " << _name << "\n";
     if (running()) {
@@ -292,23 +271,19 @@ void Component::start() {
         throw std::runtime_error(std::string("Failed to create thread for component ") + _name);
     }
     
-    // Launch the dispatcher thread
-    _dispatcher_running.store(true, std::memory_order_release);
-    result = pthread_create(&_component_dispatcher_thread_id, nullptr, component_dispatcher_launcher, this);
-    if (result != 0) {
-        _dispatcher_running.store(false, std::memory_order_release);
-        db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " Failed to create dispatcher thread\n";
-    }
-    
     // For producer components, start the response thread
     if (_produced_data_type != DataTypeId::UNKNOWN) {
-        start_producer_response_thread();
+        start_producer_thread();
+    }
+    
+    // For consumer components, send interest message if configured
+    if (_interested_data_type != DataTypeId::UNKNOWN) {
+        send_interest_message();
     }
     
     db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " started\n";
 }
 
-// Stop method - signals the thread to stop and joins it
 void Component::stop() {
     db<Component>(TRC) << "[Component] [" << _address.to_string() << "] stop() called for " << _name << "\n";
     if (!running()) {
@@ -316,35 +291,15 @@ void Component::stop() {
         return;
     }
     
-    // First, stop all interest handler processing threads
-    for (auto& handler : _typed_data_handlers) {
-        handler->stop_processing_thread();
+    // Stop producer thread if active
+    if (_producer_thread_running.load(std::memory_order_acquire)) {
+        stop_producer_thread();
     }
-    
-    // Clean up handler threads
-    for (auto& thread_id : _handler_threads_ids) {
-        pthread_join(thread_id, nullptr);
-    }
-    _handler_threads_ids.clear();
-    
-    // Set dispatcher running flag to false
-    _dispatcher_running.store(false, std::memory_order_release);
     
     // Close communicator to unblock any threads waiting in receive()
     if (_communicator) {
         _communicator->close();
         db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " communicator closed\n";
-    }
-    
-    // Now join dispatcher thread
-    if (_component_dispatcher_thread_id != 0) {
-        pthread_join(_component_dispatcher_thread_id, nullptr);
-        _component_dispatcher_thread_id = 0;
-    }
-    
-    // Stop producer thread if active
-    if (_producer_thread_running.load(std::memory_order_acquire)) {
-        stop_producer_response_thread();
     }
     
     // Stop main thread
@@ -354,27 +309,10 @@ void Component::stop() {
     db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " stopped\n";
 }
 
-// Helper method to determine component type
-ComponentType Component::determine_component_type() const {
-    // Determine component type from class type or configuration
-    // This is a simplified example - in reality, use RTTI or type hints
-    if (_name.find("Gateway") != std::string::npos) {
-        return ComponentType::GATEWAY;
-    }
-    else if (_name.find("Producer") != std::string::npos || _produced_data_type != DataTypeId::UNKNOWN) {
-        return ComponentType::PRODUCER;
-    }
-    else if (_name.find("Consumer") != std::string::npos || !_active_interests.empty()) {
-        return ComponentType::CONSUMER;
-    }
-    else {
-        // Determine type based on the component's behavior
-        // Default to UNKNOWN if type cannot be determined
-        return ComponentType::UNKNOWN;
-    }
+ComponentType Component::type() const {
+    return _component_actual_type;
 }
 
-// send method implementation
 int Component::send(const void* data, unsigned int size, Address destination) {
     if (!_communicator) {
         db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " send() failed: communicator not initialized\n";
@@ -399,7 +337,6 @@ int Component::send(const void* data, unsigned int size, Address destination) {
     return -1;
 }
 
-// receive method implementation
 int Component::receive(Message* msg) {
     if (!_communicator) {
         db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " receive() failed: communicator not initialized\n";
@@ -411,20 +348,18 @@ int Component::receive(Message* msg) {
         return -1;
     }
     
-    // Call receive without timeout since it's not supported
     if (_communicator->receive(msg)) {
         db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " received message from " 
                           << msg->origin().to_string() << "\n";
-        return msg->value_size(); // Use public value_size() method
+        return msg->value_size();
     }
     
     return -1;
 }
 
-// Open the CSV log file for output
 void Component::open_log_file() {
     try {
-        _log_file.open(_filename); // Open in append mode
+        _log_file.open(_filename);
         if (!_log_file.is_open()) {
             db<Component>(ERR) << "[Component] [" << _name << "] Failed to open log file: " << _filename << "\n";
         } else {
@@ -435,7 +370,6 @@ void Component::open_log_file() {
     }
 }
 
-// Close the CSV log file
 void Component::close_log_file() {
     if (_log_file.is_open()) {
         _log_file.close();
@@ -464,36 +398,21 @@ std::ofstream* Component::log_file() {
 
 const Component::Address& Component::address() const {
     if (!_communicator) {
-        // No communicator, but need to return something - return default address
         static const Address default_addr;
         return default_addr;
     }
     return _communicator->address();
 }
 
-// Create log directory structure
 std::string Component::initialize_log_directory(unsigned int vehicle_id) {
-    // Try in priority order: Docker logs dir, tests/logs dir, current dir
     std::string base_dir = "tests/logs";
-    
-    // Create vehicle-specific directory
     std::string vehicle_dir = base_dir + "/vehicle_" + std::to_string(vehicle_id);
     
     struct stat info;
     if (stat(vehicle_dir.c_str(), &info) != 0) {
-        // Directory doesn't exist, try to create it
         if (mkdir(vehicle_dir.c_str(), 0777) != 0) {
             db<Component>(ERR) << "[Component] " << _name << " Failed to create directory: " << vehicle_dir << "\n";
-            return base_dir; // Fallback to base dir
-        }
-    }
-    
-    // Create component directory for complex components that need multiple log files
-    std::string component_dir = vehicle_dir + "/" + _name;
-    if (stat(component_dir.c_str(), &info) != 0) {
-        if (mkdir(component_dir.c_str(), 0777) != 0) {
-            db<Component>(WRN) << "[Component] " << _name << " Failed to create component directory: " << component_dir << "\n";
-            return vehicle_dir; // Fallback to vehicle dir
+            return base_dir;
         }
     }
     
@@ -501,374 +420,64 @@ std::string Component::initialize_log_directory(unsigned int vehicle_id) {
     return vehicle_dir;
 }
 
-// P3 API: Register interest in a data type with a callback for handling responses
-void Component::register_interest_handler(DataTypeId type, std::uint32_t period_us, 
-                                         std::function<void(const Message&)> callback) {
+void Component::register_interest(DataTypeId type, std::uint32_t period_us, std::function<void(const Message&)> callback) {
     if (type == DataTypeId::UNKNOWN) {
         db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " Cannot register interest in UNKNOWN data type\n";
         return;
     }
     
-    // Check if we already have an interest for this type
-    for (auto& interest : _active_interests) {
-        if (interest.type == type) {
-            db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " Already registered interest in data type " 
-                              << static_cast<int>(type) << ", updating period and callback\n";
-            interest.period_us = period_us;
-            interest.callback = callback;
-            return;
-        }
+    // Store interest information
+    _interested_data_type = type;
+    _interested_period_us = period_us;
+    _data_callback = callback;
+    
+    // Configure communicator to filter by this type
+    if (_communicator) {
+        _communicator->set_interest(type, period_us);
     }
     
-    // Add to active interests
-    InterestRequest request{type, period_us, 0, false, callback};
-    _active_interests.push_back(request);
+    // Send interest message if component is running
+    if (running()) {
+        send_interest_message();
+    }
     
-    // Create and send INTEREST message to Gateway
-    // Use a temporary variable to store the period, since we can't modify the message directly
-    Message interest_message = _communicator->new_message(Message::Type::INTEREST, type, period_us);
-    
-    // Send to Gateway component
-    Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
-    _communicator->send(interest_message, broadcast_addr);
-    
-    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " Sent INTEREST for data type " 
+    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " Registered interest in data type " 
                       << static_cast<int>(type) << " with period " << period_us << "us\n";
 }
 
-// Entry point for component dispatcher thread
-void* Component::component_dispatcher_launcher(void* context) {
-    Component* component = static_cast<Component*>(context);
-    if (component) {
-        try {
-            db<Component>(TRC) << "[Component] [" << component->_address.to_string() << "] Dispatcher thread starting for " << component->getName() << "\n";
-            component->component_dispatcher_routine();
-        } catch (const std::exception& e) {
-            db<Component>(ERR) << "[Component] [" << component->_address.to_string() << "] " << component->getName() 
-                              << " dispatcher thread exception: " << e.what() << "\n";
-        }
-    }
-    return nullptr;
-}
-
-// Default implementation of component_dispatcher_routine
-void Component::component_dispatcher_routine() {
-    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " dispatcher routine started\n";
-    
-    // This is a generic implementation that all components use to listen for messages
-    // In the P3 architecture, producers receive INTERESTs, consumers receive RESPONSEs
-    while (_dispatcher_running.load()) {
-        // Create a message to hold received data
-        Message message = _communicator->new_message(Message::Type::INTEREST, DataTypeId::UNKNOWN);
-        
-        // Blocking receive without timeout (API doesn't support timeout)
-        if (_communicator->receive(&message)) {
-            // Handle based on message type
-            Message::Type msg_type = message.message_type();
-            DataTypeId data_type = message.unit_type();
-            
-            if (msg_type == Message::Type::INTEREST && _produced_data_type != DataTypeId::UNKNOWN) {
-                // INTEREST message for a producer
-                if (data_type == _produced_data_type) {
-                    std::uint32_t period = message.period();
-                    
-                    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " received INTEREST for data type " 
-                                      << static_cast<int>(data_type) << " with period " << period << "us\n";
-                    
-                    // Store the interest period
-                    store_interest_period(period);
-
-                    // Start producer response thread if it's not already running
-                    if (!_producer_thread_running.load(std::memory_order_acquire)) {
-                        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " received first INTEREST, starting producer response thread.\n";
-                        start_producer_response_thread();
-                    }
-
-                } else {
-                    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " ignoring INTEREST for unproduced data type " 
-                                      << static_cast<int>(data_type) << "\n";
-                }
-            } 
-            else if (msg_type == Message::Type::RESPONSE) {
-                // RESPONSE message for a consumer
-                // Check if we have an active interest in this data type
-                bool interest_found = false;
-                for (auto& interest : _active_interests) {
-                    if (interest.type == data_type) {
-                        interest_found = true;
-                        
-                        // Mark that we've received a response to our interest
-                        interest.interest_sent = true;
-                        
-                        // Update last accepted response time
-                        interest.last_accepted_response_time_us = 
-                            std::chrono::duration_cast<std::chrono::microseconds>(
-                                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-                        
-                        // Call the callback function if provided
-                        if (interest.callback) {
-                            interest.callback(message);
-                        }
-                        
-                        db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " dispatched RESPONSE for data type " 
-                                          << static_cast<int>(data_type) << " to callback\n";
-                        break;
-                    }
-                }
-                
-                if (!interest_found) {
-                    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " received RESPONSE for data type " 
-                                      << static_cast<int>(data_type) << " but no active interest\n";
-                }
-            }
-            else {
-                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " received unhandled message type: " 
-                                  << static_cast<int>(msg_type) << "\n";
-            }
-        } else {
-            // Small sleep to avoid tight loop on error
-            usleep(1000);  // 1ms sleep
-        }
-    }
-    
-    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " dispatcher routine exiting\n";
-}
-
-// Entry point for producer response thread
-void* Component::producer_response_launcher(void* context) {
-    Component* component = static_cast<Component*>(context);
-    if (component) {
-        try {
-            db<Component>(TRC) << "[Component] [" << component->_address.to_string() << "] Producer response thread starting for " << component->getName() << "\n";
-            component->producer_response_routine();
-        } catch (const std::exception& e) {
-            db<Component>(ERR) << "[Component] [" << component->_address.to_string() << "] " << component->getName() 
-                              << " producer response thread exception: " << e.what() << "\n";
-        }
-    }
-    return nullptr;
-}
-
-// Producer response routine - generates periodic responses based on interests
-void Component::producer_response_routine() {
-    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " producer response routine started\n";
-    
-    struct timespec next_period;
-    clock_gettime(CLOCK_MONOTONIC, &next_period);
-    
-    // Determine if SCHED_DEADLINE is available
-    _has_dl_capability.store(has_deadline_scheduling_capability(), std::memory_order_relaxed);
-    
-    // Use SCHED_DEADLINE if available, otherwise SCHED_FIFO
-    if (_has_dl_capability.load(std::memory_order_relaxed)) {
-        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " using SCHED_DEADLINE for response generation\n";
-        
-        // Setup SCHED_DEADLINE parameters - based on current_gcd_period
-        struct sched_attr attr_dl;
-        memset(&attr_dl, 0, sizeof(attr_dl));
-        attr_dl.size = sizeof(attr_dl);
-        attr_dl.sched_policy = SCHED_DEADLINE;
-        attr_dl.sched_flags = 0;
-        
-        while (_producer_thread_running.load(std::memory_order_acquire)) {
-            // Get the current GCD period
-            std::uint32_t current_period = _current_gcd_period_us.load(std::memory_order_acquire);
-            
-            // If we have no interests yet, sleep and wait
-            if (current_period == 0 || _received_interest_periods.empty()) {
-                usleep(100000); // Sleep for 100ms
-                continue;
-            }
-            
-            // Update SCHED_DEADLINE parameters based on current period
-            attr_dl.sched_runtime = current_period * 500; // 50% of period in ns
-            attr_dl.sched_deadline = current_period * 1000; // Period in ns
-            attr_dl.sched_period = current_period * 1000; // Period in ns
-            
-            // Set scheduling parameters - may fail if not root/CAP_SYS_NICE
-            int result = sched_setattr(0, &attr_dl, 0);
-            if (result < 0) {
-                db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name 
-                                  << " failed to set SCHED_DEADLINE, falling back to SCHED_FIFO\n";
-                _has_dl_capability.store(false, std::memory_order_relaxed);
-                break; // Break and fall back to SCHED_FIFO
-            }
-            
-            // Generate response based on the current period
-            std::vector<std::uint8_t> response_data;
-            if (produce_data_for_response(_produced_data_type, response_data)) {
-                // Create response message with the data
-                Message response = _communicator->new_message(
-                    Message::Type::RESPONSE, 
-                    _produced_data_type,
-                    0,  // period is 0 for responses
-                    response_data.data(),  // Pass the data buffer
-                    response_data.size()   // and its size
-                );
-                
-                // Send to Gateway for broadcast distribution
-                Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
-                _communicator->send(response, broadcast_addr);
-                
-                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
-                                  << static_cast<int>(_produced_data_type) << " with " 
-                                  << response_data.size() << " bytes\n";
-            }
-            
-            // Sleep for one period
-            clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_period, NULL);
-            
-            // Calculate next period
-            next_period.tv_nsec += current_period * 1000;
-            if (next_period.tv_nsec >= 1000000000) {
-                next_period.tv_sec += next_period.tv_nsec / 1000000000;
-                next_period.tv_nsec %= 1000000000;
-            }
-        }
-    }
-    else {
-        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " using SCHED_FIFO for response generation\n";
-        
-        // Setup SCHED_FIFO
-        struct sched_param param;
-        param.sched_priority = 99; // Max RT priority
-        pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
-        
-        // Response generation loop
-        while (_producer_thread_running.load(std::memory_order_acquire)) {
-            // Get the current GCD period
-            std::uint32_t current_period = _current_gcd_period_us.load(std::memory_order_acquire);
-            
-            // If we have no interests yet, sleep and wait
-            if (current_period == 0 || _received_interest_periods.empty()) {
-                usleep(100000); // Sleep for 100ms
-                continue;
-            }
-            
-            // Generate response based on the current period
-            std::vector<std::uint8_t> response_data;
-            if (produce_data_for_response(_produced_data_type, response_data)) {
-                // Create response message with the data
-                Message response = _communicator->new_message(
-                    Message::Type::RESPONSE, 
-                    _produced_data_type,
-                    0,  // period is 0 for responses
-                    response_data.data(),  // Pass the data buffer
-                    response_data.size()   // and its size
-                );
-                
-                // Send to Gateway for broadcast distribution
-                Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
-                _communicator->send(response, broadcast_addr);
-                
-                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
-                                  << static_cast<int>(_produced_data_type) << " with " 
-                                  << response_data.size() << " bytes\n";
-            }
-            
-            // Sleep for one period using usleep
-            usleep(current_period);
-        }
-    }
-    
-    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " producer response routine exiting\n";
-}
-
-// Start the producer response thread
-void Component::start_producer_response_thread() {
-    if (_produced_data_type == DataTypeId::UNKNOWN) {
-        db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " cannot start producer thread, no data type produced\n";
+// Helper to send INTEREST message
+void Component::send_interest_message() {
+    if (_interested_data_type == DataTypeId::UNKNOWN || !_communicator) {
         return;
     }
     
-    if (_producer_thread_running.load(std::memory_order_acquire)) {
-        db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread already running\n";
-        return;
-    }
+    // Create INTEREST message
+    Message interest_msg = _communicator->new_message(
+        Message::Type::INTEREST, 
+        _interested_data_type, 
+        _interested_period_us
+    );
     
-    // Start the producer thread
-    _producer_thread_running.store(true, std::memory_order_release);
-    
-    int result = pthread_create(&_producer_response_thread_id, nullptr, producer_response_launcher, this);
-    if (result != 0) {
-        _producer_thread_running.store(false, std::memory_order_release);
-        db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " failed to create producer response thread\n";
-        return;
-    }
-    
-    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " started producer response thread\n";
-    
-    // Call virtual hook for when registration is confirmed (derived classes can override)
-    on_producer_registration_confirmed();
-}
-
-// Stop the producer response thread
-void Component::stop_producer_response_thread() {
-    if (!_producer_thread_running.load(std::memory_order_acquire)) {
-        db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread not running\n";
-        return;
-    }
-    
-    // Signal the thread to stop
-    _producer_thread_running.store(false, std::memory_order_release);
-    
-    // Join the thread
-    if (_producer_response_thread_id != 0) {
-        pthread_join(_producer_response_thread_id, nullptr);
-        _producer_response_thread_id = 0;
-    }
-    
-    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " stopped producer response thread\n";
-}
-
-// Calculate the greatest common divisor (GCD) of all interest periods
-std::uint32_t Component::update_gcd_period() {
-    if (_received_interest_periods.empty()) {
-        return 0;
-    }
-    
-    if (_received_interest_periods.size() == 1) {
-        return _received_interest_periods[0];
-    }
-    
-    // Calculate GCD of all periods
-    std::uint32_t result = _received_interest_periods[0];
-    for (size_t i = 1; i < _received_interest_periods.size(); i++) {
-        result = calculate_gcd(result, _received_interest_periods[i]);
-    }
-    
-    return result;
-}
-
-// Helper function to calculate GCD using Euclidean algorithm
-std::uint32_t Component::calculate_gcd(std::uint32_t a, std::uint32_t b) {
-    while (b != 0) {
-        std::uint32_t temp = b;
-        b = a % b;
-        a = temp;
-    }
-    return a;
-}
-
-// Method to store and handle a new interest period
-void Component::store_interest_period(std::uint32_t period) {
-    bool found = false;
-    for (auto& p : _received_interest_periods) {
-        if (p == period) {
-            found = true;
-            break;
-        }
-    }
-    
-    if (!found) {
-        _received_interest_periods.push_back(period);
-        _current_gcd_period_us.store(update_gcd_period(), std::memory_order_release);
-        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " updated GCD period to " 
-                          << _current_gcd_period_us.load() << "us\n";
+    // Send to gateway port
+    Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
+    if (_communicator->send(interest_msg, gateway_addr)) {
+        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name 
+                         << " Sent INTEREST for type " << static_cast<int>(_interested_data_type) 
+                         << " with period " << _interested_period_us << "us\n";
     }
 }
 
-// Check if SCHED_DEADLINE is available on this system
+// Get interest type for filtering
+DataTypeId Component::get_interest_type() const {
+    return _interested_data_type;
+}
+
+// Get interest period for filtering
+std::uint32_t Component::get_interest_period() const {
+    return _interested_period_us;
+}
+
+// Check for deadline scheduling capability
 bool Component::has_deadline_scheduling_capability() {
     // Try to set SCHED_DEADLINE with a test struct
     struct sched_attr attr_test;
@@ -891,6 +500,239 @@ bool Component::has_deadline_scheduling_capability() {
     }
     
     return false;
+}
+
+// Start the producer response thread
+void Component::start_producer_thread() {
+    if (_produced_data_type == DataTypeId::UNKNOWN) {
+        db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " cannot start producer thread, no data type produced\n";
+        return;
+    }
+    
+    if (_producer_thread_running.load(std::memory_order_acquire)) {
+        db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread already running\n";
+        return;
+    }
+    
+    // Check if deadline scheduling is available
+    _has_dl_capability.store(has_deadline_scheduling_capability(), std::memory_order_relaxed);
+    if (_has_dl_capability.load()) {
+        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " will use SCHED_DEADLINE for precise timing\n";
+    } else {
+        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " will use SCHED_FIFO (deadline scheduling not available)\n";
+    }
+    
+    _producer_thread_running.store(true, std::memory_order_release);
+    int result = pthread_create(&_producer_thread, nullptr, producer_thread_launcher, this);
+    if (result != 0) {
+        _producer_thread_running.store(false, std::memory_order_release);
+        db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " failed to create producer thread\n";
+        return;
+    }
+    
+    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " started producer thread\n";
+}
+
+// Stop the producer response thread
+void Component::stop_producer_thread() {
+    if (!_producer_thread_running.load(std::memory_order_acquire)) {
+        db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread not running\n";
+        return;
+    }
+    
+    _producer_thread_running.store(false, std::memory_order_release);
+    if (_producer_thread != 0) {
+        pthread_join(_producer_thread, nullptr);
+        _producer_thread = 0;
+    }
+    
+    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " stopped producer thread\n";
+}
+
+// Producer thread entry point
+void* Component::producer_thread_launcher(void* context) {
+    Component* component = static_cast<Component*>(context);
+    if (component) {
+        try {
+            db<Component>(TRC) << "[Component] [" << component->_address.to_string() << "] Producer thread starting for " 
+                             << component->getName() << "\n";
+            component->producer_routine();
+        } catch (const std::exception& e) {
+            db<Component>(ERR) << "[Component] [" << component->_address.to_string() << "] " << component->getName() 
+                             << " producer thread exception: " << e.what() << "\n";
+        }
+    }
+    return nullptr;
+}
+
+// Producer routine - generates periodic responses based on interests
+void Component::producer_routine() {
+    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " producer routine started\n";
+    
+    // Use deadline scheduling if available
+    if (_has_dl_capability.load(std::memory_order_relaxed)) {
+        // SCHED_DEADLINE setup
+        struct sched_attr attr_dl;
+        memset(&attr_dl, 0, sizeof(attr_dl));
+        attr_dl.size = sizeof(attr_dl);
+        attr_dl.sched_policy = SCHED_DEADLINE;
+        attr_dl.sched_flags = 0;
+        
+        struct timespec next_period;
+        clock_gettime(CLOCK_MONOTONIC, &next_period);
+        
+        while (_producer_thread_running.load(std::memory_order_acquire)) {
+            // Get the current GCD period
+            std::uint32_t current_period = _current_gcd_period_us.load(std::memory_order_acquire);
+            
+            // If we have no interests yet, sleep and wait
+            if (current_period == 0 || _interest_periods.empty()) {
+                usleep(100000); // Sleep for 100ms
+                continue;
+            }
+            
+            // Update SCHED_DEADLINE parameters based on current period
+            attr_dl.sched_runtime = current_period * 500; // 50% of period in ns
+            attr_dl.sched_deadline = current_period * 1000; // Period in ns
+            attr_dl.sched_period = current_period * 1000; // Period in ns
+            
+            // Set scheduling parameters - may fail if not root
+            int result = sched_setattr(0, &attr_dl, 0);
+            if (result < 0) {
+                db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name 
+                                  << " failed to set SCHED_DEADLINE, falling back to SCHED_FIFO\n";
+                _has_dl_capability.store(false, std::memory_order_relaxed);
+                
+                // Fall back to SCHED_FIFO
+                struct sched_param fifo_param;
+                fifo_param.sched_priority = 99; // Max RT priority
+                pthread_setschedparam(pthread_self(), SCHED_FIFO, &fifo_param);
+                // Continue with the next loop iteration which will use the FIFO path
+                continue;
+            }
+            
+            // Generate response based on the current period
+            std::vector<std::uint8_t> response_data;
+            if (produce_data_for_response(_produced_data_type, response_data)) {
+                // Create response message with the data
+                Message response = _communicator->new_message(
+                    Message::Type::RESPONSE, 
+                    _produced_data_type,
+                    0,  // period is 0 for responses
+                    response_data.data(),
+                    response_data.size()
+                );
+                
+                // Send to Gateway for broadcast distribution
+                Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
+                _communicator->send(response, gateway_addr);
+                
+                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
+                                  << static_cast<int>(_produced_data_type) << " with " 
+                                  << response_data.size() << " bytes\n";
+            }
+            
+            // Sleep for one period using SCHED_DEADLINE timer
+            clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_period, NULL);
+            
+            // Calculate next period
+            next_period.tv_nsec += current_period * 1000;
+            if (next_period.tv_nsec >= 1000000000) {
+                next_period.tv_sec += next_period.tv_nsec / 1000000000;
+                next_period.tv_nsec %= 1000000000;
+            }
+        }
+    } else {
+        // SCHED_FIFO fallback
+        struct sched_param fifo_param;
+        fifo_param.sched_priority = 99; // Max RT priority
+        pthread_setschedparam(pthread_self(), SCHED_FIFO, &fifo_param);
+        
+        // Response generation loop
+        while (_producer_thread_running.load(std::memory_order_acquire)) {
+            // Get the current GCD period
+            std::uint32_t current_period = _current_gcd_period_us.load(std::memory_order_acquire);
+            
+            // If we have no interests yet, sleep and wait
+            if (current_period == 0 || _interest_periods.empty()) {
+                usleep(100000); // Sleep for 100ms
+                continue;
+            }
+            
+            // Generate response based on the current period
+            std::vector<std::uint8_t> response_data;
+            if (produce_data_for_response(_produced_data_type, response_data)) {
+                // Create response message with the data
+                Message response = _communicator->new_message(
+                    Message::Type::RESPONSE, 
+                    _produced_data_type,
+                    0,  // period is 0 for responses
+                    response_data.data(),
+                    response_data.size()
+                );
+                
+                // Send to Gateway for broadcast distribution
+                Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
+                _communicator->send(response, gateway_addr);
+                
+                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
+                                  << static_cast<int>(_produced_data_type) << " with " 
+                                  << response_data.size() << " bytes\n";
+            }
+            
+            // Sleep for one period using usleep
+            usleep(current_period);
+        }
+    }
+    
+    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " producer routine exiting\n";
+}
+
+// Calculate the greatest common divisor (GCD) of all interest periods
+std::uint32_t Component::update_gcd_period() {
+    if (_interest_periods.empty()) {
+        return 0;
+    }
+    
+    if (_interest_periods.size() == 1) {
+        return _interest_periods[0];
+    }
+    
+    // Calculate GCD of all periods
+    std::uint32_t result = _interest_periods[0];
+    for (size_t i = 1; i < _interest_periods.size(); i++) {
+        result = calculate_gcd(result, _interest_periods[i]);
+    }
+    
+    return result;
+}
+
+// Helper function to calculate GCD using Euclidean algorithm
+std::uint32_t Component::calculate_gcd(std::uint32_t a, std::uint32_t b) {
+    while (b != 0) {
+        std::uint32_t temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
+// Method to handle a new interest period
+void Component::handle_interest_period(std::uint32_t period) {
+    std::lock_guard<std::mutex> lock(_periods_mutex);
+    
+    // Check if period already exists
+    auto it = std::find(_interest_periods.begin(), _interest_periods.end(), period);
+    if (it == _interest_periods.end()) {
+        // Add new period
+        _interest_periods.push_back(period);
+        
+        // Update GCD
+        _current_gcd_period_us.store(update_gcd_period(), std::memory_order_release);
+        
+        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " updated GCD period to " 
+                          << _current_gcd_period_us.load() << "us\n";
+    }
 }
 
 #endif // COMPONENT_H 

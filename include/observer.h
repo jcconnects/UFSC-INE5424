@@ -41,7 +41,8 @@ Conditional_Data_Observer<T, Condition>::Conditional_Data_Observer(Condition c) 
 
 template <typename T, typename Condition>
 void Conditional_Data_Observer<T, Condition>::update(Condition c, Observed_Data* d) {
-    if (c == _rank) {
+    // Accept if condition matches rank OR if it's the internal broadcast port (1)
+    if (c == _rank || (c == 1 && std::is_integral<Condition>::value)) {
         _data.insert(d);
     }
 }
@@ -91,8 +92,9 @@ class Concurrent_Observer : public Conditional_Data_Observer<D, C> {
 /***************** CONCURRENT_OBSERVER IMPLEMENTATION *************************/
 template <typename D, typename C>
 void Concurrent_Observer<D, C>::update(C c, D* d) {
-    // Accept if condition matches rank OR if it's the broadcast condition (0)
-    if (c == this->_rank || (c == 0 && std::is_integral<C>::value)) { // Ensure condition type supports 0 check
+    // Accept if condition matches rank OR if it's the internal broadcast port (1)
+    if (c == this->_rank || 
+       (c == 1 && std::is_integral<C>::value)) { // Accept INTERNAL_BROADCAST_PORT=1
         // Special case: if d is nullptr, it's a shutdown signal, still post the semaphore
         // to unblock waiting threads, but don't add to the queue
         if (d != nullptr) {

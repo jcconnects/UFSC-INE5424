@@ -43,6 +43,8 @@ using TestCondition = int;
 class MyConditionalObserver : public Conditional_Data_Observer<TestData, TestCondition> {
 public:
     std::atomic<int> update_count{0}; // Count how many times update was called
+    std::vector<TestData> received_data; // Track actual data values received
+    std::mutex data_mutex; // For thread-safety
 
     MyConditionalObserver(TestCondition c) : Conditional_Data_Observer<TestData, TestCondition>(c) {}
 
@@ -52,10 +54,21 @@ public:
                             "): Received update for condition " + std::to_string(c) + 
                             " with data " + std::to_string(d ? *d : 0));
         }
-        Conditional_Data_Observer<TestData, TestCondition>::update(c, d); // Call base implementation
-        if (c == _rank) {
+        
+        // Call base implementation for data storage
+        Conditional_Data_Observer<TestData, TestCondition>::update(c, d);
+        
+        // Update counts using the same condition as base class
+        if ((c == _rank || (c == 1 && std::is_integral<TestCondition>::value)) && d != nullptr) {
             update_count++;
+            std::lock_guard<std::mutex> lock(data_mutex);
+            received_data.push_back(*d);
         }
+    }
+    
+    std::vector<TestData> get_received_data() {
+        std::lock_guard<std::mutex> lock(data_mutex);
+        return received_data;
     }
 };
 
@@ -64,6 +77,8 @@ class MyConcurrentObserver : public Concurrent_Observer<TestData, TestCondition>
 public:
     std::atomic<int> update_count{0}; // Count how many times update was called (and semaphore posted)
     std::atomic<int> retrieved_count{0}; // Count how many items were retrieved via updated()
+    std::vector<TestData> received_data; // Track actual data values received
+    std::mutex data_mutex; // For thread-safety
 
     MyConcurrentObserver(TestCondition c) : Concurrent_Observer<TestData, TestCondition>(c) {}
 
@@ -75,8 +90,11 @@ public:
                             "): Received update for condition " + std::to_string(c) + 
                             " with data " + std::to_string(d ? *d : 0));
         }
-        if (c == this->_rank && d != nullptr) {
+        // Update count and store data if condition matches rank OR it's a broadcast to port 1
+        if ((c == this->_rank || (c == 1 && std::is_integral<TestCondition>::value)) && d != nullptr) {
             update_count++;
+            std::lock_guard<std::mutex> lock(data_mutex);
+            received_data.push_back(*d);
         }
         Concurrent_Observer<TestData, TestCondition>::update(c, d); // IMPORTANT: Call base class update
     }
@@ -103,6 +121,11 @@ public:
             }
         }
         return data;
+    }
+    
+    std::vector<TestData> get_received_data() {
+        std::lock_guard<std::mutex> lock(data_mutex);
+        return received_data;
     }
 };
 
@@ -189,10 +212,104 @@ void test_conditional_observer() {
     OBS_TEST_LOG("--- Conditional Observer Test Passed ---");
 }
 
+// Test the new internal broadcast mechanism
+void test_internal_broadcast() {
+    OBS_TEST_LOG("\n--- Testing Internal Broadcast Mechanism ---\n");
+    
+    // Create observed object and multiple observers
+    Conditionally_Data_Observed<TestData, TestCondition> observed;
+    MyConditionalObserver observer1(1);  // Port 1
+    MyConditionalObserver observer2(2);  // Port 2
+    MyConditionalObserver observer3(3);  // Port 3
+    MyConditionalObserver observer4(1);  // Also on Port 1
+    
+    // Attach all observers
+    observed.attach(&observer1, observer1.rank());
+    observed.attach(&observer2, observer2.rank());
+    observed.attach(&observer3, observer3.rank());
+    observed.attach(&observer4, observer4.rank());
+    OBS_TEST_LOG("Attached observers to ports 1, 2, 3 (with port 1 having two observers)");
+    
+    // Define source port (the one that originated the message)
+    TestCondition source_port = 2;
+    TestCondition broadcast_port = 1; // Internal broadcast port
+    
+    // Define clone function (P3 implementation would clone Buffers)
+    auto clone_buffer = [](TestData* original) -> TestData* {
+        if (!original) return nullptr;
+        return new TestData(*original);
+    };
+    
+    // Test internal broadcast with a message from port 2
+    TestData broadcast_data = 1234;
+    
+    OBS_TEST_LOG("Testing internal broadcast from port " + std::to_string(source_port) + 
+                 " to broadcast port " + std::to_string(broadcast_port));
+    
+    bool notified = observed.notifyInternalBroadcast(&broadcast_data, broadcast_port, source_port, clone_buffer);
+    
+    OBS_TEST_ASSERT(notified, "Internal broadcast should notify at least one observer");
+    
+    // Source port shouldn't receive its own message
+    OBS_TEST_ASSERT(observer2.update_count == 0, 
+                   "Source port (2) should not receive its own broadcast message");
+    
+    // All other ports should receive the message through broadcast_port
+    OBS_TEST_ASSERT(observer1.update_count == 1, "Observer 1 should receive broadcast");
+    OBS_TEST_ASSERT(observer3.update_count == 1, "Observer 3 should receive broadcast");
+    OBS_TEST_ASSERT(observer4.update_count == 1, "Observer 4 should receive broadcast");
+    
+    // Verify correct data was received by all observers
+    auto data1 = observer1.get_received_data();
+    auto data3 = observer3.get_received_data();
+    auto data4 = observer4.get_received_data();
+    
+    OBS_TEST_ASSERT(data1.size() == 1 && data1[0] == broadcast_data, 
+                   "Observer 1 should receive correct data value");
+    OBS_TEST_ASSERT(data3.size() == 1 && data3[0] == broadcast_data, 
+                   "Observer 3 should receive correct data value");
+    OBS_TEST_ASSERT(data4.size() == 1 && data4[0] == broadcast_data, 
+                   "Observer 4 should receive correct data value");
+    
+    // Test a second broadcast from a different source port
+    TestCondition source_port2 = 3;
+    TestData broadcast_data2 = 5678;
+    
+    OBS_TEST_LOG("Testing a second internal broadcast from port " + std::to_string(source_port2) + 
+                 " to broadcast port " + std::to_string(broadcast_port));
+    
+    notified = observed.notifyInternalBroadcast(&broadcast_data2, broadcast_port, source_port2, clone_buffer);
+    
+    OBS_TEST_ASSERT(notified, "Second internal broadcast should notify observers");
+    
+    // Verify proper filtering and counts
+    OBS_TEST_ASSERT(observer1.update_count == 2, "Observer 1 should receive second broadcast");
+    OBS_TEST_ASSERT(observer2.update_count == 1, "Observer 2 should receive second broadcast");
+    OBS_TEST_ASSERT(observer3.update_count == 1, "Observer 3 should not receive its own broadcast");
+    OBS_TEST_ASSERT(observer4.update_count == 2, "Observer 4 should receive second broadcast");
+    
+    // Verify data from second broadcast
+    data1 = observer1.get_received_data();
+    auto data2 = observer2.get_received_data();
+    data4 = observer4.get_received_data();
+    
+    OBS_TEST_ASSERT(data1.size() == 2 && data1[1] == broadcast_data2, 
+                   "Observer 1 should receive correct data from second broadcast");
+    OBS_TEST_ASSERT(data2.size() == 1 && data2[0] == broadcast_data2, 
+                   "Observer 2 should receive correct data from second broadcast");
+    OBS_TEST_ASSERT(data4.size() == 2 && data4[1] == broadcast_data2, 
+                   "Observer 4 should receive correct data from second broadcast");
+    
+    // Clean up any dynamically allocated TestData objects
+    // In a real implementation with buffer cloning, this would be handled by the Protocol
+    
+    OBS_TEST_LOG("--- Internal Broadcast Test Passed ---");
+}
+
 
 // --- Concurrent Test Setup ---
 Concurrent_Observed<TestData, TestCondition> concurrent_observed;
-MyConcurrentObserver concurrent_observer1(1);
+MyConcurrentObserver concurrent_observer1(3);
 MyConcurrentObserver concurrent_observer2(2);
 
 std::atomic<bool> keep_running{true};
@@ -264,6 +381,112 @@ void consume_thread_func(MyConcurrentObserver* observer, int expected_count) {
     assert(consumed_count >= expected_count); // Ensure we consumed enough items
 }
 
+// Test concurrent internal broadcast
+void test_concurrent_internal_broadcast() {
+    OBS_TEST_LOG("\n--- Testing Concurrent Internal Broadcast ---\n");
+    
+    // Create observers with different port numbers
+    MyConcurrentObserver observer_port1(1);
+    MyConcurrentObserver observer_port2(2);
+    MyConcurrentObserver observer_port3(3);
+    MyConcurrentObserver another_port1(1); // Another observer on port 1
+    
+    // Attach to the concurrent observed
+    Concurrent_Observed<TestData, TestCondition> concurrent_observed;
+    concurrent_observed.attach(&observer_port1, observer_port1.rank());
+    concurrent_observed.attach(&observer_port2, observer_port2.rank());
+    concurrent_observed.attach(&observer_port3, observer_port3.rank());
+    concurrent_observed.attach(&another_port1, another_port1.rank());
+    
+    // Define clone function
+    auto clone_buffer = [](TestData* original) -> TestData* {
+        if (!original) return nullptr;
+        return new TestData(*original); // Clone by creating a new TestData with same value
+    };
+    
+    const int num_broadcasts = 10;
+    TestCondition broadcast_port = 1; // Internal broadcast port
+    
+    // Create threads to broadcast from different source ports
+    std::thread sender1([&]() {
+        TestCondition source_port = 2; // First sender is on port 2
+        for (int i = 0; i < num_broadcasts; i++) {
+            TestData* data = new TestData(2000 + i);
+            concurrent_observed.notifyInternalBroadcast(data, broadcast_port, source_port, clone_buffer);
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+    });
+    
+    std::thread sender2([&]() {
+        TestCondition source_port = 3; // Second sender is on port 3
+        for (int i = 0; i < num_broadcasts; i++) {
+            TestData* data = new TestData(3000 + i);
+            concurrent_observed.notifyInternalBroadcast(data, broadcast_port, source_port, clone_buffer);
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+    });
+    
+    // Create consumer threads
+    std::thread consumer1([&]() {
+        for (int i = 0; i < num_broadcasts * 2; i++) { // Expect messages from both senders
+            TestData* data = observer_port1.updated();
+            if (data) {
+                OBS_TEST_LOG("Consumer1 received data: " + std::to_string(*data));
+                delete data;
+            }
+        }
+    });
+    
+    std::thread consumer2([&]() {
+        for (int i = 0; i < num_broadcasts; i++) { // Expect messages from sender2 only
+            TestData* data = observer_port2.updated();
+            if (data) {
+                OBS_TEST_LOG("Consumer2 received data: " + std::to_string(*data));
+                delete data;
+            }
+        }
+    });
+    
+    std::thread consumer3([&]() {
+        for (int i = 0; i < num_broadcasts; i++) { // Expect messages from sender1 only
+            TestData* data = observer_port3.updated();
+            if (data) {
+                OBS_TEST_LOG("Consumer3 received data: " + std::to_string(*data));
+                delete data;
+            }
+        }
+    });
+    
+    std::thread consumer4([&]() {
+        for (int i = 0; i < num_broadcasts * 2; i++) { // Expect messages from both senders
+            TestData* data = another_port1.updated();
+            if (data) {
+                OBS_TEST_LOG("Consumer4 received data: " + std::to_string(*data));
+                delete data;
+            }
+        }
+    });
+    
+    // Join all threads
+    sender1.join();
+    sender2.join();
+    consumer1.join();
+    consumer2.join();
+    consumer3.join();
+    consumer4.join();
+    
+    // Verify the counts
+    OBS_TEST_ASSERT(observer_port1.update_count == num_broadcasts * 2, 
+                   "Port 1 observer should receive broadcasts from both senders");
+    OBS_TEST_ASSERT(observer_port2.update_count == num_broadcasts, 
+                   "Port 2 observer should only receive broadcasts from sender2");
+    OBS_TEST_ASSERT(observer_port3.update_count == num_broadcasts, 
+                   "Port 3 observer should only receive broadcasts from sender1");
+    OBS_TEST_ASSERT(another_port1.update_count == num_broadcasts * 2, 
+                   "Second port 1 observer should receive broadcasts from both senders");
+    
+    OBS_TEST_LOG("--- Concurrent Internal Broadcast Test Passed ---");
+}
 
 void test_concurrent_observer() {
     OBS_TEST_LOG("\n--- Testing Concurrent Observer Pattern ---\n");
@@ -271,14 +494,14 @@ void test_concurrent_observer() {
     // Attach observers (using the thread-safe attach method)
     concurrent_observed.attach(&concurrent_observer1, concurrent_observer1.rank());
     concurrent_observed.attach(&concurrent_observer2, concurrent_observer2.rank());
-    OBS_TEST_LOG("Attached concurrent observers.");
+    OBS_TEST_LOG("Attached concurrent observers (Rank 3 and Rank 2).");
 
     const int num_notifications1 = 50;
     const int num_notifications2 = 40;
 
     // Create threads
-    std::thread notifier1(notify_thread_func, 1, 1000, num_notifications1); // Condition 1, data starts at 1000
-    std::thread notifier2(notify_thread_func, 2, 2000, num_notifications2); // Condition 2, data starts at 2000
+    std::thread notifier1(notify_thread_func, 3, 1000, num_notifications1); // Notify condition 3 for observer1
+    std::thread notifier2(notify_thread_func, 2, 2000, num_notifications2); // Notify condition 2 for observer2
     std::thread consumer1(consume_thread_func, &concurrent_observer1, num_notifications1);
     std::thread consumer2(consume_thread_func, &concurrent_observer2, num_notifications2);
 
@@ -327,7 +550,7 @@ void test_concurrent_observer() {
     OBS_TEST_LOG("Testing detach...");
     concurrent_observed.detach(&concurrent_observer1, concurrent_observer1.rank());
     TestData final_data = 9999;
-    concurrent_observed.notify(1, &final_data); // Should not reach observer 1
+    concurrent_observed.notify(3, &final_data); // Notify condition 3, should not reach observer 1
     // Give a tiny moment for potential processing (though it shouldn't happen)
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     OBS_TEST_ASSERT(concurrent_observer1.update_count == num_notifications1, 
@@ -349,7 +572,9 @@ int main() {
     
     // Run tests
     test_conditional_observer();
+    test_internal_broadcast();
     test_concurrent_observer();
+    test_concurrent_internal_broadcast();
     
     OBS_TEST_LOG("All tests finished.");
     

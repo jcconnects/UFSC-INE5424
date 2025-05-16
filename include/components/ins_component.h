@@ -77,7 +77,7 @@ class INSComponent : public Component {
 const unsigned int INSComponent::PORT = 104; // Example port for INS
 
 INSComponent::INSComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, VehicleProt* protocol) 
-    : Component(vehicle, vehicle_id, name),
+    : Component(vehicle, vehicle_id, name, ComponentType::PRODUCER),
     _gen(std::random_device{}()),
     // Define realistic ranges for dummy data
     _lat_dist(-PI_INS/2.0, PI_INS/2.0), // Latitude in radians (-90 to +90 deg)

@@ -69,7 +69,7 @@ class BatteryComponent : public Component {
 const unsigned int BatteryComponent::PORT = 103; // Example port for Battery
 
 BatteryComponent::BatteryComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, VehicleProt* protocol) 
-    : Component(vehicle, vehicle_id, name),
+    : Component(vehicle, vehicle_id, name, ComponentType::PRODUCER),
     _gen(std::random_device{}()),
     _voltage_dist(48.0, 54.0),   // Example EV battery voltage range (V)
     _current_dist(-50.0, 100.0), // Example current range (A, negative for regen)

@@ -27,6 +27,11 @@ class Protocol: private NIC::Observer
         typedef Conditionally_Data_Observed<Buffer, Port> Observed;
         typedef std::uint8_t Data[MTU];
         
+        // Port constants for the P3 implementation
+        inline static const Port GATEWAY_PORT = 0;
+        inline static const Port INTERNAL_BROADCAST_PORT = 1;
+        inline static const Port MIN_COMPONENT_PORT = 2;
+        
         // Header class for protocol messages
         class Header {
             public:
@@ -295,7 +300,6 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     
     // Extracting MAC Addresses to compare
     Physical_Address src_mac = buf->data()->src;
-    Physical_Address my_mac = _nic->address();
 
     // Extracting packet from frame payload
     Packet* packet = reinterpret_cast<Packet*>(buf->data()->payload);
@@ -308,72 +312,55 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
                      << ":" << src_port << " to dst_port=" << dst_port << "\n";
 
     // ------------------------------------------------------------------
-    // BROADCAST HANDLING (dst_port == 0)
-    if (dst_port == 0) {
-        db<Protocol>(INF) << "[Protocol] Received broadcast packet on port 0.\n";
-        
-        // Get the list of observers that might need this message
-        // We can't use notifyAll directly because we need to clone the buffer for each observer
-        typedef Ordered_List<typename Observed::Observer, Port> ObserverList;
-        ObserverList& observers = _observed.get_observers();
-        bool any_notified = false;
-        
-        // Special handling for broadcast: clone buffer for each observer
-        for (typename ObserverList::Iterator it = observers.begin(); it != observers.end(); ++it) {
-            // Skip sending to the originator of the message (prevent feedback loops)
-            if (src_mac == my_mac && (*it)->rank() == src_port) {
-                db<Protocol>(INF) << "[Protocol] Skipping broadcast to originating port " << src_port << "\n";
-                continue;
-            }
-            
-            Buffer* observer_buf = nullptr;
-            
-            // First observer can use the original buffer (optimization)
-            if (!any_notified) {
-                observer_buf = buf;
-            } else {
-                // Clone the buffer for subsequent observers
-                // Note: This assumes NIC::alloc creates a properly sized buffer
-                observer_buf = _nic->alloc(buf->data()->dst, prot, buf->size() - Ethernet::HEADER_SIZE);
-                if (!observer_buf) {
-                    db<Protocol>(ERR) << "[Protocol] Failed to allocate buffer for broadcast clone\n";
-                    continue;
-                }
-                
-                // Copy the data from original buffer to the clone
-                std::memcpy(observer_buf->data(), buf->data(), buf->size());
-            }
-            
-            // Update this particular observer with its own buffer copy
-            // Using the observer's rank for notification (its own registered port)
-            db<Protocol>(INF) << "[Protocol] Notifying observer at port " << (*it)->rank() << " with broadcast\n";
-            (*it)->update((*it)->rank(), observer_buf);
-            
-            any_notified = true;
-        }
-        
-        // If no observers were notified, free the buffer
-        if (!any_notified) {
-            db<Protocol>(INF) << "[Protocol] No observers notified for broadcast message\n";
+    // GATEWAY_PORT HANDLING - This is for messages sent to the gateway from outside
+    if (dst_port == GATEWAY_PORT) {
+        db<Protocol>(INF) << "[Protocol] Received packet on GATEWAY_PORT\n";
+        // Simply notify observers of Gateway Port (GatewayComponent)
+        if (!_observed.notify(GATEWAY_PORT, buf)) {
+            db<Protocol>(INF) << "[Protocol] No observer found for GATEWAY_PORT. Freeing buffer.\n";
             _nic->free(buf);
         }
     }
-    // UNICAST HANDLING (specific port)
-    else {
-        db<Protocol>(INF) << "[Protocol] Received unicast packet for port " << dst_port << "\n";
+    // INTERNAL_BROADCAST_PORT HANDLING - This is for internal broadcast within the vehicle
+    else if (dst_port == INTERNAL_BROADCAST_PORT) {
+        db<Protocol>(INF) << "[Protocol] Received packet for INTERNAL_BROADCAST_PORT\n";
         
-        // If this is our own message coming back (loop), drop it
-        if (src_mac == my_mac && src_port == dst_port) {
-            db<Protocol>(INF) << "[Protocol] Dropping looped-back message from our own port " << src_port << "\n";
+        // Create a buffer cloning lambda function
+        auto clone_buffer_func = [this, prot](Buffer* original) -> Buffer* {
+            if (!original) return nullptr;
+            
+            // Allocate a new buffer with same size as original, minus Ethernet header
+            Buffer* cloned_buf = _nic->alloc(original->data()->dst, prot, original->size() - Ethernet::HEADER_SIZE);
+            if (!cloned_buf) {
+                db<Protocol>(ERR) << "[Protocol] Failed to allocate buffer for internal broadcast\n";
+                return nullptr;
+            }
+            
+            // Copy data from original to clone
+            std::memcpy(cloned_buf->data(), original->data(), original->size());
+            return cloned_buf;
+        };
+        
+        // Use the specialized internal broadcast method which handles buffer cloning
+        if (!_observed.notifyInternalBroadcast(buf, INTERNAL_BROADCAST_PORT, src_port, clone_buffer_func)) {
+            db<Protocol>(INF) << "[Protocol] No observers notified for INTERNAL_BROADCAST_PORT. Freeing buffer.\n";
             _nic->free(buf);
-            return;
         }
+    }
+    // COMPONENT PORT HANDLING (specific port >= MIN_COMPONENT_PORT)
+    else if (dst_port >= MIN_COMPONENT_PORT) {
+        db<Protocol>(INF) << "[Protocol] Received packet for component port " << dst_port << "\n";
         
-        // Normal unicast notification - let observer handle the buffer
+        // Notify specific component observer
         if (!_observed.notify(dst_port, buf)) {
             db<Protocol>(INF) << "[Protocol] No observer found for port " << dst_port << ". Freeing buffer.\n";
             _nic->free(buf);
         }
+    }
+    // Unrecognized port (should not happen in normal operation)
+    else {
+        db<Protocol>(WRN) << "[Protocol] Received packet with unrecognized destination port " << dst_port << "\n";
+        _nic->free(buf);
     }
 }
 

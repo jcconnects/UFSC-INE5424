@@ -14,7 +14,7 @@ class ECUComponent : public Component {
     public:
         // ECU receives a port for identification
         ECUComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, 
-                    VehicleProt* protocol, Vehicle::Ports port = Vehicle::Ports::ECU1);
+                    VehicleProt* protocol, unsigned int port);
 
         ~ECUComponent() = default;
 
@@ -55,8 +55,8 @@ class ECUComponent : public Component {
 
 /*********** ECU Component Implementation **********/
 ECUComponent::ECUComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, 
-                           VehicleProt* protocol, Vehicle::Ports port) 
-    : Component(vehicle, vehicle_id, name) 
+                           VehicleProt* protocol, unsigned int port) 
+    : Component(vehicle, vehicle_id, name, ComponentType::CONSUMER) 
 {
     // Sets CSV result Header
     open_log_file();
@@ -80,7 +80,7 @@ void ECUComponent::run() {
     db<ECUComponent>(INF) << "ECU component " << getName() << " starting main run loop.\n";
     
     // Register interest in obstacle distance data
-    register_interest_handler(
+    register_interest(
         DataTypeId::OBSTACLE_DISTANCE, 
         OBSTACLE_DATA_PERIOD_US,
         [this](const Message& msg) { 

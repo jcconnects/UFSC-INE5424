@@ -1,6 +1,6 @@
-# P3 Implementation Plan: Time-Triggered Publish-Subscribe
+# P3 Implementation Plan: Time-Triggered Publish-Subscribe (Simplified)
 
-This document outlines the implementation plan for Project Stage 3 (P3), focusing on time-triggered publish-subscribe communication between components and systems. It incorporates decisions made regarding network efficiency, component responsibilities, and internal API structure for managing concurrency.
+This document outlines the **simplified** implementation plan for Project Stage 3 (P3), focusing on time-triggered publish-subscribe communication between components and systems. It incorporates decisions to reduce complexity, such as removing explicit producer registration and simplifying component interactions.
 
 ## 1. Core P3 Requirements
 
@@ -13,80 +13,80 @@ This document outlines the implementation plan for Project Stage 3 (P3), focusin
     - `origin`: Full `Protocol::Address` of the data producer.
     - `type`: The `DataTypeId` of the data being provided.
     - `value`: The actual data payload (byte array).
-- All messages (Interests and Responses) are sent via **logical broadcast**.
-- Producers send Responses **periodically** based on received Interests.
+- All messages (Interests and Responses) are sent via **logical broadcast** to a `GatewayComponent`.
+- **Gateway Role:** Relays messages received on its dedicated port (Port 0) to an internal broadcast port (Port 1).
+- **Producer Components:**
+    *   Produce data of a **single, predefined `DataTypeId`**.
+    *   Listen for `INTEREST` messages (relayed by the Gateway) for their `DataTypeId`.
+    *   Calculate the **Greatest Common Divisor (GCD)** of all active requested periods.
+    *   Send `RESPONSE` messages (to the Gateway port) at this GCD period.
+- **Consumer Components:**
+    *   Are interested in data of a **single, predefined `DataTypeId`** at a **specific `period`**.
+    *   Send `INTEREST` messages (to the Gateway port).
+    *   Listen for `RESPONSE` messages (relayed by the Gateway) for their `DataTypeId`.
+    *   Filter `RESPONSE` messages: discard if they arrive sooner than the requested `period`.
 - Temporal synchronization of machines is assumed.
 - **Efficiency Goals:**
     - Minimize network occupation and message latency.
     - System must handle thousands of vehicles and components.
+- **Port Allocation:**
+    - Port 0: `GatewayComponent` external listening port.
+    - Port 1: Internal broadcast port used by Gateway for relaying messages.
+    - Ports >= 2: Regular component ports.
 
-## 2. Key Design Decisions & Optimizations
+## 2. Key Design Decisions & Simplifications
 
 1.  **`DataTypeId` for Message Typing:**
-    *   An `enum class DataTypeId : std::uint32_t` will be defined (e.g., in `message.h` or `teds.h`) to uniquely identify all data types in the system (e.g., `VEHICLE_SPEED`, `LIDAR_SCAN`). This ID will be used in `Message::_unit_type`.
+    *   An `enum class DataTypeId : std::uint32_t` will be defined (e.g., in `message.h` or `teds.h`) to uniquely identify all data types.
 
-2.  **Producer Behavior:**
-    *   Each producer component generates only **one** `DataTypeId`.
-    *   When a producer receives multiple `INTEREST` messages for its `DataTypeId` with different periods, it will calculate the **Greatest Common Divisor (GCD)** of all active requested periods.
-    *   The producer will then send `RESPONSE` messages (logical broadcast) at this GCD period.
-    *   A dedicated thread within the producer component will manage this periodic sending.
-    *   The producer will detect and process `INTEREST` messages for its `_produced_data_type` directly in the `component_dispatcher_routine`, which will update the list of requested periods and recalculate the GCD.
+2.  **Simplified Gateway (`GatewayComponent`):**
+    *   **No Producer Registration:** The Gateway does not maintain a registry of producers.
+    *   **Fixed Listening Port:** Listens for all incoming `INTEREST` and `RESPONSE` messages on a dedicated external port (Port 0).
+    *   **Relay Mechanism:** Upon receiving any message on Port 0, the Gateway immediately relays it by instructing its `Protocol` layer to distribute the message to all components that are set up to observe internal broadcasts (conceptually on Port 1) on its own vehicle.
+    *   **Specialized Reception:** The Gateway's `Communicator` or reception logic must be configured to accept all messages on Port 0 without `DataTypeId` or periodicity filtering.
 
-3.  **Consumer Behavior:**
-    *   A consumer component can be interested in multiple `DataTypeId`s, each with a specific desired period.
-    *   Consumers will send `INTEREST` messages on startup. Interest lifetime is indefinite for P3.
-    *   **Consumer-Side Filtering:** To manage data arrival, consumers will use their own local clock. If a `RESPONSE` message for a given `DataTypeId` arrives *sooner* than the consumer's requested `period` for that type (since the last accepted message of that type), the message will be discarded at a low level within the communication stack (specifically, by the `Communicator`) to avoid unnecessary processing by the component's application logic.
+3.  **Producer Component Behavior (Single `DataTypeId`):**
+    *   Each producer component is configured to produce only **one** specific `DataTypeId`.
+    *   Its `Communicator` is associated with the component's unique port (e.g., >=2) for originating messages. It is also set up to receive notifications from the `Protocol` layer for messages relayed by the Gateway to the internal broadcast mechanism (conceptually, Port 1).
+    *   **Interest Processing (via internal broadcast notification):**
+        *   Filters incoming messages (notified for Port 1): Processes only `INTEREST` messages matching its `_produced_data_type`. Ignores `RESPONSE` messages.
+        *   When a relevant `INTEREST` is received, its `period` is used to update the list of requested periods.
+        *   The **Greatest Common Divisor (GCD)** of all active requested periods is recalculated.
+        *   A dedicated thread within the producer component manages periodic sending of `RESPONSE` messages at this GCD period.
+    *   **Response Sending:** `RESPONSE` messages are sent to the Gateway's external port (MAC_BROADCAST:Port_0).
 
-4.  **Interest Message Routing (via Gateway with Targeted Internal Relay):**
-    *   Producer components will **register** with the `GatewayComponent` upon startup, declaring the `DataTypeId` they produce.
-    *   The `GatewayComponent` will maintain a registry mapping `DataTypeId`s to the internal `Protocol::Port`s of the components that produce them.
-    *   Consumer components will send `INTEREST` messages as a logical broadcast to a fixed port, **Port 0**, targeting the `GatewayComponent` (physical destination: Ethernet broadcast).
-    *   The `GatewayComponent` (listening on Port 0 of its vehicle's MAC address) will receive these *external* `INTEREST` messages.
-    *   The `GatewayComponent` will override the `component_dispatcher_routine` method to directly process incoming `REG_PRODUCER` and `INTEREST` messages without relying on typed handlers.
-    *   Upon receiving an external `INTEREST` for a `DataTypeId X`:
-        *   The `GatewayComponent` will consult its registry.
-        *   For each registered internal `Protocol::Port` of a producer for `DataTypeId X`, the Gateway will send a *new, targeted* `INTEREST` message (logical unicast) directly to that `ProducerComponent`'s `Port` (on the Gateway's own vehicle MAC address).
-    *   This targeted relay ensures only relevant producer components are notified, optimizing internal message traffic.
+4.  **Consumer Component Behavior (Single `DataTypeId`, Single `Period`):**
+    *   Each consumer component is configured to be interested in only **one** specific `DataTypeId` at **one** specific `period`.
+    *   Its `Communicator` is associated with the component's unique port (e.g., >=2) for originating messages. It is also set up to receive notifications from the `Protocol` layer for messages relayed by the Gateway to the internal broadcast mechanism (conceptually, Port 1).
+    *   **Interest Sending:** On startup (or when configured), sends an `INTEREST` message for its `DataTypeId` and `period` to the Gateway's external port (MAC_BROADCAST:Port_0).
+    *   **Response Processing (via internal broadcast notification):**
+        *   The component's main execution logic will call `_communicator->receive()` which blocks until a message is available (after being filtered by `Communicator::update`).
+        *   Upon receiving a valid `RESPONSE` (type and `DataTypeId` match, and periodicity filter in `Communicator::update` passed), the component will directly invoke its registered data callback.
+        *   Ignores `INTEREST` messages.
 
-5.  **API-Managed Concurrency for Consumers:**
-    *   To simplify component application logic, the communication library (specifically the `Component` base class and helper classes) will manage threads for handling incoming data for each registered interest.
-    *   Components will register interest in specific `DataTypeId`s by providing a callback function.
-    *   **Component Dispatcher Thread:** Each component instance will have a single "dispatcher" thread (`_component_dispatcher_thread`). Its primary role is to:
-        1.  Call the component's `_communicator->receive()` method, which blocks until a message arrives. This message has *already* been pre-filtered by the `Communicator` for consumer-side periodicity (if applicable to the component's role and message type).
-        2.  Once a valid message is received, the dispatcher thread creates a heap-allocated copy of this message.
-        3.  It then notifies an internal `Conditionally_Data_Observed<Message, DataTypeId>` object (`_internal_typed_observed`) within the component, using the message's `DataTypeId` as the notification condition and passing the heap-allocated message.
-    *   **TypedDataHandler Threads:** For each call to `register_interest_handler(type, period, callback)`, a `TypedDataHandler` instance is created.
-        1.  This handler is a `Concurrent_Observer<Message, DataTypeId>` and registers itself with the component's `_internal_typed_observed` for the specific `type`.
-        2.  Crucially, each `TypedDataHandler` runs its own dedicated thread (`processing_loop`). This thread blocks on its internal semaphore, waiting for its `update()` method to be called (which happens when `_internal_typed_observed` notifies it).
-        3.  When awakened, it retrieves the heap-allocated `Message` and executes the user-supplied `callback` function with this message.
-        4.  This model allows multiple data types to be processed concurrently by the consumer component, with each type handled by a dedicated thread, all managed by the library. The component developer only needs to provide the callback logic.
+6.  **Message Flow Summary:**
+    *   **Interest:** `Consumer` -> `Gateway (Port 0)` -> `Gateway relays to Internal Broadcast (Port 1)` -> `Producer` (filters by type).
+    *   **Response:** `Producer` -> `Gateway (Port 0)` -> `Gateway relays to Internal Broadcast (Port 1)` -> `Consumer` (filters by type and period).
 
 ## 2.6. Justification of Filtering Placement
 
-The placement of message filtering mechanisms is critical for balancing efficiency, complexity, and adherence to software layering principles.
+The placement of message filtering mechanisms is critical:
 
-1.  **`DataTypeId` Filtering (in `Communicator::update`):**
-    *   **Goal:** Discard messages with `DataTypeId`s irrelevant to the receiving component as early as possible.
-    *   **Challenge:** To access `DataTypeId`, a portion of the message payload (specifically, the `Message` header) must be deserialized.
-    *   **Considered Alternatives & Reasoning:**
-        *   **`NIC` Layer:** The `NIC` operates at the Ethernet frame level. Requiring it to parse `Message` headers would deeply violate layering principles, coupling it tightly to higher-level application-specific formats. This is not a viable option.
-        *   **`Protocol` Layer:** The `Protocol` layer handles its own packet structure (e.g., demultiplexing by port). It *could* be modified to also parse the `Message` header from its payload to extract the `DataTypeId`. However, this would:
-            *   Increase the complexity of the `Protocol` layer, as it would need to understand `Message` structure.
-            *   Require the `Observer` mechanism between `Protocol` and `Communicator` to use a more complex condition (e.g., `std::pair<Port, DataTypeId>`).
-            *   Introduce special handling for the `GatewayComponent`, which needs to receive `INTEREST` messages of potentially any `DataTypeId` on its designated port (Port 0). This would necessitate wildcard `DataTypeId` registrations or specific logic in `Protocol`.
-        *   **`Communicator` Layer (Current Plan):** The `Communicator` is instantiated per component. When its `update()` method (called by `Protocol` upon message arrival for its port) receives a buffer, it deserializes the `Message` header. This is component-specific processing.
-            *   **Rationale:** This placement keeps the `Protocol` layer clean and focused on port-based demultiplexing. The `Communicator` is the first point where component-specific logic (like caring about specific `DataTypeId`s) is naturally applied. While the deserialization happens here, the message has already been routed to the correct component's `Communicator` by the `Protocol`. The overhead of this header deserialization in `Communicator::update` is generally acceptable, and the architectural clarity and simplicity of `Protocol` are maintained. The benefit of moving this specific deserialization one step further down to `Protocol` is likely outweighed by the increased complexity introduced in `Protocol`.
+1.  **`DataTypeId` and Message Type Filtering (in `Communicator::update` for Consumer/Producer):**
+    *   **Goal:** Ensure components only process relevant message types (`INTEREST` for Producers, `RESPONSE` for Consumers) and relevant `DataTypeId`s when they are notified of an internal broadcast (relayed message).
+    *   **Placement:** This logic resides in the `Communicator::update()` method of regular (non-Gateway) components when the `Observing_Condition` indicates the message came from the internal broadcast (Port 1).
+    *   **Rationale:** The `Communicator` is component-specific. After the Gateway relays a message and the `Protocol` notifies relevant observers for Port 1, each such component's `Communicator` inspects the message based on its specific role (Producer/Consumer).
+        *   It first checks the `Message::Type` (e.g., a Producer ignores `RESPONSE`s).
+        *   Then, it checks the `DataTypeId` against the component's configured `_produced_data_type` or `_interested_data_type`.
+        *   This keeps the `Protocol` layer clean. The `GatewayComponent`'s `Communicator` will have minimal to no filtering on Port 0.
 
-2.  **Consumer-Side Period Filtering (in `Communicator::update`):**
-    *   **Goal:** Allow a consumer component to discard `RESPONSE` messages that arrive more frequently than its requested period for a given `DataTypeId`, preventing unnecessary processing by the component's application logic.
-    *   **Challenge:** This filtering is inherently stateful and specific to each consumer component's interest. It requires knowing:
-        1.  The `period_us` requested by *this specific component* for *this specific `DataTypeId`*.
-        2.  The `last_accepted_response_time_us` for that `DataTypeId` by *this specific component*.
-    *   **Considered Alternatives & Reasoning:**
-        *   **Lower Layers (`Protocol`, `NIC`):** These layers are designed to be stateless regarding individual component application logic or specific interest details. They are shared resources within a vehicle (Protocol) or system (NIC).
-            *   Implementing component-specific, stateful period filtering here would require these lower layers to query or access per-component, per-interest state. This would severely break layering, introduce tight coupling, and create significant complexity in state management and synchronization.
-        *   **`Communicator` Layer (Current Plan):** The `Communicator` is already tied to a single `Component` instance (via `_owner_component`). It can directly and efficiently access the `_active_interests` list (containing `period_us` and `last_accepted_response_time_us`) of its owning component.
-            *   **Rationale:** This is the lowest practical and architecturally sound level for such component-specific, stateful filtering. The check (getting current time, accessing component state, and comparing) is computationally inexpensive. Performing it in `Communicator::update` effectively prevents the message from being queued for the component's dispatcher thread and subsequent `TypedDataHandler` if it's too early, thus saving processing resources without compromising architectural principles.
+2.  **Consumer-Side Period Filtering (in `Communicator::update` for Consumer):**
+    *   **Goal:** Allow a consumer to discard `RESPONSE` messages that arrive too frequently.
+    *   **Placement:** Also in the consumer's `Communicator::update()` method.
+    *   **Rationale:** This is component-specific stateful filtering. The `Communicator`, being tied to its owner component, can access the required `period_us` and `last_accepted_response_time_us`. This prevents unnecessary processing by the component's application logic.
+
+3.  **Gateway Reception (Port 0):**
+    *   The `GatewayComponent`'s `Communicator` (or equivalent reception logic) listening on Port 0 must be configured to accept *all* messages, regardless of `DataTypeId` or `Message::Type`, to perform its relay function.
 
 ## 3. Detailed Changes by Module
 
@@ -109,324 +109,228 @@ The placement of message filtering mechanisms is critical for balancing efficien
     enum class Type : std::uint8_t {
         INTEREST,
         RESPONSE,
-        REG_PRODUCER, // New type for producer registration with Gateway
-        // PTP,
-        // JOIN,
+        // Other types like PTP, JOIN might exist but are not focus of this P3 simplification
+        // REG_PRODUCER is REMOVED
     };
     ```
 *   **`Message` Class:**
-    *   Ensure `_unit_type` (uses `DataTypeId`) and `_period` (for `INTEREST`) are correctly handled in constructors, serialization, and deserialization.
-    *   The `Message::Origin` (which is `Protocol::Address`) will capture the full source address.
+    *   Ensure `_unit_type` (uses `DataTypeId`), `_period` (for `INTEREST`), and `_value` (for `RESPONSE`) are correctly handled.
+    *   `_origin` (`Protocol::Address`) is crucial.
     *   `_timestamp` is set at message creation.
 
 ### 3.2. `component.h` (Base Class and Derived Components)
 
-*   **`Component` Base Class Additions:**
-    *   **For All Components:**
-        *   `std::vector<std::unique_ptr<class TypedDataHandler>> _typed_data_handlers;`
-        *   `std::vector<pthread_t> _handler_threads;`
-        *   `Conditionally_Data_Observed<Message, DataTypeId> _internal_typed_observed;`
-        *   `pthread_t _component_dispatcher_thread;`
-        *   `void component_dispatcher_routine();` (static, takes `this` as arg)
-        *   Protected method:
-            `void register_interest_handler(DataTypeId type, std::uint32_t period_us, std::function<void(const Message&)> callback);`
-        *   **Updated Component Dispatcher Routine:**
-            The `component_dispatcher_routine` will now check for `INTEREST` messages that match a producer's `_produced_data_type` and handle them directly by updating `_received_interest_periods` and calling `update_gcd_period()`.
-    *   **Specifically for Consumers (managed by `register_interest_handler`):**
-        *   `struct InterestRequest { DataTypeId type; std::uint32_t period_us; std::uint64_t last_accepted_response_time_us; bool interest_sent; };`
-        *   `std::vector<InterestRequest> _active_interests;` (This list will be accessible by the `Communicator` for filtering).
-    *   **Specifically for Producers:**
-        *   `const DataTypeId _produced_data_type;` (Initialized in derived producer constructor).
+*   **`Component` Base Class Additions/Modifications:**
+    *   **Common:**
+        *   Port management: Components (except Gateway) will have their `Communicator` associated with a unique component port (e.g., Port >= 2) for originating messages. For receiving relayed broadcasts, their `Communicator` will also be registered with the `Protocol` to receive notifications for messages sent to the internal broadcast address (conceptually, Port 1).
+    *   **For Consumers:**
+        *   `DataTypeId _interested_data_type = DataTypeId::UNKNOWN;`
+        *   `std::uint32_t _interested_period_us = 0;`
+        *   `std::uint64_t _last_accepted_response_time_us = 0;`
+        *   `std::function<void(const Message&)> _data_callback;`
+        *   `void set_interest(DataTypeId type, std::uint32_t period_us, std::function<void(const Message&)> callback);`
+        *   `void send_interest_message();`
+    *   **For Producers:**
+        *   `DataTypeId _produced_data_type = DataTypeId::UNKNOWN;` (Initialized in derived producer constructor).
         *   `std::vector<std::uint32_t> _received_interest_periods;`
+        *   `std::mutex _periods_mutex;` // To protect _received_interest_periods
         *   `std::atomic<std::uint32_t> _current_gcd_period_us;`
         *   `pthread_t _producer_response_thread;`
-        *   `void producer_response_routine();` (static, takes `this` as arg)
+        *   `std::atomic<bool> _producer_thread_running;`
+        *   `sem_t _producer_semaphore;` // To signal period changes or stop
+        *   `static void* producer_response_routine_entry(void* arg);`
+        *   `void producer_response_routine();`
         *   `void start_producer_thread();`
         *   `void stop_producer_thread();`
-        *   Helper: `std::uint32_t calculate_gcd(std::uint32_t a, std::uint32_t b);` and `void update_gcd_period();`
+        *   `void update_gcd_period();` (Calculates GCD and signals producer thread if changed)
+        *   `uint32_t calculate_gcd_of_vector(const std::vector<uint32_t>& periods);`
 
 *   **`Component::start()`:**
-    *   Launch `_component_dispatcher_thread`.
-    *   If it's a producer, call `start_producer_thread()`.
+    *   If Consumer and `_interested_data_type != DataTypeId::UNKNOWN`, call `send_interest_message()`.
+    *   If Producer and `_produced_data_type != DataTypeId::UNKNOWN`, call `start_producer_thread()`.
 
 *   **`Component::stop()`:**
-    *   Signal and join `_component_dispatcher_thread`.
-    *   Signal and join all `_handler_threads` (for consumers).
-    *   If it's a producer, call `stop_producer_thread()`.
-    *   Ensure `_communicator->close()` is called to unblock its receive.
+    *   If Producer, call `stop_producer_thread()`.
+    *   Ensure `_communicator->close()` is called.
 
-*   **`Component::component_dispatcher_routine()` (Consumer focus):**
-    *   Loop while `_running`.
-    *   `Message raw_msg;`
-    *   `if (_communicator->receive(&raw_msg)) { // This receive is now filtered by Communicator`
-        *   For producers: Check if this is an `INTEREST` message for this producer's `_produced_data_type`:
-            ```cpp
-            if (_produced_data_type != DataTypeId::UNKNOWN && 
-                message.message_type() == Message::Type::INTEREST &&
-                message.unit_type() == _produced_data_type) {
-                
-                // Add this period to our received_interest_periods if not already present
-                _received_interest_periods.push_back(message.period());
-                update_gcd_period();
-            }
-            ```
-        *   `Message* heap_msg = new Message(raw_msg);`
-        *   `if (!_internal_typed_observed.notify(heap_msg->unit_type(), heap_msg)) { delete heap_msg; }`
-    *   `}`
+*   **`Component::set_interest(...)` (Consumer):**
+    1.  Sets `_interested_data_type`, `_interested_period_us`, `_data_callback`.
+    2.  If component is already running, call `send_interest_message()`.
 
-*   **`Component::register_interest_handler(...)` (Consumer):**
-    1.  Adds an `InterestRequest` entry to `_active_interests`.
-    2.  Creates a `TypedDataHandler` (see section 3.8) for the given `DataTypeId` and callback.
-    3.  Attaches this handler to `_internal_typed_observed` using `DataTypeId` as the condition.
-    4.  Launches the `TypedDataHandler`'s processing loop in a new thread (store handle in `_handler_threads`).
-    5.  Sends the initial `INTEREST` message:
-        *   `Message interest_msg = _communicator->new_message(Message::Type::INTEREST, type, period_us);`
-        *   `_communicator->send(interest_msg, Protocol::Address(Ethernet::BROADCAST, 0)); // To Gateway`
+*   **`Component::send_interest_message()` (Consumer):**
+    *   `Message interest_msg = _communicator->new_message(Message::Type::INTEREST, _interested_data_type, _interested_period_us);`
+    *   `_communicator->send(interest_msg, Protocol::Address(Ethernet::BROADCAST, 0)); // To Gateway Port 0`
 
 *   **Producer Derived Component (e.g., `LidarComponent`):**
-    *   Constructor: Initialize `_produced_data_type`.
-    *   **Add Registration on Startup (e.g., in `Component::start()` or early in `run()` for producers):**
-        ```cpp
-        // Inside producer's startup sequence
-        if (/* is a producer component */) {
-            Message reg_msg = _communicator->new_message(
-                Message::Type::REG_PRODUCER,
-                static_cast<std::uint32_t>(this->_produced_data_type) // unit_type carries the DataTypeId being produced
-            );
-            // Send to Gateway's well-known port (0) on the local vehicle.
-            // The physical address part of Protocol::Address for Gateway can be vehicle's own MAC or Ethernet Broadcast.
-            // For intra-vehicle, vehicle's own MAC is more precise.
-            _communicator->send(reg_msg, Protocol::Address(this->vehicle()->address().paddr(), 0));
-            db<Component>(INF) << getName() << " sent REG_PRODUCER for type " << (int)this->_produced_data_type << " to Gateway.
-";
-        }
-        ```
-    *   `run()` (or similar, called by `_component_dispatcher_thread` if also consuming, or a dedicated listener for *relayed* INTERESTs):
-        *   When a *relayed* `INTEREST` for `this->_produced_data_type` is received via its `_communicator` (from Gateway):
-            *   Add `msg.period()` to `_received_interest_periods`.
+    *   Constructor: Initialize `_produced_data_type`. The component's `Communicator` is initialized with its unique port (e.g. >=2) and also set up to observe internal broadcasts (Port 1) from the `Protocol`.
+    *   The `_communicator` for this producer will be set to listen on internal broadcast port (Port 1).
+    *   `handle_received_interest(std::uint32_t period)`: (Called by its `Communicator` when a relevant relayed INTEREST is processed)
+        *   `std::lock_guard<std::mutex> lock(_periods_mutex);`
+        *   Add `period` to `_received_interest_periods` (avoid duplicates if necessary).
+        *   Call `update_gcd_period()`.
     *   `producer_response_routine()`:
-        *   Loop while `_running` and `_current_gcd_period_us > 0`.
-        *   `current_data = produce_data_for(_produced_data_type);` (Actual data generation).
-        *   Serialize `current_data`.
+        *   Loop while `_producer_thread_running`.
+        *   `current_period_us = _current_gcd_period_us.load();`
+        *   If `current_period_us == 0`, wait on semaphore (or sleep and recheck).
+        *   `sem_timedwait(&_producer_semaphore, &timeout_for_current_period)`. If it times out, produce and send. If signaled, re-evaluate period.
+        *   `current_data = produce_data_for(_produced_data_type);`
         *   `Message response_msg = _communicator->new_message(Message::Type::RESPONSE, _produced_data_type, 0, serialized_data.data(), serialized_data.size());`
-        *   `_communicator->send(response_msg, Protocol::Address::BROADCAST);`
-        *   `usleep(_current_gcd_period_us.load());`
+        *   `_communicator->send(response_msg, Protocol::Address(Ethernet::BROADCAST, 0)); // To Gateway Port 0`
 
 ### 3.3. `communicator.h`
 
 *   Add `Component* _owner_component;` (passed in constructor).
-*   **`Communicator::update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition c, Buffer* buf)`:**
-    *   This is called by `Protocol` when a new frame arrives for the Communicator's port.
-    *   `if (!buf) { Observer::update(c, nullptr); return; } // Handle close signal`
-    *   Deserialize message from `buf` into a local `Message msg_temp;` (Need to extract payload correctly from `Ethernet::Frame` within `Buffer`).
-    *   **If `_owner_component` is a consumer (check via a dynamic_cast or a role flag in Component):**
-        *   If `msg_temp.message_type() == Message::Type::RESPONSE`:
-            *   Iterate `_owner_component->_active_interests`.
-            *   If `req.type == msg_temp.unit_type()`:
-                *   `current_time_us = /* get current time in microseconds */;`
-                *   `if (current_time_us - req.last_accepted_response_time_us >= req.period_us)`:
-                    *   `req.last_accepted_response_time_us = current_time_us;`
-                    *   `Observer::update(c, buf); // Pass original buffer to unblock receive()`
-                    *   `return; // Processed`
-                *   Else (too early), `db<Communicator>(INF) << "Discarding early RESPONSE for type " << msg_temp.unit_type() << "
-";`
-    *   **If `_owner_component` is a producer (or Gateway receiving an Interest):**
-        *   If `msg_temp.message_type() == Message::Type::INTEREST`:
-            *   (For producers specifically) If `msg_temp.unit_type() == _owner_component->_produced_data_type`:
-                 *   `Observer::update(c, buf); // Pass buffer to unblock receive()`
-                 *   `return;`
-    *   `_channel->free(buf); // If not processed by any rule above`
+*   Store `_component_port;` (the component's unique port, e.g., >=2, passed in constructor).
+*   The `Communicator` constructor should register with the `Protocol` to observe its `_component_port` AND also `INTERNAL_BROADCAST_PORT` (Port 1).
+*   **`Communicator::update(typename Channel::Observed* obs, typename Channel::Observer::Observing_Condition condition, Buffer* buf)`:**
+    *   `// 'condition' here is the Port for which the message was received/notified.`
+    *   `if (!buf) { Observer::update(condition, nullptr); return; } // Handle close signal, pass original condition`
+    *   Deserialize message from `buf` into a local `Message msg_temp;`
+
+    *   **If `_owner_component` is Gateway (and `condition == GATEWAY_PORT` (0)):**
+        *   `Observer::update(condition, buf); // Pass buffer & original condition to unblock receive() for relay`
+        *   `return;`
+
+    *   **If `_owner_component` is Producer (and `condition == INTERNAL_BROADCAST_PORT` (1)):**
+        *   If `msg_temp.message_type() == Message::Type::INTEREST` and `msg_temp.unit_type() == _owner_component->_produced_data_type`:
+            *   `_owner_component->handle_received_interest(msg_temp.period());`
+            *   `_channel->free(buf);`
+        *   Else (not a relevant INTEREST for this producer on Port 1):
+            *   `_channel->free(buf);`
+        *   `return;`
+
+    *   **If `_owner_component` is Consumer (and `condition == INTERNAL_BROADCAST_PORT` (1)):**
+        *   If `msg_temp.message_type() == Message::Type::RESPONSE` and `msg_temp.unit_type() == _owner_component->_interested_data_type`:
+            *   `current_time_us = /* get current time in microseconds */;`
+            *   `if (current_time_us - _owner_component->_last_accepted_response_time_us >= _owner_component->_interested_period_us)`:
+                *   `_owner_component->_last_accepted_response_time_us = current_time_us;`
+                *   `Observer::update(condition, buf); // Pass buffer & original condition`
+                *   `return;`
+            *   Else (too early):
+                *   `db<Communicator>(INF) << "Discarding early RESPONSE for type " << msg_temp.unit_type();`
+                *   `_channel->free(buf);`
+        *   Else (not a relevant RESPONSE for this consumer on Port 1):
+            *   `_channel->free(buf);`
+        *   `return;`
+
+    *   `// Optional: Handle messages on _component_port if direct component-to-component messaging is ever added`
+    *   `// if (condition == _component_port) { ... }`
+
+    *   `_channel->free(buf); // Default: If not processed by any rule above or wrong port for this component type`
 
 *   **`Communicator::receive(Message* message)`:**
-    *   The core logic `Buffer* buf = Observer::updated();` remains.
-    *   If `buf` is not null, deserialize its content (which is now pre-filtered by `Communicator::update`) into `*message`.
-    *   `_channel->free(buf);` after processing.
+    *   `Buffer* buf = Observer::updated(); // This will now also provide the condition if Observer pattern supports it` 
+    *   `// If Observer::updated() doesn't return condition, then update() should store it if needed by receive.`
+    *   `// For this plan, assume update() handles filtering and only passes buffers that should unblock receive.`
+    *   If `buf` is not null, deserialize into `*message`.
 
-### 3.4. `GatewayComponent.h` (New or existing, derived from `Component`)
+### 3.4. `GatewayComponent.h` (Derived from `Component`)
 
-*   **Add Internal Registry:**
-    *   `std::map<DataTypeId, std::vector<Protocol::Port>> _producer_registry;`
 *   **Constructor:**
-    *   Ensure its `_communicator` is initialized to listen on Port 0.
-        `_communicator = new Comms(_vehicle->protocol(), VehicleProt::Address(_vehicle->address().paddr(), 0));`
-*   **Override `component_dispatcher_routine`:**
-    * The Gateway will override the base `component_dispatcher_routine` to directly process incoming messages based on their type, rather than relying on typed handlers.
-    * This ensures the Gateway can handle all `REG_PRODUCER` and `INTEREST` messages without needing to register handlers for each possible `DataTypeId`.
+    *   Initialize its `_communicator` to listen by observing `GATEWAY_PORT` (0) on the `Protocol`.
+        `// _communicator = new Communicator(this, _vehicle->protocol(), 0); // Port 0 for Gateway`
+        `// _communicator->observe(_vehicle->protocol(), GATEWAY_PORT);`
+*   **Main Logic (e.g., in a `run()` method or similar):**
     ```cpp
-    void GatewayComponent::component_dispatcher_routine() override {
-        // Receive messages
-        while (_dispatcher_running.load()) {
-            // ... receive message ...
-            
-            // Process based on message type
-            if (message.message_type() == Message::Type::REG_PRODUCER) {
-                handle_reg_producer(message);
-            } 
-            else if (message.message_type() == Message::Type::INTEREST) {
-                handle_interest(message);
-            }
-        }
-    }
+    // void GatewayComponent::run() { // Or however its main loop is structured
+    //     Message received_msg;
+    //     while (_running.load()) { // _running is a Component base member
+    //         if (_communicator->receive(&received_msg)) { // Receives any message from Port 0
+    //             db<GatewayComponent>(INF) << "Gateway received msg on Port 0, type: " 
+    //                                       << (int)received_msg.message_type() 
+    //                                       << ", unit_type: " << (int)received_msg.unit_type()
+    //                                       << " from " << received_msg.origin().to_string() << ". Relaying to Port 1.";
+    //             _vehicle->protocol()->internal_broadcast_relay(received_msg); 
+    //         }
+    //     }
+    // }
     ```
-*   **Handle Producer Registration:**
-    *   If an incoming `Message reg_msg` is of `Message::Type::REG_PRODUCER`:
-        *   `DataTypeId produced_type = static_cast<DataTypeId>(reg_msg.unit_type());`
-        *   `Protocol::Port producer_port = reg_msg.origin().port();`
-        *   `_producer_registry[produced_type].push_back(producer_port);`
-        *   `// Optional: Add logic to prevent duplicate port entries for the same type.`
-        *   `db<GatewayComponent>(INF) << "Registered producer for type " << (int)produced_type << " on port " << producer_port << " from origin " << reg_msg.origin().to_string() <<".
-";`
-*   **Handle External `INTEREST` and Relay Targetedly:**
-    *   If an incoming `Message external_interest_msg` is of `Message::Type::INTEREST`:
-        *   `DataTypeId requested_type = static_cast<DataTypeId>(external_interest_msg.unit_type());`
-        *   `unsigned int period = external_interest_msg.period();`
-        *   `db<GatewayComponent>(INF) << "Gateway received EXTERNAL INTEREST for type " << (int)requested_type << " from " << external_interest_msg.origin().to_string() << ".
-";`
-        *   `if (_producer_registry.count(requested_type)) {`
-            *   `for (Protocol::Port target_producer_port : _producer_registry[requested_type]) {`
-                *   `Message internal_interest = _communicator->new_message(Message::Type::INTEREST, static_cast<std::uint32_t>(requested_type), period);`
-                *   `// Target is specific producer port on own vehicle's MAC`
-                *   `_communicator->send(internal_interest, Protocol::Address(_vehicle->address().paddr(), target_producer_port));`
-                *   `db<GatewayComponent>(INF) << "Gateway relayed INTEREST for type " << (int)requested_type << " to internal port " << target_producer_port << ".
-";`
-            *   `}`
-        *   `} else {`
-            *   `db<GatewayComponent>(WRN) << "Gateway: No local producer registered for type " << (int)requested_type << ".
-";`
-        *   `}`
+*   **Clarification for Relay:** The `GatewayComponent` receives a message. It then needs to trigger a send on the `Protocol` layer that targets `Protocol::Address(MAC_VEHICLE, INTERNAL_BROADCAST_PORT_1)`. The *payload* of this send should be the *original received message buffer*. The `Protocol` layer, upon receiving this for Port 1, would then notify all its observers registered for Port 1.
 
 ### 3.5. `protocol.h`
 
-*   **`Protocol::update()`:**
-    *   The existing logic for distinguishing internal broadcast (`src_mac == my_mac && dst_port == 0`) from other messages is suitable.
-    *   The `_observed.notifyAll(buf)` for internal broadcasts will **not** be the primary path for Gateway-relayed `INTEREST` messages anymore. Instead, the Gateway will perform targeted sends to specific internal `<MAC_SELF>:<PRODUCER_PORT>`, which will use the `_observed.notify(target_producer_port, buf)` path in `Protocol::update`. The `notifyAll` path remains useful for other genuine internal broadcast scenarios if any.
-*   No direct changes for `DataTypeId` filtering are needed here if `Communicator` handles it.
+*   **Port Definitions:**
+    *   `static const Protocol::Port GATEWAY_PORT = 0;`
+    *   `static const Protocol::Port INTERNAL_BROADCAST_PORT = 1;`
+*   **`Protocol::update()` (called by NIC/Engine when frame arrives):**
+    *   Deserialize Ethernet frame to get destination MAC and `Protocol::Header` (which includes destination port `actual_dest_port`).
+    *   If `dest_mac == _nic->address()` (or broadcast):
+        *   If `actual_dest_port == GATEWAY_PORT` (0):
+            *   `_observed.notify(GATEWAY_PORT, buf); // Notify observers of Port 0`
+        *   Else if `actual_dest_port >= MIN_COMPONENT_PORT` (e.g. 2) (i.e. a specific component port):
+            *   `_observed.notify(actual_dest_port, buf); // Notify observers of that specific port`
+        *   Else (`actual_dest_port == INTERNAL_BROADCAST_PORT` (1) or other special cases from external network - typically unexpected for Port 1 directly from outside):
+            *   `// Potentially log unexpected message for Port 1 from external network`
+            *   `_channel->free(buf);`
+*   **`Protocol::send(const Address & from, const Address & to, const char * payload, unsigned int size)`:**
+    *   This is used by Communicators.
+    *   If `to.port() == GATEWAY_PORT` and `to.paddr() == Ethernet::BROADCAST`, it's an external message.
+    *   If `to.port() == INTERNAL_BROADCAST_PORT` and `to.paddr() == _nic->address()`: this is the Gateway *initiating* an internal relay. `Protocol` should take this buffer and effectively re-distribute it to all observers listening on `INTERNAL_BROADCAST_PORT`.
+*   **Handling internal broadcasts:**
+    *   Protocol identifies messages sent to `INTERNAL_BROADCAST_PORT` (Port 1)
+    *   For these messages, Protocol uses `_observed.notifyInternalBroadcast()` to clone and distribute the message buffer to all observers of Port 1
+    *   The `notifyInternalBroadcast()` method in the Observer pattern handles buffer cloning and distribution
+    *   A buffer cloning function is provided to `notifyInternalBroadcast()` to create copies of the original buffer for each observer
+    *   The original message's origin is preserved during this process
 
 ### 3.6. `nic.h`, `socketEngine.h`, `sharedMemoryEngine.h`
 
-*   No direct changes anticipated for P3 logic related to Interest/Response or `DataTypeId`.
-*   **Linter Errors:** Must be addressed by configuring include paths correctly in the development environment (e.g., for `semaphore.h`, `pthread.h`, `unistd.h`).
+*   No direct changes anticipated for P3 logic, but ensure they work correctly with new porting scheme.
+*   **Linter Errors:** Remind user: "Please remember to address the linter errors related to include paths (e.g., for POSIX headers like `unistd.h`, `pthread.h`, etc.) by configuring your development environment's include paths correctly. This is crucial for compilation and proper functioning on your target POSIX platform."
 
 ### 3.7. `observed.h`, `observer.h`
 
-*   **`Conditionally_Data_Observed<Message, DataTypeId>`:** Will be used inside `Component` for typed dispatch to handlers.
-*   **`Concurrent_Observer<Message, DataTypeId>`:** This will be the base for `TypedDataHandler`.
-*   The existing `Conditional_Data_Observer<Buffer, Port>` used by `Communicator` to observe `Protocol` remains.
-
-### 3.8. `TypedDataHandler.h` (New File)
-
-```cpp
-#ifndef TYPED_DATA_HANDLER_H
-#define TYPED_DATA_HANDLER_H
-
-#include "observer.h" // For Concurrent_Observer
-#include "message.h"
-#include "teds.h"     // For DataTypeId
-#include "component.h" // Forward declare or include carefully
-#include <functional>
-#include <pthread.h>
-
-class Component; // Forward declaration
-
-class TypedDataHandler : public Concurrent_Observer<Message, DataTypeId> {
-public:
-    TypedDataHandler(DataTypeId type, 
-                     std::function<void(const Message&)> callback_func, 
-                     Component* parent_component);
-    ~TypedDataHandler();
-
-    void start_processing_thread();
-    void stop_processing_thread(); // Signals the loop to end
-    pthread_t get_thread_id() const;
-
-private:
-    static void* processing_loop_entry(void* arg);
-    void processing_loop();
-
-    std::function<void(const Message&)> _callback_func;
-    Component* _parent_component;
-    std::atomic<bool> _handler_running;
-    pthread_t _thread_id;
-};
-
-#endif // TYPED_DATA_HANDLER_H
-```
-*   **Implementation (`TypedDataHandler.cpp`):**
-    *   Constructor initializes members, sets `_handler_running` to false.
-    *   `start_processing_thread()`: sets `_handler_running` to true, creates `_thread_id` running `processing_loop_entry`.
-    *   `stop_processing_thread()`: sets `_handler_running` to false, posts to its own semaphore (`_semaphore.post()`) to unblock `updated()` if waiting, allowing the loop to exit. Caller will `pthread_join`.
-    *   `processing_loop()`:
-        ```cpp
-        // Inside TypedDataHandler::processing_loop()
-        while (_handler_running.load()) {
-            Message* msg = updated(); // Blocks on its semaphore
-            if (!_handler_running.load()) { // Check again after waking up
-                if(msg) delete msg;
-                break;
-            }
-            if (msg) {
-                if (_parent_component && _parent_component->running()) {
-                    try {
-                        _callback_func(*msg);
-                    } catch (const std::exception& e) { /* Log error */ }
-                }
-                delete msg; // Handler deletes the heap-allocated message
-            }
-        }
-        ```
+*   The existing `Conditional_Data_Observer<Buffer, Port>` mechanism (where `Port` is the `Observing_Condition`) is used by `Communicator` to observe `Protocol`.
+    *   Gateway's `Communicator` observes `Protocol` by registering for the condition `GATEWAY_PORT` (0).
+    *   Producers/Consumers' `Communicator`s will register with `Protocol` to observe (be notified for) messages on their unique `_component_port` (e.g., >=2) AND also for messages associated with the condition `INTERNAL_BROADCAST_PORT` (1).
+    *   The `Protocol::internal_broadcast_relay` method will use `_observed.notify(INTERNAL_BROADCAST_PORT, cloned_buffer)` to trigger updates for all Observers (Communicators) that subscribed to `INTERNAL_BROADCAST_PORT`.
 
 ## 4. Implementation Order & Milestones
 
 1.  **Setup & Basic Definitions:**
     *   Resolve linter/include path issues.
-    *   Define `DataTypeId` enum.
-    *   Minor updates to `Message` class if needed (should be mostly fine).
+    *   Finalize `DataTypeId` enum and `Message::Type` enum (remove `REG_PRODUCER`).
+    *   Define constants for `GATEWAY_PORT` and `INTERNAL_BROADCAST_PORT`.
 
-2.  **Core Consumer Path (Simplified):**
-    *   Modify `Component` base for `_active_interests`, `_component_dispatcher_thread`, `_internal_typed_observed`.
-    *   Implement `TypedDataHandler` class.
-    *   Implement `Component::register_interest_handler`.
-    *   Modify `Communicator::update` and `Communicator::receive` for consumer-side filtering (period check) and passing valid messages to `Component`'s dispatcher.
-    *   Create a simple Consumer derived component that registers one handler.
+2.  **Core `Communicator` and `Component` Modifications:**
+    *   Update `Communicator::update` with new filtering logic for Consumer, Producer, and Gateway roles based on the `Observing_Condition` (port) from the `Protocol` notification and message content.
+    *   In `Communicator` constructor: register with `Protocol` for both the component's unique port and `INTERNAL_BROADCAST_PORT`.
+    *   Modify `Component` base for single interest (Consumer) and single production type (Producer), ensuring their `Communicator`s are set up correctly. Remove dispatcher thread logic.
+    *   Implement direct data callback invocation in Consumer's main logic after `_communicator->receive()`.
 
-3.  **Core Producer Path (Simplified):**
-    *   Modify `Component` base for `_produced_data_type`, `_producer_response_thread`.
-    *   Implement `producer_response_routine` (initially, respond to any interest at a fixed rate, no GCD).
-    *   Create a simple Producer derived component.
+3.  **Gateway Implementation:**
+    *   Implement `GatewayComponent`.
+    *   Its `Communicator` listens by observing `GATEWAY_PORT` (0) on the `Protocol`.
+    *   Its main logic loop calls `_communicator->receive()`, and upon receiving a message, calls `_vehicle->protocol()->internal_broadcast_relay(received_msg)`.
+    *   Update `Protocol` to implement `internal_broadcast_relay` which notifies all observers of `INTERNAL_BROADCAST_PORT` (1).
 
-4.  **Initial Integration Test (No Gateway):**
-    *   Consumer sends `INTEREST` (broadcast).
-    *   Producer receives `INTEREST`, starts sending `RESPONSE` (broadcast).
-    *   Consumer's registered handler receives and processes the `RESPONSE`.
+4.  **Consumer Component Implementation:**
+    *   Derived consumer component sets its single interest (`DataTypeId`, `period`, callback).
+    *   Sends `INTEREST` to `GATEWAY_PORT`.
+    *   Its `Communicator` listens on `INTERNAL_BROADCAST_PORT` and applies filters.
 
-5.  **Gateway Implementation:**
-    *   Implement `GatewayComponent` to listen on Port 0.
-    *   Implement logic to receive external `INTEREST` and rebroadcast it internally (`MY_MAC:0`).
-    *   Update Consumer to send `INTEREST` to `Ethernet::BROADCAST:0`.
+5.  **Producer Component Implementation:**
+    *   Derived producer component sets its produced `DataTypeId`.
+    *   Its `Communicator` listens on `INTERNAL_BROADCAST_PORT` for matching `INTEREST`s.
+    *   Implements GCD logic and periodic `RESPONSE` sending thread.
+    *   Sends `RESPONSE` to `GATEWAY_PORT`.
 
-6.  **Full Integration Test (With Gateway):**
-    *   Consumer sends `INTEREST` to Gateway.
-    *   Gateway relays `INTEREST` internally.
-    *   Producer (listening to internal broadcasts) picks up `INTEREST`.
-    *   Producer sends `RESPONSE`.
-    *   Consumer handler processes `RESPONSE`.
+6.  **Integration Test:**
+    *   Consumer sends `INTEREST`.
+    *   Gateway receives and relays `INTEREST`.
+    *   Producer receives relayed `INTEREST`, calculates GCD, starts sending `RESPONSE`s.
+    *   Gateway receives `RESPONSE`s and relays them.
+    *   Consumer receives relayed `RESPONSE`s, filters by period, and callback is invoked.
 
-7.  **Producer GCD Logic:**
-    *   Implement `_received_interest_periods` storage.
-    *   Implement GCD calculation and `update_gcd_period()`.
-    *   Modify `producer_response_routine` to use `_current_gcd_period_us`.
-    *   Test with multiple consumers requesting the same data type at different periods.
+7.  **Refinement & Robustness:**
+    *   Thorough testing of thread safety (especially producer's GCD updates and response thread).
+    *   Error handling and logging.
 
-8.  **Refinement & Robustness:**
-    *   Thorough testing of thread safety, resource cleanup (`Component::stop`).
-    *   Error handling and logging improvements.
-    *   Performance evaluation (latency, throughput under load).
+## 5. Open Questions/Considerations
 
-## 5. Open Questions/Considerations (During Implementation)
+*   **Protocol's `internal_broadcast_relay`:** This needs careful design in `Protocol.h` to ensure efficient and correct distribution of the relayed message buffer (with cloning) to all `Communicator`s listening on `INTERNAL_BROADCAST_PORT`.
+*   **Message Serialization for Relay:** When the Gateway relays, it's essentially taking a received buffer and causing it to be re-processed by the `Protocol` layer for internal distribution. Ensure the buffer is handled correctly.
+*   **Origin of Relayed Messages:** The `origin` field in relayed messages should remain that of the original sender, not the Gateway. The `internal_broadcast_relay` mechanism must preserve this.
+*   **Stopping Threads:** Ensure robust signaling and joining of `_component_dispatcher_thread` and `_producer_response_thread`. Semaphores are good for the producer thread.
 
-*   **Origin preservation in Gateway:** Clarified: When Gateway relays an INTEREST, the new internal INTEREST will have Gateway's origin. This is the accepted approach as P3 responses are broadcast, so direct reply to the original external requester is not a primary concern for the producer component itself.
-*   **Producer's response to changing GCD:** Clarified: The producer's response thread should adapt immediately if the GCD period changes (e.g., a new interest arrives modifying the GCD). This might involve signaling the existing thread with the new period or, if simpler to implement robustly, stopping and restarting the response thread with the updated GCD. Consumer-side filtering will handle any transient extra messages.
-*   **Stopping `TypedDataHandler` threads:** Ensure `Component::stop()` correctly signals and joins these handler threads. Posting to their semaphore is key to unblock them.
-*   **Memory Management of `Message` objects:** The `Component` dispatcher creates `new Message()` for `_internal_typed_observed.notify()`. The `TypedDataHandler` that receives it via its `updated()` method is responsible for `delete msg;`. This must be consistent.
-
-This plan provides a detailed roadmap. Each step will involve careful implementation and unit/integration testing. 
+This revised plan significantly simplifies the P3 design. 

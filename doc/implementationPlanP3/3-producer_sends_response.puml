@@ -1,0 +1,34 @@
+@startuml Producer Sends Response Flow (Inter-Vehicle)
+
+title Producer on Veh A Sends Response to Gateway Port 0
+
+participant PComp_A as "Producer (Veh A)" #Application
+participant PRespT_A as "RespThread_A (Veh A)" <<Thread>>
+participant PComm_A as "Comm_A (Veh A)" <<Communicator>>
+participant Proto_A as "Protocol (Veh A)" <<Protocol>>
+participant NIC_A as "NIC (Veh A)" <<NIC>>
+
+participant Network #Black
+
+box "Vehicle A" #LightBlue
+    participant PComp_A
+    participant PRespT_A
+    participant PComm_A
+    participant Proto_A
+    participant NIC_A
+end box
+
+== Producer (Veh A) Sends RESPONSE ==
+
+PRespT_A -> PRespT_A : Loop wakes based on GCD period.
+PRespT_A -> PComp_A : "current_data = produce_data_for(_produced_data_type)"
+PRespT_A -> PComm_A : "new_message(RESPONSE, PComp_A._produced_data_type, 0, data_val, val_size)"
+note right of PComm_A: Origin=Addr_PCompA (MAC_VehA:Port_PCompA)
+PComm_A -> PComm_A : Create "response_msg"
+PRespT_A -> PComm_A : "send(response_msg, BROADCAST_MAC:Port_Gateway_0)"
+
+PComm_A -> Proto_A : "send(response_msg, BROADCAST_MAC:Port_Gateway_0)"
+Proto_A -> NIC_A : "send(eth_frame_response)"
+NIC_A -> Network : Transmit Ethernet Frame (Physical Broadcast)
+
+@enduml 
