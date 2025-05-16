@@ -29,7 +29,7 @@ class Component;
 
 class GatewayComponent : public Component {
     public:
-        static const unsigned int PORT = 0; // Gateway always uses Port 0
+        static const unsigned int PORT; // Gateway always uses Port 0
 
         GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
                          const std::string& name, Protocol<NIC<SocketEngine, SharedMemoryEngine>>* protocol);
@@ -57,6 +57,7 @@ GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_
                                   const std::string& name, Protocol<NIC<SocketEngine, SharedMemoryEngine>>* protocol) 
     : Component(vehicle, vehicle_id, name) 
 {
+    db<GatewayComponent>(TRC) << "[Gateway] constructor called.\n";
     // Sets CSV result Header
     open_log_file();
     if (_log_file.is_open()) {
@@ -67,8 +68,12 @@ GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_
         _log_file.flush();
     }
 
+    db<GatewayComponent>(INF) << "[Gateway] Log created.\n";
+
     // Sets own address using Port 0 (Gateway's well-known port)
     Address addr(_vehicle->address(), PORT);
+
+    db<GatewayComponent>(INF) << "[Gateway] Address set to " << addr.to_string() << "\n";
 
     // Sets own communicator
     _communicator = new Comms(protocol, addr, ComponentType::GATEWAY, DataTypeId::OBSTACLE_DISTANCE);
@@ -96,6 +101,9 @@ void GatewayComponent::component_dispatcher_routine() {
     while (_dispatcher_running.load()) {
         Message message = _communicator->new_message(Message::Type::RESPONSE, DataTypeId::UNKNOWN); // Default message
         int recv_size = receive(&message); // receive is a Component method
+
+        db<GatewayComponent>(TRC) << "[Gateway] " << getName() << " dispatcher received message of size: " 
+                                     << recv_size << "\n";
         
         if (recv_size <= 0) {
             // Check if we should exit
@@ -116,7 +124,9 @@ void GatewayComponent::component_dispatcher_routine() {
             // Get current time for latency measurement
             auto recv_time = std::chrono::duration_cast<std::chrono::microseconds>(
                 std::chrono::high_resolution_clock::now().time_since_epoch());
-        
+                
+            db<GatewayComponent>(INF) << "[Gateway] " << getName() << " dispatcher received message of type: " 
+                                     << static_cast<int>(message.message_type()) << "\n";
             
             // Process the message directly based on its type
             if (message.message_type() == Message::Type::INTEREST) {
@@ -187,5 +197,7 @@ void GatewayComponent::handle_response(const Message& message) {
     
     db<GatewayComponent>(INF) << "[Gateway] RESPONSE relayed via Protocol layer broadcast\n";
 }
+
+const unsigned int GatewayComponent::PORT = 0; // Gateway always uses Port 0
 
 #endif // GATEWAY_COMPONENT_H

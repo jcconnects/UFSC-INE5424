@@ -83,7 +83,7 @@ struct sched_attr {
     __u64 sched_period;
 };
 
-// Define syscall functions for sched_deadline
+// Define syscall functions for sched_deadlinedirectory
 static inline int sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags) {
     return syscall(__NR_sched_setattr, pid, attr, flags);
 }
@@ -154,6 +154,7 @@ class Component {
         
         // Helper method to determine component type
         ComponentType determine_component_type() const;
+        void set_address(const Address& addr) { _address = addr; }
 
         // Common members
         const Vehicle* _vehicle;
@@ -164,6 +165,7 @@ class Component {
         // Type-safe communicator storage
         Comms* _communicator;
         Address _gateway_address; // Address of the gateway component
+        Address _address;
 
         // CSV logging functionality
         std::string _filename;
@@ -216,7 +218,7 @@ class Component {
 
         // Virtual hook for when a producer's registration is confirmed (e.g., ack from Gateway)
         virtual void on_producer_registration_confirmed() {
-            db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << getName() << " Producer response mechanism activated.\n";
+            db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << getName() << " Producer response mechanism activated.\n";
         }
 };
 
@@ -226,7 +228,7 @@ class Component {
 Component::Component(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name) 
     : _vehicle(vehicle), _name(name), _running(false)
 {
-    db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] Constructor called for component " << name << "\n";
+    db<Component>(TRC) << "[Component] " << name << " Constructor called for component " << "\n";
     
     // Initialize log file directory
     _log_dir = initialize_log_directory(vehicle_id);
@@ -235,12 +237,12 @@ Component::Component(Vehicle* vehicle, const unsigned int vehicle_id, const std:
     // Set up the Gateway's address using the vehicle address and PORT 0
     _gateway_address = Address(_vehicle->address(), GATEWAY_PORT); // Gateway uses PORT 0
     
-    db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] Component " << name << " created with Gateway at " 
+    db<Component>(INF) << "[Component] " << name << " created with Gateway at " 
                       << _gateway_address.to_string() << "\n";
 }
 
 Component::~Component() {
-    db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] Destructor called for component " << _name << "\n";
+    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] Destructor called for component " << _name << "\n";
     
     // Ensure component is stopped before destruction - may already have been called
     if (running()) {
@@ -256,7 +258,7 @@ Component::~Component() {
         _communicator = nullptr;
     }
     
-    db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] Component " << _name << " destroyed\n";
+    db<Component>(INF) << "[Component] [" << _address.to_string() << "] Component " << _name << " destroyed\n";
 }
 
 // Entry point for component thread
@@ -264,10 +266,10 @@ void* Component::thread_entry_point(void* arg) {
     Component* component = static_cast<Component*>(arg);
     if (component) {
         try {
-            db<Component>(TRC) << "[Component] [" << component->_communicator->address().to_string() << "] Thread entry point for " << component->getName() << "\n";
+            db<Component>(TRC) << "[Component] [" << component->_address.to_string() << "] Thread entry point for " << component->getName() << "\n";
             component->run();
         } catch (const std::exception& e) {
-            db<Component>(ERR) << "[Component] [" << component->_communicator->address().to_string() << "] " << component->getName() 
+            db<Component>(ERR) << "[Component] [" << component->_address.to_string() << "] " << component->getName() 
                               << " thread exception: " << e.what() << "\n";
         }
     }
@@ -276,9 +278,9 @@ void* Component::thread_entry_point(void* arg) {
 
 // Start method - creates the component's thread
 void Component::start() {
-    db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] start() called for " << _name << "\n";
+    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] start() called for " << _name << "\n";
     if (running()) {
-        db<Component>(WRN) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " already running\n";
+        db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " already running\n";
         return;
     }
     
@@ -295,7 +297,7 @@ void Component::start() {
     result = pthread_create(&_component_dispatcher_thread_id, nullptr, component_dispatcher_launcher, this);
     if (result != 0) {
         _dispatcher_running.store(false, std::memory_order_release);
-        db<Component>(ERR) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " Failed to create dispatcher thread\n";
+        db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " Failed to create dispatcher thread\n";
     }
     
     // For producer components, start the response thread
@@ -303,14 +305,14 @@ void Component::start() {
         start_producer_response_thread();
     }
     
-    db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " started\n";
+    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " started\n";
 }
 
 // Stop method - signals the thread to stop and joins it
 void Component::stop() {
-    db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] stop() called for " << _name << "\n";
+    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] stop() called for " << _name << "\n";
     if (!running()) {
-        db<Component>(WRN) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " already stopped\n";
+        db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " already stopped\n";
         return;
     }
     
@@ -331,7 +333,7 @@ void Component::stop() {
     // Close communicator to unblock any threads waiting in receive()
     if (_communicator) {
         _communicator->close();
-        db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " communicator closed\n";
+        db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " communicator closed\n";
     }
     
     // Now join dispatcher thread
@@ -349,7 +351,7 @@ void Component::stop() {
     _running.store(false, std::memory_order_release);
     pthread_join(_thread, nullptr);
     
-    db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " stopped\n";
+    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " stopped\n";
 }
 
 // Helper method to determine component type
@@ -375,16 +377,16 @@ ComponentType Component::determine_component_type() const {
 // send method implementation
 int Component::send(const void* data, unsigned int size, Address destination) {
     if (!_communicator) {
-        db<Component>(ERR) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " send() failed: communicator not initialized\n";
+        db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " send() failed: communicator not initialized\n";
         return -1;
     }
     
     if (!data || size == 0) {
-        db<Component>(ERR) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " send() failed: invalid data or size\n";
+        db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " send() failed: invalid data or size\n";
         return -1;
     }
     
-    db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " sending " << size 
+    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " sending " << size 
                       << " bytes to " << destination.to_string() << "\n";
     
     // Create a message object for sending
@@ -400,18 +402,18 @@ int Component::send(const void* data, unsigned int size, Address destination) {
 // receive method implementation
 int Component::receive(Message* msg) {
     if (!_communicator) {
-        db<Component>(ERR) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " receive() failed: communicator not initialized\n";
+        db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " receive() failed: communicator not initialized\n";
         return -1;
     }
     
     if (!msg) {
-        db<Component>(ERR) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " receive() failed: invalid message pointer\n";
+        db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " receive() failed: invalid message pointer\n";
         return -1;
     }
     
     // Call receive without timeout since it's not supported
     if (_communicator->receive(msg)) {
-        db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " received message from " 
+        db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " received message from " 
                           << msg->origin().to_string() << "\n";
         return msg->value_size(); // Use public value_size() method
     }
@@ -424,12 +426,12 @@ void Component::open_log_file() {
     try {
         _log_file.open(_filename); // Open in append mode
         if (!_log_file.is_open()) {
-            db<Component>(ERR) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " Failed to open log file: " << _filename << "\n";
+            db<Component>(ERR) << "[Component] [" << _name << "] Failed to open log file: " << _filename << "\n";
         } else {
-            db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " Opened log file: " << _filename << "\n";
+            db<Component>(INF) << "[Component] [" << _name << "] Opened log file: " << _filename << "\n";
         }
     } catch (const std::exception& e) {
-        db<Component>(ERR) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " Exception opening log file: " << e.what() << "\n";
+        db<Component>(ERR) << "[Component] [" << _name << "] Exception opening log file: " << e.what() << "\n";
     }
 }
 
@@ -437,7 +439,7 @@ void Component::open_log_file() {
 void Component::close_log_file() {
     if (_log_file.is_open()) {
         _log_file.close();
-        db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " Closed log file\n";
+        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " Closed log file\n";
     }
 }
 
@@ -481,7 +483,7 @@ std::string Component::initialize_log_directory(unsigned int vehicle_id) {
     if (stat(vehicle_dir.c_str(), &info) != 0) {
         // Directory doesn't exist, try to create it
         if (mkdir(vehicle_dir.c_str(), 0777) != 0) {
-            db<Component>(ERR) << "[Component] [" << _communicator->address().to_string() << "] Failed to create directory: " << vehicle_dir << "\n";
+            db<Component>(ERR) << "[Component] " << _name << " Failed to create directory: " << vehicle_dir << "\n";
             return base_dir; // Fallback to base dir
         }
     }
@@ -490,12 +492,12 @@ std::string Component::initialize_log_directory(unsigned int vehicle_id) {
     std::string component_dir = vehicle_dir + "/" + _name;
     if (stat(component_dir.c_str(), &info) != 0) {
         if (mkdir(component_dir.c_str(), 0777) != 0) {
-            db<Component>(WRN) << "[Component] [" << _communicator->address().to_string() << "] Failed to create component directory: " << component_dir << "\n";
+            db<Component>(WRN) << "[Component] " << _name << " Failed to create component directory: " << component_dir << "\n";
             return vehicle_dir; // Fallback to vehicle dir
         }
     }
     
-    db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] Using log directory: " << vehicle_dir << "\n";
+    db<Component>(INF) << "[Component] [" << _name << "] Using log directory: " << vehicle_dir << "\n";
     return vehicle_dir;
 }
 
@@ -503,14 +505,14 @@ std::string Component::initialize_log_directory(unsigned int vehicle_id) {
 void Component::register_interest_handler(DataTypeId type, std::uint32_t period_us, 
                                          std::function<void(const Message&)> callback) {
     if (type == DataTypeId::UNKNOWN) {
-        db<Component>(ERR) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " Cannot register interest in UNKNOWN data type\n";
+        db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " Cannot register interest in UNKNOWN data type\n";
         return;
     }
     
     // Check if we already have an interest for this type
     for (auto& interest : _active_interests) {
         if (interest.type == type) {
-            db<Component>(WRN) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " Already registered interest in data type " 
+            db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " Already registered interest in data type " 
                               << static_cast<int>(type) << ", updating period and callback\n";
             interest.period_us = period_us;
             interest.callback = callback;
@@ -530,7 +532,7 @@ void Component::register_interest_handler(DataTypeId type, std::uint32_t period_
     Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
     _communicator->send(interest_message, broadcast_addr);
     
-    db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " Sent INTEREST for data type " 
+    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " Sent INTEREST for data type " 
                       << static_cast<int>(type) << " with period " << period_us << "us\n";
 }
 
@@ -539,10 +541,10 @@ void* Component::component_dispatcher_launcher(void* context) {
     Component* component = static_cast<Component*>(context);
     if (component) {
         try {
-            db<Component>(TRC) << "[Component] [" << component->_communicator->address().to_string() << "] Dispatcher thread starting for " << component->getName() << "\n";
+            db<Component>(TRC) << "[Component] [" << component->_address.to_string() << "] Dispatcher thread starting for " << component->getName() << "\n";
             component->component_dispatcher_routine();
         } catch (const std::exception& e) {
-            db<Component>(ERR) << "[Component] [" << component->_communicator->address().to_string() << "] " << component->getName() 
+            db<Component>(ERR) << "[Component] [" << component->_address.to_string() << "] " << component->getName() 
                               << " dispatcher thread exception: " << e.what() << "\n";
         }
     }
@@ -551,7 +553,7 @@ void* Component::component_dispatcher_launcher(void* context) {
 
 // Default implementation of component_dispatcher_routine
 void Component::component_dispatcher_routine() {
-    db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " dispatcher routine started\n";
+    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " dispatcher routine started\n";
     
     // This is a generic implementation that all components use to listen for messages
     // In the P3 architecture, producers receive INTERESTs, consumers receive RESPONSEs
@@ -570,7 +572,7 @@ void Component::component_dispatcher_routine() {
                 if (data_type == _produced_data_type) {
                     std::uint32_t period = message.period();
                     
-                    db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " received INTEREST for data type " 
+                    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " received INTEREST for data type " 
                                       << static_cast<int>(data_type) << " with period " << period << "us\n";
                     
                     // Store the interest period
@@ -578,12 +580,12 @@ void Component::component_dispatcher_routine() {
 
                     // Start producer response thread if it's not already running
                     if (!_producer_thread_running.load(std::memory_order_acquire)) {
-                        db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " received first INTEREST, starting producer response thread.\n";
+                        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " received first INTEREST, starting producer response thread.\n";
                         start_producer_response_thread();
                     }
 
                 } else {
-                    db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " ignoring INTEREST for unproduced data type " 
+                    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " ignoring INTEREST for unproduced data type " 
                                       << static_cast<int>(data_type) << "\n";
                 }
             } 
@@ -608,19 +610,19 @@ void Component::component_dispatcher_routine() {
                             interest.callback(message);
                         }
                         
-                        db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " dispatched RESPONSE for data type " 
+                        db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " dispatched RESPONSE for data type " 
                                           << static_cast<int>(data_type) << " to callback\n";
                         break;
                     }
                 }
                 
                 if (!interest_found) {
-                    db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " received RESPONSE for data type " 
+                    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " received RESPONSE for data type " 
                                       << static_cast<int>(data_type) << " but no active interest\n";
                 }
             }
             else {
-                db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " received unhandled message type: " 
+                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " received unhandled message type: " 
                                   << static_cast<int>(msg_type) << "\n";
             }
         } else {
@@ -629,7 +631,7 @@ void Component::component_dispatcher_routine() {
         }
     }
     
-    db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " dispatcher routine exiting\n";
+    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " dispatcher routine exiting\n";
 }
 
 // Entry point for producer response thread
@@ -637,10 +639,10 @@ void* Component::producer_response_launcher(void* context) {
     Component* component = static_cast<Component*>(context);
     if (component) {
         try {
-            db<Component>(TRC) << "[Component] [" << component->_communicator->address().to_string() << "] Producer response thread starting for " << component->getName() << "\n";
+            db<Component>(TRC) << "[Component] [" << component->_address.to_string() << "] Producer response thread starting for " << component->getName() << "\n";
             component->producer_response_routine();
         } catch (const std::exception& e) {
-            db<Component>(ERR) << "[Component] [" << component->_communicator->address().to_string() << "] " << component->getName() 
+            db<Component>(ERR) << "[Component] [" << component->_address.to_string() << "] " << component->getName() 
                               << " producer response thread exception: " << e.what() << "\n";
         }
     }
@@ -649,7 +651,7 @@ void* Component::producer_response_launcher(void* context) {
 
 // Producer response routine - generates periodic responses based on interests
 void Component::producer_response_routine() {
-    db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " producer response routine started\n";
+    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " producer response routine started\n";
     
     struct timespec next_period;
     clock_gettime(CLOCK_MONOTONIC, &next_period);
@@ -659,7 +661,7 @@ void Component::producer_response_routine() {
     
     // Use SCHED_DEADLINE if available, otherwise SCHED_FIFO
     if (_has_dl_capability.load(std::memory_order_relaxed)) {
-        db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " using SCHED_DEADLINE for response generation\n";
+        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " using SCHED_DEADLINE for response generation\n";
         
         // Setup SCHED_DEADLINE parameters - based on current_gcd_period
         struct sched_attr attr_dl;
@@ -686,7 +688,7 @@ void Component::producer_response_routine() {
             // Set scheduling parameters - may fail if not root/CAP_SYS_NICE
             int result = sched_setattr(0, &attr_dl, 0);
             if (result < 0) {
-                db<Component>(WRN) << "[Component] [" << _communicator->address().to_string() << "] " << _name 
+                db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name 
                                   << " failed to set SCHED_DEADLINE, falling back to SCHED_FIFO\n";
                 _has_dl_capability.store(false, std::memory_order_relaxed);
                 break; // Break and fall back to SCHED_FIFO
@@ -708,7 +710,7 @@ void Component::producer_response_routine() {
                 Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
                 _communicator->send(response, broadcast_addr);
                 
-                db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " sent RESPONSE for data type " 
+                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
                                   << static_cast<int>(_produced_data_type) << " with " 
                                   << response_data.size() << " bytes\n";
             }
@@ -725,7 +727,7 @@ void Component::producer_response_routine() {
         }
     }
     else {
-        db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " using SCHED_FIFO for response generation\n";
+        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " using SCHED_FIFO for response generation\n";
         
         // Setup SCHED_FIFO
         struct sched_param param;
@@ -759,7 +761,7 @@ void Component::producer_response_routine() {
                 Address broadcast_addr(Ethernet::BROADCAST, 0); // Port 0 is broadcast
                 _communicator->send(response, broadcast_addr);
                 
-                db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " sent RESPONSE for data type " 
+                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
                                   << static_cast<int>(_produced_data_type) << " with " 
                                   << response_data.size() << " bytes\n";
             }
@@ -769,18 +771,18 @@ void Component::producer_response_routine() {
         }
     }
     
-    db<Component>(TRC) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " producer response routine exiting\n";
+    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " producer response routine exiting\n";
 }
 
 // Start the producer response thread
 void Component::start_producer_response_thread() {
     if (_produced_data_type == DataTypeId::UNKNOWN) {
-        db<Component>(WRN) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " cannot start producer thread, no data type produced\n";
+        db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " cannot start producer thread, no data type produced\n";
         return;
     }
     
     if (_producer_thread_running.load(std::memory_order_acquire)) {
-        db<Component>(WRN) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " producer thread already running\n";
+        db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread already running\n";
         return;
     }
     
@@ -790,11 +792,11 @@ void Component::start_producer_response_thread() {
     int result = pthread_create(&_producer_response_thread_id, nullptr, producer_response_launcher, this);
     if (result != 0) {
         _producer_thread_running.store(false, std::memory_order_release);
-        db<Component>(ERR) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " failed to create producer response thread\n";
+        db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " failed to create producer response thread\n";
         return;
     }
     
-    db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " started producer response thread\n";
+    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " started producer response thread\n";
     
     // Call virtual hook for when registration is confirmed (derived classes can override)
     on_producer_registration_confirmed();
@@ -803,7 +805,7 @@ void Component::start_producer_response_thread() {
 // Stop the producer response thread
 void Component::stop_producer_response_thread() {
     if (!_producer_thread_running.load(std::memory_order_acquire)) {
-        db<Component>(WRN) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " producer thread not running\n";
+        db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread not running\n";
         return;
     }
     
@@ -816,7 +818,7 @@ void Component::stop_producer_response_thread() {
         _producer_response_thread_id = 0;
     }
     
-    db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " stopped producer response thread\n";
+    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " stopped producer response thread\n";
 }
 
 // Calculate the greatest common divisor (GCD) of all interest periods
@@ -861,7 +863,7 @@ void Component::store_interest_period(std::uint32_t period) {
     if (!found) {
         _received_interest_periods.push_back(period);
         _current_gcd_period_us.store(update_gcd_period(), std::memory_order_release);
-        db<Component>(INF) << "[Component] [" << _communicator->address().to_string() << "] " << _name << " updated GCD period to " 
+        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " updated GCD period to " 
                           << _current_gcd_period_us.load() << "us\n";
     }
 }

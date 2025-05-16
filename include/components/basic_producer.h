@@ -68,6 +68,7 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
     // Set up communicator with test producer port
     Address addr(_vehicle->address(), PORT);
     _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, DataTypeId::CUSTOM_SENSOR_DATA_A);
+    set_address(addr);
     
     db<BasicProducer>(INF) << "[Basic Producer] initialized as producer of type " 
                          << static_cast<int>(_produced_data_type) << "\n";

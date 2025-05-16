@@ -137,8 +137,12 @@ Vehicle::~Vehicle() {
         stop();
     }
 
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Stopped components.\n";
+
     // Components are managed by unique_ptr, destruction is automatic.
     _components.clear(); // Explicitly clear vector
+
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Components cleared.\n";
 
     // Protocol and NIC are owned by Vehicle in this design
     delete _protocol; // Protocol should be deleted before NIC
