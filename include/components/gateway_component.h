@@ -69,73 +69,74 @@ GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_
 
     db<GatewayComponent>(INF) << "[Gateway] Log created.\n";
 
-    // Sets own address using Port 0 (Gateway's well-known port)
-    // The Component base class constructor now uses GATEWAY_PORT for the gateway address
-    // and the component's specific port is set up in the communicator.
-    // The Gateway's specific port for its communicator should be GATEWAY_PORT (0).
-    Address addr(_vehicle->address(), GATEWAY_PORT); // Gateway's own address is on port 0.
+    // Gateway listens on GATEWAY_PORT (0)
+    Address addr(_vehicle->address(), GATEWAY_PORT); 
 
     db<GatewayComponent>(INF) << "[Gateway] Address set to " << addr.to_string() << "\n";
 
-    // Sets own communicator. For Gateway, it listens on GATEWAY_PORT (0).
-    // The DataTypeId here is a placeholder as Gateway doesn't filter by it for reception.
-    _communicator = new Comms(protocol, addr, ComponentType::GATEWAY, DataTypeId::UNKNOWN); 
-    set_address(addr); // Ensure component base knows its actual listening address.
+    // Initialize communicator, passing 'this', its type, and UNKNOWN as DataTypeId
+    _communicator = new Comms(protocol, addr, this, ComponentType::GATEWAY, DataTypeId::UNKNOWN);
+    set_address(addr); // Set the component's address
     
     db<GatewayComponent>(INF) << "[Gateway] " << getName() << " initialized on port " << PORT << "\n";
 }
 
 void GatewayComponent::run() {
-    db<GatewayComponent>(INF) << "[Gateway] " << getName() << " starting main run loop.\n";
+    db<GatewayComponent>(INF) << "[GatewayComponent] " << getName() << " starting main run loop.\n";
     
-    // Create a properly initialized Message pointer that we'll use to receive messages
-    Message* received_msg = nullptr;
-    while (running()) { // Use Component's _running flag
-        // Allocate a new Message for each receive call
-        received_msg = new Message(Message::Type::UNKNOWN, Address(), DataTypeId::UNKNOWN);
-        
-        if (receive(received_msg) >= 0) { // Use Component's receive method and check for non-negative return value
-            db<GatewayComponent>(INF) << "Gateway received msg on Port " << received_msg->origin().port()
-                                      << ", type: " << static_cast<int>(received_msg->message_type()) 
-                                      << ", unit_type: " << static_cast<int>(received_msg->unit_type())
-                                      << " from " << received_msg->origin().to_string() << ". Relaying to Internal Broadcast Port "
-                                      << Component::INTERNAL_BROADCAST_PORT << ".";
+    // Initialize with a valid public constructor to avoid using the private default constructor
+    Message received_msg(Message::Type::UNKNOWN, Address(), DataTypeId::UNKNOWN, 0);
+    while (running()) {
+        // Blocking receive call - unblocks when a message is available via Communicator's update->Observer::update
+        if (_communicator && _communicator->receive(&received_msg)) {
+            db<GatewayComponent>(INF) << "[GatewayComponent] " << getName() << " received msg on Port 0 (" 
+                                      << address().to_string() << "), "
+                                      << "type: " << static_cast<int>(received_msg.message_type()) 
+                                      << ", unit_type: " << static_cast<int>(received_msg.unit_type())
+                                      << ", origin: " << received_msg.origin().to_string() // Origin from Communicator::receive
+                                      << ". Relaying to internal broadcast (Port 1).\n";
             
-            // Construct the destination address for internal broadcast
-            Address internal_broadcast_addr(_vehicle->address(), Component::INTERNAL_BROADCAST_PORT);
-            
-            db<GatewayComponent>(TRC) << "Gateway attempting to relay message via communicator to " << internal_broadcast_addr.to_string();
-
-            // Use the communicator to send the original message to the internal broadcast address.
-            // The Protocol layer is expected to handle this as a special case for relaying
-            // by distributing the buffer of 'received_msg' to Port 1 observers.
-            // The origin of the message will be preserved as it's part of received_msg.
-            if (!_communicator->send(*received_msg, internal_broadcast_addr)) {
-                db<GatewayComponent>(ERR) << "Gateway failed to relay message to " << internal_broadcast_addr.to_string()
-                                          << " for message from " << received_msg->origin().to_string();
+            if (_log_file.is_open()) {
+                auto now = std::chrono::high_resolution_clock::now();
+                auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                    now.time_since_epoch()).count();
+                _log_file << now_us << ","
+                         << static_cast<int>(received_msg.message_type()) << ","
+                         << static_cast<int>(received_msg.unit_type()) << ","
+                         << received_msg.origin().to_string() << ","
+                         << Component::INTERNAL_BROADCAST_PORT << "\n"; // Use Component:: for port const
+                _log_file.flush();
             }
+
+            // Relay the *original message data* to internal broadcast.
+            // The Gateway's address is the 'from' for the protocol send.
+            // The destination is its own MAC on INTERNAL_BROADCAST_PORT.
+            // The payload is the raw data of the message just received.
+            Address internal_broadcast_dest_addr(_vehicle->address(), Component::INTERNAL_BROADCAST_PORT);
             
-            // Clean up the received message
-            delete received_msg;
-            received_msg = nullptr;
+            if (_vehicle && _vehicle->protocol()) {
+                // Send the raw serialized data of the original message
+                _vehicle->protocol()->send(
+                    address(), // From: Gateway's own address (e.g., MAC_VEHICLE:Port_0)
+                    internal_broadcast_dest_addr,  // To: MAC_VEHICLE:Port_1
+                    received_msg.data(),    // The raw serialized data of the original message
+                    received_msg.size()     // The size of the raw serialized data
+                );
+                db<GatewayComponent>(TRC) << "[GatewayComponent] " << getName() << " relayed message of size " 
+                                          << received_msg.size() << " to " << internal_broadcast_dest_addr.to_string();
+            } else {
+                 db<GatewayComponent>(ERR) << "[GatewayComponent] " << getName() << " cannot relay: vehicle or protocol is null.\n";
+            }
+
         } else {
-            // Clean up if receive failed
-            delete received_msg;
-            received_msg = nullptr;
-            
-            // Optional: add a small sleep if receive is non-blocking and returns 0 frequently
-            // to prevent busy-waiting if that's the case.
-            // If receive() blocks, this is not strictly necessary.
-            // usleep(1000); // e.g., 1ms sleep
+            if (!running()) {
+                db<GatewayComponent>(INF) << "[GatewayComponent] " << getName() << " no longer running, exiting receive loop.\n";
+                break; 
+            }
+            // Communicator::receive blocks, so this branch is primarily hit when communicator is closed.
         }
     }
-    
-    // Final cleanup just in case
-    if (received_msg) {
-        delete received_msg;
-    }
-    
-    db<GatewayComponent>(INF) << "[Gateway] " << getName() << " exiting main run loop.\n";
+    db<GatewayComponent>(INF) << "[GatewayComponent] " << getName() << " exiting main run loop.\n";
 }
 
 // Removed component_dispatcher_routine, handle_interest, and handle_response

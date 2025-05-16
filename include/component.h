@@ -142,6 +142,24 @@ class Component {
         template <typename Channel>
         friend class Communicator;
 
+        // Make handle_interest_period publicly accessible for callback registration
+        void handle_interest_period(std::uint32_t period) {
+            std::lock_guard<std::mutex> lock(_periods_mutex);
+            
+            // Check if period already exists
+            auto it = std::find(_interest_periods.begin(), _interest_periods.end(), period);
+            if (it == _interest_periods.end()) {
+                // Add new period
+                _interest_periods.push_back(period);
+                
+                // Update GCD
+                _current_gcd_period_us.store(update_gcd_period(), std::memory_order_release);
+                
+                db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " updated GCD period to " 
+                                  << _current_gcd_period_us.load() << "us\n";
+            }
+        }
+
     protected:
         // Thread entry point
         static void* thread_entry_point(void* arg);
@@ -191,8 +209,7 @@ class Component {
         void stop_producer_thread();
         std::uint32_t update_gcd_period();
         static std::uint32_t calculate_gcd(std::uint32_t a, std::uint32_t b);
-        void handle_interest_period(std::uint32_t period);
-        
+
         // Check for deadline scheduling capability
         bool has_deadline_scheduling_capability();
         
@@ -220,6 +237,12 @@ Component::Component(Vehicle* vehicle, const unsigned int vehicle_id, const std:
     
     db<Component>(INF) << "[Component] " << name << " created with Gateway at " 
                       << _gateway_address.to_string() << "\n";
+
+    // Setup the handle_interest_period callback if this is a producer component
+    if (component_type == ComponentType::PRODUCER) {
+        // We need to register a callback to the Communicator to handle interest periods later
+        // This is registered after the _communicator is created in the derived Component constructor
+    }
 }
 
 Component::~Component() {
@@ -587,9 +610,15 @@ void Component::producer_routine() {
             
             // If we have no interests yet, sleep and wait
             if (current_period == 0 || _interest_periods.empty()) {
+                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
+                                 << " no interests yet, sleeping (current period: " << current_period
+                                 << ", interest periods count: " << _interest_periods.size() << ")\n";
                 usleep(100000); // Sleep for 100ms
                 continue;
             }
+            
+            db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
+                           << " preparing to send response with period " << current_period << "us\n";
             
             // Update SCHED_DEADLINE parameters based on current period
             attr_dl.sched_runtime = current_period * 500; // 50% of period in ns
@@ -627,9 +656,13 @@ void Component::producer_routine() {
                 Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
                 _communicator->send(response, gateway_addr);
                 
-                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
+                db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
                                   << static_cast<int>(_produced_data_type) << " with " 
                                   << response_data.size() << " bytes\n";
+            } else {
+                db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 
+                                 << " failed to produce data for response type " 
+                                 << static_cast<int>(_produced_data_type) << "\n";
             }
             
             // Sleep for one period using SCHED_DEADLINE timer
@@ -655,9 +688,15 @@ void Component::producer_routine() {
             
             // If we have no interests yet, sleep and wait
             if (current_period == 0 || _interest_periods.empty()) {
+                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
+                                 << " no interests yet, sleeping (current period: " << current_period
+                                 << ", interest periods count: " << _interest_periods.size() << ")\n";
                 usleep(100000); // Sleep for 100ms
                 continue;
             }
+            
+            db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
+                           << " preparing to send response with period " << current_period << "us\n";
             
             // Generate response based on the current period
             std::vector<std::uint8_t> response_data;
@@ -675,9 +714,13 @@ void Component::producer_routine() {
                 Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
                 _communicator->send(response, gateway_addr);
                 
-                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
+                db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
                                   << static_cast<int>(_produced_data_type) << " with " 
                                   << response_data.size() << " bytes\n";
+            } else {
+                db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 
+                                 << " failed to produce data for response type " 
+                                 << static_cast<int>(_produced_data_type) << "\n";
             }
             
             // Sleep for one period using usleep
@@ -715,24 +758,6 @@ std::uint32_t Component::calculate_gcd(std::uint32_t a, std::uint32_t b) {
         a = temp;
     }
     return a;
-}
-
-// Method to handle a new interest period
-void Component::handle_interest_period(std::uint32_t period) {
-    std::lock_guard<std::mutex> lock(_periods_mutex);
-    
-    // Check if period already exists
-    auto it = std::find(_interest_periods.begin(), _interest_periods.end(), period);
-    if (it == _interest_periods.end()) {
-        // Add new period
-        _interest_periods.push_back(period);
-        
-        // Update GCD
-        _current_gcd_period_us.store(update_gcd_period(), std::memory_order_release);
-        
-        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " updated GCD period to " 
-                          << _current_gcd_period_us.load() << "us\n";
-    }
 }
 
 #endif // COMPONENT_H 

@@ -65,10 +65,15 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
     // Initialize with random test data
     update_test_data();
     
-    // Set up communicator
+    // Set up communicator, passing 'this' and the produced data type
     Address addr(_vehicle->address(), PORT);
-    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, _produced_data_type);
+    _communicator = new Comms(protocol, addr, this, ComponentType::PRODUCER, _produced_data_type);
     set_address(addr);
+    
+    // IMPORTANT: Set up the interest period callback
+    _communicator->set_interest_period_callback([this](std::uint32_t period) {
+        this->handle_interest_period(period);
+    });
     
     db<BasicProducer>(INF) << "[Basic Producer] initialized as producer of type " 
                          << static_cast<int>(_produced_data_type) << "\n";
@@ -92,6 +97,24 @@ void BasicProducer::run() {
                      << _current_value << ","
                      << _counter << "\n";
             _log_file.flush();
+        }
+        
+        // Manually send a response for debugging/testing
+        std::vector<std::uint8_t> data;
+        if (produce_data_for_response(_produced_data_type, data)) {
+            Message response = _communicator->new_message(
+                Message::Type::RESPONSE,
+                _produced_data_type,
+                0,  // period is 0 for responses
+                data.data(),
+                data.size()
+            );
+            
+            // Send to Gateway for broadcast distribution
+            Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
+            _communicator->send(response, gateway_addr);
+            
+            db<BasicProducer>(INF) << "[Basic Producer] manually sent test RESPONSE message for debugging\n";
         }
         
         // Sleep to prevent consuming too much CPU

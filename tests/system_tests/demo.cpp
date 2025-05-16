@@ -179,5 +179,5 @@ int main(int argc, char* argv[]) {
 
     TEST_LOG("Vehicles have terminated - test complete");
     TEST_LOG("P3 API validation completed successfully!");
-    return 0;
+    return successful ? 0 : 1;
 }

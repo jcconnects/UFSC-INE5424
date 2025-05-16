@@ -90,9 +90,14 @@ LidarComponent::LidarComponent(Vehicle* vehicle, const unsigned int vehicle_id,
     // Initialize with a random obstacle data
     update_obstacle_data();
     
-    // Set up communicator with lidar port
+    // Set up communicator with lidar port, passing 'this' to the constructor
     Address addr(_vehicle->address(), PORT);
-    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, DataTypeId::OBSTACLE_DISTANCE);
+    _communicator = new Comms(protocol, addr, this, ComponentType::PRODUCER, DataTypeId::OBSTACLE_DISTANCE);
+    
+    // IMPORTANT: Set up the interest period callback
+    _communicator->set_interest_period_callback([this](std::uint32_t period) {
+        this->handle_interest_period(period);
+    });
     
     db<LidarComponent>(INF) << "Lidar Component initialized as producer of type " 
                            << static_cast<int>(_produced_data_type) << "\n";
@@ -100,20 +105,6 @@ LidarComponent::LidarComponent(Vehicle* vehicle, const unsigned int vehicle_id,
 
 void LidarComponent::run() {
     db<LidarComponent>(INF) << "Lidar component " << getName() << " starting main run loop.\n";
-    
-    // Send REG_PRODUCER message to Gateway
-    Message reg_msg = _communicator->new_message(
-        Message::Type::REG_PRODUCER,
-        _produced_data_type
-    );
-    
-    // Send to Gateway (port 0)
-    Address gateway_addr(_vehicle->address(), 0);
-    _communicator->send(reg_msg, gateway_addr);
-    
-    db<LidarComponent>(INF) << "Lidar sent REG_PRODUCER for type " 
-                           << static_cast<int>(_produced_data_type) 
-                           << " to Gateway.\n";
     
     // Main loop - update sensor data periodically
     // Note: The actual periodic response sending is handled by producer_response_thread

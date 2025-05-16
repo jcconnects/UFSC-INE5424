@@ -95,9 +95,13 @@ BatteryComponent::BatteryComponent(Vehicle* vehicle, const unsigned int vehicle_
     // Sets own address
     Address addr(_vehicle->address(), PORT);
 
-    // Sets communicator
-    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, DataTypeId::ENGINE_RPM);
+    // Sets communicator, passing 'this' to the constructor
+    _communicator = new Comms(protocol, addr, this, ComponentType::PRODUCER, DataTypeId::ENGINE_RPM);
     
+    // IMPORTANT: Set up the interest period callback
+    _communicator->set_interest_period_callback([this](std::uint32_t period) {
+        this->handle_interest_period(period);
+    });
     
     db<BatteryComponent>(INF) << "Battery Component initialized as producer of type " 
                              << static_cast<int>(_produced_data_type) << "\n";
@@ -105,20 +109,6 @@ BatteryComponent::BatteryComponent(Vehicle* vehicle, const unsigned int vehicle_
 
 void BatteryComponent::run() {
     db<BatteryComponent>(INF) << "Battery component " << getName() << " starting main run loop.\n";
-    
-    // Send REG_PRODUCER message to Gateway
-    Message reg_msg = _communicator->new_message(
-        Message::Type::REG_PRODUCER,
-        _produced_data_type
-    );
-    
-    // Send to Gateway (port 0)
-    Address gateway_addr(_vehicle->address(), 0);
-    _communicator->send(reg_msg, gateway_addr);
-    
-    db<BatteryComponent>(INF) << "Battery sent REG_PRODUCER for type " 
-                             << static_cast<int>(_produced_data_type) 
-                             << " to Gateway.\n";
     
     // Main loop - update sensor data periodically
     // Note: The actual periodic response sending is handled by producer_response_thread
