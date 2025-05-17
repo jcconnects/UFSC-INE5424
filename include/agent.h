@@ -114,6 +114,7 @@ bool Agent::running() {
 }
 
 void Agent::reply() {
+    // TODO: If the periodic thread replies EVERYONE, that means that all external broadcasts are also internal broadcasts, but none internal broadcast will be ever external
     Value value = get(_type);
     Message msg(Message::Type::RESPONSE, _comms->address(), _type, Microseconds::zero(), value.data(), value.size());
 }
