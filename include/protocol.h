@@ -327,10 +327,12 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
         
         // Create a buffer cloning lambda function
         auto clone_buffer_func = [this, prot](Buffer* original) -> Buffer* {
+            db<Protocol>(INF) << "[Protocol] Cloning buffer for internal broadcast\n";
             if (!original) return nullptr;
             
             // Allocate a new buffer with same size as original, minus Ethernet header
             Buffer* cloned_buf = _nic->alloc(original->data()->dst, prot, original->size() - Ethernet::HEADER_SIZE);
+            db<Protocol>(INF) << "[Protocol] Allocated buffer for internal broadcast\n";
             if (!cloned_buf) {
                 db<Protocol>(ERR) << "[Protocol] Failed to allocate buffer for internal broadcast\n";
                 return nullptr;
@@ -338,18 +340,15 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
             
             // Copy data from original to clone
             std::memcpy(cloned_buf->data(), original->data(), original->size());
+            db<Protocol>(INF) << "[Protocol] Buffer cloned successfully\n";
             return cloned_buf;
         };
-
-        db<Protocol>(INF) << "[Protocol] Broadcasting to all observers on INTERNAL_BROADCAST_PORT\n";
-        bool t = _observed.notifyInternalBroadcast(buf, INTERNAL_BROADCAST_PORT, src_port, clone_buffer_func);
-        db<Protocol>(INF) << "[Protocol] Finished notifying observers for INTERNAL_BROADCAST_PORT\n";
+        
         // Use the specialized internal broadcast method which handles buffer cloning
-        if (!t) {
+        if (!_observed.notifyInternalBroadcast(buf, INTERNAL_BROADCAST_PORT, src_port, clone_buffer_func)) {
             db<Protocol>(INF) << "[Protocol] No observers notified for INTERNAL_BROADCAST_PORT. Freeing buffer.\n";
-            _nic->free(buf);
         }
-        db<Protocol>(INF) << "[Protocol] Finished notifying observers for INTERNAL_BROADCAST_PORT\n";
+        _nic->free(buf);
     }
     // COMPONENT PORT HANDLING (specific port >= MIN_COMPONENT_PORT)
     else if (dst_port >= MIN_COMPONENT_PORT) {
@@ -366,7 +365,6 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
         db<Protocol>(WRN) << "[Protocol] Received packet with unrecognized destination port " << dst_port << "\n";
         _nic->free(buf);
     }
-    db<Protocol>(INF) << "[Protocol] update() completed.\n";
 }
 
 template <typename NIC>

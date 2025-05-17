@@ -145,6 +145,9 @@ class Component {
         // Make handle_interest_period publicly accessible for callback registration
         void handle_interest_period(std::uint32_t period) {
             std::lock_guard<std::mutex> lock(_periods_mutex);
+
+            db<Component>(TRC) << "[Component] [" << _address.to_string() << "] handle_interest_period() called with period " 
+                              << period << "\n";
             
             // Check if period already exists
             auto it = std::find(_interest_periods.begin(), _interest_periods.end(), period);

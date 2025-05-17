@@ -67,9 +67,9 @@ void run_vehicle(Vehicle* v) {
     v->create_component<GatewayComponent>("Gateway");
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] Gateway component created\n";
     
-    // // Step 2: Create Producer - this will respond to interests for its data type
-    // v->create_component<BasicProducer>("BasicProducer");
-    // db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] BasicProducer component created\n";
+    // Step 2: Create Producer - this will respond to interests for its data type
+    v->create_component<BasicProducer>("BasicProducer");
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] BasicProducer component created\n";
     
     // Step 3: Create Consumer - this will register interest in the producer's data type
     v->create_component<BasicConsumer>("BasicConsumer");

@@ -101,18 +101,12 @@ bool Conditionally_Data_Observed<T, C>::notifyInternalBroadcast(
         if ((*it)->rank() == source_port) {
             continue;
         }
-        
         T* observer_buf = nullptr;
-        
-        // First observer can use the original buffer (optimization)
-        if (!any_notified) {
-            observer_buf = original_buf;
-        } else {
-            // Clone the buffer using the provided function
-            observer_buf = clone_buffer(original_buf);
-            if (!observer_buf) {
-                continue; // Skip this observer if buffer allocation failed
-            }
+    
+        // Clone the buffer using the provided function
+        observer_buf = clone_buffer(original_buf);
+        if (!observer_buf) {
+            continue; // Skip this observer if buffer allocation failed
         }
         
         // Notify observer with the internal broadcast condition

@@ -297,7 +297,7 @@ void Communicator<Channel>::update(typename Channel::Observer::Observing_Conditi
                 if (_interest_period_callback) {
                     _interest_period_callback(full_msg.period());
                     db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Producer on Port 1 processed INTEREST for type " 
-                                     << static_cast<int>(full_msg.unit_type()) << " with period " << full_msg.period() << "us.\n";
+                                     << static_cast<int>(full_msg.unit_type()) << " with period " << full_msg.period() << "us from: " << full_msg.origin().to_string() <<".\n";
                 } else {
                     db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] Interest period callback not set for producer.\n";
                 }
