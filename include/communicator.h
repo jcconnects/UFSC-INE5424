@@ -22,9 +22,6 @@ enum class ComponentType : std::uint8_t {
 #include "traits.h"
 #include "debug.h"
 
-// Forward declaration for circular dependency
-class Component;
-
 template <typename Channel>
 class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data, typename Channel::Observer::Observing_Condition>
 {
@@ -44,7 +41,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         typedef std::function<void(std::uint32_t)> InterestPeriodCallback;
 
         // Constructor and Destructor
-        Communicator(Channel* channel, Address address, Component* owner_component, ComponentType owner_type = ComponentType::UNKNOWN, DataTypeId owner_data_type = DataTypeId::UNKNOWN);
+        Communicator(Channel* channel, Address address, ComponentType owner_type = ComponentType::UNKNOWN, DataTypeId owner_data_type = DataTypeId::UNKNOWN);
         ~Communicator();
         
         // Message creation
@@ -85,7 +82,6 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         Channel* _channel;
         Address _address;
         std::atomic<bool> _closed;
-        Component* _the_owner_component; // Stores the Component that owns this Communicator
         
         // Simplified P3 attributes
         ComponentType _owner_type;
@@ -100,9 +96,9 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
 
 /*************** Communicator Implementation *****************/
 template <typename Channel>
-Communicator<Channel>::Communicator(Channel* channel, Address address, Component* owner_component, ComponentType owner_type, DataTypeId owner_data_type) 
-    : Observer(address.port()), _channel(channel), _address(address), _closed(false), 
-      _the_owner_component(owner_component), _owner_type(owner_type), _owner_data_type(owner_data_type),
+Communicator<Channel>::Communicator(Channel* channel, Address address, ComponentType owner_type, DataTypeId owner_data_type) 
+    : Observer(address.port()), _channel(channel), _address(address), _closed(false),
+     _owner_type(owner_type), _owner_data_type(owner_data_type),
       _interested_data_type(DataTypeId::UNKNOWN), _interested_period_us(0), _last_accepted_response_time_us(0) {
     db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] Constructor called!\n";
     if (!channel) {
@@ -394,10 +390,5 @@ bool Communicator<Channel>::set_interest(DataTypeId type, std::uint32_t period_u
                          << static_cast<int>(type) << " with period " << period_us << "us\n";
     return true;
 }
-
-// Include component.h here to ensure its full definition is available 
-// for Communicator method implementations, especially if there are 
-// circular dependencies handled by forward declarations earlier.
-#include "component.h"
 
 #endif // COMMUNICATOR_H

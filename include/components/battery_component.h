@@ -96,7 +96,7 @@ BatteryComponent::BatteryComponent(Vehicle* vehicle, const unsigned int vehicle_
     Address addr(_vehicle->address(), PORT);
 
     // Sets communicator, passing 'this' to the constructor
-    _communicator = new Comms(protocol, addr, this, ComponentType::PRODUCER, DataTypeId::ENGINE_RPM);
+    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, DataTypeId::ENGINE_RPM);
     
     // IMPORTANT: Set up the interest period callback
     _communicator->set_interest_period_callback([this](std::uint32_t period) {

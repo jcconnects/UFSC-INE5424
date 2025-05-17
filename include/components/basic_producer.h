@@ -67,7 +67,7 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
     
     // Set up communicator, passing 'this' and the produced data type
     Address addr(_vehicle->address(), PORT);
-    _communicator = new Comms(protocol, addr, this, ComponentType::PRODUCER, _produced_data_type);
+    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, _produced_data_type);
     set_address(addr);
     
     // IMPORTANT: Set up the interest period callback

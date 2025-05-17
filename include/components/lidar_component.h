@@ -92,7 +92,7 @@ LidarComponent::LidarComponent(Vehicle* vehicle, const unsigned int vehicle_id,
     
     // Set up communicator with lidar port, passing 'this' to the constructor
     Address addr(_vehicle->address(), PORT);
-    _communicator = new Comms(protocol, addr, this, ComponentType::PRODUCER, DataTypeId::OBSTACLE_DISTANCE);
+    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, DataTypeId::OBSTACLE_DISTANCE);
     
     // IMPORTANT: Set up the interest period callback
     _communicator->set_interest_period_callback([this](std::uint32_t period) {

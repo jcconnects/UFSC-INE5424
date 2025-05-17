@@ -63,7 +63,7 @@ BasicConsumer::BasicConsumer(Vehicle* vehicle, const unsigned int vehicle_id, co
     Address addr(_vehicle->address(), PORT);
 
     // Set up communicator as a CONSUMER, passing 'this' to the Communicator constructor
-    _communicator = new Comms(protocol, addr, this, ComponentType::CONSUMER, DataTypeId::UNKNOWN);
+    _communicator = new Comms(protocol, addr, ComponentType::CONSUMER, DataTypeId::UNKNOWN);
     set_address(addr);
 
     db<BasicConsumer>(INF) << "[Basic Consumer] initialized, will register interest in CUSTOM_SENSOR_DATA_A\n";

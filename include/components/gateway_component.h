@@ -75,7 +75,7 @@ GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_
     db<GatewayComponent>(INF) << "[Gateway] Address set to " << addr.to_string() << "\n";
 
     // Initialize communicator, passing 'this', its type, and UNKNOWN as DataTypeId
-    _communicator = new Comms(protocol, addr, this, ComponentType::GATEWAY, DataTypeId::UNKNOWN);
+    _communicator = new Comms(protocol, addr, ComponentType::GATEWAY, DataTypeId::UNKNOWN);
     set_address(addr); // Set the component's address
     
     db<GatewayComponent>(INF) << "[Gateway] " << getName() << " initialized on port " << PORT << "\n";
@@ -115,16 +115,14 @@ void GatewayComponent::run() {
             Address internal_broadcast_dest_addr(_vehicle->address(), Component::INTERNAL_BROADCAST_PORT);
             
             if (_vehicle && _vehicle->protocol()) {
-                // Send the raw serialized data of the original message
+                // Send the raw serialized data of the original message`
                 _communicator->send(
                     received_msg,  // The original message
                     internal_broadcast_dest_addr  // To: MAC_VEHICLE:Port_1
                 );
                 db<GatewayComponent>(TRC) << "[GatewayComponent] " << getName() << " relayed message of size " 
                                           << received_msg.size() << " to " << internal_broadcast_dest_addr.to_string();
-            } else {
-                 db<GatewayComponent>(ERR) << "[GatewayComponent] " << getName() << " cannot relay: vehicle or protocol is null.\n";
-            }
+            } else db<GatewayComponent>(ERR) << "[GatewayComponent] " << getName() << " cannot relay: vehicle or protocol is null.\n";
 
         } else {
             if (!running()) {

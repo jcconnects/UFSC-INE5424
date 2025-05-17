@@ -9,6 +9,7 @@
 
 #include "traits.h"
 #include "teds.h" // Added for DataTypeId
+#include "debug.h"
 
 // foward declarations
 class SocketEngine;
@@ -165,6 +166,7 @@ const unsigned int Message::size() const {
 
 Message Message::deserialize(const void* serialized, const unsigned int size) {
     if (!serialized || size == 0) {
+        db<Message>(ERR) << "Cannot deserialize from null or zero-size buffer\n";
         throw std::runtime_error("Cannot deserialize from null or zero-size buffer");
     }
     const std::uint8_t* bytes = static_cast<const std::uint8_t*>(serialized);
@@ -282,6 +284,9 @@ void Message::append_vector(const std::vector<std::uint8_t>& v) {
 // Updated extract methods with max_size check
 Message::Origin Message::extract_address(const std::uint8_t* data, unsigned int& offset, unsigned int max_size) {
     if (offset + 8 > max_size) { // 6 bytes MAC + 2 bytes port
+        db<Message>(ERR) << "Buffer too small to extract Origin address\n";
+         // Throw an exception or handle the error as needed
+         // This is a placeholder, replace with actual logging mechanism
         throw std::runtime_error("Buffer too small to extract Origin address");
     }
     Ethernet::Address mac = {}; // Assuming Ethernet::Address is a struct/array
@@ -295,6 +300,8 @@ Message::Origin Message::extract_address(const std::uint8_t* data, unsigned int&
 
 std::uint8_t Message::extract_uint8t(const std::uint8_t* data, unsigned int& offset, unsigned int max_size) {
     if (offset + 1 > max_size) {
+        db<Message>(ERR) << "Buffer too small to extract uint8_t\n";
+         // Throw an exception or handle the error as needed
         throw std::runtime_error("Buffer too small to extract uint8_t");
     }
     return data[offset++];
@@ -302,6 +309,7 @@ std::uint8_t Message::extract_uint8t(const std::uint8_t* data, unsigned int& off
 
 std::uint32_t Message::extract_uint32t(const std::uint8_t* data, unsigned int& offset, unsigned int max_size) {
     if (offset + 4 > max_size) {
+        db<Message>(ERR) << "Buffer too small to extract uint32_t\n";
         throw std::runtime_error("Buffer too small to extract uint32_t");
     }
     std::uint32_t value = 0;
@@ -314,6 +322,7 @@ std::uint32_t Message::extract_uint32t(const std::uint8_t* data, unsigned int& o
 
 std::uint64_t Message::extract_uint64t(const std::uint8_t* data, unsigned int& offset, unsigned int max_size) {
     if (offset + 8 > max_size) {
+        db<Message>(ERR) << "Buffer too small to extract uint64_t\n";
         throw std::runtime_error("Buffer too small to extract uint64_t");
     }
     std::uint64_t value = 0;

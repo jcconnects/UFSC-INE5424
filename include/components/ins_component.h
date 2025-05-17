@@ -104,7 +104,7 @@ INSComponent::INSComponent(Vehicle* vehicle, const unsigned int vehicle_id, cons
     Address addr(_vehicle->address(), PORT);
 
     // Sets own communicator, passing 'this' to the constructor
-    _communicator = new Comms(protocol, addr, this, ComponentType::PRODUCER, DataTypeId::GPS_POSITION);
+    _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, DataTypeId::GPS_POSITION);
     
     // IMPORTANT: Set up the interest period callback
     _communicator->set_interest_period_callback([this](std::uint32_t period) {

@@ -10,19 +10,19 @@
 #include <map>
 
 // Include vehicle.h first
-#include "vehicle.h"
+#include "../../include/vehicle.h"
 // Then include debug.h
-#include "debug.h"
+#include "../../include/debug.h"
 
 // Then include component classes
-#include "components/ecu_component.h"
-#include "components/ins_component.h"
-#include "components/lidar_component.h"
-#include "components/battery_component.h"
-#include "components/gateway_component.h"
+#include "../../include/components/ecu_component.h"
+#include "../../include/components/ins_component.h"
+#include "../../include/components/lidar_component.h"
+#include "../../include/components/battery_component.h"
+#include "../../include/components/gateway_component.h"
 // BasicProducer is already included from vehicle.h
-#include "components/basic_consumer.h"
-#include "test_utils.h"
+#include "../../include/components/basic_consumer.h"
+#include "../test_utils.h"
 
 // Helper function to set up a vehicle log directory
 std::string setup_log_directory(unsigned int vehicle_id) {
@@ -56,7 +56,7 @@ void run_vehicle(Vehicle* v) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist_lifetime(40, 60); // Increase lifetime from 40-60 seconds
+    std::uniform_int_distribution<> dist_lifetime(5, 10); // Increase lifetime from 40-60 seconds
     int lifetime = dist_lifetime(gen);
     unsigned int vehicle_id = v->id(); // Store ID before deletion
 
@@ -67,9 +67,9 @@ void run_vehicle(Vehicle* v) {
     v->create_component<GatewayComponent>("Gateway");
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] Gateway component created\n";
     
-    // Step 2: Create Producer - this will respond to interests for its data type
-    v->create_component<BasicProducer>("BasicProducer");
-    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] BasicProducer component created\n";
+    // // Step 2: Create Producer - this will respond to interests for its data type
+    // v->create_component<BasicProducer>("BasicProducer");
+    // db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] BasicProducer component created\n";
     
     // Step 3: Create Consumer - this will register interest in the producer's data type
     v->create_component<BasicConsumer>("BasicConsumer");

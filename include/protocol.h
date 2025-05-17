@@ -340,12 +340,16 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
             std::memcpy(cloned_buf->data(), original->data(), original->size());
             return cloned_buf;
         };
-        
+
+        db<Protocol>(INF) << "[Protocol] Broadcasting to all observers on INTERNAL_BROADCAST_PORT\n";
+        bool t = _observed.notifyInternalBroadcast(buf, INTERNAL_BROADCAST_PORT, src_port, clone_buffer_func);
+        db<Protocol>(INF) << "[Protocol] Finished notifying observers for INTERNAL_BROADCAST_PORT\n";
         // Use the specialized internal broadcast method which handles buffer cloning
-        if (!_observed.notifyInternalBroadcast(buf, INTERNAL_BROADCAST_PORT, src_port, clone_buffer_func)) {
+        if (!t) {
             db<Protocol>(INF) << "[Protocol] No observers notified for INTERNAL_BROADCAST_PORT. Freeing buffer.\n";
             _nic->free(buf);
         }
+        db<Protocol>(INF) << "[Protocol] Finished notifying observers for INTERNAL_BROADCAST_PORT\n";
     }
     // COMPONENT PORT HANDLING (specific port >= MIN_COMPONENT_PORT)
     else if (dst_port >= MIN_COMPONENT_PORT) {
@@ -362,6 +366,7 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
         db<Protocol>(WRN) << "[Protocol] Received packet with unrecognized destination port " << dst_port << "\n";
         _nic->free(buf);
     }
+    db<Protocol>(INF) << "[Protocol] update() completed.\n";
 }
 
 template <typename NIC>

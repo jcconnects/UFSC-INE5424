@@ -71,7 +71,7 @@ ECUComponent::ECUComponent(Vehicle* vehicle, const unsigned int vehicle_id, cons
     Address addr(vehicle->address(), static_cast<unsigned int>(port));
 
     // Sets own communicator, passing 'this' to the constructor
-    _communicator = new Comms(protocol, addr, this, ComponentType::CONSUMER, DataTypeId::OBSTACLE_DISTANCE);
+    _communicator = new Comms(protocol, addr, ComponentType::CONSUMER, DataTypeId::OBSTACLE_DISTANCE);
 
     db<ECUComponent>(INF) << "ECU Component initialized, ready to register interests\n";
 }

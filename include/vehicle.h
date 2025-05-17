@@ -207,6 +207,7 @@ void Vehicle::start_components() {
     // Give Producers time to start and be ready to receive interests
     usleep(100000); // 100ms
     
+    db<Vehicle>(INF) << "[Vehicle] [" << _id << "] Producers started, now starting consumers...\n";
     // Step 3: Finally start consumer components
     for (const auto& c : _components) {
         if (c->type() == ComponentType::CONSUMER && !c->running()) {
