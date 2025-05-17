@@ -91,7 +91,15 @@ void BasicConsumer::run() {
         int current_value = 0;
         uint32_t current_counter = 0;
         bool data_valid = false;
+
+        Message* incoming_msg = nullptr;
+        int received_bytes = receive(incoming_msg); // Process incoming messages
         
+        if (received_bytes > 0) {
+            db<BasicConsumer>(INF) << "[Basic Consumer] received " << received_bytes << " bytes\n";
+            handle_test_data(*incoming_msg);
+            delete incoming_msg; // Clean up the message
+        }
         {
             std::lock_guard<std::mutex> lock(_latest_test_data.mutex);
             

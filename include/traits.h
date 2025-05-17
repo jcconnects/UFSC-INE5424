@@ -178,7 +178,7 @@ struct Traits<BasicProducer> : public Traits<void>
 template <>
 struct Traits<BasicConsumer> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for Debug class
