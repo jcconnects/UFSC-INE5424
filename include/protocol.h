@@ -82,7 +82,8 @@ class Protocol: private NIC::Observer
 
                 const std::string to_string() const;
 
-                static const Address BROADCAST;
+                static const Address EXTERNAL_BROADCAST;
+                static const Address INTERNAL_BROADCAST;
                 
                 operator bool() const;
                 bool operator==(const Address& a) const;
@@ -338,11 +339,19 @@ void Protocol<NIC>::free(Buffer* buf) {
 template <typename NIC>
 typename Protocol<NIC>::Observed Protocol<NIC>::_observed;
 
-// Initialize the BROADCAST address
+// Initialize BROADCASTs addresses
 template <typename NIC>
-const typename Protocol<NIC>::Address Protocol<NIC>::Address::BROADCAST = 
+const typename Protocol<NIC>::Address Protocol<NIC>::Address::EXTERNAL_BROADCAST = 
     typename Protocol<NIC>::Address(
         Ethernet::BROADCAST, // MAC broadcast
         0 // Broadcast port
     );
+
+template <typename NIC>
+const typename Protocol<NIC>::Address Protocol<NIC>::Address::INTERNAL_BROADCAST = 
+    typename Protocol<NIC>::Address(
+        _nic->address(), // MAC broadcast
+        0 // Broadcast port
+    );
+
 #endif // PROTOCOL_H
