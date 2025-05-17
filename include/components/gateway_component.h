@@ -116,11 +116,9 @@ void GatewayComponent::run() {
             
             if (_vehicle && _vehicle->protocol()) {
                 // Send the raw serialized data of the original message
-                _vehicle->protocol()->send(
-                    address(), // From: Gateway's own address (e.g., MAC_VEHICLE:Port_0)
-                    internal_broadcast_dest_addr,  // To: MAC_VEHICLE:Port_1
-                    received_msg.data(),    // The raw serialized data of the original message
-                    received_msg.size()     // The size of the raw serialized data
+                _communicator->send(
+                    received_msg,  // The original message
+                    internal_broadcast_dest_addr  // To: MAC_VEHICLE:Port_1
                 );
                 db<GatewayComponent>(TRC) << "[GatewayComponent] " << getName() << " relayed message of size " 
                                           << received_msg.size() << " to " << internal_broadcast_dest_addr.to_string();
