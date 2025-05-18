@@ -369,11 +369,6 @@ int Component::receive(Message* msg) {
         return -1;
     }
     
-    if (!msg) {
-        db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " receive() failed: invalid message pointer\n";
-        return -1;
-    }
-    
     if (_communicator->receive(msg)) {
         db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " received message from " 
                           << msg->origin().to_string() << "\n";
