@@ -120,6 +120,29 @@ int main(int argc, char* argv[]) {
         TEST_LOG("Warning: Could not create tests/logs directory: " + std::string(e.what()));
     }
 
+    // Verify the test interface is configured before starting
+    std::string interface_name = "test-dummy0"; // Default name matches what Makefile creates
+    
+    // Wait for interface configuration to complete
+    // Makefile creates the interface and writes to current_test_iface
+    {
+        std::ifstream iface_check("tests/logs/current_test_iface");
+        if (iface_check) {
+            std::getline(iface_check, interface_name);
+            TEST_LOG("Using network interface: " + interface_name);
+        } else {
+            TEST_LOG("Warning: Interface file not found, using default: " + interface_name);
+            // Create the file ourselves just to be sure
+            std::ofstream iface_file("tests/logs/current_test_iface");
+            iface_file << interface_name << std::endl;
+            iface_file.close();
+        }
+    }
+    
+    // Small delay to ensure interface is ready and file is flushed to disk
+    sleep(1);
+    TEST_LOG("Network interface configuration complete");
+
     std::vector<pid_t> children;
     children.reserve(n_vehicles);
 

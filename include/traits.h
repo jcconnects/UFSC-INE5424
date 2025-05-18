@@ -3,17 +3,32 @@
 
 #include <string>
 #include <fstream>
+#include <thread> // For std::this_thread::sleep_for
+#include <chrono> // For std::chrono time functions
 
-// Helper function to get the interface name
+// Helper function to get the interface name with retries
 inline std::string get_interface_name() {
     std::string interface_name = "test-dummy0"; // Default
-    std::ifstream iface_file("tests/logs/current_test_iface");
-    if (iface_file) {
-        std::getline(iface_file, interface_name);
-        if (!interface_name.empty()) {
-            return interface_name;
+    const std::string iface_file_path = "tests/logs/current_test_iface";
+    const int max_retries = 5;
+    
+    for (int retry = 0; retry < max_retries; ++retry) {
+        std::ifstream iface_file(iface_file_path);
+        if (iface_file) {
+            std::string read_name;
+            std::getline(iface_file, read_name);
+            if (!read_name.empty()) {
+                interface_name = read_name;
+                break;
+            }
+        }
+        
+        // If we couldn't read the file, wait a short time and retry
+        if (retry < max_retries - 1) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
+    
     return interface_name;
 }
 
@@ -64,7 +79,7 @@ struct Traits {
 template<>
 struct Traits<SocketEngine> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static constexpr const char* DEFAULT_INTERFACE_NAME = "test-dummy0";
     
     static const char* INTERFACE_NAME() {
@@ -77,14 +92,14 @@ struct Traits<SocketEngine> : public Traits<void>
 template<>
 struct Traits<SharedMemoryEngine> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for dual-engine NIC
 template <typename ExternalEngine, typename InternalEngine>
 struct Traits<NIC<ExternalEngine, InternalEngine>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static const unsigned int SEND_BUFFERS = 512;
     static const unsigned int RECEIVE_BUFFERS = 512;
 };

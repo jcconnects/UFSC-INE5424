@@ -100,10 +100,13 @@ void SocketEngine::stop() {
 
 void SocketEngine::setUpSocket() {
     db<SocketEngine>(TRC) << "[SocketEngine] setUpSocket() called!\n";
+    db<SocketEngine>(INF) << "[SocketEngine] Using interface: " << INTERFACE() << "\n";
 
     // 1. Creating socket
     _sock_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (_sock_fd < 0) {
+        int err = errno;
+        db<SocketEngine>(ERR) << "[SocketEngine] Failed to create socket: " << strerror(err) << "\n";
         perror("socket");
         throw std::runtime_error("Failed to create SocketEngine::_sock_fd!");
     }
@@ -119,24 +122,30 @@ void SocketEngine::setUpSocket() {
 
     
     if (ioctl(_sock_fd, SIOCGIFINDEX, &ifr) < 0) {
+        int err = errno;
+        db<SocketEngine>(ERR) << "[SocketEngine] Failed to retrieve interface index for '" 
+                           << INTERFACE() << "': " << strerror(err) << "\n";
         perror("ioctl SIOCGIFINDEX");
         throw std::runtime_error("Failed to retrieve interface index!");
     }
     
     _if_index = ifr.ifr_ifindex;
-    db<SocketEngine>(INF) << "[SocketEngine] if_index setted: " << _if_index << "\n";
+    db<SocketEngine>(INF) << "[SocketEngine] if_index set: " << _if_index << "\n";
 
     // 4. Getting MAC address
     std::memset(&ifr, 0, sizeof(ifr));
     std::strncpy(ifr.ifr_name, INTERFACE(), IFNAMSIZ);
 
     if (ioctl(_sock_fd, SIOCGIFHWADDR, &ifr) < 0) {
+        int err = errno;
+        db<SocketEngine>(ERR) << "[SocketEngine] Failed to retrieve MAC address for '" 
+                           << INTERFACE() << "': " << strerror(err) << "\n";
         perror("ioctl SIOCGIFHWADDR");
         throw std::runtime_error("Failed to retrieve MAC address!");
     }
 
     std::memcpy(_mac_address.bytes, ifr.ifr_hwaddr.sa_data, Ethernet::MAC_SIZE);
-    db<SocketEngine>(INF) << "[SocketEngine] MAC address setted: " << Ethernet::mac_to_string(_mac_address) << "\n";
+    db<SocketEngine>(INF) << "[SocketEngine] MAC address set: " << Ethernet::mac_to_string(_mac_address) << "\n";
 
     // 5. Bind socket to interface
     struct sockaddr_ll sll;
@@ -146,11 +155,14 @@ void SocketEngine::setUpSocket() {
     sll.sll_ifindex = _if_index;
 
     if (bind(_sock_fd, reinterpret_cast<struct sockaddr*>(&sll), sizeof(sll)) < 0) {
+        int err = errno;
+        db<SocketEngine>(ERR) << "[SocketEngine] Failed to bind socket to interface '" 
+                           << INTERFACE() << "': " << strerror(err) << "\n";
         perror("bind");
         throw std::runtime_error("Failed to bind SocketEngine::_sock_fd to interface!");
     }
 
-    db<SocketEngine>(INF) << "[SocketEngine] socket setted\n";
+    db<SocketEngine>(INF) << "[SocketEngine] socket successfully set up on interface '" << INTERFACE() << "'\n";
 }
 
 void SocketEngine::setUpEpoll() {
