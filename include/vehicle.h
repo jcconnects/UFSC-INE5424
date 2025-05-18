@@ -158,12 +158,13 @@ void Vehicle::stop() {
         return;
     }
 
-    // First stop NIC and its engines
-    _nic->stop();
-
-    // Then stops each component
+    // First stop components to ensure clean shutdown
     db<Vehicle>(INF) << "[Vehicle] [" << _id << "] Stopping components...\n";
     stop_components();
+    
+    // After components are stopped, shut down the NIC and its engines
+    db<Vehicle>(INF) << "[Vehicle] [" << _id << "] Stopping NIC...\n";
+    _nic->stop();
 
     _running.store(false, std::memory_order_release);
     db<Vehicle>(INF) << "[Vehicle] [" << _id << "] stopped.\n";

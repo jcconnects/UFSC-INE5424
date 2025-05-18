@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include <linux/types.h>
 #include <sys/syscall.h>
+#include <signal.h>  // For signal handling
 
 // Add back the SCHED_DEADLINE support
 #ifndef SCHED_DEADLINE
@@ -39,6 +40,15 @@
 #define __NR_sched_getattr 275
 #endif
 #endif
+
+// Signal handler for thread interruption
+// Use a single static handler for the entire component system
+extern "C" void component_signal_handler(int sig) {
+    // Simply wake up the thread to check its running state
+    if (sig == SIGUSR1) {
+        // No action needed, just unblock from system calls
+    }
+}
 
 // Define struct for sched_attr if not already defined
 struct sched_attr {
@@ -535,6 +545,14 @@ void Component::start_producer_thread() {
         return;
     }
     
+    // Install the signal handler for thread interruption
+    struct sigaction sa;
+    std::memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = component_signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGUSR1, &sa, nullptr);
+    
     // Check if deadline scheduling is available
     _has_dl_capability.store(has_deadline_scheduling_capability(), std::memory_order_relaxed);
     if (_has_dl_capability.load()) {
@@ -556,18 +574,52 @@ void Component::start_producer_thread() {
 
 // Stop the producer response thread
 void Component::stop_producer_thread() {
+    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " stopping producer thread...\n";
+    
     if (!_producer_thread_running.load(std::memory_order_acquire)) {
         db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread not running\n";
         return;
     }
     
+    // Set the flag to false first to signal the thread to exit
     _producer_thread_running.store(false, std::memory_order_release);
+    
+    // Only attempt to join if thread handle is valid
     if (_producer_thread != 0) {
-        pthread_join(_producer_thread, nullptr);
+        // Set a timeout for joining the thread
+        struct timespec timeout;
+        clock_gettime(CLOCK_REALTIME, &timeout);
+        timeout.tv_sec += 2; // 2 second timeout
+        
+        db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " waiting for producer thread to join...\n";
+        
+        // Try to join the thread with timeout
+        int join_result = pthread_timedjoin_np(_producer_thread, nullptr, &timeout);
+        
+        if (join_result == 0) {
+            db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread joined successfully\n";
+        } else if (join_result == ETIMEDOUT) {
+            db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread join timed out after 2s\n";
+            // Thread might be blocked in a system call - try sending a signal
+            pthread_kill(_producer_thread, SIGUSR1);
+            // Try joining again with a short timeout
+            clock_gettime(CLOCK_REALTIME, &timeout);
+            timeout.tv_sec += 1; // 1 more second
+            if (pthread_timedjoin_np(_producer_thread, nullptr, &timeout) == 0) {
+                db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread joined after signal\n";
+            } else {
+                db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread could not be joined, potential resource leak\n";
+                // In a production system we might need a more robust solution, but for now we'll continue
+            }
+        } else {
+            db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name << " pthread_timedjoin_np error: " << strerror(join_result) << "\n";
+        }
+        
+        // Clear the thread ID regardless of join result
         _producer_thread = 0;
     }
     
-    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " stopped producer thread\n";
+    db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread stop completed\n";
 }
 
 // Producer thread entry point
@@ -611,62 +663,80 @@ void Component::producer_routine() {
                 db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
                                  << " no interests yet, sleeping (current period: " << current_period
                                  << ", interest periods count: " << _interest_periods.size() << ")\n";
-                usleep(100000); // Sleep for 100ms
+                // Use shorter sleep interval to check running state more frequently
+                for (int i = 0; i < 5 && _producer_thread_running.load(std::memory_order_acquire); i++) {
+                    usleep(20000); // 20ms * 5 = 100ms total, but more responsive to shutdown
+                }
                 continue;
             }
             
             db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
                            << " preparing to send response with period " << current_period << "us\n";
             
-            // Update SCHED_DEADLINE parameters based on current period
-            attr_dl.sched_runtime = current_period * 500; // 50% of period in ns
-            attr_dl.sched_deadline = current_period * 1000; // Period in ns
-            attr_dl.sched_period = current_period * 1000; // Period in ns
-            
-            // Set scheduling parameters - may fail if not root
-            int result = sched_setattr(0, &attr_dl, 0);
-            if (result < 0) {
-                db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name 
-                                  << " failed to set SCHED_DEADLINE, falling back to SCHED_FIFO\n";
-                _has_dl_capability.store(false, std::memory_order_relaxed);
+            // Generate the response data only if we're still running
+            if (_producer_thread_running.load(std::memory_order_acquire)) {
+                // Update SCHED_DEADLINE parameters based on current period
+                attr_dl.sched_runtime = current_period * 500; // 50% of period in ns
+                attr_dl.sched_deadline = current_period * 1000; // Period in ns
+                attr_dl.sched_period = current_period * 1000; // Period in ns
                 
-                // Fall back to SCHED_FIFO
-                struct sched_param fifo_param;
-                fifo_param.sched_priority = 99; // Max RT priority
-                pthread_setschedparam(pthread_self(), SCHED_FIFO, &fifo_param);
-                // Continue with the next loop iteration which will use the FIFO path
-                continue;
+                // Set scheduling parameters - may fail if not root
+                int result = sched_setattr(0, &attr_dl, 0);
+                if (result < 0) {
+                    db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name 
+                                    << " failed to set SCHED_DEADLINE, falling back to SCHED_FIFO\n";
+                    _has_dl_capability.store(false, std::memory_order_relaxed);
+                    
+                    // Fall back to SCHED_FIFO
+                    struct sched_param fifo_param;
+                    fifo_param.sched_priority = 99; // Max RT priority
+                    pthread_setschedparam(pthread_self(), SCHED_FIFO, &fifo_param);
+                    // Continue with the next loop iteration which will use the FIFO path
+                    continue;
+                }
+                
+                // Generate response based on the current period
+                std::vector<std::uint8_t> response_data;
+                if (produce_data_for_response(_produced_data_type, response_data) && 
+                    _producer_thread_running.load(std::memory_order_acquire)) {
+                    // Create response message with the data
+                    Message response = _communicator->new_message(
+                        Message::Type::RESPONSE, 
+                        _produced_data_type,
+                        0,  // period is 0 for responses
+                        response_data.data(),
+                        response_data.size()
+                    );
+                    
+                    // Send to Gateway for broadcast distribution
+                    // Only if we're still running (last check before sending)
+                    if (_producer_thread_running.load(std::memory_order_acquire)) {
+                        Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
+                        _communicator->send(response, gateway_addr);
+                        
+                        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
+                                        << static_cast<int>(_produced_data_type) << " with " 
+                                        << response_data.size() << " bytes\n";
+                    }
+                } else {
+                    db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 
+                                    << " failed to produce data for response type " 
+                                    << static_cast<int>(_produced_data_type) << "\n";
+                }
             }
             
-            // Generate response based on the current period
-            std::vector<std::uint8_t> response_data;
-            if (produce_data_for_response(_produced_data_type, response_data)) {
-                // Create response message with the data
-                Message response = _communicator->new_message(
-                    Message::Type::RESPONSE, 
-                    _produced_data_type,
-                    0,  // period is 0 for responses
-                    response_data.data(),
-                    response_data.size()
-                );
-                
-                // Send to Gateway for broadcast distribution
-                Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
-                _communicator->send(response, gateway_addr);
-                
-                db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
-                                  << static_cast<int>(_produced_data_type) << " with " 
-                                  << response_data.size() << " bytes\n";
-            } else {
-                db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 
-                                 << " failed to produce data for response type " 
-                                 << static_cast<int>(_produced_data_type) << "\n";
+            // Instead of sleeping for a full period at once, split into smaller chunks
+            // to remain responsive to shutdown requests
+            const unsigned MAX_SLEEP_US = 50000; // 50ms chunks maximum
+            unsigned remaining_us = current_period;
+            
+            while (remaining_us > 0 && _producer_thread_running.load(std::memory_order_acquire)) {
+                unsigned sleep_chunk = std::min(remaining_us, MAX_SLEEP_US);
+                usleep(sleep_chunk);
+                remaining_us -= sleep_chunk;
             }
             
-            // Sleep for one period using SCHED_DEADLINE timer
-            clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_period, NULL);
-            
-            // Calculate next period
+            // Calculate next period time
             next_period.tv_nsec += current_period * 1000;
             if (next_period.tv_nsec >= 1000000000) {
                 next_period.tv_sec += next_period.tv_nsec / 1000000000;
@@ -689,40 +759,57 @@ void Component::producer_routine() {
                 db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
                                  << " no interests yet, sleeping (current period: " << current_period
                                  << ", interest periods count: " << _interest_periods.size() << ")\n";
-                usleep(100000); // Sleep for 100ms
+                // Use shorter sleep interval to check running state more frequently
+                for (int i = 0; i < 5 && _producer_thread_running.load(std::memory_order_acquire); i++) {
+                    usleep(20000); // 20ms * 5 = 100ms total, but more responsive to shutdown
+                }
                 continue;
             }
             
-            db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
-                           << " preparing to send response with period " << current_period << "us\n";
-            
-            // Generate response based on the current period
-            std::vector<std::uint8_t> response_data;
-            if (produce_data_for_response(_produced_data_type, response_data)) {
-                // Create response message with the data
-                Message response = _communicator->new_message(
-                    Message::Type::RESPONSE, 
-                    _produced_data_type,
-                    0,  // period is 0 for responses
-                    response_data.data(),
-                    response_data.size()
-                );
+            // Generate response only if we're still running
+            if (_producer_thread_running.load(std::memory_order_acquire)) {
+                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
+                                << " preparing to send response with period " << current_period << "us\n";
                 
-                // Send to Gateway for broadcast distribution
-                Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
-                _communicator->send(response, gateway_addr);
-                
-                db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
-                                  << static_cast<int>(_produced_data_type) << " with " 
-                                  << response_data.size() << " bytes\n";
-            } else {
-                db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 
-                                 << " failed to produce data for response type " 
-                                 << static_cast<int>(_produced_data_type) << "\n";
+                // Generate response based on the current period
+                std::vector<std::uint8_t> response_data;
+                if (produce_data_for_response(_produced_data_type, response_data) && 
+                    _producer_thread_running.load(std::memory_order_acquire)) {
+                    // Create response message with the data
+                    Message response = _communicator->new_message(
+                        Message::Type::RESPONSE, 
+                        _produced_data_type,
+                        0,  // period is 0 for responses
+                        response_data.data(),
+                        response_data.size()
+                    );
+                    
+                    // Send to Gateway for broadcast distribution
+                    // Only if we're still running (last check before sending)
+                    if (_producer_thread_running.load(std::memory_order_acquire)) {
+                        Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
+                        _communicator->send(response, gateway_addr);
+                        
+                        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
+                                        << static_cast<int>(_produced_data_type) << " with " 
+                                        << response_data.size() << " bytes\n";
+                    }
+                } else if (_producer_thread_running.load(std::memory_order_acquire)) {
+                    db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 
+                                    << " failed to produce data for response type " 
+                                    << static_cast<int>(_produced_data_type) << "\n";
+                }
             }
             
-            // Sleep for one period using usleep
-            usleep(current_period);
+            // Split sleep into smaller chunks to be more responsive to shutdown
+            const unsigned MAX_SLEEP_US = 50000; // 50ms chunks maximum
+            unsigned remaining_us = current_period;
+            
+            while (remaining_us > 0 && _producer_thread_running.load(std::memory_order_acquire)) {
+                unsigned sleep_chunk = std::min(remaining_us, MAX_SLEEP_US);
+                usleep(sleep_chunk);
+                remaining_us -= sleep_chunk;
+            }
         }
     }
     

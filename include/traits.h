@@ -108,7 +108,7 @@ struct Traits<NIC<ExternalEngine, InternalEngine>> : public Traits<void>
 template <>
 struct Traits<Protocol<NIC<SocketEngine, SharedMemoryEngine>>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 888; // Example value
 };
 
@@ -131,14 +131,14 @@ struct Traits<Message> : public Traits<void>
 template<>
 struct Traits<Vehicle> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for Component class
 template <>
 struct Traits<Component> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for BatteryComponent class
@@ -165,7 +165,7 @@ struct Traits<ECUComponent>: public Traits<void>
 template <>
 struct Traits<GatewayComponent>: public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for INSComponent class
@@ -186,7 +186,7 @@ struct Traits<LidarComponent> : public Traits<void>
 template <>
 struct Traits<BasicProducer> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for BasicConsumer class
