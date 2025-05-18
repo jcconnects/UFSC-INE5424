@@ -92,13 +92,12 @@ void BasicConsumer::run() {
         uint32_t current_counter = 0;
         bool data_valid = false;
 
-        Message* incoming_msg = nullptr;
-        int received_bytes = receive(incoming_msg); // Process incoming messages
+        Message incoming_msg = _communicator->new_message(Message::Type::RESPONSE, DataTypeId::UNKNOWN);
+        int received_bytes = receive(&incoming_msg); // Process incoming messages
         
         if (received_bytes > 0) {
             db<BasicConsumer>(INF) << "[Basic Consumer] received " << received_bytes << " bytes\n";
-            handle_test_data(*incoming_msg);
-            delete incoming_msg; // Clean up the message
+            handle_test_data(incoming_msg);
         }
         {
             std::lock_guard<std::mutex> lock(_latest_test_data.mutex);
