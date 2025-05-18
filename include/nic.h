@@ -78,8 +78,8 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         DataBuffer _buffer[N_BUFFERS];
         std::queue<DataBuffer*> _buffer_pool;
         std::atomic<bool> _running;
-        sem_t _buffer_sem;
         sem_t _binary_sem;
+        unsigned int _free_buffer_count;
 };
 
 /*********** NIC Implementation ************/
@@ -93,8 +93,6 @@ NIC<ExternalEngine, InternalEngine>::NIC() {
     }
     db<NIC>(INF) << "[NIC] " << std::to_string(N_BUFFERS) << " buffers created\n";
 
-    
-    sem_init(&_buffer_sem, 0, N_BUFFERS);
     sem_init(&_binary_sem, 0, 1);
     
     // Starting Engines
@@ -115,7 +113,6 @@ NIC<ExternalEngine, InternalEngine>::~NIC() {
     // ExternalEngine::stop() is now called via _nic->stop() in Vehicle::~Vehicle()
     // so this call is redundant and has been removed
 
-    sem_destroy(&_buffer_sem);
     sem_destroy(&_binary_sem);
 
 }
@@ -326,21 +323,32 @@ typename NIC<ExternalEngine, InternalEngine>::DataBuffer* NIC<ExternalEngine, In
         return nullptr;
     }
     
-    // Acquire free buffers counter semaphore
-    sem_wait(&_buffer_sem);
+    sem_wait(&_binary_sem); // Lock the queue
 
-    // Check weather NIC is still active
-    if (!running()) {
-        db<NIC>(WRN) << "[NIC] alloc() called when NIC is deactivated\n";
-        sem_post(&_buffer_sem);
+    // Re-check running status after acquiring semaphore, in case stop() was called while waiting
+    if (!_running.load(std::memory_order_acquire)) {
+        db<NIC>(WRN) << "[NIC] alloc() acquired semaphore but NIC stopped.\n";
+        sem_post(&_binary_sem); // Release semaphore before returning
         return nullptr;
     }
-    
-    // Remove first buffer of the free buffers queue
-    sem_wait(&_binary_sem);
+
+    // Check if there are free buffers available
+    if (_free_buffer_count == 0) { // Check count directly
+        db<NIC>(WRN) << "[NIC] No free buffers available for allocation.\n";
+        sem_post(&_binary_sem); // Release semaphore
+        return nullptr; // No buffer available
+    }
+    // TODO - review if this is needed
+    // Re-check running status after acquiring semaphore, in case stop() was called
+    // if (!_running.load(std::memory_order_acquire)) {
+    //     db<NIC>(WRN) << "[NIC] alloc() acquired semaphore but NIC stopped.\n";
+    //     return nullptr;
+    // }
+
     DataBuffer* buf = _buffer_pool.front();
     _buffer_pool.pop();
-    sem_post(&_binary_sem);
+    _free_buffer_count--; // Decrement available buffer count
+    sem_post(&_binary_sem); // Unlock the queue
 
     // Set Frame
     Ethernet::Frame frame;
@@ -373,10 +381,9 @@ void NIC<ExternalEngine, InternalEngine>::free(DataBuffer* buf) {
     // Add to free buffers queue
     sem_wait(&_binary_sem);
     _buffer_pool.push(buf);
+    _free_buffer_count++; // Increment available buffer count
     sem_post(&_binary_sem);
     
-    // Increase free buffers counter
-    sem_post(&_buffer_sem);
 
     db<NIC>(INF) << "[NIC] buffer released\n";
 }
