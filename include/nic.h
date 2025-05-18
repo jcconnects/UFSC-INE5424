@@ -87,6 +87,8 @@ template <typename ExternalEngine, typename InternalEngine>
 NIC<ExternalEngine, InternalEngine>::NIC() {
     db<NIC>(TRC) << "[NIC] Constructor called!\n";
 
+    _free_buffer_count = N_BUFFERS;
+
     for (unsigned int i = 0; i < N_BUFFERS; ++i) {
         _buffer[i] = DataBuffer();
         _buffer_pool.push(&_buffer[i]);
