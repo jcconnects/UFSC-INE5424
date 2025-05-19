@@ -79,7 +79,7 @@ struct Traits {
 template<>
 struct Traits<SocketEngine> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static constexpr const char* DEFAULT_INTERFACE_NAME = "test-dummy0";
     
     static const char* INTERFACE_NAME() {
@@ -92,7 +92,7 @@ struct Traits<SocketEngine> : public Traits<void>
 template<>
 struct Traits<SharedMemoryEngine> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for dual-engine NIC
@@ -124,14 +124,14 @@ template <>
 struct Traits<Message> : public Traits<void>
 {
     static constexpr unsigned int MAC_SIZE = 16;
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for Vehicle class
 template<>
 struct Traits<Vehicle> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Component class
@@ -165,7 +165,7 @@ struct Traits<ECUComponent>: public Traits<void>
 template <>
 struct Traits<GatewayComponent>: public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for INSComponent class
@@ -193,7 +193,7 @@ struct Traits<BasicProducer> : public Traits<void>
 template <>
 struct Traits<BasicConsumer> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Debug class

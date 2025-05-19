@@ -124,6 +124,11 @@ Communicator<Channel>::~Communicator() {
     
     // Detach from channel
     _channel->detach(this, _address);
+    // IMPORTANT: Also attach to INTERNAL_BROADCAST_PORT to receive relayed messages
+    if (_address.port() != INTERNAL_BROADCAST_PORT) {  // Avoid double registration for internal port
+        Address broadcast_addr(_address.paddr(), INTERNAL_BROADCAST_PORT);
+        _channel->detach(this, broadcast_addr);
+    }
     db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] detached from Channel!\n";
 }
 
@@ -225,7 +230,7 @@ bool Communicator<Channel>::receive(Message* message) {
 
         // Sets message origin address
         message->origin(from);
-        db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Received message origin set to: " << from.to_string() << "\n";
+        db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Received message from: " << from.to_string() << "\n";
         
         _channel->free(buf); // Free the buffer after successful processing
         return true;

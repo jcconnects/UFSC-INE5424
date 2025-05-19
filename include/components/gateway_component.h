@@ -113,7 +113,7 @@ void GatewayComponent::run() {
             // The destination is its own MAC on INTERNAL_BROADCAST_PORT.
             // The payload is the raw data of the message just received.
             Address internal_broadcast_dest_addr(_vehicle->address(), Component::INTERNAL_BROADCAST_PORT);
-            
+
             if (_vehicle && _vehicle->protocol()) {
                 // Send the raw serialized data of the original message`
                 _communicator->send(

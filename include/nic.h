@@ -132,7 +132,7 @@ int NIC<ExternalEngine, InternalEngine>::send(DataBuffer* buf) {
     }
 
     if (!buf || !buf->data()) {
-        db<NIC>(ERR) << "[NIC] send() called with null buffer\n";
+        db<NIC>(ERR) << "[NIC] send() called with null or empty buffer\n";
         _statistics.tx_drops++;
         return -1;
     }
