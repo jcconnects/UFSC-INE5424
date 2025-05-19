@@ -99,8 +99,8 @@ BatteryComponent::BatteryComponent(Vehicle* vehicle, const unsigned int vehicle_
     _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, DataTypeId::ENGINE_RPM);
     
     // IMPORTANT: Set up the interest period callback
-    _communicator->set_interest_period_callback([this](std::uint32_t period) {
-        this->handle_interest_period(period);
+    _communicator->set_interest_period_callback([this](const Message& interest_msg) {
+        this->handle_interest_period(interest_msg);
     });
     
     db<BatteryComponent>(INF) << "Battery Component initialized as producer of type " 

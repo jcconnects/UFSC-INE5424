@@ -153,23 +153,43 @@ class Component {
         friend class Communicator;
 
         // Make handle_interest_period publicly accessible for callback registration
-        void handle_interest_period(std::uint32_t period) {
+        // Now accepts the full Message object for detailed logging
+        void handle_interest_period(const Message& interest_msg) {
             std::lock_guard<std::mutex> lock(_periods_mutex);
 
-            db<Component>(TRC) << "[Component] [" << _address.to_string() << "] handle_interest_period() called with period " 
-                              << period << "\n";
+            db<Component>(TRC) << "[Component] [" << _address.to_string() << "] handle_interest_period() called for interest from " 
+                              << interest_msg.origin().to_string() << " with period " << interest_msg.period() << "\n";
             
+            // Log INTEREST_RECEIVED event to CSV
+            if (_log_file.is_open() && type() == ComponentType::PRODUCER) { // Ensure it's a producer logging this
+                auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+                _log_file << now_us << ","                                 // timestamp_us
+                         << "PRODUCER" << ","                             // event_category
+                         << "INTEREST_RECEIVED" << ","                 // event_type
+                         << interest_msg.timestamp() << ","             // message_id (original msg timestamp)
+                         << static_cast<int>(Message::Type::INTEREST) << ","// message_type
+                         << static_cast<int>(interest_msg.unit_type()) << "," // data_type_id
+                         << interest_msg.origin().to_string() << ","       // origin_address
+                         << address().to_string() << ","                   // destination_address (Component's own)
+                         << interest_msg.period() << ","                 // period_us
+                         << "0" << ","                                  // value_size
+                         << "-"                                         // notes
+                         << "\n";
+                _log_file.flush();
+            }
+
             // Check if period already exists
-            auto it = std::find(_interest_periods.begin(), _interest_periods.end(), period);
+            auto it = std::find(_interest_periods.begin(), _interest_periods.end(), interest_msg.period());
             if (it == _interest_periods.end()) {
                 // Add new period
-                _interest_periods.push_back(period);
+                _interest_periods.push_back(interest_msg.period());
                 
                 // Update GCD
                 _current_gcd_period_us.store(update_gcd_period(), std::memory_order_release);
                 
                 db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " updated GCD period to " 
-                                  << _current_gcd_period_us.load() << "us\n";
+                                  << _current_gcd_period_us.load() << "us after interest from " << interest_msg.origin().to_string() << "\n";
             }
         }
 
@@ -468,6 +488,7 @@ void Component::register_interest(DataTypeId type, std::uint32_t period_us, std:
     }
     
     // Send interest message if component is running
+    // This call will also handle logging INTEREST_SENT
     if (running()) {
         send_interest_message();
     }
@@ -495,6 +516,25 @@ void Component::send_interest_message() {
         db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name 
                          << " Sent INTEREST for type " << static_cast<int>(_interested_data_type) 
                          << " with period " << _interested_period_us << "us\n";
+        
+        // Log INTEREST_SENT event to CSV (primarily for Consumers)
+        if (_log_file.is_open() && type() == ComponentType::CONSUMER) { // Ensure it's a consumer logging this
+            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+            _log_file << now_us << ","                                 // timestamp_us
+                     << "CONSUMER" << ","                             // event_category
+                     << "INTEREST_SENT" << ","                     // event_type
+                     << interest_msg.timestamp() << ","             // message_id
+                     << static_cast<int>(Message::Type::INTEREST) << ","// message_type
+                     << static_cast<int>(interest_msg.unit_type()) << "," // data_type_id
+                     << address().to_string() << ","                   // origin_address (Component's own)
+                     << gateway_addr.to_string() << ","              // destination_address (Gateway)
+                     << interest_msg.period() << ","                 // period_us
+                     << "0" << ","                                  // value_size
+                     << "-"                                         // notes
+                     << "\n";
+            _log_file.flush();
+        }
     }
 }
 
@@ -717,6 +757,25 @@ void Component::producer_routine() {
                         db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
                                         << static_cast<int>(_produced_data_type) << " with " 
                                         << response_data.size() << " bytes\n";
+                        
+                        // Log RESPONSE_SENT event to CSV
+                        if (_log_file.is_open()) {
+                            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+                            _log_file << now_us << ","                                 // timestamp_us
+                                     << "PRODUCER" << ","                             // event_category
+                                     << "RESPONSE_SENT" << ","                   // event_type
+                                     << response.timestamp() << ","                // message_id
+                                     << static_cast<int>(Message::Type::RESPONSE) << ","// message_type
+                                     << static_cast<int>(response.unit_type()) << "," // data_type_id
+                                     << address().to_string() << ","                // origin_address (Component's own)
+                                     << gateway_addr.to_string() << ","           // destination_address (Gateway)
+                                     << "0" << ","                                // period_us
+                                     << response.value_size() << ","               // value_size
+                                     << "-"                                      // notes
+                                     << "\n";
+                            _log_file.flush();
+                        }
                     }
                 } else {
                     db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 
@@ -793,6 +852,25 @@ void Component::producer_routine() {
                         db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
                                         << static_cast<int>(_produced_data_type) << " with " 
                                         << response_data.size() << " bytes\n";
+                        
+                        // Log RESPONSE_SENT event to CSV (SCHED_FIFO path)
+                        if (_log_file.is_open()) {
+                            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+                             _log_file << now_us << ","                                // timestamp_us
+                                     << "PRODUCER" << ","                            // event_category
+                                     << "RESPONSE_SENT" << ","                  // event_type
+                                     << response.timestamp() << ","               // message_id
+                                     << static_cast<int>(Message::Type::RESPONSE) << ","// message_type
+                                     << static_cast<int>(response.unit_type()) << ","// data_type_id
+                                     << address().to_string() << ","               // origin_address (Component's own)
+                                     << gateway_addr.to_string() << ","          // destination_address (Gateway)
+                                     << "0" << ","                               // period_us
+                                     << response.value_size() << ","              // value_size
+                                     << "-"                                     // notes
+                                     << "\n";
+                            _log_file.flush();
+                        }
                     }
                 } else if (_producer_thread_running.load(std::memory_order_acquire)) {
                     db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 

@@ -38,7 +38,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         static constexpr const Port MIN_COMPONENT_PORT = 2;
 
         // Define callback type for handling interest periods
-        typedef std::function<void(std::uint32_t)> InterestPeriodCallback;
+        typedef std::function<void(const Message& interest_msg)> InterestPeriodCallback;
 
         // Constructor and Destructor
         Communicator(Channel* channel, Address address, ComponentType owner_type = ComponentType::UNKNOWN, DataTypeId owner_data_type = DataTypeId::UNKNOWN);
@@ -74,6 +74,12 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
             _interest_period_callback = callback;
         }
         
+        // Set callback for handling responses - called by Component during initialization
+        typedef std::function<void(const Message& response_msg)> ResponseHandlerCallback;
+        void set_response_handler_callback(ResponseHandlerCallback callback) {
+            _response_handler_callback = callback;
+        }
+        
     private:
         using Observer::update;
         // Update method for Observer pattern
@@ -87,11 +93,13 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         ComponentType _owner_type;
         DataTypeId _owner_data_type;             // For PRODUCER: the type produced
         DataTypeId _interested_data_type;        // For CONSUMER: the type interested in
-        std::uint32_t _interested_period_us;     // For CONSUMER: the period interested in
-        std::uint64_t _last_accepted_response_time_us; // For CONSUMER: used for period filtering
+        uint32_t _interested_period_us;     // For CONSUMER: the period interested in
         
         // Callback for handling interest periods
         InterestPeriodCallback _interest_period_callback;
+
+        // Callback for handling responses - set by Component during initialization
+        std::function<void(const Message& response_msg)> _response_handler_callback;
 };
 
 /*************** Communicator Implementation *****************/
@@ -99,7 +107,7 @@ template <typename Channel>
 Communicator<Channel>::Communicator(Channel* channel, Address address, ComponentType owner_type, DataTypeId owner_data_type) 
     : Observer(address.port()), _channel(channel), _address(address), _closed(false),
      _owner_type(owner_type), _owner_data_type(owner_data_type),
-      _interested_data_type(DataTypeId::UNKNOWN), _interested_period_us(0), _last_accepted_response_time_us(0) {
+      _interested_data_type(DataTypeId::UNKNOWN), _interested_period_us(0) {
     db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] Constructor called!\n";
     if (!channel) {
         throw std::invalid_argument("[Communicator] Channel pointer cannot be null");
@@ -301,9 +309,9 @@ void Communicator<Channel>::update(typename Channel::Observer::Observing_Conditi
         if (_owner_type == ComponentType::PRODUCER && c == _address.port()) {
             if (full_msg.message_type() == Message::Type::INTEREST && full_msg.unit_type() == _owner_data_type) {
                 if (_interest_period_callback) {
-                    _interest_period_callback(full_msg.period());
+                    _interest_period_callback(full_msg);
                     db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Producer on its port " << c << " processed INTEREST for type " 
-                                         << static_cast<int>(full_msg.unit_type()) << " period " << full_msg.period() << "us from " << full_msg.origin().to_string() << ".\n";
+                                         << static_cast<int>(full_msg.unit_type()) << " period " << full_msg.period() << "us from " << full_msg.origin().to_string() << ". Invoked callback.\n";
                 } else {
                     db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] Interest period callback not set for producer on port " << c << ".\n";
                 }
@@ -320,26 +328,18 @@ void Communicator<Channel>::update(typename Channel::Observer::Observing_Conditi
         // 3. CONSUMER on its own component port (c == _address.port())
         if (_owner_type == ComponentType::CONSUMER && c == _address.port()) {
             if (full_msg.message_type() == Message::Type::RESPONSE && full_msg.unit_type() == _interested_data_type) {
-                auto now = std::chrono::high_resolution_clock::now();
-                auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
-                
-                if (_interested_period_us == 0 || (now_us - _last_accepted_response_time_us >= _interested_period_us)) {
-                    _last_accepted_response_time_us = now_us;
-                    Observer::update(c, buf); // Pass buffer to Consumer's receive() queue for its callback mechanism.
+                if (_response_handler_callback) {
                     db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Consumer on its port " << c << " received valid RESPONSE for type " 
-                                         << static_cast<int>(full_msg.unit_type()) << ". Passed to component's receive() queue.\n";
-                } else {
-                    _channel->free(buf); // Too early, discard
-                    db<Communicator>(INF) << "[Communicator] [" << _address.to_string() << "] Consumer on its port " << c << " filtered out early RESPONSE for type " 
-                                         << static_cast<int>(full_msg.unit_type()) << ".\n";
+                                          << static_cast<int>(full_msg.unit_type()) << ". Invoking callback.\n";
+                    _response_handler_callback(full_msg); // Pass the full message
                 }
+                _channel->free(buf); 
+                return; // Message handled (or attempted to be handled by callback)
             } else {
                 _channel->free(buf); // Not a relevant RESPONSE for this consumer on its own port
-                db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] Consumer on its port " << c << " filtered out msg type " 
-                                     << static_cast<int>(full_msg.message_type()) << " unit_type "
-                                     << static_cast<int>(full_msg.unit_type()) << " (expected RESPONSE for " << static_cast<int>(_interested_data_type) << ").\n";
+                db<Communicator>(TRC) << "[Communicator] [" << _address.to_string() << "] Consumer on port " << c << " received non-matching RESPONSE or other msg type. Discarding.\n";
+                return; 
             }
-            return;
         }
 
         // 4. Message on an unexpected port for this component's role, or if component is not Gateway, Producer, or Consumer.

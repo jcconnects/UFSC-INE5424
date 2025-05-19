@@ -58,7 +58,8 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
     open_log_file();
     if (_log_file.is_open()) {
         _log_file.seekp(0);
-        _log_file << "timestamp_us,value,counter\n";
+        // Define new standardized log header
+        _log_file << "timestamp_us,event_category,event_type,message_id,message_type,data_type_id,origin_address,destination_address,period_us,value_size,notes\n";
         _log_file.flush();
     }
 
@@ -70,9 +71,9 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
     _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, _produced_data_type);
     set_address(addr);
     
-    // IMPORTANT: Set up the interest period callback
-    _communicator->set_interest_period_callback([this](std::uint32_t period) {
-        this->handle_interest_period(period);
+    // IMPORTANT: Set up the interest period callback to use the new signature
+    _communicator->set_interest_period_callback([this](const Message& interest_msg) {
+        this->handle_interest_period(interest_msg); // Will log RECV_INTEREST
     });
     
     db<BasicProducer>(INF) << "[Basic Producer] initialized as producer of type " 
@@ -82,22 +83,13 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
 void BasicProducer::run() {
     db<BasicProducer>(INF) << "[Basic Producer] component " << getName() << " starting main run loop.\n";
     
-    // Main loop - update data and log
+    // Main loop - update data and potentially log (console only for data changes)
     while (running()) {
         // Update simulated test data
-        update_test_data();
+        update_test_data(); // This includes a TRC level log for data changes
         
-        // Log current data
-        if (_log_file.is_open()) {
-            auto now = std::chrono::high_resolution_clock::now();
-            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
-                now.time_since_epoch()).count();
-                
-            _log_file << now_us << ","
-                     << _current_value << ","
-                     << _counter << "\n";
-            _log_file.flush();
-        }
+        // Old CSV data logging removed as per new requirements to log communication events.
+        // if (_log_file.is_open()) { ... log _current_value, _counter ... }
         
         // Sleep to prevent consuming too much CPU
         usleep(100000); // 100ms update interval
