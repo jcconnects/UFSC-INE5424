@@ -7,7 +7,6 @@ participant CComm_A as "Comm_A (Veh A)" <<Communicator>>
 participant Proto_A as "Protocol (Veh A)" <<Protocol>>
 participant NIC_A as "NIC (Veh A)" <<NIC>>
 
-participant Network #Black
 
 participant GatewayComp_A as "Gateway (Veh A)" #Application
 participant GComm_A as "GComm_A (Veh A)" <<Communicator>>
@@ -48,19 +47,21 @@ box "Vehicle B" #LightGreen
     participant NIC_B
 end box
 
+participant Network #Black
 
 == Consumer (Veh A) Sends INTEREST ==
 ConsumerComp_A -> CComm_A : "set_interest(DataTypeId X, Period P, callback)"
 CComm_A -> CComm_A : Store _interested_data_type=X, _period_us=P
-ConsumerComp_A -> CComm_A : "send_interest_message()"
-CComm_A -> CComm_A : Create "interest_msg {Origin=Addr_CCompA, Type=INTEREST, ...}"
+ConsumerComp_A-> CComm_A : Create "interest_msg {Origin=Addr_CCompA, Type=INTEREST, ...}"
+ConsumerComp_A -> CComm_A : "send(interest_msg, gateway_addr)"
 note right of CComm_A: Addr_CCompA = MAC_VehA:Port_CCompA
-CComm_A -> Proto_A : "send(interest_msg, BROADCAST_MAC:Port_Gateway_0)"
-Proto_A -> NIC_A : "send(eth_frame_interest)"
+CComm_A -> Proto_A : "send(_address, destination, message.data(), message.size())"
+Proto_A -> NIC_A : "send(buf)"
 NIC_A -> Network : Transmit Ethernet Frame (Physical Broadcast)
 
 == Gateways on Veh A & Veh B Receive INTEREST ==
 Network -> NIC_A : (Veh A's NIC) Receives Frame
+NIC_A -> NIC_A : notify(PROTO, buf)
 NIC_A -> Proto_A : "update(eth_frame_interest_buf)" (for GatewayComp_A)
 Proto_A -> GComm_A : "update(Port_Gateway_0, eth_frame_interest_buf)"
 GComm_A -> GComm_A : Observer::update() unblocks GComm_A::receive()
@@ -90,7 +91,7 @@ note right of GatewayComp_B : Relay to internal listeners on Veh B (Port 1)
 Proto_A -> PComm_A : "update(Port_Internal_Broadcast_1, cloned_buf_A)"
     PComm_A -> PComm_A : Deserialize, Filter by Component Type, Message Type & DataTypeId
     alt Filters Passed (for PComp_A)
-        PComm_A -> ProducerComp_A : "handle_received_interest(period)"
+        PComm_A -> ProducerComp_A : "handle_interest_period(period)"
         ProducerComp_A -> PRespT_A : Signal/Wake with new GCD
     else Filters Failed
         PComm_A -> Proto_A : free(cloned_buf_A)
@@ -100,7 +101,7 @@ Proto_A -> PComm_A : "update(Port_Internal_Broadcast_1, cloned_buf_A)"
 Proto_B -> PComm_B : "update(Port_Internal_Broadcast_1, cloned_buf_B)"
     PComm_B -> PComm_B : Deserialize, Filter by Component Type, Message Type & DataTypeId
     alt Filters Passed (for PComp_B)
-        PComm_B -> ProducerComp_B : "handle_received_interest(period)"
+        PComm_B -> ProducerComp_B : "handle_interest_period(period)"
         ProducerComp_B -> PRespT_B : Signal/Wake with new GCD
     else Filters Failed
         PComm_B -> Proto_B : free(cloned_buf_B)

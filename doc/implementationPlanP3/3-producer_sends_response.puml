@@ -21,7 +21,7 @@ end box
 == Producer (Veh A) Sends RESPONSE ==
 
 PRespT_A -> PRespT_A : Loop wakes based on GCD period.
-PRespT_A -> PComp_A : "current_data = produce_data_for(_produced_data_type)"
+PRespT_A -> PComp_A : "current_data = produce_data_for(_produced_data_type, response_data)"
 PRespT_A -> PComm_A : "new_message(RESPONSE, PComp_A._produced_data_type, 0, data_val, val_size)"
 note right of PComm_A: Origin=Addr_PCompA (MAC_VehA:Port_PCompA)
 PComm_A -> PComm_A : Create "response_msg"
