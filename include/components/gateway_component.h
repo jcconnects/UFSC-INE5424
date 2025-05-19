@@ -188,22 +188,31 @@ void GatewayComponent::run() {
                                           << ". Forwarding to relevant consumers.\n";
                 for (const auto& comp_info : _known_vehicle_components) {
                     if (comp_info.role == ComponentType::CONSUMER && comp_info.dataType == received_msg.unit_type()) {
-                        if (_communicator->send(received_msg, comp_info.address)) {
-                             // Log sent/relayed message
+                        // Create a new message for forwarding instead of reusing the received message
+                        Message response_to_relay = _communicator->new_message(
+                            Message::Type::RESPONSE,
+                            received_msg.unit_type(),
+                            0,  // period is 0 for responses
+                            received_msg.data(),
+                            received_msg.value_size()
+                        );
+                        
+                        if (_communicator->send(response_to_relay, comp_info.address)) {
+                            // Log sent/relayed message
                             if (_log_file.is_open()) {
                                 auto now_send_us = std::chrono::duration_cast<std::chrono::microseconds>(
                                     std::chrono::high_resolution_clock::now().time_since_epoch()).count();
                                 _log_file << now_send_us << ","              // timestamp_us
                                          << "GATEWAY" << ","                 // event_category
                                          << "MSG_SENT" << ","                // event_type
-                                         << received_msg.timestamp() << ","  // message_id (original)
-                                         << static_cast<int>(received_msg.message_type()) << ","
-                                         << static_cast<int>(received_msg.unit_type()) << ","
+                                         << response_to_relay.timestamp() << ","  // message_id (using new message timestamp)
+                                         << static_cast<int>(response_to_relay.message_type()) << ","
+                                         << static_cast<int>(response_to_relay.unit_type()) << ","
                                          << address().to_string() << ","     // origin_address (Gateway's own)
                                          << comp_info.address.to_string() << "," // destination_address
                                          << "0" << ","                       // period_us
-                                         << received_msg.value_size() << "," // value_size
-                                         << "Relayed RESPONSE"              // notes
+                                         << response_to_relay.value_size() << "," // value_size
+                                         << "Relayed RESPONSE (orig_msg_id: " << received_msg.timestamp() << ")"  // notes with original message ID
                                          << "\n";
                                 _log_file.flush();
                             }
