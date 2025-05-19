@@ -7,9 +7,19 @@ DEBUG_BASE_DIR="$LOG_BASE_DIR/analyzers"  # Base directory for analyzer logs
 TOOLS=("helgrind" "drd" "tsan") # Default tools to run
 COMPILE_FLAGS=""                # Additional compile flags
 
+# Clean logs and binaries only at the very start
+if [ ! -d "$DEBUG_BASE_DIR" ]; then
+    make clean
+    mkdir -p "$DEBUG_BASE_DIR"
+    sudo chmod -R 777 "$DEBUG_BASE_DIR"
+fi
+
 # Create log directories
 mkdir -p "$LOG_BASE_DIR"
 mkdir -p "$DEBUG_BASE_DIR"
+for tool in "${TOOLS[@]}"; do
+    mkdir -p "$DEBUG_BASE_DIR/$tool"
+done
 sudo chmod -R 777 "$DEBUG_BASE_DIR"  # Make it writeable by all
 
 # Parse command line arguments
@@ -70,16 +80,12 @@ run_test_with_tool() {
     local log_file="$tool_dir/run_${run_num}.log"
     local tool_log="$tool_dir/${tool}_${run_num}.log"
     
-    mkdir -p "$tool_dir"
-    sudo chmod 777 "$tool_dir"
-    
     echo "Running test with $tool (run $run_num)..."
     
     # Build with the appropriate flags if using ThreadSanitizer
     if [ "$tool" = "tsan" ]; then
         if [ -z "$TSAN_BUILD_COMPLETE" ]; then
             echo "Compiling system test demo with ThreadSanitizer..."
-            make clean
             CXXFLAGS="-fsanitize=thread -g -O1" make -s bin/system_tests/demo > /dev/null 2>&1
             export TSAN_BUILD_COMPLETE=1
         fi
@@ -87,12 +93,15 @@ run_test_with_tool() {
         # For Valgrind-based tools, ensure normal build
         if [ -n "$TSAN_BUILD_COMPLETE" ] || [ -z "$NORMAL_BUILD_COMPLETE" ]; then
             echo "Compiling system test demo normally..."
-            make clean
             make -s bin/system_tests/demo > /dev/null 2>&1
             export NORMAL_BUILD_COMPLETE=1
             unset TSAN_BUILD_COMPLETE
         fi
     fi
+
+    # Ensure tool directory exists and is writable (after build, in case it was deleted)
+    mkdir -p "$tool_dir"
+    sudo chmod 777 "$tool_dir"
     
     # Setup the interface
     verbose_print "Setting up network interface..."

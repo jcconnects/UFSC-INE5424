@@ -1,7 +1,7 @@
 SHELL := /bin/bash # Explicitly use bash for executing Makefile commands
 
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -I./include -g
+CXXFLAGS ?= -std=c++17 -Wall -I./include -g
 LDFLAGS = -pthread
 
 # Directories
@@ -163,6 +163,9 @@ run_system_%: $(BINDIR)/system_tests/%
 .PHONY: clean
 clean:
 	rm -rf $(BINDIR)
+
+.PHONY: clean_logs
+clean_logs:
 	rm -rf $(TESTDIR)/logs
 
 .PHONY: setup_dummy_iface
