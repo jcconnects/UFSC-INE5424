@@ -1,0 +1,30 @@
+@startuml Gateway Relay Flow (Vehicle B)
+
+title Gateway on Veh B Receives and Relays Interest
+
+participant Proto_B as "Protocol (Veh B)" <<Protocol>>
+participant NIC_B as "NIC (Veh B)" <<NIC>>
+participant GatewayComp_B as "Gateway (Veh B)" #Application
+participant GComm_B as "GComm_B (Veh B)" <<Communicator>>
+participant Network #Black
+
+box "Vehicle B" #LightGreen
+    participant GatewayComp_B
+    participant GComm_B
+    participant Proto_B
+    participant NIC_B
+end box
+
+== Gateway on Veh B Receives INTEREST ==
+Network -> NIC_B : (Veh B's NIC) Receives Frame
+NIC_B -> Proto_B : "update(eth_frame_interest_buf)" (for GatewayComp_B)
+Proto_B -> GComm_B : "update(Port_Gateway_0, eth_frame_interest_buf)"
+GComm_B -> GComm_B : Observer::update() unblocks GComm_B::receive()
+activate GatewayComp_B
+GatewayComp_B -> GComm_B : "receive(interest_obj_B)"
+GatewayComp_B -> GComm_B : "send(interest_obj_B, Address(_vehicle->address(), INTERNAL_BROADCAST_PORT))"
+GComm_B -> Proto_B : "send(interest_obj_B, Address(_vehicle->address(), INTERNAL_BROADCAST_PORT))"
+Proto_B -> Proto_B : Uses notifyInternalBroadcast() for Port 1 observers
+deactivate GatewayComp_B
+note right of GatewayComp_B : Relay to internal listeners on Veh B (Port 1)
+

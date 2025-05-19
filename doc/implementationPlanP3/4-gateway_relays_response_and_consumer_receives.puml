@@ -40,7 +40,7 @@ box "Vehicle B" #LightGreen
     participant NIC_B
 end box
 
-== Gateways on Veh A & B Receive RESPONSE (from Network) ==
+== Gateways on Veh A Receive RESPONSE (from Network) ==
 
 Network -> NIC_A : (Veh A's NIC) Receives Frame (Response originated by a Producer)
 NIC_A -> Proto_A : "update(eth_frame_response_buf)" (for GatewayComp_A)
@@ -53,6 +53,8 @@ GComm_A -> Proto_A : "send(response_obj_A, Address(_vehicle->address(), INTERNAL
 Proto_A -> Proto_A : Uses notifyInternalBroadcast() for Port 1 observers
 deactivate GatewayComp_A
 note right of GatewayComp_A : Relay to internal listeners on Veh A (Port 1)
+
+== Gateways on Veh B Receive RESPONSE (from Network) ==
 
 Network -> NIC_B : (Veh B's NIC) Receives Frame (Response originated by a Producer)
 NIC_B -> Proto_B : "update(eth_frame_response_buf)" (for GatewayComp_B)
