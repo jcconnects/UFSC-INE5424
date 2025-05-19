@@ -7,38 +7,46 @@ skinparam linetype ortho
 
 ' Process Components
 package "Process" {
-  package "Component" {
-    component [Comm] as comm1
+  package "Producer" {
+    component [Comm] as comm_producer1
+  }
+  package "Consumer" {
+    component [Comm] as comm_consumer1
   }
   component [Prot.] as prot1
   component [NIC] as nic1
-  component [SocketEngine] as SocketEngine1
-  
-  comm1 --> prot1
-  prot1 --> nic1
-  nic1 -|> SocketEngine1
+
+  comm_producer1 --[#red]> prot1
+  prot1 --[#red]> nic1
+  nic1 --[#green]> prot1
+  prot1 --[#green]> comm_consumer1
 }
 
 ' Second Process with Threads
 package "Process'" {
+  package "Gateway'" {
+    component [Comm] as comm_gateway2
+  }
   package "Component'" {
-    component [Comm] as comm2
+    component [Comm] as comm_consumer2
   }
     component [Prot.] as prot2
     component [NIC] as nic2
-    component [SocketEngine] as SocketEngine2
-    
-  nic2 -|> SocketEngine2
-  prot2 <-- nic2 
-  comm2 <-- prot2 
+
+  nic2 --[#orange]> prot2  
+  prot2 --[#orange]> comm_gateway2
+  comm_gateway2 --[#blue]> prot2
+  prot2 --[#blue]> nic2
+  nic2 --[#green]> prot2
+  prot2 --[#green]> comm_consumer2
 }
 
 ' Kernel architecture section
 package "Kernel" {
   component [Socket] as socket
   
-  nic1--> socket
-  nic2 <-- socket
+  nic1--[#orange]> socket
+  nic2 <--[#orange] socket
 }
 
 @enduml 
