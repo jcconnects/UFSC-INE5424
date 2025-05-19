@@ -1,0 +1,28 @@
+@startuml Consumer Interest Flow (Inter-Vehicle)
+
+title Consumer on Veh A Sends Interest
+
+participant ConsumerComp_A as "Consumer (Veh A)" #Application
+participant CComm_A as "Comm_A (Veh A)" <<Communicator>>
+participant Proto_A as "Protocol (Veh A)" <<Protocol>>
+participant NIC_A as "NIC (Veh A)" <<NIC>>
+participant Network #Black
+
+box "Vehicle A" #LightBlue
+    participant ConsumerComp_A
+    participant CComm_A
+    participant Proto_A
+    participant NIC_A
+end box
+
+== Consumer (Veh A) Sends INTEREST ==
+ConsumerComp_A -> CComm_A : "set_interest(DataTypeId X, Period P, callback)"
+CComm_A -> CComm_A : Store _interested_data_type=X, _period_us=P
+ConsumerComp_A-> CComm_A : Create "interest_msg {Origin=Addr_CCompA, Type=INTEREST, ...}"
+ConsumerComp_A -> CComm_A : "send(interest_msg, gateway_addr)"
+note right of CComm_A: Addr_CCompA = MAC_VehA:Port_CCompA
+CComm_A -> Proto_A : "send(_address, destination, message.data(), message.size())"
+Proto_A -> NIC_A : "send(buf)"
+NIC_A -> Network : Transmit Ethernet Frame (Physical Broadcast)
+
+@enduml 

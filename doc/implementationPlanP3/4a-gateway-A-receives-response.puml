@@ -1,0 +1,33 @@
+@startuml Gateway A Receives Response Flow
+
+title Gateway on Vehicle A Receives Response from Network
+
+participant Network #Black
+
+participant GatewayComp_A as "Gateway (Veh A)" #Application
+participant GComm_A as "GComm_A (Veh A)" <<Communicator>>
+participant Proto_A as "Protocol (Veh A)" <<Protocol>>
+participant NIC_A as "NIC (Veh A)" <<NIC>>
+
+box "Vehicle A" #LightBlue
+    participant GatewayComp_A
+    participant GComm_A
+    participant Proto_A
+    participant NIC_A
+end box
+
+== Gateway on Vehicle A Receives RESPONSE (from Network) ==
+
+Network -> NIC_A : (Veh A's NIC) Receives Frame (Response originated by a Producer)
+NIC_A -> Proto_A : "update(eth_frame_response_buf)" (for GatewayComp_A)
+Proto_A -> GComm_A : "update(Port_Gateway_0, eth_frame_response_buf)"
+GComm_A -> GComm_A : Observer::update() unblocks GComm_A::receive()
+activate GatewayComp_A
+GatewayComp_A -> GComm_A : "receive(response_obj_A)"
+GatewayComp_A -> GComm_A : "send(response_obj_A, Address(_vehicle->address(), INTERNAL_BROADCAST_PORT))"
+GComm_A -> Proto_A : "send(response_obj_A, Address(_vehicle->address(), INTERNAL_BROADCAST_PORT))"
+Proto_A -> Proto_A : Uses notifyInternalBroadcast() for Port 1 observers
+deactivate GatewayComp_A
+note right of GatewayComp_A : Relay to internal listeners on Veh A (Port 1)
+
+@enduml 

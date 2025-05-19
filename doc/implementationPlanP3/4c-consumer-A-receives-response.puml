@@ -1,0 +1,29 @@
+@startuml Consumer A Receives Response Flow
+
+title Consumer on Vehicle A Receives Relayed Response
+
+participant Proto_A as "Protocol (Veh A)" <<Protocol>>
+participant ConsumerComp_A as "Consumer (Veh A)" #Application
+participant CComm_A as "CComm_A (Veh A)" <<Communicator>>
+
+box "Vehicle A" #LightBlue
+    participant ConsumerComp_A
+    participant CComm_A
+    participant Proto_A
+end box
+
+== Consumer on Vehicle A Receives Relayed RESPONSE ==
+
+Proto_A -> CComm_A : "update(Port_Internal_Broadcast_1, cloned_resp_buf_A)"
+CComm_A -> CComm_A : Deserialize, Filter by Component Type, Message Type, DataTypeId, Period
+alt Filters Passed (for CComp_A)
+    CComm_A -> CComm_A : Observer::update() unblocks CComm_A::receive()
+    activate ConsumerComp_A
+    ConsumerComp_A -> CComm_A : "receive(final_response_A)"
+    ConsumerComp_A -> ConsumerComp_A : "_data_callback(final_response_A)"
+    deactivate ConsumerComp_A
+else Filters Failed
+    CComm_A -> Proto_A : free(cloned_resp_buf_A)
+end
+
+@enduml 

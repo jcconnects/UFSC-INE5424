@@ -1,0 +1,51 @@
+@startuml Producer Handling Flow (Inter-Vehicle)
+
+title Producers on Veh A & B Receive Relayed Interest
+
+participant Proto_A as "Protocol (Veh A)" <<Protocol>>
+participant ProducerComp_A as "Producer (Veh A)" #Application
+participant PComm_A as "PComm_A (Veh A)" <<Communicator>>
+participant PRespT_A as "RespThread_A (Veh A)" <<Thread>>
+
+participant Proto_B as "Protocol (Veh B)" <<Protocol>>
+participant ProducerComp_B as "Producer (Veh B)" #Application
+participant PComm_B as "PComm_B (Veh B)" <<Communicator>>
+participant PRespT_B as "RespThread_B (Veh B)" <<Thread>>
+
+box "Vehicle A" #LightBlue
+    participant ProducerComp_A
+    participant PComm_A
+    participant PRespT_A
+    participant Proto_A
+end box
+
+box "Vehicle B" #LightGreen
+    participant ProducerComp_B
+    participant PComm_B
+    participant PRespT_B
+    participant Proto_B
+end box
+
+== Producers on Veh A & Veh B Receive Relayed INTEREST ==
+
+'Relay on Vehicle A'
+Proto_A -> PComm_A : "update(Port_Internal_Broadcast_1, cloned_buf_A)"
+    PComm_A -> PComm_A : Deserialize, Filter by Component Type, Message Type & DataTypeId
+    alt Filters Passed (for PComp_A)
+        PComm_A -> ProducerComp_A : "handle_interest_period(period)"
+        ProducerComp_A -> PRespT_A : Signal/Wake with new GCD
+    else Filters Failed
+        PComm_A -> Proto_A : free(cloned_buf_A)
+    end
+
+'Relay on Vehicle B'
+Proto_B -> PComm_B : "update(Port_Internal_Broadcast_1, cloned_buf_B)"
+    PComm_B -> PComm_B : Deserialize, Filter by Component Type, Message Type & DataTypeId
+    alt Filters Passed (for PComp_B)
+        PComm_B -> ProducerComp_B : "handle_interest_period(period)"
+        ProducerComp_B -> PRespT_B : Signal/Wake with new GCD
+    else Filters Failed
+        PComm_B -> Proto_B : free(cloned_buf_B)
+    end
+
+@enduml 
