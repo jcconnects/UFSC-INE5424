@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
     TEST_LOG("Starting P3 API validation test with basic components...");
 
     // Set number of test vehicles
-    const unsigned int n_vehicles = 10;
+    const unsigned int n_vehicles = 100;
 
     // Ensure tests/logs directory exists
     try {

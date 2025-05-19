@@ -67,23 +67,27 @@ BasicConsumer::BasicConsumer(Vehicle* vehicle, const unsigned int vehicle_id, co
     set_address(addr);
 
     db<BasicConsumer>(INF) << "[Basic Consumer] initialized, will register interest in CUSTOM_SENSOR_DATA_A\n";
+
+    // Register interest in test data with callback (Moved from run() to constructor)
+    register_interest(
+        DataTypeId::CUSTOM_SENSOR_DATA_A, 
+        TEST_DATA_PERIOD_US,
+        [this](const Message& msg) { 
+            db<BasicConsumer>(TRC) << "[Basic Consumer] Interest data callback triggered for message from " << msg.origin().to_string() << "\n";
+            this->handle_test_data(msg);
+        }
+    );
+    
+    db<BasicConsumer>(INF) << "[Basic Consumer] Registered interest in CUSTOM_SENSOR_DATA_A with period " 
+                         << TEST_DATA_PERIOD_US << " microseconds during construction.\n";
 }
 
 void BasicConsumer::run() {
     db<BasicConsumer>(INF) << "[Basic Consumer] component " << getName() << " starting main run loop.\n";
     
-    // Register interest in test data with callback
-    register_interest(
-        DataTypeId::CUSTOM_SENSOR_DATA_A, 
-        TEST_DATA_PERIOD_US,
-        [this](const Message& msg) { 
-            db<BasicConsumer>(INF) << "[Basic Consumer] Interest callback called for message\n";
-            this->handle_test_data(msg);
-        }
-    );
-    
-    db<BasicConsumer>(INF) << "[Basic Consumer] registered interest in CUSTOM_SENSOR_DATA_A with period " 
-                         << TEST_DATA_PERIOD_US << " microseconds\n";
+    // Interest registration moved to constructor
+    // db<BasicConsumer>(INF) << "[Basic Consumer] registered interest in CUSTOM_SENSOR_DATA_A with period " 
+    //                      << TEST_DATA_PERIOD_US << " microseconds\n";
     
     // Main loop - process the latest data periodically
     while (running()) {

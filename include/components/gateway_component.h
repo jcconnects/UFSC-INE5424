@@ -43,6 +43,14 @@ class GatewayComponent : public Component {
         // Removed: void component_dispatcher_routine() override;
         
     private:
+        // Struct for hardcoded component information
+        struct KnownComponent {
+            Address address; // This is Component::Address, which is Protocol::Address
+            ComponentType role; // PRODUCER or CONSUMER
+            DataTypeId dataType; // The type it produces or is interested in
+        };
+        std::vector<KnownComponent> _known_vehicle_components;
+
         // Removed: void handle_interest(const Message& message);
         // Removed: void handle_response(const Message& message);
 };
@@ -50,6 +58,9 @@ class GatewayComponent : public Component {
 // Move implementation to a separate .cpp file
 #include "component.h"  // Now can safely include Component
 #include "vehicle.h"    // For _vehicle->protocol()
+// Required for BasicProducer::PORT and BasicConsumer::PORT
+#include "components/basic_producer.h"
+#include "components/basic_consumer.h"
 
 // Implement the constructor
 GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
@@ -79,6 +90,24 @@ GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_
     set_address(addr); // Set the component's address
     
     db<GatewayComponent>(INF) << "[Gateway] " << getName() << " initialized on port " << PORT << "\n";
+
+    // Populate _known_vehicle_components (hardcoded)
+    // BasicProducer
+    _known_vehicle_components.push_back({
+        Address(_vehicle->address(), BasicProducer::PORT),
+        ComponentType::PRODUCER,
+        DataTypeId::CUSTOM_SENSOR_DATA_A
+    });
+    // BasicConsumer
+    _known_vehicle_components.push_back({
+        Address(_vehicle->address(), BasicConsumer::PORT),
+        ComponentType::CONSUMER,
+        DataTypeId::CUSTOM_SENSOR_DATA_A
+    });
+    // Add other known components here if necessary
+
+    db<GatewayComponent>(INF) << "[Gateway] Initialized with " << _known_vehicle_components.size() 
+                             << " known components for targeted relay.\n";
 }
 
 void GatewayComponent::run() {
@@ -108,21 +137,41 @@ void GatewayComponent::run() {
                 _log_file.flush();
             }
 
-            // Relay the *original message data* to internal broadcast.
-            // The Gateway's address is the 'from' for the protocol send.
-            // The destination is its own MAC on INTERNAL_BROADCAST_PORT.
-            // The payload is the raw data of the message just received.
-            Address internal_broadcast_dest_addr(_vehicle->address(), Component::INTERNAL_BROADCAST_PORT);
-
-            if (_vehicle && _vehicle->protocol()) {
-                // Send the raw serialized data of the original message`
-                _communicator->send(
-                    received_msg,  // The original message
-                    internal_broadcast_dest_addr  // To: MAC_VEHICLE:Port_1
-                );
-                db<GatewayComponent>(TRC) << "[GatewayComponent] " << getName() << " relayed message of size " 
-                                          << received_msg.size() << " to " << internal_broadcast_dest_addr.to_string();
-            } else db<GatewayComponent>(ERR) << "[GatewayComponent] " << getName() << " cannot relay: vehicle or protocol is null.\n";
+            // Targeted relay logic instead of internal broadcast
+            if (received_msg.message_type() == Message::Type::INTEREST) {
+                db<GatewayComponent>(INF) << "[GatewayComponent] " << getName() << " received INTEREST for type " 
+                                          << static_cast<int>(received_msg.unit_type()) 
+                                          << ". Forwarding to relevant producers.\n";
+                for (const auto& comp_info : _known_vehicle_components) {
+                    if (comp_info.role == ComponentType::PRODUCER && comp_info.dataType == received_msg.unit_type()) {
+                        if (_communicator->send(received_msg, comp_info.address)) {
+                            db<GatewayComponent>(TRC) << "[GatewayComponent] " << getName() << " Forwarded INTEREST to producer at " 
+                                                      << comp_info.address.to_string() << "\n";
+                        } else {
+                            db<GatewayComponent>(ERR) << "[GatewayComponent] " << getName() << " Failed to forward INTEREST to producer at " 
+                                                      << comp_info.address.to_string() << "\n";
+                        }
+                    }
+                }
+            } else if (received_msg.message_type() == Message::Type::RESPONSE) {
+                db<GatewayComponent>(INF) << "[GatewayComponent] " << getName() << " received RESPONSE for type " 
+                                          << static_cast<int>(received_msg.unit_type()) 
+                                          << ". Forwarding to relevant consumers.\n";
+                for (const auto& comp_info : _known_vehicle_components) {
+                    if (comp_info.role == ComponentType::CONSUMER && comp_info.dataType == received_msg.unit_type()) {
+                        if (_communicator->send(received_msg, comp_info.address)) {
+                            db<GatewayComponent>(TRC) << "[GatewayComponent] " << getName() << " Forwarded RESPONSE to consumer at " 
+                                                      << comp_info.address.to_string() << "\n";
+                        } else {
+                            db<GatewayComponent>(ERR) << "[GatewayComponent] " << getName() << " Failed to forward RESPONSE to consumer at " 
+                                                      << comp_info.address.to_string() << "\n";
+                        }
+                    }
+                }
+            } else {
+                db<GatewayComponent>(WRN) << "[GatewayComponent] " << getName() << " received unhandled message type: " 
+                                          << static_cast<int>(received_msg.message_type()) << "\n";
+            }
 
         } else {
             if (!running()) {
