@@ -1,3 +1,5 @@
+SHELL := /bin/bash # Explicitly use bash for executing Makefile commands
+
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -I./include -g
 LDFLAGS = -pthread
@@ -165,44 +167,11 @@ clean:
 
 .PHONY: setup_dummy_iface
 setup_dummy_iface:
-	@if ip link show $(TEST_IFACE_NAME) > /dev/null 2>&1; then \
-		echo "Interface $(TEST_IFACE_NAME) already exists, checking type..."; \
-		if ip link show $(TEST_IFACE_NAME) | grep -q "dummy"; then \
-			echo "Existing $(TEST_IFACE_NAME) is a dummy interface, reusing it."; \
-		else \
-			echo "WARNING: $(TEST_IFACE_NAME) exists but is NOT a dummy interface. Using a different name."; \
-			export TEST_IFACE_NAME="test-dummy1"; \
-			if ip link show $$TEST_IFACE_NAME > /dev/null 2>&1; then \
-				echo "Interface $$TEST_IFACE_NAME also exists. Please clean up interfaces manually."; \
-				exit 1; \
-			fi; \
-			echo "Creating interface $$TEST_IFACE_NAME..."; \
-			sudo ip link add $$TEST_IFACE_NAME type dummy; \
-			sudo ip link set $$TEST_IFACE_NAME up; \
-		fi; \
-	else \
-		echo "Creating interface $(TEST_IFACE_NAME)..."; \
-		sudo ip link add $(TEST_IFACE_NAME) type dummy; \
-		sudo ip link set $(TEST_IFACE_NAME) up; \
-	fi; \
-	mkdir -p $(TESTDIR)/logs
-	# Export the interface name for tests to use
-	echo "$(TEST_IFACE_NAME)" > $(TESTDIR)/logs/current_test_iface
+	./setup_test_iface.sh setup
 
 .PHONY: clean_iface
 clean_iface:
-	@if [ -f $(TESTDIR)/logs/current_test_iface ]; then \
-		TEST_IFACE=$$(cat $(TESTDIR)/logs/current_test_iface); \
-		if ip link show $$TEST_IFACE > /dev/null 2>&1; then \
-			if ip link show $$TEST_IFACE | grep -q "dummy"; then \
-				echo "Removing dummy interface $$TEST_IFACE..."; \
-				sudo ip link delete $$TEST_IFACE type dummy; \
-			else \
-				echo "WARNING: $$TEST_IFACE exists but is NOT a dummy interface. Not removing."; \
-			fi; \
-		fi; \
-		rm -f $(TESTDIR)/logs/current_test_iface; \
-	fi
+	./setup_test_iface.sh cleanup
 
 # Docker commands
 .PHONY: docker-build
