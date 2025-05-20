@@ -23,6 +23,10 @@ def parse_args():
                         help='Maximum number of errors to show (default: 20)')
     parser.add_argument('--count-by-file', '-c', action='store_true',
                         help='Show error counts by file')
+    parser.add_argument('--only-files', '-f', type=str, default=None,
+                        help='Comma-separated list of filenames to include (e.g., sharedMemoryEngine.h,socketEngine.h)')
+    parser.add_argument('--filter-threads', action='store_true',
+                        help='Filter out thread announcement lines (e.g., Thread # created/finished)')
     return parser.parse_args()
 
 def is_excluded(line, exclude_patterns, include_patterns):
@@ -63,11 +67,30 @@ def main():
         return 1
     include_files = get_include_files(args.include_dir)
     with open(args.logfile, 'r') as f:
-        lines = f.readlines()
+        lines = []
+        for line in f:
+            # Skip DWARF warnings
+            if 'warning: evaluate_Dwarf' in line:
+                continue
+            # Optionally skip thread announcements
+            if args.filter_threads and 'Thread #' in line:
+                continue
+            lines.append(line)
     output_file = open(args.output, 'w') if args.output else None
     error_blocks = []
     block = []
+    in_thread_announcement = False
     for line in lines:
+        # Detect start of thread announcement block
+        if '---Thread-Announcement---' in line:
+            in_thread_announcement = True
+            block = []  # Clear any partial block
+            continue
+        # Detect end of thread announcement block (next block separator or end)
+        if in_thread_announcement:
+            if line.strip().startswith('==') and '----------------------------------------------------------------' in line:
+                in_thread_announcement = False
+            continue
         block.append(line)
         if line.strip().startswith('==') and '----------------------------------------------------------------' in line:
             error_blocks.append(block)
@@ -76,14 +99,25 @@ def main():
         error_blocks.append(block)
     # For each error block, check if it should be excluded, and extract refs
     file_line_hits = defaultdict(list)  # {filename: [line numbers]}
+    only_files = None
+    if args.only_files:
+        only_files = set(f.strip() for f in args.only_files.split(','))
+    # Deduplication: track unique issue signatures
+    seen_signatures = set()
     for block in error_blocks:
         block_str = ''.join(block)
         if any(is_excluded(l, args.exclude, args.include) for l in block):
             continue
         refs = extract_file_line_refs(block)
+        # Create a signature for this block: sorted tuple of (filename, line) pairs
+        sig = tuple(sorted(set((fname, lineno) for fname, lineno, _ in refs)))
+        if sig in seen_signatures:
+            continue  # Skip duplicate
+        seen_signatures.add(sig)
         for fname, lineno, fullpath in refs:
-            if fname in include_files or fullpath in include_files:
-                file_line_hits[fname].append((lineno, fullpath, block_str))
+            if (fname in include_files or fullpath in include_files):
+                if only_files is None or fname in only_files:
+                    file_line_hits[fname].append((lineno, fullpath, block_str))
     # Print summary (to both stdout and output_file if specified)
     summary_lines = []
     summary_lines.append(f"Found issues in the following include files:")
