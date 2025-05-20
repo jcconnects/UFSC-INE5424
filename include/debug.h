@@ -12,18 +12,18 @@ class Debug
 {
     public:
         Debug() { 
-            pthread_mutex_init(&_mutex, nullptr); 
+            // pthread_mutex_init(&_mutex, nullptr); // Member mutex removed
         }
         
         ~Debug() { 
-            pthread_mutex_destroy(&_mutex); 
+            // pthread_mutex_destroy(&_mutex); // Member mutex removed
         }
         
         template<typename T>
         Debug & operator<<(T p) {
-            pthread_mutex_lock(&_mutex); // Lock during output operation
+            pthread_mutex_lock(&_stream_access_mutex); // Lock using static mutex
             if (_stream) (*_stream) << p << std::flush;
-            pthread_mutex_unlock(&_mutex);
+            pthread_mutex_unlock(&_stream_access_mutex); // Unlock static mutex
             return *this;
         }
 
@@ -59,11 +59,14 @@ class Debug
         }
 
         static void init() {
-            pthread_mutex_init(&_file_mutex, nullptr);
+            pthread_mutex_init(&_file_mutex, nullptr); 
+            // If _stream_access_mutex is initialized with PTHREAD_MUTEX_INITIALIZER, explicit init might not be needed here
+            // Or, ensure it's initialized: pthread_mutex_init(&_stream_access_mutex, nullptr);
         }
         
         static void cleanup() {
             pthread_mutex_destroy(&_file_mutex);
+            // Corresponding destroy if init is used: pthread_mutex_destroy(&_stream_access_mutex);
         }
 
     private:
@@ -71,7 +74,8 @@ class Debug
         static std::ostream* _stream;
         volatile bool _error;
         static pthread_mutex_t _file_mutex; // Mutex for file operations
-        pthread_mutex_t _mutex; // Mutex for output operations
+        // pthread_mutex_t _mutex; // Member mutex removed
+        static pthread_mutex_t _stream_access_mutex; // Static mutex for all stream output
 
     public:
         static Begl begl;
@@ -178,6 +182,7 @@ Debug::Err Debug::error;
 std::unique_ptr<std::ofstream> Debug::_file_stream;
 std::ostream* Debug::_stream = &std::cout;
 pthread_mutex_t Debug::_file_mutex = PTHREAD_MUTEX_INITIALIZER; // Initialize static mutex
+pthread_mutex_t Debug::_stream_access_mutex = PTHREAD_MUTEX_INITIALIZER; // Initialize new static mutex
 
 // Call this at program start
 class DebugInitializer {
