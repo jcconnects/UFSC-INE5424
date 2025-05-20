@@ -21,11 +21,10 @@ inline std::string get_interface_name() {
 template <typename NIC>
 class Protocol;
 
-template <typename ExternalEngine, typename InternalEngine>
+template <typename Engine>
 class NIC;
 
 class SocketEngine;
-class SharedMemoryEngine;
 
 class Debug;
 
@@ -70,16 +69,9 @@ struct Traits<SocketEngine> : public Traits<void>
     }
 };
 
-// Traits for SharedMemoryEngine class
-template<>
-struct Traits<SharedMemoryEngine> : public Traits<void>
-{
-    static const bool debugged = false;
-};
-
 // Traits for dual-engine NIC
-template <typename ExternalEngine, typename InternalEngine>
-struct Traits<NIC<ExternalEngine, InternalEngine>> : public Traits<void>
+template <typename Engine>
+struct Traits<NIC<Engine>> : public Traits<void>
 {
     static const bool debugged = false;
     static const unsigned int SEND_BUFFERS = 512;
@@ -88,7 +80,7 @@ struct Traits<NIC<ExternalEngine, InternalEngine>> : public Traits<void>
 
 // Traits for Protocol with dual-engine NIC
 template <>
-struct Traits<Protocol<NIC<SocketEngine, SharedMemoryEngine>>> : public Traits<void>
+struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
 {
     static const bool debugged = true;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 888; // Example value

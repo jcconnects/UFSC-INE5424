@@ -2,7 +2,6 @@
 #define INITIALIZER_H
 
 #include "debug.h"
-#include "sharedMemoryEngine.h"
 #include "socketEngine.h"
 #include "nic.h"
 #include "protocol.h"
@@ -19,7 +18,7 @@
 class Initializer {
 
     public:
-        typedef NIC<SocketEngine, SharedMemoryEngine> NIC_T;
+        typedef NIC<SocketEngine> NIC_T;
         typedef Protocol<NIC_T> Protocol_T;
 
 
