@@ -54,7 +54,7 @@ class SocketEngine{
         void receive();
 
         // Signal handler
-        virtual void handleExternal(Ethernet::Frame* frame, unsigned int size) = 0;
+        virtual void handle(Ethernet::Frame* frame, unsigned int size) = 0;
 
     protected:
         int _sock_fd;
@@ -71,7 +71,19 @@ class SocketEngine{
 
 /********** SocketEngine Implementation **********/
 
-SocketEngine::SocketEngine() : _stop_ev(eventfd(0, EFD_NONBLOCK)), _running(false) {};
+SocketEngine::SocketEngine() : _stop_ev(eventfd(0, EFD_NONBLOCK)), _running(false) {
+    start();
+};
+
+SocketEngine::~SocketEngine()  {
+    db<SocketEngine>(TRC) << "SocketEngine::~SocketEngine() called!\n";
+
+    stop();
+
+    close(_sock_fd);
+    close(_ep_fd);
+    close(_stop_ev); // Also close the eventfd
+};
 
 void SocketEngine::start() {
     db<SocketEngine>(TRC) << "SocketEngine::start() called!\n";
@@ -185,20 +197,12 @@ void SocketEngine::setUpEpoll() {
     db<SocketEngine>(INF) << "[SocketEngine] epoll setted\n";
 }
 
-SocketEngine::~SocketEngine()  {
-    db<SocketEngine>(TRC) << "SocketEngine::~SocketEngine() called!\n";
-
-    close(_sock_fd);
-    close(_ep_fd);
-    close(_stop_ev); // Also close the eventfd
-};
-
 int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
     db<SocketEngine>(TRC) << "SocketEngine::send() called!\n";
 
     // Check if engine is running before sending
     if (!running()) {
-        db<SocketEngine>(WRN) << "[SocketEngine] Attempted to send while engine is stopping/stopped\n";
+        db<SocketEngine>(ERR) << "[SocketEngine] Attempted to send while engine is stopping/stopped\n";
         return -1;
     }
 
@@ -215,16 +219,6 @@ int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
     int result = sendto(_sock_fd, frame, size, 0, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
     db<SocketEngine>(INF) << "[SocketEngine] sendto() returned value " << std::to_string(result) << "\n";
     
-    // Convert the protocol back to host order for logging
-    frame->prot = ntohs(frame->prot);
-    
-    if (result < 0) {
-        perror("sendto");
-        db<SocketEngine>(ERR) << "[SocketEngine] Failed to send frame: {src = " << Ethernet::mac_to_string(frame->src) << ", dst = " << Ethernet::mac_to_string(frame->dst) << ", prot = " << std::to_string(frame->prot) << "}\n";
-    } else {
-        db<SocketEngine>(INF) << "[SocketEngine] Frame sent: {src = " << Ethernet::mac_to_string(frame->src) << ", dst = " << Ethernet::mac_to_string(frame->dst) << ", prot = " << std::to_string(frame->prot) << "}\n";
-    }
-    
     return result;
 }
 
@@ -236,7 +230,6 @@ void* SocketEngine::run(void* arg)  {
     struct epoll_event events[10];
 
     while (engine->running()) {
-        db<SocketEngine>(INF) << "[SocketEngine] Entering wait\n";
         int n = epoll_wait(engine->_ep_fd, events, 10, -1);
         
         if (n < 0) {
@@ -270,7 +263,7 @@ void SocketEngine::receive() {
 
     // Checks weather engine is still active
     if (!running()) {
-        db<SocketEngine>(WRN) << "[SocketEngine] receive() called when engine is inactive\n";
+        db<SocketEngine>(ERR) << "[SocketEngine] receive() called when engine is inactive\n";
         return;
     }
 
@@ -299,7 +292,7 @@ void SocketEngine::receive() {
     frame.prot = ntohs(frame.prot);
     db<SocketEngine>(INF) << "[SocketEngine] received frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << frame.prot << ", size = " << bytes_received << "}\n";
 
-    this->handleExternal(&frame, static_cast<unsigned int>(bytes_received));
+    this->handle(&frame, static_cast<unsigned int>(bytes_received));
 }
 
 const bool SocketEngine::running() {
