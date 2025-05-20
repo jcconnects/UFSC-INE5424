@@ -6,17 +6,17 @@
 #include "list.h"
 
 // Forward declarations for Conditional Observer class
-template <typename T, typename Condition>
+template <typename T, typename Condition = void>
 class Conditional_Data_Observer;
 
 // Conditionally Observed Class
-template <typename T, typename Condition>
+template <typename T, typename Condition = void>
 class Conditionally_Data_Observed {
     public:
         typedef T Observed_Data;
         typedef Condition Observing_Condition;
         typedef Conditional_Data_Observer<T, Condition> Observer;
-        typedef Ordered_List<Conditional_Data_Observer<T, Condition>, Condition> Observers;
+        typedef Ordered_List<Observer, Condition> Observers;
 
     public:
         Conditionally_Data_Observed() = default;
@@ -25,7 +25,7 @@ class Conditionally_Data_Observed {
         void attach(Observer* o, Condition c);
         void detach(Observer* o, Condition c);
         bool notify(Condition c, T* d);
-        bool notifyAll(T* d);
+        bool notify(T* d);
 
     protected:
         Observers _observers;
@@ -57,7 +57,7 @@ bool Conditionally_Data_Observed<T, C>::notify(C c, T* d) {
 }
 
 template <typename T, typename C>
-bool Conditionally_Data_Observed<T, C>::notifyAll(T* d) {
+bool Conditionally_Data_Observed<T, C>::notify(T* d) {
     bool notified = false;
 
     for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
@@ -68,29 +68,54 @@ bool Conditionally_Data_Observed<T, C>::notifyAll(T* d) {
     return notified;
 }
 
+// Specification for when Condition = void
+template <typename T>
+class Conditionally_Data_Observed<T, void> {
+    public:
+        typedef T Observed_Data;
+        typedef Conditional_Data_Observer<T, void> Observer;
+        typedef List<Observer> Observers;
+
+        Conditionally_Data_Observed() = default;
+        virtual ~Conditionally_Data_Observed() = default;
+
+        void attach(Observer* o) { _observers.insert(o); }
+        void detach(Observer* o) { _observers.remove(o); }
+        bool notify(T* d) {
+            bool notified = false;
+
+            for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+                (*obs)->update(d);
+                notified = true;
+            }
+
+            return notified;
+        }
+};
 /****************************************************************************/
 
 
 // Foward declaration for Concurrent_Observer Class
-template <typename D, typename C = void>
+template <typename D, typename C>
 class Concurrent_Observer;
 
 // Concurrent Observed
-template<typename D, typename C>
+template<typename D, typename C = void>
 class Concurrent_Observed : public Conditionally_Data_Observed<D, C>{
     friend class Concurrent_Observer<D, C>;
     
     public:
         typedef D Observed_Data;
         typedef C Observing_Condition;
-        typedef Ordered_List<Concurrent_Observer<D, C>, C> Observers;
+        typedef Concurrent_Observer<D, C> Observer;
+        typedef Ordered_List<Observer, C> Observers;
     
     public:
         Concurrent_Observed();
         ~Concurrent_Observed();
         
-        void attach(Concurrent_Observer<D, C>* o, C c) ;
-        void detach(Concurrent_Observer<D, C>* o, C c) ;
+        void attach(Observer* o, C c) ;
+        void detach(Observer* o, C c) ;
         bool notify(C c, D* d);
         
     private:
@@ -99,58 +124,87 @@ class Concurrent_Observed : public Conditionally_Data_Observed<D, C>{
 };
 
 /************************* CONCURRENT_OBSERVED IMPLEMENTATION *****************************/
-template <typename T, typename C>
-Concurrent_Observed<T, C>::Concurrent_Observed() {
+template <typename D, typename C>
+Concurrent_Observed<D, C>::Concurrent_Observed() {
     pthread_mutex_init(&_mtx, nullptr);
 }
 
-template <typename T, typename C>
-Concurrent_Observed<T, C>::~Concurrent_Observed() {
+template <typename D, typename C>
+Concurrent_Observed<D, C>::~Concurrent_Observed() {
     pthread_mutex_destroy(&_mtx);
 }
 
-template <typename T, typename C>
-void Concurrent_Observed<T, C>::attach(Concurrent_Observer<T, C>* o, C c) {
+template <typename D, typename C>
+void Concurrent_Observed<D, C>::attach(Observer* o, C c) {
     pthread_mutex_lock(&_mtx);
-    this->_observers.insert(o);
+    _observers.insert(o);
     pthread_mutex_unlock(&_mtx);
 }
 
-template <typename T, typename C>
-void Concurrent_Observed<T, C>::detach(Concurrent_Observer<T, C>* o, C c) {
+template <typename D, typename C>
+void Concurrent_Observed<D, C>::detach(Observer* o, C c) {
     pthread_mutex_lock(&_mtx);
-    this->_observers.remove(o);
+    _observers.remove(o);
     pthread_mutex_unlock(&_mtx);
 }
 
-template <typename T, typename C>
-bool Concurrent_Observed<T, C>::notify(C c, T* d) {
+template <typename D, typename C>
+bool Concurrent_Observed<D, C>::notify(C c, D* d) {
     pthread_mutex_lock(&_mtx);
     bool notified = false;
     
-    // Check for broadcast condition (assuming 0 and C is integral)
-    if (c == 0 && std::is_integral<C>::value) {
-        // Broadcast: Notify ALL attached observers with condition 0
-        for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-            (*obs)->update(0, d); // Notify with broadcast condition 0
+    for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+        if ((*obs)->rank() == c) {
+            (*obs)->update(c, d);
             notified = true;
-        }
-    } else {
-        // Normal notification: Notify only matching observers
-        for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-            if ((*obs)->rank() == c) {
-                (*obs)->update(c, d); // Notify with original condition
-                notified = true;
-                // Optimization: If only one observer per condition is expected,
-                // you could potentially break here.
-                 break; // Assuming only one observer per port
-            }
         }
     }
     
     pthread_mutex_unlock(&_mtx);
     return notified;
 }
+
+// Specification for when Condition = void
+template <typename D>
+class Concurrent_Observed<D, void> : public Conditionally_Data_Observed<D, void>{
+    friend class Concurrent_Observer<D, void>;
+
+    public:
+        typedef D Observed_Data;
+        typedef 
+        typedef List<Concurrent_Observer<D, void>> Observers;
+
+        Concurrent_Observed() { pthread_mutex_init(&_mtx, nullptr); }
+        ~Concurrent_Observed() { pthread_mutex_destroy(&_mtx); }
+
+        void attach(Observer* obs) {
+            pthread_mutex_lock(&_mtx);
+            _observers.insert(o);
+            pthread_mutex_unlock(&_mtx);
+        }
+
+        void detach(Observer* obs) {
+            pthread_mutex_lock(&_mtx);
+            _observers.remove(o);
+            pthread_mutex_unlock(&_mtx);
+        }
+
+        bool notify(D* d) {
+            pthread_mutex_lock(&_mtx);
+            bool notified = false;
+            
+            for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+                (*obs)->update(d);
+                notified = true;
+            }
+            
+            pthread_mutex_unlock(&_mtx);
+            return notified;
+        }
+    
+    private:
+        pthread_mutex_t _mtx;
+};
 
 /*********************************************************************************************/
 
