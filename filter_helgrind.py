@@ -14,6 +14,7 @@ def parse_args():
                         help='File patterns to exclude (default: debug.h)')
     parser.add_argument('--include', '-i', action='append', default=[], 
                         help='File patterns to specifically include')
+    parser.add_argument('--include-dir', default='include', help='Directory of implementation headers to match (default: include)')
     parser.add_argument('--summary', '-s', action='store_true', 
                         help='Show only summary statistics')
     parser.add_argument('--output', '-o', 
@@ -26,159 +27,99 @@ def parse_args():
 
 def is_excluded(line, exclude_patterns, include_patterns):
     """Check if a line should be excluded based on patterns."""
-    # Force include patterns take precedence
     for pattern in include_patterns:
         if pattern in line:
             return False
-    
-    # Then check exclude patterns
     for pattern in exclude_patterns:
         if pattern in line:
             return True
-    
     return False
 
-def extract_error_context(lines, start_idx, max_lines=20):
-    """Extract the error context from the log lines."""
-    context = []
-    
-    # Start from the line before the error marker
-    idx = start_idx - 1
-    
-    # Look for the start of this error block
-    while idx >= 0 and not lines[idx].startswith('=='):
-        idx -= 1
-    
-    # This is where the error block starts
-    start = idx
-    
-    # Now collect lines until the end of this error block or max_lines
-    line_count = 0
-    idx = start
-    while idx < len(lines) and line_count < max_lines:
-        if idx >= start_idx + 4 and lines[idx].startswith('==') and '==' in lines[idx][2:]:
-            # We've reached the next error block
-            break
-        context.append(lines[idx])
-        idx += 1
-        line_count += 1
-    
-    return context
+def get_include_files(include_dir):
+    """Return a set of all .h files (with relative paths) in the include_dir and subdirs."""
+    include_files = set()
+    for root, dirs, files in os.walk(include_dir):
+        for f in files:
+            if f.endswith('.h'):
+                rel_path = os.path.relpath(os.path.join(root, f), include_dir)
+                include_files.add(f)
+                include_files.add(rel_path)
+    return include_files
 
-def count_errors_by_file(lines):
-    """Count errors by source file."""
-    file_counts = Counter()
-    
-    # Regular expression to extract filenames
-    filename_pattern = re.compile(r'\(([^:)]+\.[ch][^:)]*)')
-    
-    for i, line in enumerate(lines):
-        if 'Possible data race' in line or 'Lock order' in line:
-            # Scan the next 10 lines for filename references
-            for j in range(i, min(i+10, len(lines))):
-                matches = filename_pattern.findall(lines[j])
-                for match in matches:
-                    file_counts[match] += 1
-    
-    return file_counts
+def extract_file_line_refs(block):
+    """Extract (filename, line) pairs from a block of log lines."""
+    refs = []
+    # Patterns: file.h:123, (file.h:123), at file.h:123, etc.
+    file_line_re = re.compile(r'([\w\./\\-]+\.h):(\d+)')
+    for line in block:
+        for match in file_line_re.finditer(line):
+            refs.append((os.path.basename(match.group(1)), int(match.group(2)), match.group(1)))
+    return refs
 
 def main():
-    """Main entry point."""
     args = parse_args()
-    
-    # Check if the log file exists
     if not os.path.exists(args.logfile):
         print(f"Error: Log file '{args.logfile}' does not exist.", file=sys.stderr)
         return 1
-    
-    # Read the log file
+    include_files = get_include_files(args.include_dir)
     with open(args.logfile, 'r') as f:
         lines = f.readlines()
-    
-    # Count errors by file for statistics
-    file_error_counts = count_errors_by_file(lines)
-    
-    # Prepare output file if specified
-    output_file = None
-    if args.output:
-        output_file = open(args.output, 'w')
-    
-    # Extract and filter error contexts
-    error_contexts = []
-    error_count = 0
-    data_race_count = 0
-    lock_order_count = 0
-    
-    for i, line in enumerate(lines):
-        if 'Possible data race' in line:
-            data_race_count += 1
-            error_count += 1
-            context = extract_error_context(lines, i)
-            # Check if this context should be excluded
-            exclude_context = False
-            for c_line in context:
-                if is_excluded(c_line, args.exclude, args.include):
-                    exclude_context = True
-                    break
-            
-            if not exclude_context:
-                error_contexts.append((context, "Data Race"))
-        
-        elif 'Lock order' in line:
-            lock_order_count += 1
-            error_count += 1
-            context = extract_error_context(lines, i)
-            # Check if this context should be excluded
-            exclude_context = False
-            for c_line in context:
-                if is_excluded(c_line, args.exclude, args.include):
-                    exclude_context = True
-                    break
-            
-            if not exclude_context:
-                error_contexts.append((context, "Lock Order Violation"))
-    
-    # Print summary
-    print(f"Total errors: {error_count}")
-    print(f"Data races: {data_race_count}")
-    print(f"Lock order violations: {lock_order_count}")
-    print(f"Filtered errors (excluding {args.exclude}): {len(error_contexts)}")
-    print("=" * 80)
-    
-    # Print error counts by file if requested
-    if args.count_by_file:
-        print("\nError counts by file:")
-        for filename, count in file_error_counts.most_common():
-            if any(pattern in filename for pattern in args.exclude) and not any(pattern in filename for pattern in args.include):
-                filename = f"{filename} (excluded)"
-            print(f"  {filename}: {count}")
-        print("=" * 80)
-    
-    # If only summary was requested, we're done
-    if args.summary:
+    output_file = open(args.output, 'w') if args.output else None
+    error_blocks = []
+    block = []
+    for line in lines:
+        block.append(line)
+        if line.strip().startswith('==') and '----------------------------------------------------------------' in line:
+            error_blocks.append(block)
+            block = []
+    if block:
+        error_blocks.append(block)
+    # For each error block, check if it should be excluded, and extract refs
+    file_line_hits = defaultdict(list)  # {filename: [line numbers]}
+    for block in error_blocks:
+        block_str = ''.join(block)
+        if any(is_excluded(l, args.exclude, args.include) for l in block):
+            continue
+        refs = extract_file_line_refs(block)
+        for fname, lineno, fullpath in refs:
+            if fname in include_files or fullpath in include_files:
+                file_line_hits[fname].append((lineno, fullpath, block_str))
+    # Print summary (to both stdout and output_file if specified)
+    summary_lines = []
+    summary_lines.append(f"Found issues in the following include files:")
+    for fname in sorted(file_line_hits):
+        unique_lines = sorted(set(lineno for lineno, _, _ in file_line_hits[fname]))
+        summary_lines.append(f"  {fname}: {len(file_line_hits[fname])} issues")
+        for lineno in unique_lines:
+            # Find a fullpath for this line (first occurrence)
+            fullpath = next((fp for l, fp, _ in file_line_hits[fname] if l == lineno), fname)
+            summary_lines.append(f"    - {fullpath}:{lineno}")
+    summary_lines.append("="*80)
+    for line in summary_lines:
+        print(line)
         if output_file:
-            output_file.close()
-        return 0
-    
-    # Output the filtered errors
-    error_count = 0
-    for context, error_type in error_contexts:
-        error_count += 1
-        if error_count > args.max_errors:
-            print(f"\n... and {len(error_contexts) - args.max_errors} more errors (use --max-errors to see more)")
-            break
-        
-        print(f"\n=== {error_type} #{error_count} ===")
-        for line in context:
-            print(line.rstrip())
-            if output_file:
-                output_file.write(line)
-        
-        print("-" * 80)
-    
+            output_file.write(line + "\n")
+    # Optionally print error blocks
+    if not args.summary:
+        count = 0
+        for fname in sorted(file_line_hits):
+            for lineno, fullpath, block_str in file_line_hits[fname]:
+                count += 1
+                if count > args.max_errors:
+                    msg = f"... and more (use --max-errors to see more)"
+                    print(msg)
+                    if output_file:
+                        output_file.write(msg + "\n")
+                    break
+                header = f"\n=== Issue in {fullpath}:{lineno} ==="
+                print(header)
+                if output_file:
+                    output_file.write(header + "\n")
+                print(block_str)
+                if output_file:
+                    output_file.write(block_str)
     if output_file:
         output_file.close()
-    
     return 0
 
 if __name__ == '__main__':

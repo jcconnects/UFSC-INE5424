@@ -506,6 +506,10 @@ def main() -> int:
     """Main entry point"""
     args = parse_args()
     
+    # Always exclude debug.h
+    if 'debug.h' not in args.exclude:
+        args.exclude.append('debug.h')
+    
     # Parse logs from all tools
     all_issues = parse_all_logs(args)
     
