@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <cstdint>
+#include <mutex>
 
 template <typename T>
 class Buffer{
@@ -25,10 +26,12 @@ class Buffer{
     private:
         std::uint8_t _data[MAX_SIZE];
         unsigned int _size;
+        mutable std::mutex _mutex;
 };
 
 template <typename T>
 Buffer<T>::Buffer() : _size(0) {
+    std::lock_guard<std::mutex> lock(_mutex);
     std::memset(_data, 0, MAX_SIZE);
 }
 
@@ -39,6 +42,7 @@ Buffer<T>::~Buffer() {
 
 template <typename T>
 T* Buffer<T>::data() {
+    std::lock_guard<std::mutex> lock(_mutex);
     if (_size == 0)
         return nullptr;
         
@@ -47,11 +51,13 @@ T* Buffer<T>::data() {
 
 template <typename T>
 const unsigned int Buffer<T>::size() const {
+    std::lock_guard<std::mutex> lock(_mutex);
     return _size;
 }
 
 template <typename T>
 void Buffer<T>::setData(const void* data, unsigned int size) {
+    std::lock_guard<std::mutex> lock(_mutex);
     setSize(size);
     std::memcpy(_data, data, _size);
 }
@@ -63,6 +69,7 @@ void Buffer<T>::setSize(unsigned int size) {
 
 template <typename T>
 void Buffer<T>::clear() {
+    std::lock_guard<std::mutex> lock(_mutex);
     std::memset(_data, 0, MAX_SIZE);
     _size = 0;
 }

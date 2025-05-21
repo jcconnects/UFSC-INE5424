@@ -6,6 +6,7 @@
 #include <random>
 #include <vector>
 #include <atomic>
+#include <mutex>
 
 #include "component.h"
 #include "debug.h"
@@ -35,6 +36,9 @@ class BasicProducer : public Component {
         // Current data
         int _current_value;
         uint32_t _counter;
+        
+        // Mutex to protect access to _current_value and _counter
+        std::mutex _data_mutex;
         
         // Update the simulated test data
         void update_test_data();
@@ -99,6 +103,9 @@ void BasicProducer::run() {
 }
 
 void BasicProducer::update_test_data() {
+    // Lock the mutex before updating data
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    
     // Generate new simulated data
     _current_value = _value_dist(_rng);
     _counter++;
@@ -113,6 +120,9 @@ bool BasicProducer::produce_data_for_response(DataTypeId type, std::vector<std::
     if (type != _produced_data_type) {
         return false;
     }
+    
+    // Lock the mutex before reading data
+    std::lock_guard<std::mutex> lock(_data_mutex);
     
     // Create a buffer with our two values
     out_value.resize(sizeof(int) + sizeof(uint32_t));

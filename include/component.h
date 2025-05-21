@@ -698,11 +698,18 @@ void Component::producer_routine() {
             // Get the current GCD period
             std::uint32_t current_period = _current_gcd_period_us.load(std::memory_order_acquire);
             
+            // Check interest periods under mutex protection
+            bool has_interests = false;
+            {
+                std::lock_guard<std::mutex> lock(_periods_mutex);
+                has_interests = !_interest_periods.empty();
+            }
+            
             // If we have no interests yet, sleep and wait
-            if (current_period == 0 || _interest_periods.empty()) {
+            if (current_period == 0 || !has_interests) {
                 db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
                                  << " no interests yet, sleeping (current period: " << current_period
-                                 << ", interest periods count: " << _interest_periods.size() << ")\n";
+                                 << ", has interests: " << (has_interests ? "yes" : "no") << ")\n";
                 // Use shorter sleep interval to check running state more frequently
                 for (int i = 0; i < 5 && _producer_thread_running.load(std::memory_order_acquire); i++) {
                     usleep(20000); // 20ms * 5 = 100ms total, but more responsive to shutdown
@@ -813,11 +820,18 @@ void Component::producer_routine() {
             // Get the current GCD period
             std::uint32_t current_period = _current_gcd_period_us.load(std::memory_order_acquire);
             
+            // Check interest periods under mutex protection
+            bool has_interests = false;
+            {
+                std::lock_guard<std::mutex> lock(_periods_mutex);
+                has_interests = !_interest_periods.empty();
+            }
+            
             // If we have no interests yet, sleep and wait
-            if (current_period == 0 || _interest_periods.empty()) {
+            if (current_period == 0 || !has_interests) {
                 db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
                                  << " no interests yet, sleeping (current period: " << current_period
-                                 << ", interest periods count: " << _interest_periods.size() << ")\n";
+                                 << ", has interests: " << (has_interests ? "yes" : "no") << ")\n";
                 // Use shorter sleep interval to check running state more frequently
                 for (int i = 0; i < 5 && _producer_thread_running.load(std::memory_order_acquire); i++) {
                     usleep(20000); // 20ms * 5 = 100ms total, but more responsive to shutdown

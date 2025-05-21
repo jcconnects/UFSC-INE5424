@@ -1,0 +1,54 @@
+{
+  "helgrind": [
+    {
+      "tool": "helgrind",
+      "issue_type": "Data Access Violation",
+      "description": "==4187428== Thread #2 was created",
+      "stack_trace": [],
+      "file_locations": [
+        "pthread_create.c:295",
+        "(clone-internal.c:83",
+        "(socketEngine.h:82",
+        "(nic.h:100",
+        "(initializer.h:48",
+        "unsigned int) (vehicle.h:103",
+        "(vehicle.h:103",
+        ") (socketEngine.h:82",
+        "(pthread_create.c:295",
+        "pthread_create.c:828",
+        "(demo.cpp:167",
+        "(pthread_create.c:828",
+        "demo.cpp:167",
+        ") (nic.h:100",
+        "clone-internal.c:83",
+        ") (initializer.h:48"
+      ],
+      "run_id": "1"
+    },
+    {
+      "tool": "helgrind",
+      "issue_type": "Data Race",
+      "description": "==4187467== Possible data race during read of size 8 at 0x4F84A50 by thread #1",
+      "stack_trace": [],
+      "file_locations": [
+        "pthread_create.c:295",
+        "(clone-internal.c:83",
+        "(socketEngine.h:82",
+        "(nic.h:100",
+        "(initializer.h:48",
+        "unsigned int) (vehicle.h:103",
+        "(vehicle.h:103",
+        ") (socketEngine.h:82",
+        "(pthread_create.c:295",
+        "pthread_create.c:828",
+        "(demo.cpp:167",
+        "(pthread_create.c:828",
+        "demo.cpp:167",
+        ") (nic.h:100",
+        "clone-internal.c:83",
+        ") (initializer.h:48"
+      ],
+      "run_id": "1"
+    }
+  ]
+}

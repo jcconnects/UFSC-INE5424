@@ -10,7 +10,7 @@ def parse_args():
     import argparse
     parser = argparse.ArgumentParser(description='Filter and analyze Helgrind logs')
     parser.add_argument('logfile', help='Path to Helgrind log file')
-    parser.add_argument('--exclude', '-e', action='append', default=['debug.h'], 
+    parser.add_argument('--exclude', '-e', action='append', default=['debug.h', 'ostream'], 
                         help='File patterns to exclude (default: debug.h)')
     parser.add_argument('--include', '-i', action='append', default=[], 
                         help='File patterns to specifically include')

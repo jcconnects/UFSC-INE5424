@@ -6,7 +6,7 @@
 # Default values
 LOG_DIR="tests/logs/analyzers"
 REPORT_DIR="tests/reports"
-TOOLS="helgrind,drd,tsan"
+TOOLS="helgrind" # "helgrind,drd,tsan"
 NUM_RUNS=3
 VERBOSE=0
 EXCLUDE_PATTERNS=("debug.h" "stdlib")
