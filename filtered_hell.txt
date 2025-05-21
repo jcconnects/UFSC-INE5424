@@ -1,485 +1,438 @@
 Found issues in the following include files:
-  basic_producer.h: 7 issues
-    - basic_producer.h:23
+  basic_producer.h: 1 issues
     - basic_producer.h:80
-    - basic_producer.h:102
-  communicator.h: 1 issues
+  communicator.h: 2 issues
+    - communicator.h:172
     - communicator.h:312
-  component.h: 10 issues
+  component.h: 2 issues
     - component.h:158
-    - component.h:306
-    - component.h:672
-    - component.h:704
+    - component.h:322
   gateway_component.h: 1 issues
-    - gateway_component.h:88
-  vehicle.h: 4 issues
-    - vehicle.h:132
-    - vehicle.h:175
+    - gateway_component.h:194
+  nic.h: 2 issues
+    - nic.h:170
+    - nic.h:304
+  observed.h: 2 issues
+    - observed.h:68
+  protocol.h: 2 issues
+    - protocol.h:200
+    - protocol.h:366
+  sharedMemoryEngine.h: 1 issues
+    - sharedMemoryEngine.h:57
 ================================================================================
 
 === Issue in basic_producer.h:80 ===
-==4187431== 
-==4187431==  Lock at 0x4F87F18 was first observed
-==4187431==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187431==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187431==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187431==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187431==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187431==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187431==    by 0x1235D8: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
-==4187431==    by 0x122C0F: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
-==4187431==    by 0x122488: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
-==4187431==    by 0x13496A: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
-==4187428== ----------------------------------------------------------------
-
-=== Issue in basic_producer.h:80 ===
-==4187522==    by 0x11B34F: GatewayComponent::GatewayComponent(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*) (gateway_component.h:88)
-==4187484== 
-==4187484==  Lock at 0x4F87F18 was first observed
-==4187484==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187484==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187522==    by 0x13291C: std::_MakeUniq<GatewayComponent>::__single_object std::make_unique<GatewayComponent, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187484==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187484==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187522==    by 0x12D22D: void Vehicle::create_component<GatewayComponent>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187484==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187522==    by 0x1205AF: run_vehicle(Vehicle*) (demo.cpp:67)
-==4187522==    by 0x1211F2: main (demo.cpp:168)
-==4187522==  Block was alloc'd by thread #1
-==4187484==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187522== 
-==4187484==    by 0x1235D8: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
-==4187484==    by 0x122C0F: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
-==4187484==    by 0x122488: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
-==4187484==    by 0x13496A: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
-==4187484==    by 0x12FB04: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
-==4187522== ----------------------------------------------------------------
-
-=== Issue in basic_producer.h:80 ===
-==4187484== 
-==4187484==  Lock at 0x4F87F18 was first observed
-==4187484==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187484==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187484==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187484==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187484==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187484==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187484==    by 0x1235D8: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
-==4187522== ----------------------------------------------------------------
-
-=== Issue in basic_producer.h:80 ===
-==4187484== 
-==4187484==  Lock at 0x4F87F18 was first observed
-==4187484==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187484==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187484==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187484==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187484==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187484==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187522== ----------------------------------------------------------------
-
-=== Issue in basic_producer.h:80 ===
-==4187484== 
-==4187484==  Lock at 0x4F87F18 was first observed
-==4187484==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187484==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187484==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187484==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187484==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187484==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187484==    by 0x1235D8: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
-==4187484==    by 0x122C0F: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
-==4187522== ----------------------------------------------------------------
-
-=== Issue in basic_producer.h:23 ===
-==4187445== 
-==4187445== Possible data race during write of size 8 at 0x4F87C70 by thread #1
-==4187445== Locks held: none
-==4187445==    at 0x484DBEF: operator delete(void*, unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187445==    by 0x136ECE: BasicProducer::~BasicProducer() (basic_producer.h:23)
-==4187445==    by 0x136D25: std::default_delete<Component>::operator()(Component*) const (unique_ptr.h:85)
-==4187445==    by 0x132AA5: std::unique_ptr<Component, std::default_delete<Component> >::~unique_ptr() (unique_ptr.h:361)
-==4187445==    by 0x13AA6D: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> > >(std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:151)
-==4187445==    by 0x138884: void std::_Destroy_aux<false>::__destroy<std::unique_ptr<Component, std::default_delete<Component> >*>(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:163)
-==4187445==    by 0x135F19: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> >*>(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:196)
-==4187445==    by 0x1316A8: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> > >(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > >&) (alloc_traits.h:848)
-==4187445==    by 0x131700: std::vector<std::unique_ptr<Component, std::default_delete<Component> >, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > > >::_M_erase_at_end(std::unique_ptr<Component, std::default_delete<Component> >*) (stl_vector.h:1796)
-==4187445==    by 0x12AA65: std::vector<std::unique_ptr<Component, std::default_delete<Component> >, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > > >::clear() (stl_vector.h:1499)
-==4187445==    by 0x118405: Vehicle::~Vehicle() (vehicle.h:132)
-==4187445==    by 0x120994: run_vehicle(Vehicle*) (demo.cpp:99)
-==4187445==    by 0x1211F2: main (demo.cpp:168)
-==4187445== 
-==4187445== This conflicts with a previous read of size 8 by thread #4
-==4187445== Locks held: none
-==4187445==    at 0x49D514F: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
-==4187445==    by 0x119E0B: BasicProducer::run() (basic_producer.h:102)
-==4187445==    by 0x1128EB: Component::thread_entry_point(void*) (component.h:306)
-==4187445==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187445==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
-==4187445==    by 0x4CDEA03: clone (clone.S:100)
-==4187445==  Address 0x4f87c70 is 192 bytes inside an unallocated block of size 15,264 in arena "client"
-==4187445== 
-==4187445== ----------------------------------------------------------------
-
-=== Issue in basic_producer.h:102 ===
-==4187445== 
-==4187445== Possible data race during write of size 8 at 0x4F87C70 by thread #1
-==4187445== Locks held: none
-==4187445==    at 0x484DBEF: operator delete(void*, unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187445==    by 0x136ECE: BasicProducer::~BasicProducer() (basic_producer.h:23)
-==4187445==    by 0x136D25: std::default_delete<Component>::operator()(Component*) const (unique_ptr.h:85)
-==4187445==    by 0x132AA5: std::unique_ptr<Component, std::default_delete<Component> >::~unique_ptr() (unique_ptr.h:361)
-==4187445==    by 0x13AA6D: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> > >(std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:151)
-==4187445==    by 0x138884: void std::_Destroy_aux<false>::__destroy<std::unique_ptr<Component, std::default_delete<Component> >*>(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:163)
-==4187445==    by 0x135F19: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> >*>(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:196)
-==4187445==    by 0x1316A8: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> > >(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > >&) (alloc_traits.h:848)
-==4187445==    by 0x131700: std::vector<std::unique_ptr<Component, std::default_delete<Component> >, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > > >::_M_erase_at_end(std::unique_ptr<Component, std::default_delete<Component> >*) (stl_vector.h:1796)
-==4187445==    by 0x12AA65: std::vector<std::unique_ptr<Component, std::default_delete<Component> >, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > > >::clear() (stl_vector.h:1499)
-==4187445==    by 0x118405: Vehicle::~Vehicle() (vehicle.h:132)
-==4187445==    by 0x120994: run_vehicle(Vehicle*) (demo.cpp:99)
-==4187445==    by 0x1211F2: main (demo.cpp:168)
-==4187445== 
-==4187445== This conflicts with a previous read of size 8 by thread #4
-==4187445== Locks held: none
-==4187445==    at 0x49D514F: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
-==4187445==    by 0x119E0B: BasicProducer::run() (basic_producer.h:102)
-==4187445==    by 0x1128EB: Component::thread_entry_point(void*) (component.h:306)
-==4187445==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187445==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
-==4187445==    by 0x4CDEA03: clone (clone.S:100)
-==4187445==  Address 0x4f87c70 is 192 bytes inside an unallocated block of size 15,264 in arena "client"
-==4187445== 
-==4187445== ----------------------------------------------------------------
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
 === Issue in communicator.h:312 ===
-==4187522==    by 0x11B34F: GatewayComponent::GatewayComponent(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*) (gateway_component.h:88)
-==4187484== 
-==4187484==  Lock at 0x4F87F18 was first observed
-==4187484==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187484==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187522==    by 0x13291C: std::_MakeUniq<GatewayComponent>::__single_object std::make_unique<GatewayComponent, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187484==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187484==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187522==    by 0x12D22D: void Vehicle::create_component<GatewayComponent>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187484==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187522==    by 0x1205AF: run_vehicle(Vehicle*) (demo.cpp:67)
-==4187522==    by 0x1211F2: main (demo.cpp:168)
-==4187522==  Block was alloc'd by thread #1
-==4187484==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187522== 
-==4187484==    by 0x1235D8: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
-==4187484==    by 0x122C0F: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
-==4187484==    by 0x122488: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
-==4187484==    by 0x13496A: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
-==4187484==    by 0x12FB04: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
-==4187522== ----------------------------------------------------------------
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
-=== Issue in component.h:704 ===
-==4187428== 
-==4187428==  Lock at 0x4F87F18 was first observed
-==4187431==    by 0x132B6B: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187428==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187431==    by 0x12D31B: void Vehicle::create_component<BasicProducer>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187428==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187431==    by 0x12065C: run_vehicle(Vehicle*) (demo.cpp:71)
-==4187431==    by 0x1211F2: main (demo.cpp:168)
-==4187431==  Block was alloc'd by thread #1
-==4187431== 
-==4187428==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187428==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187428==    by 0x116541: Component::producer_routine() (component.h:704)
-==4187428==    by 0x1161B8: Component::producer_thread_launcher(void*) (component.h:672)
-==4187428==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187428==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
-==4187428==    by 0x4CDEA03: clone (clone.S:100)
-==4187428==  Address 0x4f87f18 is 696 bytes inside a block of size 5,864 alloc'd
-==4187428==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187428==    by 0x132B6B: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187428==    by 0x12D31B: void Vehicle::create_component<BasicProducer>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187431== ----------------------------------------------------------------
-
-=== Issue in component.h:672 ===
-==4187428== 
-==4187428==  Lock at 0x4F87F18 was first observed
-==4187431==    by 0x132B6B: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187428==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187431==    by 0x12D31B: void Vehicle::create_component<BasicProducer>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187428==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187431==    by 0x12065C: run_vehicle(Vehicle*) (demo.cpp:71)
-==4187431==    by 0x1211F2: main (demo.cpp:168)
-==4187431==  Block was alloc'd by thread #1
-==4187431== 
-==4187428==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187428==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187428==    by 0x116541: Component::producer_routine() (component.h:704)
-==4187428==    by 0x1161B8: Component::producer_thread_launcher(void*) (component.h:672)
-==4187428==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187428==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
-==4187428==    by 0x4CDEA03: clone (clone.S:100)
-==4187428==  Address 0x4f87f18 is 696 bytes inside a block of size 5,864 alloc'd
-==4187428==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187428==    by 0x132B6B: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187428==    by 0x12D31B: void Vehicle::create_component<BasicProducer>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187431== ----------------------------------------------------------------
+=== Issue in communicator.h:172 ===
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
 === Issue in component.h:158 ===
-==4187431== 
-==4187431==  Lock at 0x4F87F18 was first observed
-==4187431==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187431==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187431==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187431==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187431==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187431==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187431==    by 0x1235D8: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
-==4187431==    by 0x122C0F: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
-==4187431==    by 0x122488: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
-==4187431==    by 0x13496A: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
-==4187428== ----------------------------------------------------------------
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
-=== Issue in component.h:704 ===
-==4187461== 
-==4187461==  Lock at 0x4F87F18 was first observed
-==4187461==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187461==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187461==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187461==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187461==    by 0x116541: Component::producer_routine() (component.h:704)
-==4187461==    by 0x1161B8: Component::producer_thread_launcher(void*) (component.h:672)
-==4187461==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187461==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
-==4187461==    by 0x4CDEA03: clone (clone.S:100)
-==4187461==  Address 0x4f87f18 is 696 bytes inside a block of size 5,864 alloc'd
-==4187461==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187461==    by 0x132B6B: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187467== ----------------------------------------------------------------
+=== Issue in component.h:322 ===
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
-=== Issue in component.h:672 ===
-==4187461== 
-==4187461==  Lock at 0x4F87F18 was first observed
-==4187461==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187461==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187461==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187461==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187461==    by 0x116541: Component::producer_routine() (component.h:704)
-==4187461==    by 0x1161B8: Component::producer_thread_launcher(void*) (component.h:672)
-==4187461==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187461==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
-==4187461==    by 0x4CDEA03: clone (clone.S:100)
-==4187461==  Address 0x4f87f18 is 696 bytes inside a block of size 5,864 alloc'd
-==4187461==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187461==    by 0x132B6B: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187467== ----------------------------------------------------------------
+=== Issue in gateway_component.h:194 ===
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
-=== Issue in component.h:158 ===
-==4187522==    by 0x11B34F: GatewayComponent::GatewayComponent(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*) (gateway_component.h:88)
-==4187484== 
-==4187484==  Lock at 0x4F87F18 was first observed
-==4187484==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187484==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187522==    by 0x13291C: std::_MakeUniq<GatewayComponent>::__single_object std::make_unique<GatewayComponent, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187484==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187484==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187522==    by 0x12D22D: void Vehicle::create_component<GatewayComponent>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187484==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187522==    by 0x1205AF: run_vehicle(Vehicle*) (demo.cpp:67)
-==4187522==    by 0x1211F2: main (demo.cpp:168)
-==4187522==  Block was alloc'd by thread #1
-==4187484==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187522== 
-==4187484==    by 0x1235D8: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
-==4187484==    by 0x122C0F: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
-==4187484==    by 0x122488: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
-==4187484==    by 0x13496A: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
-==4187484==    by 0x12FB04: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
-==4187522== ----------------------------------------------------------------
+=== Issue in nic.h:304 ===
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
-=== Issue in component.h:158 ===
-==4187484== 
-==4187484==  Lock at 0x4F87F18 was first observed
-==4187484==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187484==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187484==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187484==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187484==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187484==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187484==    by 0x1235D8: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
-==4187522== ----------------------------------------------------------------
+=== Issue in nic.h:170 ===
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
-=== Issue in component.h:158 ===
-==4187484== 
-==4187484==  Lock at 0x4F87F18 was first observed
-==4187484==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187484==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187484==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187484==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187484==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187484==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187522== ----------------------------------------------------------------
+=== Issue in observed.h:68 ===
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
-=== Issue in component.h:158 ===
-==4187484== 
-==4187484==  Lock at 0x4F87F18 was first observed
-==4187484==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187484==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187484==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187484==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187484==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187484==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187484==    by 0x1235D8: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
-==4187484==    by 0x122C0F: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
-==4187522== ----------------------------------------------------------------
+=== Issue in observed.h:68 ===
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
-=== Issue in component.h:306 ===
-==4187445== 
-==4187445== Possible data race during write of size 8 at 0x4F87C70 by thread #1
-==4187445== Locks held: none
-==4187445==    at 0x484DBEF: operator delete(void*, unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187445==    by 0x136ECE: BasicProducer::~BasicProducer() (basic_producer.h:23)
-==4187445==    by 0x136D25: std::default_delete<Component>::operator()(Component*) const (unique_ptr.h:85)
-==4187445==    by 0x132AA5: std::unique_ptr<Component, std::default_delete<Component> >::~unique_ptr() (unique_ptr.h:361)
-==4187445==    by 0x13AA6D: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> > >(std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:151)
-==4187445==    by 0x138884: void std::_Destroy_aux<false>::__destroy<std::unique_ptr<Component, std::default_delete<Component> >*>(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:163)
-==4187445==    by 0x135F19: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> >*>(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:196)
-==4187445==    by 0x1316A8: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> > >(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > >&) (alloc_traits.h:848)
-==4187445==    by 0x131700: std::vector<std::unique_ptr<Component, std::default_delete<Component> >, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > > >::_M_erase_at_end(std::unique_ptr<Component, std::default_delete<Component> >*) (stl_vector.h:1796)
-==4187445==    by 0x12AA65: std::vector<std::unique_ptr<Component, std::default_delete<Component> >, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > > >::clear() (stl_vector.h:1499)
-==4187445==    by 0x118405: Vehicle::~Vehicle() (vehicle.h:132)
-==4187445==    by 0x120994: run_vehicle(Vehicle*) (demo.cpp:99)
-==4187445==    by 0x1211F2: main (demo.cpp:168)
-==4187445== 
-==4187445== This conflicts with a previous read of size 8 by thread #4
-==4187445== Locks held: none
-==4187445==    at 0x49D514F: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
-==4187445==    by 0x119E0B: BasicProducer::run() (basic_producer.h:102)
-==4187445==    by 0x1128EB: Component::thread_entry_point(void*) (component.h:306)
-==4187445==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187445==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
-==4187445==    by 0x4CDEA03: clone (clone.S:100)
-==4187445==  Address 0x4f87c70 is 192 bytes inside an unallocated block of size 15,264 in arena "client"
-==4187445== 
-==4187445== ----------------------------------------------------------------
+=== Issue in protocol.h:366 ===
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
-=== Issue in gateway_component.h:88 ===
-==4187522==    by 0x11B34F: GatewayComponent::GatewayComponent(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*) (gateway_component.h:88)
-==4187484== 
-==4187484==  Lock at 0x4F87F18 was first observed
-==4187484==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187484==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187522==    by 0x13291C: std::_MakeUniq<GatewayComponent>::__single_object std::make_unique<GatewayComponent, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187484==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187484==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187522==    by 0x12D22D: void Vehicle::create_component<GatewayComponent>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187484==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187522==    by 0x1205AF: run_vehicle(Vehicle*) (demo.cpp:67)
-==4187522==    by 0x1211F2: main (demo.cpp:168)
-==4187522==  Block was alloc'd by thread #1
-==4187484==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187522== 
-==4187484==    by 0x1235D8: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
-==4187484==    by 0x122C0F: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
-==4187484==    by 0x122488: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
-==4187484==    by 0x13496A: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
-==4187484==    by 0x12FB04: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
-==4187522== ----------------------------------------------------------------
+=== Issue in protocol.h:200 ===
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------
 
-=== Issue in vehicle.h:175 ===
-==4187428== 
-==4187428==  Lock at 0x4F87F18 was first observed
-==4187431==    by 0x132B6B: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187428==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187431==    by 0x12D31B: void Vehicle::create_component<BasicProducer>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187428==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187431==    by 0x12065C: run_vehicle(Vehicle*) (demo.cpp:71)
-==4187431==    by 0x1211F2: main (demo.cpp:168)
-==4187431==  Block was alloc'd by thread #1
-==4187431== 
-==4187428==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187428==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187428==    by 0x116541: Component::producer_routine() (component.h:704)
-==4187428==    by 0x1161B8: Component::producer_thread_launcher(void*) (component.h:672)
-==4187428==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187428==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
-==4187428==    by 0x4CDEA03: clone (clone.S:100)
-==4187428==  Address 0x4f87f18 is 696 bytes inside a block of size 5,864 alloc'd
-==4187428==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187428==    by 0x132B6B: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187428==    by 0x12D31B: void Vehicle::create_component<BasicProducer>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187431== ----------------------------------------------------------------
-
-=== Issue in vehicle.h:175 ===
-==4187428== 
-==4187428==  Lock at 0x4F87F18 was first observed
-==4187431==    by 0x132B6B: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187428==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187431==    by 0x12D31B: void Vehicle::create_component<BasicProducer>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187428==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187431==    by 0x12065C: run_vehicle(Vehicle*) (demo.cpp:71)
-==4187431==    by 0x1211F2: main (demo.cpp:168)
-==4187431==  Block was alloc'd by thread #1
-==4187431== 
-==4187428==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187428==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187428==    by 0x116541: Component::producer_routine() (component.h:704)
-==4187428==    by 0x1161B8: Component::producer_thread_launcher(void*) (component.h:672)
-==4187428==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187428==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
-==4187428==    by 0x4CDEA03: clone (clone.S:100)
-==4187428==  Address 0x4f87f18 is 696 bytes inside a block of size 5,864 alloc'd
-==4187428==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187428==    by 0x132B6B: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187428==    by 0x12D31B: void Vehicle::create_component<BasicProducer>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187431== ----------------------------------------------------------------
-
-=== Issue in vehicle.h:175 ===
-==4187522==    by 0x11B34F: GatewayComponent::GatewayComponent(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*) (gateway_component.h:88)
-==4187484== 
-==4187484==  Lock at 0x4F87F18 was first observed
-==4187484==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187484==    by 0x1240B6: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
-==4187522==    by 0x13291C: std::_MakeUniq<GatewayComponent>::__single_object std::make_unique<GatewayComponent, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
-==4187484==    by 0x1254FB: std::mutex::lock() (std_mutex.h:100)
-==4187484==    by 0x1288BF: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
-==4187522==    by 0x12D22D: void Vehicle::create_component<GatewayComponent>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (vehicle.h:175)
-==4187484==    by 0x1257E0: Component::handle_interest_period(Message const&) (component.h:158)
-==4187522==    by 0x1205AF: run_vehicle(Vehicle*) (demo.cpp:67)
-==4187522==    by 0x1211F2: main (demo.cpp:168)
-==4187522==  Block was alloc'd by thread #1
-==4187484==    by 0x1198FC: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
-==4187522== 
-==4187484==    by 0x1235D8: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
-==4187484==    by 0x122C0F: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
-==4187484==    by 0x122488: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
-==4187484==    by 0x13496A: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
-==4187484==    by 0x12FB04: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
-==4187522== ----------------------------------------------------------------
-
-=== Issue in vehicle.h:132 ===
-==4187445== 
-==4187445== Possible data race during write of size 8 at 0x4F87C70 by thread #1
-==4187445== Locks held: none
-==4187445==    at 0x484DBEF: operator delete(void*, unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187445==    by 0x136ECE: BasicProducer::~BasicProducer() (basic_producer.h:23)
-==4187445==    by 0x136D25: std::default_delete<Component>::operator()(Component*) const (unique_ptr.h:85)
-==4187445==    by 0x132AA5: std::unique_ptr<Component, std::default_delete<Component> >::~unique_ptr() (unique_ptr.h:361)
-==4187445==    by 0x13AA6D: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> > >(std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:151)
-==4187445==    by 0x138884: void std::_Destroy_aux<false>::__destroy<std::unique_ptr<Component, std::default_delete<Component> >*>(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:163)
-==4187445==    by 0x135F19: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> >*>(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*) (stl_construct.h:196)
-==4187445==    by 0x1316A8: void std::_Destroy<std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> > >(std::unique_ptr<Component, std::default_delete<Component> >*, std::unique_ptr<Component, std::default_delete<Component> >*, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > >&) (alloc_traits.h:848)
-==4187445==    by 0x131700: std::vector<std::unique_ptr<Component, std::default_delete<Component> >, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > > >::_M_erase_at_end(std::unique_ptr<Component, std::default_delete<Component> >*) (stl_vector.h:1796)
-==4187445==    by 0x12AA65: std::vector<std::unique_ptr<Component, std::default_delete<Component> >, std::allocator<std::unique_ptr<Component, std::default_delete<Component> > > >::clear() (stl_vector.h:1499)
-==4187445==    by 0x118405: Vehicle::~Vehicle() (vehicle.h:132)
-==4187445==    by 0x120994: run_vehicle(Vehicle*) (demo.cpp:99)
-==4187445==    by 0x1211F2: main (demo.cpp:168)
-==4187445== 
-==4187445== This conflicts with a previous read of size 8 by thread #4
-==4187445== Locks held: none
-==4187445==    at 0x49D514F: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
-==4187445==    by 0x119E0B: BasicProducer::run() (basic_producer.h:102)
-==4187445==    by 0x1128EB: Component::thread_entry_point(void*) (component.h:306)
-==4187445==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==4187445==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
-==4187445==    by 0x4CDEA03: clone (clone.S:100)
-==4187445==  Address 0x4f87c70 is 192 bytes inside an unallocated block of size 15,264 in arena "client"
-==4187445== 
-==4187445== ----------------------------------------------------------------
+=== Issue in sharedMemoryEngine.h:57 ===
+==512159== 
+==512159==  Lock at 0x4F87F48 was first observed
+==512159==    at 0x4850CCF: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x125172: __gthread_mutex_lock(pthread_mutex_t*) (gthr-default.h:749)
+==512159==    by 0x1265B7: std::mutex::lock() (std_mutex.h:100)
+==512159==    by 0x12997B: std::lock_guard<std::mutex>::lock_guard(std::mutex&) (std_mutex.h:229)
+==512159==    by 0x12689C: Component::handle_interest_period(Message const&) (component.h:158)
+==512159==    by 0x11A500: BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}::operator()(Message const&) const (basic_producer.h:80)
+==512159==    by 0x124694: void std::__invoke_impl<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(std::__invoke_other, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:61)
+==512159==    by 0x123CCB: std::enable_if<is_invocable_r_v<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>, void>::type std::__invoke_r<void, BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&>(BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}&, Message const&) (invoke.h:111)
+==512159==    by 0x123544: std::_Function_handler<void (Message const&), BasicProducer::BasicProducer(Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*)::{lambda(Message const&)#1}>::_M_invoke(std::_Any_data const&, Message const&) (std_function.h:290)
+==512159==    by 0x135A28: std::function<void (Message const&)>::operator()(Message const&) const (std_function.h:590)
+==512159==    by 0x130BC2: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::update(unsigned short, Buffer<Ethernet::Frame>*) (communicator.h:312)
+==512159==    by 0x140B77: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned short>::notify(unsigned short, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x1404AE: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::update(unsigned int, Buffer<Ethernet::Frame>*) (protocol.h:366)
+==512159==    by 0x140EF0: Conditionally_Data_Observed<Buffer<Ethernet::Frame>, unsigned int>::notify(unsigned int, Buffer<Ethernet::Frame>*) (observed.h:68)
+==512159==    by 0x140A66: NIC<SocketEngine, SharedMemoryEngine>::handleInternal(Buffer<Ethernet::Frame>*) (nic.h:304)
+==512159==    by 0x10F753: SharedMemoryEngine::send(Buffer<Ethernet::Frame>*) (sharedMemoryEngine.h:57)
+==512159==    by 0x1362B4: NIC<SocketEngine, SharedMemoryEngine>::send(Buffer<Ethernet::Frame>*) (nic.h:170)
+==512159==    by 0x131BBA: Protocol<NIC<SocketEngine, SharedMemoryEngine> >::send(Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address, void const*, unsigned int) (protocol.h:200)
+==512159==    by 0x12A70E: Communicator<Protocol<NIC<SocketEngine, SharedMemoryEngine> > >::send(Message const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >::Address const&) (communicator.h:172)
+==512159==    by 0x11CE4D: GatewayComponent::run() (gateway_component.h:194)
+==512159==    by 0x1129EE: Component::thread_entry_point(void*) (component.h:322)
+==512159==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x4C4DAC2: start_thread (pthread_create.c:442)
+==512159==    by 0x4CDEA03: clone (clone.S:100)
+==512159==  Address 0x4f87f48 is 696 bytes inside a block of size 5,864 alloc'd
+==512159==    at 0x484B093: operator new(unsigned long) (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
+==512159==    by 0x133C29: std::_MakeUniq<BasicProducer>::__single_object std::make_unique<BasicProducer, Vehicle*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*>(Vehicle*&&, unsigned int&&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Protocol<NIC<SocketEngine, SharedMemoryEngine> >*&&) (unique_ptr.h:962)
+==512169== ----------------------------------------------------------------

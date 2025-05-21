@@ -67,8 +67,13 @@ BasicConsumer::BasicConsumer(Vehicle* vehicle, const unsigned int vehicle_id, co
     
     // Set the response handler callback to direct to handle_test_data
     _communicator->set_response_handler_callback([this](const Message& msg) {
-        db<BasicConsumer>(TRC) << "[Basic Consumer] Response handler callback triggered for message from " << msg.origin().to_string() << "\n";
-        this->handle_test_data(msg);
+        // Ensure component is still running before processing callback
+        if (this->running()) {
+            db<BasicConsumer>(TRC) << "[Basic Consumer] Response handler callback triggered for message from " << msg.origin().to_string() << "\n";
+            this->handle_test_data(msg);
+        } else {
+            db<BasicConsumer>(TRC) << "[Basic Consumer] Ignoring response callback during shutdown\n";
+        }
     });
     
     set_address(addr);
@@ -80,8 +85,13 @@ BasicConsumer::BasicConsumer(Vehicle* vehicle, const unsigned int vehicle_id, co
         DataTypeId::CUSTOM_SENSOR_DATA_A, 
         TEST_DATA_PERIOD_US,
         [this](const Message& msg) { 
-            db<BasicConsumer>(TRC) << "[Basic Consumer] Interest data callback triggered for message from " << msg.origin().to_string() << "\n";
-            this->handle_test_data(msg);
+            // Ensure component is still running before processing callback
+            if (this->running()) {
+                db<BasicConsumer>(TRC) << "[Basic Consumer] Interest data callback triggered for message from " << msg.origin().to_string() << "\n";
+                this->handle_test_data(msg);
+            } else {
+                db<BasicConsumer>(TRC) << "[Basic Consumer] Ignoring interest callback during shutdown\n";
+            }
         }
     );
     
@@ -90,7 +100,10 @@ BasicConsumer::BasicConsumer(Vehicle* vehicle, const unsigned int vehicle_id, co
 }
 
 void BasicConsumer::run() {
-    db<BasicConsumer>(INF) << "[Basic Consumer] component " << getName() << " starting main run loop.\n";
+    // Store name locally to avoid race condition with destructor
+    const std::string component_name = getName();
+    
+    db<BasicConsumer>(INF) << "[Basic Consumer] component " << component_name << " starting main run loop.\n";
     
     // Main loop - process incoming messages and act on latest data
     while (running()) {
@@ -126,7 +139,7 @@ void BasicConsumer::run() {
         {
             std::lock_guard<std::mutex> lock(_latest_test_data.mutex);
             if (_latest_test_data.data_valid) {
-                 db<BasicConsumer>(INF) << "[Basic Consumer] " << getName() << " latest known value=" 
+                 db<BasicConsumer>(INF) << "[Basic Consumer] " << component_name << " latest known value=" 
                                  << _latest_test_data.value << ", counter=" 
                                  << _latest_test_data.counter << " (for debug/display, not CSV IO)\n";
                 // Reset data_valid or handle it as needed if it's a one-shot consumption per update
@@ -137,7 +150,7 @@ void BasicConsumer::run() {
         usleep(TEST_DATA_PERIOD_US / 5); // Sleep to prevent high CPU usage, check more often
     }
     
-    db<BasicConsumer>(INF) << "[Basic Consumer] component " << getName() << " exiting main run loop.\n";
+    db<BasicConsumer>(INF) << "[Basic Consumer] component " << component_name << " exiting main run loop.\n";
 }
 
 void BasicConsumer::handle_test_data(const Message& message) {
@@ -146,23 +159,32 @@ void BasicConsumer::handle_test_data(const Message& message) {
                          << " and unit type " << static_cast<int>(message.unit_type()) 
                          << " from " << message.origin().to_string() << "\n";
     
-    // Log RESPONSE_RECEIVED event to CSV
-    if (_log_file.is_open()) {
-        auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-        _log_file << now_us << ","                                 // timestamp_us
-                 << "CONSUMER" << ","                             // event_category
-                 << "RESPONSE_RECEIVED" << ","                   // event_type
-                 << message.timestamp() << ","                   // message_id (original msg timestamp)
-                 << static_cast<int>(Message::Type::RESPONSE) << "," // message_type (explicitly RESPONSE)
-                 << static_cast<int>(message.unit_type()) << ","    // data_type_id
-                 << message.origin().to_string() << ","          // origin_address
-                 << address().to_string() << ","                  // destination_address (Consumer's own)
-                 << "0" << ","                                  // period_us (0 for responses)
-                 << message.value_size() << ","                  // value_size
-                 << "-"                                         // notes
-                 << "\n";
-        _log_file.flush();
+    // First check if component is still running to avoid processing during shutdown
+    if (!running()) {
+        db<BasicConsumer>(WRN) << "[Basic Consumer] handle_test_data() called during shutdown, ignoring\n";
+        return;
+    }
+    
+    // Log RESPONSE_RECEIVED event to CSV with mutex protection
+    {
+        std::lock_guard<std::mutex> lock(_latest_test_data.mutex); // Reuse existing mutex for log protection
+        if (_log_file.is_open()) {
+            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+            _log_file << now_us << ","                                 // timestamp_us
+                     << "CONSUMER" << ","                             // event_category
+                     << "RESPONSE_RECEIVED" << ","                   // event_type
+                     << message.timestamp() << ","                   // message_id (original msg timestamp)
+                     << static_cast<int>(Message::Type::RESPONSE) << "," // message_type (explicitly RESPONSE)
+                     << static_cast<int>(message.unit_type()) << ","    // data_type_id
+                     << message.origin().to_string() << ","          // origin_address
+                     << address().to_string() << ","                  // destination_address (Consumer's own)
+                     << "0" << ","                                  // period_us (0 for responses)
+                     << message.value_size() << ","                  // value_size
+                     << "-"                                         // notes
+                     << "\n";
+            _log_file.flush();
+        }
     }
     
     // Parse the test data from the message

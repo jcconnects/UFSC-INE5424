@@ -306,6 +306,12 @@ template <typename NIC>
 void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     db<Protocol>(TRC) << "[Protocol] update() called!\n";
     
+    // Null buffer check - early return for safety
+    if (!buf) {
+        db<Protocol>(WRN) << "[Protocol] update() called with null buffer, aborting.\n";
+        return;
+    }
+    
     // Extracting MAC Addresses to compare
     Physical_Address src_mac = buf->data()->src;
 
@@ -333,30 +339,12 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     else if (dst_port == INTERNAL_BROADCAST_PORT) {
         db<Protocol>(INF) << "[Protocol] Received packet for INTERNAL_BROADCAST_PORT\n";
         
-        // Create a buffer cloning lambda function
-        auto clone_buffer_func = [this, prot](Buffer* original) -> Buffer* {
-            db<Protocol>(INF) << "[Protocol] Cloning buffer for internal broadcast\n";
-            if (!original) return nullptr;
-            
-            // Allocate a new buffer with same size as original, minus Ethernet header
-            Buffer* cloned_buf = _nic->alloc(original->data()->dst, prot, original->size() - Ethernet::HEADER_SIZE);
-            db<Protocol>(INF) << "[Protocol] Allocated buffer for internal broadcast\n";
-            if (!cloned_buf) {
-                db<Protocol>(ERR) << "[Protocol] Failed to allocate buffer for internal broadcast\n";
-                return nullptr;
-            }
-            
-            // Copy data from original to clone
-            std::memcpy(cloned_buf->data(), original->data(), original->size());
-            db<Protocol>(INF) << "[Protocol] Buffer cloned successfully\n";
-            return cloned_buf;
-        };
-        
-        // Use the specialized internal broadcast method which handles buffer cloning
-        if (!_observed.notifyInternalBroadcast(buf, INTERNAL_BROADCAST_PORT, src_port, clone_buffer_func)) {
-            db<Protocol>(INF) << "[Protocol] No observers notified for INTERNAL_BROADCAST_PORT. Freeing buffer.\n";
+        // CHANGE: Simplify internal broadcast handling to avoid race conditions
+        // Notify observers on the internal broadcast port directly without complex buffer cloning
+        if (!_observed.notify(INTERNAL_BROADCAST_PORT, buf)) {
+            db<Protocol>(INF) << "[Protocol] No observers found for INTERNAL_BROADCAST_PORT. Freeing buffer.\n";
+            _nic->free(buf);
         }
-        _nic->free(buf);
     }
     // COMPONENT PORT HANDLING (specific port >= MIN_COMPONENT_PORT)
     else if (dst_port >= MIN_COMPONENT_PORT) {

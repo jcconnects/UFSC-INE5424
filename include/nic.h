@@ -140,25 +140,9 @@ int NIC<ExternalEngine, InternalEngine>::send(DataBuffer* buf) {
     int result = -1;
     bool sent_internally = false;
 
-    // BROADCAST HANDLING: If destination is a broadcast address, send both internally and externally
+    // BROADCAST HANDLING: If destination is a broadcast address, only send externally
     if (buf->data()->dst == Ethernet::BROADCAST) {
-        db<NIC>(INF) << "[NIC] Routing broadcast frame both internally and externally\n";
-        
-        // Clone the buffer for internal routing (we need two copies for two paths)
-        DataBuffer* internal_buf = alloc(buf->data()->dst, buf->data()->prot, buf->size() - Ethernet::HEADER_SIZE);
-        if (internal_buf) {
-            // Copy data to the cloned buffer
-            std::memcpy(internal_buf->data(), buf->data(), buf->size());
-            
-            // Send internally
-            int internal_result = InternalEngine::send(internal_buf);
-            if (internal_result > 0) {
-                sent_internally = true;
-                // Statistics for internal send
-                _statistics.packets_sent++;
-                _statistics.bytes_sent += internal_result;
-            }
-        }
+        db<NIC>(INF) << "[NIC] Routing broadcast frame externally only\n";
         
         // Send externally (using original buffer)
         result = ExternalEngine::send(buf->data(), buf->size());

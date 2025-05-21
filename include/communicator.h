@@ -292,9 +292,31 @@ void Communicator<Channel>::update(typename Channel::Observer::Observing_Conditi
     }
     
     try {
+        // CHANGE: Add more safety checks before accessing buffer data
+        if (!buf->data()) {
+            db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] update() called with buffer that has null data.\n";
+            _channel->free(buf);
+            return;
+        }
+        
         Ethernet::Frame* eth_frame = reinterpret_cast<Ethernet::Frame*>(buf->data());
+        // Validate protocol packet size before accessing it
+        if (buf->size() <= Ethernet::HEADER_SIZE) {
+            db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] update() called with buffer that has insufficient size.\n";
+            _channel->free(buf);
+            return;
+        }
+        
         Protocol<Vehicle::VehicleNIC>::Packet* proto_packet = 
             reinterpret_cast<Protocol<Vehicle::VehicleNIC>::Packet*>(eth_frame->payload);
+            
+        // Validate protocol packet size before deserializing
+        if (proto_packet->size() == 0 || proto_packet->size() > Channel::MTU - sizeof(typename Protocol<Vehicle::VehicleNIC>::Header)) {
+            db<Communicator>(ERR) << "[Communicator] [" << _address.to_string() << "] update() called with invalid protocol packet size: " << proto_packet->size() << "\n";
+            _channel->free(buf);
+            return;
+        }
+        
         Message full_msg = Message::deserialize(reinterpret_cast<const uint8_t*>(proto_packet->template data<void>()), proto_packet->size());
 
         // 1. GATEWAY on its listening port (GATEWAY_PORT = 0)

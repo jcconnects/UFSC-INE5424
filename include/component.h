@@ -303,10 +303,29 @@ void* Component::thread_entry_point(void* arg) {
     if (component) {
         try {
             db<Component>(TRC) << "[Component] [" << component->_address.to_string() << "] Thread entry point for " << component->getName() << "\n";
+            
+            // Install signal handler for this thread
+            struct sigaction sa;
+            std::memset(&sa, 0, sizeof(sa));
+            sa.sa_handler = component_signal_handler;
+            sigemptyset(&sa.sa_mask);
+            sa.sa_flags = 0;
+            sigaction(SIGUSR1, &sa, nullptr);
+            
+            // Block signals in this thread, they'll only be delivered when sigwait is called
+            sigset_t signal_mask;
+            sigemptyset(&signal_mask);
+            sigaddset(&signal_mask, SIGUSR1);
+            pthread_sigmask(SIG_BLOCK, &signal_mask, nullptr);
+            
+            // Run the component
             component->run();
         } catch (const std::exception& e) {
             db<Component>(ERR) << "[Component] [" << component->_address.to_string() << "] " << component->getName() 
                               << " thread exception: " << e.what() << "\n";
+        } catch (...) {
+            db<Component>(ERR) << "[Component] [" << component->_address.to_string() << "] " << component->getName() 
+                              << " thread unknown exception\n";
         }
     }
     return nullptr;
@@ -360,7 +379,34 @@ void Component::stop() {
     
     // Stop main thread
     _running.store(false, std::memory_order_release);
-    pthread_join(_thread, nullptr);
+    
+    // Use a timeout to ensure the thread exits
+    struct timespec timeout;
+    clock_gettime(CLOCK_REALTIME, &timeout);
+    timeout.tv_sec += 3; // 3 second timeout for joining
+    
+    int join_result = pthread_timedjoin_np(_thread, nullptr, &timeout);
+    if (join_result != 0) {
+        if (join_result == ETIMEDOUT) {
+            db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name 
+                               << " thread join timed out, sending signal\n";
+            // Try to interrupt the thread with a signal
+            pthread_kill(_thread, SIGUSR1);
+            
+            // Try joining again with a short timeout
+            clock_gettime(CLOCK_REALTIME, &timeout);
+            timeout.tv_sec += 1; // 1 more second
+            join_result = pthread_timedjoin_np(_thread, nullptr, &timeout);
+            
+            if (join_result != 0) {
+                db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 
+                                  << " thread could not be joined after signal\n";
+            }
+        } else {
+            db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 
+                              << " pthread_join error: " << strerror(join_result) << "\n";
+        }
+    }
     
     db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " stopped\n";
 }
@@ -510,9 +556,16 @@ void Component::send_interest_message() {
         _interested_period_us
     );
     
-    // Send to gateway port
-    Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
-    if (_communicator->send(interest_msg, gateway_addr)) {
+    // CHANGE: Send two separate messages instead of one broadcast
+    // 1. Send directly to our own gateway using vehicle's address
+    Address direct_gateway_addr(_vehicle->address(), GATEWAY_PORT);
+    bool direct_sent = _communicator->send(interest_msg, direct_gateway_addr);
+    
+    // 2. Send external broadcast to other vehicles' gateways
+    Address broadcast_gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
+    bool broadcast_sent = _communicator->send(interest_msg, broadcast_gateway_addr);
+    
+    if (direct_sent || broadcast_sent) {
         db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name 
                          << " Sent INTEREST for type " << static_cast<int>(_interested_data_type) 
                          << " with period " << _interested_period_us << "us\n";
@@ -528,7 +581,7 @@ void Component::send_interest_message() {
                      << static_cast<int>(Message::Type::INTEREST) << ","// message_type
                      << static_cast<int>(interest_msg.unit_type()) << "," // data_type_id
                      << address().to_string() << ","                   // origin_address (Component's own)
-                     << gateway_addr.to_string() << ","              // destination_address (Gateway)
+                     << direct_gateway_addr.to_string() << ","              // destination_address (Gateway)
                      << interest_msg.period() << ","                 // period_us
                      << "0" << ","                                  // value_size
                      << "-"                                         // notes
@@ -624,6 +677,11 @@ void Component::stop_producer_thread() {
     // Set the flag to false first to signal the thread to exit
     _producer_thread_running.store(false, std::memory_order_release);
     
+    // Send a signal to interrupt any blocked thread (critical for proper thread termination)
+    if (_producer_thread != 0) {
+        pthread_kill(_producer_thread, SIGUSR1);
+    }
+    
     // Only attempt to join if thread handle is valid
     if (_producer_thread != 0) {
         // Set a timeout for joining the thread
@@ -640,7 +698,7 @@ void Component::stop_producer_thread() {
             db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread joined successfully\n";
         } else if (join_result == ETIMEDOUT) {
             db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name << " producer thread join timed out after 2s\n";
-            // Thread might be blocked in a system call - try sending a signal
+            // Thread might be blocked in a system call - try sending a signal again
             pthread_kill(_producer_thread, SIGUSR1);
             // Try joining again with a short timeout
             clock_gettime(CLOCK_REALTIME, &timeout);
@@ -669,10 +727,32 @@ void* Component::producer_thread_launcher(void* context) {
         try {
             db<Component>(TRC) << "[Component] [" << component->_address.to_string() << "] Producer thread starting for " 
                              << component->getName() << "\n";
+            
+            // Install signal handler for this thread
+            struct sigaction sa;
+            std::memset(&sa, 0, sizeof(sa));
+            sa.sa_handler = component_signal_handler;
+            sigemptyset(&sa.sa_mask);
+            sa.sa_flags = 0;
+            sigaction(SIGUSR1, &sa, nullptr);
+            
+            // Block signals in this thread, they'll only be delivered when sigwait is called or during a syscall
+            sigset_t signal_mask;
+            sigemptyset(&signal_mask);
+            sigaddset(&signal_mask, SIGUSR1);
+            pthread_sigmask(SIG_BLOCK, &signal_mask, nullptr);
+            
+            // Store component name locally to avoid race conditions
+            const std::string component_name = component->getName();
+            
             component->producer_routine();
+            
+            db<Component>(TRC) << "[Component] Producer thread for " << component_name << " exiting normally\n";
         } catch (const std::exception& e) {
             db<Component>(ERR) << "[Component] [" << component->_address.to_string() << "] " << component->getName() 
                              << " producer thread exception: " << e.what() << "\n";
+        } catch (...) {
+            db<Component>(ERR) << "[Component] Producer thread caught unknown exception\n";
         }
     }
     return nullptr;
@@ -680,7 +760,11 @@ void* Component::producer_thread_launcher(void* context) {
 
 // Producer routine - generates periodic responses based on interests
 void Component::producer_routine() {
-    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " producer routine started\n";
+    // Store component information locally to avoid race conditions
+    const std::string component_name = _name;
+    const Address local_address = _address;
+    
+    db<Component>(TRC) << "[Component] [" << local_address.to_string() << "] " << component_name << " producer routine started\n";
     
     // Use deadline scheduling if available
     if (_has_dl_capability.load(std::memory_order_relaxed)) {
@@ -707,7 +791,7 @@ void Component::producer_routine() {
             
             // If we have no interests yet, sleep and wait
             if (current_period == 0 || !has_interests) {
-                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
+                db<Component>(TRC) << "[Component] [" << local_address.to_string() << "] " << component_name 
                                  << " no interests yet, sleeping (current period: " << current_period
                                  << ", has interests: " << (has_interests ? "yes" : "no") << ")\n";
                 // Use shorter sleep interval to check running state more frequently
@@ -717,7 +801,7 @@ void Component::producer_routine() {
                 continue;
             }
             
-            db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
+            db<Component>(TRC) << "[Component] [" << local_address.to_string() << "] " << component_name 
                            << " preparing to send response with period " << current_period << "us\n";
             
             // Generate the response data only if we're still running
@@ -730,7 +814,7 @@ void Component::producer_routine() {
                 // Set scheduling parameters - may fail if not root
                 int result = sched_setattr(0, &attr_dl, 0);
                 if (result < 0) {
-                    db<Component>(WRN) << "[Component] [" << _address.to_string() << "] " << _name 
+                    db<Component>(WRN) << "[Component] [" << local_address.to_string() << "] " << component_name 
                                     << " failed to set SCHED_DEADLINE, falling back to SCHED_FIFO\n";
                     _has_dl_capability.store(false, std::memory_order_relaxed);
                     
@@ -739,6 +823,11 @@ void Component::producer_routine() {
                     fifo_param.sched_priority = 99; // Max RT priority
                     pthread_setschedparam(pthread_self(), SCHED_FIFO, &fifo_param);
                     // Continue with the next loop iteration which will use the FIFO path
+                    continue;
+                }
+                
+                // Check again if we're running before doing expensive operations
+                if (!_producer_thread_running.load(std::memory_order_acquire)) {
                     continue;
                 }
                 
@@ -755,37 +844,48 @@ void Component::producer_routine() {
                         response_data.size()
                     );
                     
-                    // Send to Gateway for broadcast distribution
                     // Only if we're still running (last check before sending)
                     if (_producer_thread_running.load(std::memory_order_acquire)) {
-                        Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
-                        _communicator->send(response, gateway_addr);
+                        // CHANGE: Send two separate messages instead of one broadcast
+                        // 1. Send directly to our own gateway using vehicle's address
+                        Address direct_gateway_addr(_vehicle->address(), GATEWAY_PORT);
+                        bool direct_sent = _communicator->send(response, direct_gateway_addr);
                         
-                        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
-                                        << static_cast<int>(_produced_data_type) << " with " 
-                                        << response_data.size() << " bytes\n";
+                        // 2. Send external broadcast to other vehicles' gateways
+                        Address broadcast_gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
+                        bool broadcast_sent = _communicator->send(response, broadcast_gateway_addr);
                         
-                        // Log RESPONSE_SENT event to CSV
-                        if (_log_file.is_open()) {
-                            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
-                                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-                            _log_file << now_us << ","                                 // timestamp_us
-                                     << "PRODUCER" << ","                             // event_category
-                                     << "RESPONSE_SENT" << ","                   // event_type
-                                     << response.timestamp() << ","                // message_id
-                                     << static_cast<int>(Message::Type::RESPONSE) << ","// message_type
-                                     << static_cast<int>(response.unit_type()) << "," // data_type_id
-                                     << address().to_string() << ","                // origin_address (Component's own)
-                                     << gateway_addr.to_string() << ","           // destination_address (Gateway)
-                                     << "0" << ","                                // period_us
-                                     << response.value_size() << ","               // value_size
-                                     << "-"                                      // notes
-                                     << "\n";
-                            _log_file.flush();
+                        if (direct_sent || broadcast_sent) {
+                            db<Component>(INF) << "[Component] [" << local_address.to_string() << "] " << component_name << " sent RESPONSE for data type " 
+                                            << static_cast<int>(_produced_data_type) << " with " 
+                                            << response_data.size() << " bytes\n";
+                            
+                            // Check if still running before accessing log file
+                            if (_producer_thread_running.load(std::memory_order_acquire)) {
+                                // Log RESPONSE_SENT event to CSV
+                                std::lock_guard<std::mutex> log_lock(_periods_mutex); // Use existing mutex for thread safety
+                                if (_log_file.is_open()) {
+                                    auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                                        std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+                                    _log_file << now_us << ","                                 // timestamp_us
+                                             << "PRODUCER" << ","                             // event_category
+                                             << "RESPONSE_SENT" << ","                   // event_type
+                                             << response.timestamp() << ","                // message_id
+                                             << static_cast<int>(Message::Type::RESPONSE) << ","// message_type
+                                             << static_cast<int>(response.unit_type()) << "," // data_type_id
+                                             << local_address.to_string() << ","                // origin_address (Component's own)
+                                             << direct_gateway_addr.to_string() << ","           // destination_address (Gateway)
+                                             << "0" << ","                                // period_us
+                                             << response.value_size() << ","               // value_size
+                                             << "-"                                      // notes
+                                             << "\n";
+                                    _log_file.flush();
+                                }
+                            }
                         }
                     }
-                } else {
-                    db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 
+                } else if (_producer_thread_running.load(std::memory_order_acquire)) {
+                    db<Component>(ERR) << "[Component] [" << local_address.to_string() << "] " << component_name 
                                     << " failed to produce data for response type " 
                                     << static_cast<int>(_produced_data_type) << "\n";
                 }
@@ -829,7 +929,7 @@ void Component::producer_routine() {
             
             // If we have no interests yet, sleep and wait
             if (current_period == 0 || !has_interests) {
-                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
+                db<Component>(TRC) << "[Component] [" << local_address.to_string() << "] " << component_name 
                                  << " no interests yet, sleeping (current period: " << current_period
                                  << ", has interests: " << (has_interests ? "yes" : "no") << ")\n";
                 // Use shorter sleep interval to check running state more frequently
@@ -841,8 +941,13 @@ void Component::producer_routine() {
             
             // Generate response only if we're still running
             if (_producer_thread_running.load(std::memory_order_acquire)) {
-                db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name 
+                db<Component>(TRC) << "[Component] [" << local_address.to_string() << "] " << component_name 
                                 << " preparing to send response with period " << current_period << "us\n";
+                
+                // Check again if we're running before doing expensive operations
+                if (!_producer_thread_running.load(std::memory_order_acquire)) {
+                    continue;
+                }
                 
                 // Generate response based on the current period
                 std::vector<std::uint8_t> response_data;
@@ -857,37 +962,48 @@ void Component::producer_routine() {
                         response_data.size()
                     );
                     
-                    // Send to Gateway for broadcast distribution
                     // Only if we're still running (last check before sending)
                     if (_producer_thread_running.load(std::memory_order_acquire)) {
-                        Address gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
-                        _communicator->send(response, gateway_addr);
+                        // CHANGE: Send two separate messages instead of one broadcast
+                        // 1. Send directly to our own gateway using vehicle's address
+                        Address direct_gateway_addr(_vehicle->address(), GATEWAY_PORT);
+                        bool direct_sent = _communicator->send(response, direct_gateway_addr);
                         
-                        db<Component>(INF) << "[Component] [" << _address.to_string() << "] " << _name << " sent RESPONSE for data type " 
-                                        << static_cast<int>(_produced_data_type) << " with " 
-                                        << response_data.size() << " bytes\n";
+                        // 2. Send external broadcast to other vehicles' gateways
+                        Address broadcast_gateway_addr(Ethernet::BROADCAST, GATEWAY_PORT);
+                        bool broadcast_sent = _communicator->send(response, broadcast_gateway_addr);
                         
-                        // Log RESPONSE_SENT event to CSV (SCHED_FIFO path)
-                        if (_log_file.is_open()) {
-                            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
-                                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-                             _log_file << now_us << ","                                // timestamp_us
-                                     << "PRODUCER" << ","                            // event_category
-                                     << "RESPONSE_SENT" << ","                  // event_type
-                                     << response.timestamp() << ","               // message_id
-                                     << static_cast<int>(Message::Type::RESPONSE) << ","// message_type
-                                     << static_cast<int>(response.unit_type()) << ","// data_type_id
-                                     << address().to_string() << ","               // origin_address (Component's own)
-                                     << gateway_addr.to_string() << ","          // destination_address (Gateway)
-                                     << "0" << ","                               // period_us
-                                     << response.value_size() << ","              // value_size
-                                     << "-"                                     // notes
-                                     << "\n";
-                            _log_file.flush();
+                        if (direct_sent || broadcast_sent) {
+                            db<Component>(INF) << "[Component] [" << local_address.to_string() << "] " << component_name << " sent RESPONSE for data type " 
+                                            << static_cast<int>(_produced_data_type) << " with " 
+                                            << response_data.size() << " bytes\n";
+                            
+                            // Check if still running before accessing log file
+                            if (_producer_thread_running.load(std::memory_order_acquire)) {
+                                // Log RESPONSE_SENT event to CSV (SCHED_FIFO path)
+                                std::lock_guard<std::mutex> log_lock(_periods_mutex); // Use existing mutex for thread safety
+                                if (_log_file.is_open()) {
+                                    auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                                        std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+                                     _log_file << now_us << ","                                // timestamp_us
+                                             << "PRODUCER" << ","                            // event_category
+                                             << "RESPONSE_SENT" << ","                  // event_type
+                                             << response.timestamp() << ","               // message_id
+                                             << static_cast<int>(Message::Type::RESPONSE) << ","// message_type
+                                             << static_cast<int>(response.unit_type()) << ","// data_type_id
+                                             << local_address.to_string() << ","               // origin_address (Component's own)
+                                             << direct_gateway_addr.to_string() << ","          // destination_address (Gateway)
+                                             << "0" << ","                               // period_us
+                                             << response.value_size() << ","              // value_size
+                                             << "-"                                     // notes
+                                             << "\n";
+                                    _log_file.flush();
+                                }
+                            }
                         }
                     }
                 } else if (_producer_thread_running.load(std::memory_order_acquire)) {
-                    db<Component>(ERR) << "[Component] [" << _address.to_string() << "] " << _name 
+                    db<Component>(ERR) << "[Component] [" << local_address.to_string() << "] " << component_name 
                                     << " failed to produce data for response type " 
                                     << static_cast<int>(_produced_data_type) << "\n";
                 }
@@ -905,7 +1021,7 @@ void Component::producer_routine() {
         }
     }
     
-    db<Component>(TRC) << "[Component] [" << _address.to_string() << "] " << _name << " producer routine exiting\n";
+    db<Component>(TRC) << "[Component] [" << local_address.to_string() << "] " << component_name << " producer routine exiting\n";
 }
 
 // Calculate the greatest common divisor (GCD) of all interest periods

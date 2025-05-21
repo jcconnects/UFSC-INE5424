@@ -87,19 +87,28 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
 void BasicProducer::run() {
     db<BasicProducer>(INF) << "[Basic Producer] component " << getName() << " starting main run loop.\n";
     
+    // Store name locally to avoid race condition with destructor
+    const std::string component_name = getName();
+    
     // Main loop - update data and potentially log (console only for data changes)
     while (running()) {
         // Update simulated test data
         update_test_data(); // This includes a TRC level log for data changes
         
-        // Old CSV data logging removed as per new requirements to log communication events.
-        // if (_log_file.is_open()) { ... log _current_value, _counter ... }
+        // Add proper thread safety for accessing the log file
+        {
+            std::lock_guard<std::mutex> log_lock(_data_mutex); // Reuse _data_mutex for log file access
+            if (_log_file.is_open()) {
+                // We already have proper logging in update_test_data
+                _log_file.flush();
+            }
+        }
         
         // Sleep to prevent consuming too much CPU
         usleep(100000); // 100ms update interval
     }
     
-    db<BasicProducer>(INF) << "[Basic Producer] component " << getName() << " exiting main run loop.\n";
+    db<BasicProducer>(INF) << "[Basic Producer] component " << component_name << " exiting main run loop.\n";
 }
 
 void BasicProducer::update_test_data() {

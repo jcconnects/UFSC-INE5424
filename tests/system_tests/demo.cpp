@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
     TEST_LOG("Starting P3 API validation test with basic components...");
 
     // Set number of test vehicles
-    const unsigned int n_vehicles = 10; // Reduced from 50 for faster thread analysis
+    const unsigned int n_vehicles = 200; // Reduced from 50 for faster thread analysis
 
     // Ensure tests/logs directory exists
     try {
