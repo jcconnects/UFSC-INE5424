@@ -1,0 +1,153 @@
+Thread Analysis Summary
+=====================
+Total unique issues found: 62
+
+HELGRIND: 2 issues found
+  - Data Access Violation: 1
+  - Data Race: 1
+
+DRD: 60 issues found
+  - Unknown: 60
+
+TSAN: No issues found
+Detailed Issues
+==============
+
+HELGRIND Issues:
+================
+
+Issue #1: Data Access Violation
+-------------------------------
+Description: ==3410971== Thread #1 is the program's root thread
+
+Issue #2: Data Race
+-------------------
+Description: ==3410971== Possible data race during read of size 1 at 0x4DFE660 by thread #2
+File locations:
+  - (buffer.h:50
+  - (buffer.h:67
+  - (clone-internal.c:83
+  - (communicator.h:172
+  - (communicator.h:220
+  - ...and 55 more locations
+
+DRD Issues:
+===========
+
+Issue #1: Unknown
+-----------------
+Description: Unknown issue
+Stack trace (first 3 frames):
+  - thread 1 at 0x04e18fe8 size 8
+
+Issue #2: Unknown
+-----------------
+Description: Unknown issue
+Stack trace (first 3 frames):
+  - thread 1 at 0x04e18fe0 size 8
+
+Issue #3: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (initializer.h:48
+  - (nic.h:285
+  - (nic.h:365
+  - (pthread_create.c:442
+  - (socketEngine.h:266
+  - ...and 7 more locations
+Stack trace (first 3 frames):
+  - thread 2 at 0x04e1b4d4 size 2
+
+Issue #4: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (alloc_traits.h:464
+  - (demo.cpp:167
+  - (gthr-default.h:749
+  - (gthr-default.h:779
+  - (initializer.h:56
+  - ...and 47 more locations
+Stack trace (first 3 frames):
+  - thread 2 at 0x04e18f20 size 8
+
+Issue #5: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (demo.cpp:167
+  - (gthr-default.h:749
+  - (gthr-default.h:779
+  - (initializer.h:48
+  - (initializer.h:56
+  - ...and 39 more locations
+Stack trace (first 3 frames):
+  - thread 2 at 0x04e1b458 size 8
+
+Issue #6: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (alloc_traits.h:464
+  - (demo.cpp:167
+  - (gthr-default.h:749
+  - (gthr-default.h:779
+  - (initializer.h:56
+  - ...and 45 more locations
+Stack trace (first 3 frames):
+  - thread 2 at 0x04e15c60 size 8
+
+Issue #7: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (communicator.h:117
+  - (demo.cpp:168
+  - (demo.cpp:67
+  - (gateway_component.h:88
+  - (gthr-default.h:749
+  - ...and 45 more locations
+Stack trace (first 3 frames):
+  - thread 2 at 0x0015d328 size 8
+
+Issue #8: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (alloc_traits.h:464
+  - (communicator.h:117
+  - (demo.cpp:168
+  - (demo.cpp:67
+  - (gateway_component.h:88
+  - ...and 55 more locations
+Stack trace (first 3 frames):
+  - thread 2 at 0x04f935a0 size 8
+
+Issue #9: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (alloc_traits.h:464
+  - (basic_producer.h:71
+  - (communicator.h:117
+  - (demo.cpp:168
+  - (demo.cpp:67
+  - ...and 61 more locations
+Stack trace (first 3 frames):
+  - thread 2 at 0x04f93590 size 8
+
+Issue #10: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (alloc_traits.h:464
+  - (demo.cpp:167
+  - (gthr-default.h:749
+  - (gthr-default.h:779
+  - (initializer.h:56
+  - ...and 47 more locations
+Stack trace (first 3 frames):
+  - thread 2 at 0x04e15c50 size 8
+
+... and 50 more DRD issues

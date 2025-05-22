@@ -131,7 +131,7 @@ struct Traits<Message> : public Traits<void>
 template<>
 struct Traits<Vehicle> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for Component class
@@ -165,7 +165,7 @@ struct Traits<ECUComponent>: public Traits<void>
 template <>
 struct Traits<GatewayComponent>: public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for INSComponent class
@@ -193,7 +193,7 @@ struct Traits<BasicProducer> : public Traits<void>
 template <>
 struct Traits<BasicConsumer> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for Debug class

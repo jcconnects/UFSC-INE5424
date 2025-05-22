@@ -12,18 +12,18 @@ class Debug
 {
     public:
         Debug() { 
-            pthread_mutex_init(&_mutex, nullptr); 
+            // pthread_mutex_init(&_mutex, nullptr); // Member mutex removed
         }
         
         ~Debug() { 
-            pthread_mutex_destroy(&_mutex); 
+            // pthread_mutex_destroy(&_mutex); // Member mutex removed
+            // Flush any remaining buffered output
+            flush();
         }
         
         template<typename T>
         Debug & operator<<(T p) {
-            pthread_mutex_lock(&_mutex); // Lock during output operation
-            if (_stream) (*_stream) << p << std::flush;
-            pthread_mutex_unlock(&_mutex);
+            _buffer << p;
             return *this;
         }
 
@@ -33,6 +33,18 @@ class Debug
         Debug & operator<<(const Begl & begl) { return *this; }
 
         Debug & operator<<(const Err & err) { _error = true; return *this; }
+
+        // Add flush method to write buffered content atomically
+        void flush() {
+            if (!_buffer.str().empty()) {
+                pthread_mutex_lock(&_stream_access_mutex);
+                if (_stream) {
+                    (*_stream) << _buffer.str() << std::flush;
+                }
+                pthread_mutex_unlock(&_stream_access_mutex);
+                _buffer.str(""); // Clear the buffer
+            }
+        }
 
         static void set_log_file(const std::string &filename) {
             pthread_mutex_lock(&_file_mutex); // Lock during file operations
@@ -59,11 +71,14 @@ class Debug
         }
 
         static void init() {
-            pthread_mutex_init(&_file_mutex, nullptr);
+            pthread_mutex_init(&_file_mutex, nullptr); 
+            // If _stream_access_mutex is initialized with PTHREAD_MUTEX_INITIALIZER, explicit init might not be needed here
+            // Or, ensure it's initialized: pthread_mutex_init(&_stream_access_mutex, nullptr);
         }
         
         static void cleanup() {
             pthread_mutex_destroy(&_file_mutex);
+            // Corresponding destroy if init is used: pthread_mutex_destroy(&_stream_access_mutex);
         }
 
     private:
@@ -71,7 +86,9 @@ class Debug
         static std::ostream* _stream;
         volatile bool _error;
         static pthread_mutex_t _file_mutex; // Mutex for file operations
-        pthread_mutex_t _mutex; // Mutex for output operations
+        // pthread_mutex_t _mutex; // Member mutex removed
+        static pthread_mutex_t _stream_access_mutex; // Static mutex for all stream output
+        std::stringstream _buffer; // Add buffer for atomic writes
 
     public:
         static Begl begl;
@@ -97,79 +114,86 @@ class Select_Debug<false>: public Null_Debug {};
 enum Debug_Error {ERR = 1};
 
 template<typename T>
-inline Select_Debug<(Traits<T>::debugged && Traits<Debug>::error)>
-db(Debug_Error l)
+inline Debug& db(Debug_Error l)
 {
-    Select_Debug<(Traits<T>::debugged && Traits<Debug>::error)>() << Debug::begl;
-    Select_Debug<(Traits<T>::debugged && Traits<Debug>::error)>() << Debug::error;
-    return Select_Debug<(Traits<T>::debugged && Traits<Debug>::error)>();
+    static Debug debug;
+    debug << Debug::begl;
+    debug << Debug::error;
+    debug.flush(); // Flush after the debug statement
+    return debug;
 }
 
 template<typename T1, typename T2>
-inline Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::error)>
-db(Debug_Error l)
+inline Debug& db(Debug_Error l)
 {
-
-    Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::error)>() << Debug::begl;
-    Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::error)>() << Debug::error;
-    return Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::error)>();
+    static Debug debug;
+    debug << Debug::begl;
+    debug << Debug::error;
+    debug.flush(); // Flush after the debug statement
+    return debug;
 }
 
 // Warning
 enum Debug_Warning {WRN = 2};
 
 template<typename T>
-inline Select_Debug<(Traits<T>::debugged && Traits<Debug>::warning)>
-db(Debug_Warning l)
+inline Debug& db(Debug_Warning l)
 {
-    Select_Debug<(Traits<T>::debugged && Traits<Debug>::warning)>() << Debug::begl;
-    return Select_Debug<(Traits<T>::debugged && Traits<Debug>::warning)>();
+    static Debug debug;
+    debug << Debug::begl;
+    debug.flush(); // Flush after the debug statement
+    return debug;
 }
 
 template<typename T1, typename T2>
-inline Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::warning)>
-db(Debug_Warning l)
+inline Debug& db(Debug_Warning l)
 {
-    Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::warning)>() << Debug::begl;
-    return Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::warning)>();
+    static Debug debug;
+    debug << Debug::begl;
+    debug.flush(); // Flush after the debug statement
+    return debug;
 }
 
 // Info
 enum Debug_Info {INF = 3};
 
 template<typename T>
-inline Select_Debug<(Traits<T>::debugged && Traits<Debug>::info)>
-db(Debug_Info l)
+inline Debug& db(Debug_Info l)
 {
-    Select_Debug<(Traits<T>::debugged && Traits<Debug>::info)>() << Debug::begl;
-    return Select_Debug<(Traits<T>::debugged && Traits<Debug>::info)>();
+    static Debug debug;
+    debug << Debug::begl;
+    debug.flush(); // Flush after the debug statement
+    return debug;
 }
 
 template<typename T1, typename T2>
-inline Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::info)>
-db(Debug_Info l)
+inline Debug& db(Debug_Info l)
 {
-    Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::info)>() << Debug::begl;
-    return Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::info)>();
+    static Debug debug;
+    debug << Debug::begl;
+    debug.flush(); // Flush after the debug statement
+    return debug;
 }
 
 // Trace
 enum Debug_Trace {TRC = 4};
 
 template<typename T>
-inline Select_Debug<(Traits<T>::debugged && Traits<Debug>::trace)>
-db(Debug_Trace l)
+inline Debug& db(Debug_Trace l)
 {
-    Select_Debug<(Traits<T>::debugged && Traits<Debug>::trace)>() << Debug::begl;
-    return Select_Debug<(Traits<T>::debugged && Traits<Debug>::trace)>();
+    static Debug debug;
+    debug << Debug::begl;
+    debug.flush(); // Flush after the debug statement
+    return debug;
 }
 
 template<typename T1, typename T2>
-inline Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::trace)>
-db(Debug_Trace l)
+inline Debug& db(Debug_Trace l)
 {
-    Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::trace)>() << Debug::begl;
-    return Select_Debug<((Traits<T1>::debugged || Traits<T2>::debugged) && Traits<Debug>::trace)>();
+    static Debug debug;
+    debug << Debug::begl;
+    debug.flush(); // Flush after the debug statement
+    return debug;
 }
 
 // Initialize static members
@@ -178,6 +202,7 @@ Debug::Err Debug::error;
 std::unique_ptr<std::ofstream> Debug::_file_stream;
 std::ostream* Debug::_stream = &std::cout;
 pthread_mutex_t Debug::_file_mutex = PTHREAD_MUTEX_INITIALIZER; // Initialize static mutex
+pthread_mutex_t Debug::_stream_access_mutex = PTHREAD_MUTEX_INITIALIZER; // Initialize new static mutex
 
 // Call this at program start
 class DebugInitializer {

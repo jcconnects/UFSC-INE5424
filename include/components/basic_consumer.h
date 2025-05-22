@@ -54,8 +54,8 @@ BasicConsumer::BasicConsumer(Vehicle* vehicle, const unsigned int vehicle_id, co
     open_log_file();
     if (_log_file.is_open()) {
         _log_file.seekp(0); // Go to beginning to overwrite if file exists
-        // Define log header
-        _log_file << "timestamp_us,received_value,processed_value,counter\n";
+        // Define new standardized log header
+        _log_file << "timestamp_us,event_category,event_type,message_id,message_type,data_type_id,origin_address,destination_address,period_us,value_size,notes\n";
         _log_file.flush();
     }
 
@@ -64,88 +64,128 @@ BasicConsumer::BasicConsumer(Vehicle* vehicle, const unsigned int vehicle_id, co
 
     // Set up communicator as a CONSUMER, passing 'this' to the Communicator constructor
     _communicator = new Comms(protocol, addr, ComponentType::CONSUMER, DataTypeId::UNKNOWN);
+    
+    // Set the response handler callback to direct to handle_test_data
+    _communicator->set_response_handler_callback([this](const Message& msg) {
+        // Ensure component is still running before processing callback
+        if (this->running()) {
+            db<BasicConsumer>(TRC) << "[Basic Consumer] Response handler callback triggered for message from " << msg.origin().to_string() << "\n";
+            this->handle_test_data(msg);
+        } else {
+            db<BasicConsumer>(TRC) << "[Basic Consumer] Ignoring response callback during shutdown\n";
+        }
+    });
+    
     set_address(addr);
 
     db<BasicConsumer>(INF) << "[Basic Consumer] initialized, will register interest in CUSTOM_SENSOR_DATA_A\n";
-}
 
-void BasicConsumer::run() {
-    db<BasicConsumer>(INF) << "[Basic Consumer] component " << getName() << " starting main run loop.\n";
-    
-    // Register interest in test data with callback
+    // Register interest in test data with callback (Moved from run() to constructor)
     register_interest(
         DataTypeId::CUSTOM_SENSOR_DATA_A, 
         TEST_DATA_PERIOD_US,
         [this](const Message& msg) { 
-            db<BasicConsumer>(INF) << "[Basic Consumer] Interest callback called for message\n";
-            this->handle_test_data(msg);
+            // Ensure component is still running before processing callback
+            if (this->running()) {
+                db<BasicConsumer>(TRC) << "[Basic Consumer] Interest data callback triggered for message from " << msg.origin().to_string() << "\n";
+                this->handle_test_data(msg);
+            } else {
+                db<BasicConsumer>(TRC) << "[Basic Consumer] Ignoring interest callback during shutdown\n";
+            }
         }
     );
     
-    db<BasicConsumer>(INF) << "[Basic Consumer] registered interest in CUSTOM_SENSOR_DATA_A with period " 
-                         << TEST_DATA_PERIOD_US << " microseconds\n";
-    
-    // Main loop - process the latest data periodically
-    while (running()) {
-        // Get latest test data
-        int current_value = 0;
-        uint32_t current_counter = 0;
-        bool data_valid = false;
+    db<BasicConsumer>(INF) << "[Basic Consumer] Registered interest in CUSTOM_SENSOR_DATA_A with period " 
+                         << TEST_DATA_PERIOD_US << " microseconds during construction.\n";
+}
 
-        Message incoming_msg = _communicator->new_message(Message::Type::RESPONSE, DataTypeId::UNKNOWN);
-        int received_bytes = receive(&incoming_msg); // Process incoming messages
+void BasicConsumer::run() {
+    // Store name locally to avoid race condition with destructor
+    const std::string component_name = getName();
+    
+    db<BasicConsumer>(INF) << "[Basic Consumer] component " << component_name << " starting main run loop.\n";
+    
+    // Main loop - process incoming messages and act on latest data
+    while (running()) {
+        Message incoming_msg = _communicator->new_message(Message::Type::RESPONSE, DataTypeId::UNKNOWN); // Prepare a message object
+        int received_bytes = receive(&incoming_msg); // Blocking call, processes via Communicator::update then Component::receive
         
+        // The actual data handling and logging of RECV_RESPONSE is now in handle_test_data via the callback
+        // This loop primarily ensures the component stays alive and responsive if direct receive calls were used
+        // or for other periodic tasks if any.
+        // The old data processing and logging that was here:
+        // if (data_valid) { ... log current_value, processed_value ... }
+        // has been effectively replaced by the callback-driven approach for communication events.
+        // We will remove the old CSV logging from here that logged processed values.
+
+        // If direct receive was used and populated incoming_msg, handle_test_data would be called here.
+        // However, with the callback model, handle_test_data is invoked directly when a relevant message is passed by Communicator.
+        // So, the explicit call to handle_test_data(incoming_msg) after receive() might be redundant if the callback covers all cases.
+        // For now, let's assume the callback mechanism is primary for P3.
+        // If `receive()` here *does* unblock with a message not handled by the callback path (which it shouldn't with current P3 logic),
+        // then `handle_test_data(incoming_msg)` would be relevant.
         if (received_bytes > 0) {
-            db<BasicConsumer>(INF) << "[Basic Consumer] received " << received_bytes << " bytes\n";
-            handle_test_data(incoming_msg);
+            // This path might be less common now if callbacks handle everything via Communicator::update.
+            // However, if receive() itself unblocks due to a message passed by Observer::update to the queue,
+            // it should be processed.
+             db<BasicConsumer>(TRC) << "[Basic Consumer] run() loop received " << received_bytes << " bytes directly (less common path).\n";
+            // Assuming the callback in register_interest is the primary way data is handled for P3.
+            // If a message makes it here, it means it was put on the receive queue by the communicator.
+            // The callback in register_interest is tied to Component::receive -> _data_callback.
+            // So, if receive() above gets a message, the _data_callback should have already been invoked.
+            // The main utility of the loop is to keep the thread alive and for potential other tasks.
         }
+
         {
             std::lock_guard<std::mutex> lock(_latest_test_data.mutex);
-            
-            data_valid = _latest_test_data.data_valid;
-            if (data_valid) {
-                current_value = _latest_test_data.value;
-                current_counter = _latest_test_data.counter;
+            if (_latest_test_data.data_valid) {
+                 db<BasicConsumer>(INF) << "[Basic Consumer] " << component_name << " latest known value=" 
+                                 << _latest_test_data.value << ", counter=" 
+                                 << _latest_test_data.counter << " (for debug/display, not CSV IO)\n";
+                // Reset data_valid or handle it as needed if it's a one-shot consumption per update
+                // _latest_test_data.data_valid = false; 
             }
         }
         
-        // Process and display data if valid
-        if (data_valid) {
-            // Add 5 to the received value as requested
-            int processed_value = current_value + 5;
-            
-            // Log current data
-            if (_log_file.is_open()) {
-                auto now = std::chrono::high_resolution_clock::now();
-                auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
-                    now.time_since_epoch()).count();
-                    
-                _log_file << now_us << ","
-                         << current_value << ","
-                         << processed_value << ","
-                         << current_counter << "\n";
-                _log_file.flush();
-            }
-            
-            // Print the processed value
-            db<BasicConsumer>(INF) << "[Basic Consumer] " << getName() << " received value=" 
-                                 << current_value << ", processed value="
-                                 << processed_value << ", counter=" 
-                                 << current_counter << "\n";
-        }
-        
-        // Sleep to prevent consuming too much CPU
-        // Use a sleep duration that matches our interest period for consistency
-        usleep(TEST_DATA_PERIOD_US / 2); // Sleep for half the interest period
+        usleep(TEST_DATA_PERIOD_US / 5); // Sleep to prevent high CPU usage, check more often
     }
     
-    db<BasicConsumer>(INF) << "[Basic Consumer] component " << getName() << " exiting main run loop.\n";
+    db<BasicConsumer>(INF) << "[Basic Consumer] component " << component_name << " exiting main run loop.\n";
 }
 
 void BasicConsumer::handle_test_data(const Message& message) {
-    db<BasicConsumer>(INF) << "[Basic Consumer] handle_test_data() called with message type " 
+    db<BasicConsumer>(TRC) << "[Basic Consumer] handle_test_data() called with message type " 
                          << static_cast<int>(message.message_type()) 
-                         << " and unit type " << static_cast<int>(message.unit_type()) << "\n";
+                         << " and unit type " << static_cast<int>(message.unit_type()) 
+                         << " from " << message.origin().to_string() << "\n";
+    
+    // First check if component is still running to avoid processing during shutdown
+    if (!running()) {
+        db<BasicConsumer>(WRN) << "[Basic Consumer] handle_test_data() called during shutdown, ignoring\n";
+        return;
+    }
+    
+    // Log RESPONSE_RECEIVED event to CSV with mutex protection
+    {
+        std::lock_guard<std::mutex> lock(_latest_test_data.mutex); // Reuse existing mutex for log protection
+        if (_log_file.is_open()) {
+            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+            _log_file << now_us << ","                                 // timestamp_us
+                     << "CONSUMER" << ","                             // event_category
+                     << "RESPONSE_RECEIVED" << ","                   // event_type
+                     << message.timestamp() << ","                   // message_id (original msg timestamp)
+                     << static_cast<int>(Message::Type::RESPONSE) << "," // message_type (explicitly RESPONSE)
+                     << static_cast<int>(message.unit_type()) << ","    // data_type_id
+                     << message.origin().to_string() << ","          // origin_address
+                     << address().to_string() << ","                  // destination_address (Consumer's own)
+                     << "0" << ","                                  // period_us (0 for responses)
+                     << message.value_size() << ","                  // value_size
+                     << "-"                                         // notes
+                     << "\n";
+            _log_file.flush();
+        }
+    }
     
     // Parse the test data from the message
     int value;

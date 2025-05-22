@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
     TEST_LOG("Starting P3 API validation test with basic components...");
 
     // Set number of test vehicles
-    const unsigned int n_vehicles = 10;
+    const unsigned int n_vehicles = 200; // Reduced from 50 for faster thread analysis
 
     // Ensure tests/logs directory exists
     try {
@@ -177,6 +177,12 @@ int main(int argc, char* argv[]) {
         } else { // Parent process
             children.push_back(pid);
             TEST_LOG("Created child process " + std::to_string(pid) + " for vehicle " + std::to_string(id));
+            
+            // Add a small random sleep between vehicle creations to stagger their initialization
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<> sleep_dist(100, 500); // 100-500 milliseconds
+            usleep(sleep_dist(gen) * 1000); // Convert to microseconds
         }
     }
 

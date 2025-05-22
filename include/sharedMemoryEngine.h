@@ -52,9 +52,11 @@ void SharedMemoryEngine::stop() {
 int SharedMemoryEngine::send(Buffer<Ethernet::Frame>* buf) {
     db<SharedMemoryEngine>(TRC) << "SharedMemoryEngine::send() called!\n";
 
+    if (!buf) return 0;
+    unsigned int original_size = buf->size();
     this->handleInternal(buf);
 
-    return buf->size();
+    return original_size;
 }
 
 #endif // SHAREDMEMORYENGINE_H 

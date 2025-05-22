@@ -123,12 +123,29 @@ Vehicle::~Vehicle() {
 
     // Ensure components and NIC/Protocol are stopped before deletion
     if (running()) {
+        db<Vehicle>(INF) << "[Vehicle " << _id << "] Still running, stopping before destruction.\n";
         stop();
     }
 
     db<Vehicle>(INF) << "[Vehicle " << _id << "] Stopped components.\n";
-
-    // Components are managed by unique_ptr, destruction is automatic.
+    
+    // Make sure all OS resources are released before freeing memory
+    for (auto& comp : _components) {
+        // Additional check: ensure component is really stopped
+        if (comp && comp->running()) {
+            db<Vehicle>(WRN) << "[Vehicle " << _id << "] Component " << comp->getName() 
+                           << " still marked as running in destructor, forcing stop.\n";
+            comp->stop();
+        }
+    }
+    
+    // Before deallocating component memory, ensure all threads have exited
+    // The 100ms delay helps ensure all threads have time to respond to signals
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Waiting for all component threads to fully exit\n";
+    usleep(200000); // 200ms wait
+    
+    // Clear components only after all are verified stopped
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] Deallocating components.\n";
     _components.clear();
 
     // Protocol and NIC are owned by Vehicle in this design
@@ -158,15 +175,21 @@ void Vehicle::stop() {
         return;
     }
 
+    // Set running flag to false first
+    _running.store(false, std::memory_order_release);
+    
     // First stop components to ensure clean shutdown
     db<Vehicle>(INF) << "[Vehicle] [" << _id << "] Stopping components...\n";
     stop_components();
+    
+    // Add a delay to ensure all component threads have time to exit completely
+    db<Vehicle>(INF) << "[Vehicle] [" << _id << "] Waiting for components to fully stop...\n";
+    usleep(500000); // 500ms wait
     
     // After components are stopped, shut down the NIC and its engines
     db<Vehicle>(INF) << "[Vehicle] [" << _id << "] Stopping NIC...\n";
     _nic->stop();
 
-    _running.store(false, std::memory_order_release);
     db<Vehicle>(INF) << "[Vehicle] [" << _id << "] stopped.\n";
 }
 

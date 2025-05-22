@@ -1,0 +1,90 @@
+@startuml System Architecture
+
+' Style definitions
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' Define the main areas
+package "Vehicle Applications" {
+  [PTP APP] as ptpApp
+  [Status APP] as statusApp
+  [Sender APP] as senderApp
+  [Receiver APP] as receiverApp
+  
+  [Communicator] as ptpComm
+  [Communicator] as statusComm
+  [Communicator] as senderComm
+  [Communicator] as receiverComm
+  
+  ' Connect applications to their communicators
+  ptpApp <--> ptpComm
+  statusApp <--> statusComm
+  senderApp <--> senderComm
+  receiverApp <--> receiverComm
+  
+  ' Position applications to the left of their communicators
+  ptpApp -[hidden]-> ptpComm
+  statusApp -[hidden]-> statusComm
+  senderApp -[hidden]-> senderComm
+  receiverApp -[hidden]-> receiverComm
+  
+  ' Protocol and NIC components
+  [Protocol] as protocol
+  [NIC] as nic
+  
+  ' Connect communicators to protocol
+  ptpComm <--> protocol
+  statusComm <--> protocol
+  senderComm <--> protocol
+  receiverComm <--> protocol
+  
+  ' Connect protocol to NIC
+  protocol <--> nic
+}
+
+' CAN Bus as a wide rectangle
+rectangle "CAN" as canBus #FFFFFF {
+}
+
+package "User Applications" {
+  [Communicator] as cameraComm
+  [Communicator] as lidarComm
+  [Communicator] as gpsComm
+  [Communicator] as insComm
+  [Communicator] as batteryComm
+  [Communicator] as ecuComm
+  [Communicator] as aiComm
+  
+  [Camera<Producer>] as camera
+  [Lidar<Producer>] as lidar
+  [GPS<Producer>] as gps
+  [INS<Producer>] as ins
+  [Battery<Producer>] as battery
+  [ECU<Consumer>] as ecu
+  [AI<Consumer>] as ai
+  
+  ' Connect user applications to their communicators
+  camera <--> cameraComm
+  lidar <--> lidarComm
+  gps <--> gpsComm
+  ins <--> insComm
+  battery <--> batteryComm
+  ecu <--> ecuComm
+  ai <--> aiComm
+}
+
+' Connect all communicators to the CAN bus
+ptpComm <--> canBus
+statusComm <--> canBus
+senderComm <--> canBus
+receiverComm <--> canBus
+
+cameraComm <--> canBus
+lidarComm <--> canBus
+gpsComm <--> canBus
+insComm <--> canBus
+batteryComm <--> canBus
+ecuComm <--> canBus
+aiComm <--> canBus
+
+@enduml

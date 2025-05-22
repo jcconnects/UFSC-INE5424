@@ -7,6 +7,7 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <mutex>
 
 // Include only the necessary headers and forward declare the rest
 #include "teds.h"
@@ -43,6 +44,17 @@ class GatewayComponent : public Component {
         // Removed: void component_dispatcher_routine() override;
         
     private:
+        // Mutex for thread safety
+        std::mutex _gateway_mutex;
+        
+        // Struct for hardcoded component information
+        struct KnownComponent {
+            Address address; // This is Component::Address, which is Protocol::Address
+            ComponentType role; // PRODUCER or CONSUMER
+            DataTypeId dataType; // The type it produces or is interested in
+        };
+        std::vector<KnownComponent> _known_vehicle_components;
+
         // Removed: void handle_interest(const Message& message);
         // Removed: void handle_response(const Message& message);
 };
@@ -50,6 +62,9 @@ class GatewayComponent : public Component {
 // Move implementation to a separate .cpp file
 #include "component.h"  // Now can safely include Component
 #include "vehicle.h"    // For _vehicle->protocol()
+// Required for BasicProducer::PORT and BasicConsumer::PORT
+#include "components/basic_producer.h"
+#include "components/basic_consumer.h"
 
 // Implement the constructor
 GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_id, 
@@ -61,13 +76,12 @@ GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_
     open_log_file();
     if (_log_file.is_open()) {
         _log_file.seekp(0); // Go to beginning to overwrite if file exists
-        // Define log header
-        _log_file << "receive_timestamp_us,source_address,source_component_type,source_vehicle,"
-                 << "message_id,event_type,send_timestamp_us,latency_us,raw_message\n";
+        // Define new standardized log header
+        _log_file << "timestamp_us,event_category,event_type,message_id,message_type,data_type_id,origin_address,destination_address,period_us,value_size,notes\n";
         _log_file.flush();
     }
 
-    db<GatewayComponent>(INF) << "[Gateway] Log created.\n";
+    db<GatewayComponent>(INF) << "[Gateway] Log created with new header.\n";
 
     // Gateway listens on GATEWAY_PORT (0)
     Address addr(_vehicle->address(), GATEWAY_PORT); 
@@ -79,60 +93,227 @@ GatewayComponent::GatewayComponent(Vehicle* vehicle, const unsigned int vehicle_
     set_address(addr); // Set the component's address
     
     db<GatewayComponent>(INF) << "[Gateway] " << getName() << " initialized on port " << PORT << "\n";
+
+    // Populate _known_vehicle_components (hardcoded)
+    // BasicProducer
+    _known_vehicle_components.push_back({
+        Address(_vehicle->address(), BasicProducer::PORT),
+        ComponentType::PRODUCER,
+        DataTypeId::CUSTOM_SENSOR_DATA_A
+    });
+    // BasicConsumer
+    _known_vehicle_components.push_back({
+        Address(_vehicle->address(), BasicConsumer::PORT),
+        ComponentType::CONSUMER,
+        DataTypeId::CUSTOM_SENSOR_DATA_A
+    });
+    // Add other known components here if necessary
+
+    db<GatewayComponent>(INF) << "[Gateway] Initialized with " << _known_vehicle_components.size() 
+                             << " known components for targeted relay.\n";
 }
 
 void GatewayComponent::run() {
-    db<GatewayComponent>(INF) << "[GatewayComponent] " << getName() << " starting main run loop.\n";
+    // Store name and address locally to avoid race condition with destructor
+    const std::string component_name = getName();
+    const Address local_address = address();
     
-    // Initialize with a valid public constructor to avoid using the private default constructor
-    Message received_msg(Message::Type::UNKNOWN, Address(), DataTypeId::UNKNOWN, 0);
+    db<GatewayComponent>(INF) << "[GatewayComponent] " << component_name << " starting main run loop.\n";
+    
+    Message received_msg(Message::Type::UNKNOWN, Address(), DataTypeId::UNKNOWN, 0); // Default constructor
     while (running()) {
-        // Blocking receive call - unblocks when a message is available via Communicator's update->Observer::update
         if (_communicator && _communicator->receive(&received_msg)) {
-            db<GatewayComponent>(INF) << "[GatewayComponent] " << getName() << " received msg on Port 0 (" 
-                                      << address().to_string() << "), "
-                                      << "type: " << static_cast<int>(received_msg.message_type()) 
-                                      << ", unit_type: " << static_cast<int>(received_msg.unit_type())
-                                      << ", origin: " << received_msg.origin().to_string() // Origin from Communicator::receive
-                                      << ". Relaying to internal broadcast (Port 1).\n";
-            
-            if (_log_file.is_open()) {
-                auto now = std::chrono::high_resolution_clock::now();
-                auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
-                    now.time_since_epoch()).count();
-                _log_file << now_us << ","
-                         << static_cast<int>(received_msg.message_type()) << ","
-                         << static_cast<int>(received_msg.unit_type()) << ","
-                         << received_msg.origin().to_string() << ","
-                         << Component::INTERNAL_BROADCAST_PORT << "\n"; // Use Component:: for port const
-                _log_file.flush();
+            auto now_reception_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+
+            // Check if component is still running after receive unblocks
+            if (!running()) {
+                db<GatewayComponent>(INF) << "[GatewayComponent] " << component_name << " no longer running after receive, exiting.\n";
+                break;
             }
 
-            // Relay the *original message data* to internal broadcast.
-            // The Gateway's address is the 'from' for the protocol send.
-            // The destination is its own MAC on INTERNAL_BROADCAST_PORT.
-            // The payload is the raw data of the message just received.
-            Address internal_broadcast_dest_addr(_vehicle->address(), Component::INTERNAL_BROADCAST_PORT);
+            // Log the received message by the Gateway with thread safety
+            {
+                std::lock_guard<std::mutex> log_lock(_gateway_mutex); // Add mutex member to GatewayComponent class
+                if (_log_file.is_open()) {
+                    _log_file << now_reception_us << ","              // timestamp_us
+                            << "GATEWAY" << ","                     // event_category
+                            << "MSG_RECEIVED" << ","                // event_type
+                            << received_msg.timestamp() << ","      // message_id (using original msg timestamp)
+                            << static_cast<int>(received_msg.message_type()) << "," // message_type
+                            << static_cast<int>(received_msg.unit_type()) << ","    // data_type_id
+                            << received_msg.origin().to_string() << ","             // origin_address
+                            << local_address.to_string() << ","                         // destination_address (Gateway's own)
+                            << (received_msg.message_type() == Message::Type::INTEREST ? std::to_string(received_msg.period()) : "0") << "," // period_us
+                            << (received_msg.message_type() == Message::Type::RESPONSE ? std::to_string(received_msg.value_size()) : "0") << "," // value_size
+                            << "Received on port 0"                 // notes
+                            << "\n";
+                    _log_file.flush();
+                }
+            }
+            
+            // Check running state again before processing
+            if (!running()) {
+                db<GatewayComponent>(INF) << "[GatewayComponent] " << component_name << " no longer running after logging, exiting.\n";
+                break;
+            }
+            
+            db<GatewayComponent>(INF) << "[GatewayComponent] " << component_name << " received msg on Port 0 (" 
+                                    << local_address.to_string() << "), "
+                                    << "type: " << static_cast<int>(received_msg.message_type()) 
+                                    << ", unit_type: " << static_cast<int>(received_msg.unit_type())
+                                    << ", origin: " << received_msg.origin().to_string()
+                                    << ". Processing for targeted relay.\n"; // Corrected log message
 
-            if (_vehicle && _vehicle->protocol()) {
-                // Send the raw serialized data of the original message`
-                _communicator->send(
-                    received_msg,  // The original message
-                    internal_broadcast_dest_addr  // To: MAC_VEHICLE:Port_1
-                );
-                db<GatewayComponent>(TRC) << "[GatewayComponent] " << getName() << " relayed message of size " 
-                                          << received_msg.size() << " to " << internal_broadcast_dest_addr.to_string();
-            } else db<GatewayComponent>(ERR) << "[GatewayComponent] " << getName() << " cannot relay: vehicle or protocol is null.\n";
+            // Targeted relay logic
+            if (received_msg.message_type() == Message::Type::INTEREST) {
+                db<GatewayComponent>(INF) << "[GatewayComponent] " << component_name << " received INTEREST for type " 
+                                        << static_cast<int>(received_msg.unit_type()) 
+                                        << ". Forwarding to relevant producers.\n";
+                                        
+                // Check running state before processing
+                if (!running()) {
+                    break;
+                }
+                
+                for (const auto& comp_info : _known_vehicle_components) {
+                    if (comp_info.role == ComponentType::PRODUCER && comp_info.dataType == received_msg.unit_type()) {
+                        db<GatewayComponent>(TRC) << "[GatewayComponent] Forwarding INTEREST to producer at " << comp_info.address.to_string() << "\n";
+                        // Create a new message for sending using the Communicator's new_message method
+                        Message interest_to_relay = _communicator->new_message(
+                            Message::Type::INTEREST,
+                            received_msg.unit_type(),
+                            received_msg.period()
+                        );
 
+                        // Check running state again before sending
+                        if (!running()) {
+                            break;
+                        }
+
+                        if (_communicator->send(interest_to_relay, comp_info.address)) {
+                            db<GatewayComponent>(TRC) << "[GatewayComponent] Successfully relayed INTEREST to " << comp_info.address.to_string() << "\n";
+                            
+                            // Check running state before logging
+                            if (!running()) {
+                                break;
+                            }
+                            
+                            // Log MSG_SENT for the relayed INTEREST message with thread safety
+                            {
+                                std::lock_guard<std::mutex> log_lock(_gateway_mutex);
+                                if (_log_file.is_open()) {
+                                    auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                                                        std::chrono::high_resolution_clock::now().time_since_epoch())
+                                                        .count();
+                                    _log_file << now_us << ","
+                                            << "GATEWAY" << ","
+                                            << "MSG_SENT" << ","
+                                            << interest_to_relay.timestamp() << "," // Use timestamp of the relayed message
+                                            << static_cast<int>(interest_to_relay.message_type()) << "," 
+                                            << static_cast<int>(interest_to_relay.unit_type()) << "," 
+                                            << interest_to_relay.origin().to_string() << ","      // Gateway's address
+                                            << comp_info.address.to_string() << ","  // Producer's address (the actual destination)
+                                            << interest_to_relay.period() << ","              // Period
+                                            << interest_to_relay.value_size() << ","        // Value size (0 for INTEREST)
+                                            << "Relayed INTEREST (orig_msg_id: " << received_msg.timestamp() << ")" << "\n"; // Fixed the notes format
+                                    _log_file.flush();
+                                }
+                            }
+                        } else {
+                            db<GatewayComponent>(ERR) << "[GatewayComponent] Failed to forward INTEREST to producer at " << comp_info.address.to_string() << "\n";
+                        }
+                    }
+                    
+                    // Check running state within loop
+                    if (!running()) {
+                        break;
+                    }
+                }
+            } else if (received_msg.message_type() == Message::Type::RESPONSE) {
+                db<GatewayComponent>(INF) << "[GatewayComponent] " << component_name << " received RESPONSE for type " 
+                                        << static_cast<int>(received_msg.unit_type()) 
+                                        << ". Forwarding to relevant consumers.\n";
+                                        
+                // Check running state
+                if (!running()) {
+                    break;
+                }
+                
+                for (const auto& comp_info : _known_vehicle_components) {
+                    if (comp_info.role == ComponentType::CONSUMER && comp_info.dataType == received_msg.unit_type()) {
+                        // Create a new message for forwarding instead of reusing the received message
+                        Message response_to_relay = _communicator->new_message(
+                            Message::Type::RESPONSE,
+                            received_msg.unit_type(),
+                            0,  // period is 0 for responses
+                            received_msg.data(),
+                            received_msg.value_size()
+                        );
+                        
+                        // Check running state before sending
+                        if (!running()) {
+                            break;
+                        }
+                        
+                        if (_communicator->send(response_to_relay, comp_info.address)) {
+                            // Check running state before logging
+                            if (!running()) {
+                                break;
+                            }
+                            
+                            // Log sent/relayed message with thread safety
+                            {
+                                std::lock_guard<std::mutex> log_lock(_gateway_mutex);
+                                if (_log_file.is_open()) {
+                                    auto now_send_us = std::chrono::duration_cast<std::chrono::microseconds>(
+                                        std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+                                    _log_file << now_send_us << ","              // timestamp_us
+                                            << "GATEWAY" << ","                 // event_category
+                                            << "MSG_SENT" << ","                // event_type
+                                            << response_to_relay.timestamp() << ","  // message_id (using new message timestamp)
+                                            << static_cast<int>(response_to_relay.message_type()) << ","
+                                            << static_cast<int>(response_to_relay.unit_type()) << ","
+                                            << local_address.to_string() << ","     // origin_address (Gateway's own)
+                                            << comp_info.address.to_string() << "," // destination_address
+                                            << "0" << ","                       // period_us
+                                            << response_to_relay.value_size() << "," // value_size
+                                            << "Relayed RESPONSE (orig_msg_id: " << received_msg.timestamp() << ")"  // notes with original message ID
+                                            << "\n";
+                                    _log_file.flush();
+                                }
+                            }
+                            db<GatewayComponent>(TRC) << "[GatewayComponent] " << component_name << " Forwarded RESPONSE to consumer at " 
+                                                    << comp_info.address.to_string() << "\n";
+                        } else {
+                            db<GatewayComponent>(ERR) << "[GatewayComponent] " << component_name << " Failed to forward RESPONSE to consumer at " 
+                                                    << comp_info.address.to_string() << "\n";
+                        }
+                    }
+                    
+                    // Check running state within loop
+                    if (!running()) {
+                        break;
+                    }
+                }
+            } else {
+                db<GatewayComponent>(WRN) << "[GatewayComponent] " << component_name << " received unhandled message type: " 
+                                        << static_cast<int>(received_msg.message_type()) << "\n";
+            }
         } else {
             if (!running()) {
-                db<GatewayComponent>(INF) << "[GatewayComponent] " << getName() << " no longer running, exiting receive loop.\n";
+                db<GatewayComponent>(INF) << "[GatewayComponent] " << component_name << " no longer running, exiting receive loop.\n";
                 break; 
             }
             // Communicator::receive blocks, so this branch is primarily hit when communicator is closed.
         }
+        
+        // Check running state at the end of each loop iteration
+        if (!running()) {
+            break;
+        }
     }
-    db<GatewayComponent>(INF) << "[GatewayComponent] " << getName() << " exiting main run loop.\n";
+    db<GatewayComponent>(INF) << "[GatewayComponent] " << component_name << " exiting main run loop.\n";
 }
 
 // Removed component_dispatcher_routine, handle_interest, and handle_response

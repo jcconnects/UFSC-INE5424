@@ -1,0 +1,99 @@
+Thread Analysis Summary
+=====================
+Total unique issues found: 8
+
+HELGRIND: 2 issues found
+  - Data Access Violation: 1
+  - Data Race: 1
+
+DRD: 6 issues found
+  - Unknown: 6
+
+TSAN: No issues found
+Detailed Issues
+==============
+
+HELGRIND Issues:
+================
+
+Issue #1: Data Access Violation
+-------------------------------
+Description: ==3438117== Thread #1 is the program's root thread
+
+Issue #2: Data Race
+-------------------
+Description: ==3438120== Possible data race during read of size 1 at 0x4DFE660 by thread #2
+File locations:
+  - (alloc_traits.h:464
+  - (basic_producer.h:71
+  - (basic_producer.h:76
+  - (buffer.h:50
+  - (buffer.h:67
+  - ...and 203 more locations
+
+DRD Issues:
+===========
+
+Issue #1: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (alloc_traits.h:464
+  - (basic_producer.h:71
+  - (communicator.h:117
+  - (communicator.h:304
+  - (demo.cpp:168
+  - ...and 51 more locations
+Stack trace (first 3 frames):
+  - thread 1 at 0x04f93590 size 8
+
+Issue #2: Unknown
+-----------------
+Description: Unknown issue
+Stack trace (first 3 frames):
+  - thread 5 at 0x04f98518 size 8
+
+Issue #3: Unknown
+-----------------
+Description: Unknown issue
+Stack trace (first 3 frames):
+  - thread 1 at 0x04f9c010 size 8
+
+Issue #4: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (communicator.h:172
+  - (component.h:306
+  - (component.h:672
+  - (component.h:773
+  - (gateway_component.h:200
+  - ...and 19 more locations
+Stack trace (first 3 frames):
+  - thread 5 at 0x04f985f0 size 8
+
+Issue #5: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (component.h:337
+  - (component.h:532
+  - (demo.cpp:168
+  - (demo.cpp:79
+  - (vehicle.h:148
+  - ...and 7 more locations
+Stack trace (first 3 frames):
+  - thread 1 at 0x04f9c607 size 1
+
+Issue #6: Unknown
+-----------------
+Description: Unknown issue
+File locations:
+  - (component.h:672
+  - (component.h:773
+  - (demo.cpp:168
+  - (demo.cpp:71
+  - (pthread_create.c:442
+  - ...and 9 more locations
+Stack trace (first 3 frames):
+  - thread 5 at 0x04f98520 size 8

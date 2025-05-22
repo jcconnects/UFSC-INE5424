@@ -6,6 +6,7 @@
 #include <random>
 #include <vector>
 #include <atomic>
+#include <mutex>
 
 #include "component.h"
 #include "debug.h"
@@ -36,6 +37,9 @@ class BasicProducer : public Component {
         int _current_value;
         uint32_t _counter;
         
+        // Mutex to protect access to _current_value and _counter
+        std::mutex _data_mutex;
+        
         // Update the simulated test data
         void update_test_data();
 };
@@ -58,7 +62,8 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
     open_log_file();
     if (_log_file.is_open()) {
         _log_file.seekp(0);
-        _log_file << "timestamp_us,value,counter\n";
+        // Define new standardized log header
+        _log_file << "timestamp_us,event_category,event_type,message_id,message_type,data_type_id,origin_address,destination_address,period_us,value_size,notes\n";
         _log_file.flush();
     }
 
@@ -70,9 +75,9 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
     _communicator = new Comms(protocol, addr, ComponentType::PRODUCER, _produced_data_type);
     set_address(addr);
     
-    // IMPORTANT: Set up the interest period callback
-    _communicator->set_interest_period_callback([this](std::uint32_t period) {
-        this->handle_interest_period(period);
+    // IMPORTANT: Set up the interest period callback to use the new signature
+    _communicator->set_interest_period_callback([this](const Message& interest_msg) {
+        this->handle_interest_period(interest_msg); // Will log RECV_INTEREST
     });
     
     db<BasicProducer>(INF) << "[Basic Producer] initialized as producer of type " 
@@ -82,31 +87,34 @@ BasicProducer::BasicProducer(Vehicle* vehicle, const unsigned int vehicle_id,
 void BasicProducer::run() {
     db<BasicProducer>(INF) << "[Basic Producer] component " << getName() << " starting main run loop.\n";
     
-    // Main loop - update data and log
+    // Store name locally to avoid race condition with destructor
+    const std::string component_name = getName();
+    
+    // Main loop - update data and potentially log (console only for data changes)
     while (running()) {
         // Update simulated test data
-        update_test_data();
+        update_test_data(); // This includes a TRC level log for data changes
         
-        // Log current data
-        if (_log_file.is_open()) {
-            auto now = std::chrono::high_resolution_clock::now();
-            auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
-                now.time_since_epoch()).count();
-                
-            _log_file << now_us << ","
-                     << _current_value << ","
-                     << _counter << "\n";
-            _log_file.flush();
+        // Add proper thread safety for accessing the log file
+        {
+            std::lock_guard<std::mutex> log_lock(_data_mutex); // Reuse _data_mutex for log file access
+            if (_log_file.is_open()) {
+                // We already have proper logging in update_test_data
+                _log_file.flush();
+            }
         }
         
         // Sleep to prevent consuming too much CPU
         usleep(100000); // 100ms update interval
     }
     
-    db<BasicProducer>(INF) << "[Basic Producer] component " << getName() << " exiting main run loop.\n";
+    db<BasicProducer>(INF) << "[Basic Producer] component " << component_name << " exiting main run loop.\n";
 }
 
 void BasicProducer::update_test_data() {
+    // Lock the mutex before updating data
+    std::lock_guard<std::mutex> lock(_data_mutex);
+    
     // Generate new simulated data
     _current_value = _value_dist(_rng);
     _counter++;
@@ -121,6 +129,9 @@ bool BasicProducer::produce_data_for_response(DataTypeId type, std::vector<std::
     if (type != _produced_data_type) {
         return false;
     }
+    
+    // Lock the mutex before reading data
+    std::lock_guard<std::mutex> lock(_data_mutex);
     
     // Create a buffer with our two values
     out_value.resize(sizeof(int) + sizeof(uint32_t));

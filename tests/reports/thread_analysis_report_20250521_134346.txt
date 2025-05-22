@@ -1,0 +1,28 @@
+Thread Analysis Summary
+=====================
+Total unique issues found: 2
+
+HELGRIND: 2 issues found
+  - Data Access Violation: 1
+  - Data Race: 1
+
+Detailed Issues
+==============
+
+HELGRIND Issues:
+================
+
+Issue #1: Data Access Violation
+-------------------------------
+Description: ==512112== Thread #1 is the program's root thread
+
+Issue #2: Data Race
+-------------------
+Description: ==512112== Possible data race during write of size 8 at 0x4F87D58 by thread #3
+File locations:
+  - (basic_producer.h:103
+  - (basic_producer.h:116
+  - (basic_producer.h:71
+  - (basic_producer.h:80
+  - (clone-internal.c:83
+  - ...and 69 more locations

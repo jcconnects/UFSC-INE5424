@@ -1,0 +1,35 @@
+Thread Analysis Summary
+=====================
+Total unique issues found: 2
+
+HELGRIND: 2 issues found
+  - Data Access Violation: 1
+  - Data Race: 1
+
+Detailed Issues
+==============
+
+HELGRIND Issues:
+================
+
+Issue #1: Data Access Violation
+-------------------------------
+Description: ==503659== Thread #2 was created
+File locations:
+  - (clone-internal.c:83
+  - (demo.cpp:167
+  - (initializer.h:48
+  - (nic.h:100
+  - (pthread_create.c:295
+  - ...and 11 more locations
+
+Issue #2: Data Race
+-------------------
+Description: ==503683== Possible data race during read of size 8 at 0x4F87D28 by thread #4
+File locations:
+  - (basic_producer.h:103
+  - (basic_producer.h:116
+  - (basic_producer.h:71
+  - (basic_producer.h:80
+  - (clone-internal.c:83
+  - ...and 71 more locations
