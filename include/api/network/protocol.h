@@ -5,11 +5,11 @@
 #include <cstring>
 #include <atomic>
 
-#include "traits.h"
-#include "debug.h"
-#include "observed.h"
-#include "observer.h"
-#include "ethernet.h"
+#include "api/traits.h"
+#include "api/util/debug.h"
+#include "api/util/observed.h"
+#include "api/util/observer.h"
+#include "api/network/ethernet.h"
 
 // Protocol implementation that works with the real Communicator
 template <typename NIC>
@@ -112,10 +112,10 @@ class Protocol: private NIC::Observer
 
 /******** Protocol::Address Implementation ******/
 template <typename NIC>
-Protocol<NIC>::Address::Address() : _port(0), _paddr() {}
+Protocol<NIC>::Address::Address() : _port(0), _paddr(NIC::NULL_ADDRESS) {}
 
 template <typename NIC>
-Protocol<NIC>::Address::Address(const Null& null) : _port(0), _paddr() {}
+Protocol<NIC>::Address::Address(const Null& null) : _port(0), _paddr(NIC::NULL_ADDRESS) {}
 
 template <typename NIC>
 Protocol<NIC>::Address::Address(Physical_Address paddr, Port port) : _port(port), _paddr(paddr) {}

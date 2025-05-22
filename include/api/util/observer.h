@@ -1,9 +1,8 @@
 #ifndef OBSERVER_H
 #define OBSERVER_H
 
-#include <unistd.h>  // for getpid()
-#include "semaphore_wrapper.h"
-#include "list.h"
+#include <semaphore.h>
+#include "api/util/list.h"
 
 // Forward declarations for Conditionally_Data_Observed class
 template <typename T, typename Condition>
@@ -86,28 +85,38 @@ class Concurrent_Observer : public Conditional_Data_Observer<D, C> {
         typedef Concurrent_Observed<D, C> Observed;
     
     public:
-        Concurrent_Observer(C rank) : Conditional_Data_Observer<D, C>(rank) {};
-        ~Concurrent_Observer() = default;
+        Concurrent_Observer(C rank);
+        ~Concurrent_Observer();
         
         void update(C c, D* d) override;
         D* updated();
         
     private:
-        SemaphoreWrapper _semaphore;
+        sem_t _semaphore;
 };
 
 /***************** CONCURRENT_OBSERVER IMPLEMENTATION *************************/
 template <typename D, typename C>
+void Concurrent_Observer<D, C>::Concurrent_Observer(C rank) : Conditional_Data_Observer<D, C>(rank) {
+    sem_init(&_semaphore, 0, 0);
+}
+
+template <typename D, typename C>
+void Concurrent_Observer<D, C>::~Concurrent_Observer() {
+    sem_destroy(&_semaphore);
+}
+
+template <typename D, typename C>
 void Concurrent_Observer<D, C>::update(C c, D* d) {
     if (c == this->_rank) {
         this->_data.insert(d);
-        _semaphore.post();
+        sem_post(&_semaphore);
     }
 }
 
 template <typename D, typename C>
 D* Concurrent_Observer<D, C>::updated() {
-    _semaphore.wait();
+    sem_wait(&_semaphore);
     return this->_data.remove();
 }
 
@@ -128,7 +137,7 @@ class Concurrent_Observer<D, void> : public Conditional_Data_Observer<D, void> {
             _semaphore.post();
         };
 
-        void updated() {
+        D* updated() {
             _semaphore.wait();
             return this->_data.remove();
         }

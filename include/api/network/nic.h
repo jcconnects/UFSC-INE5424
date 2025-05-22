@@ -5,12 +5,12 @@
 #include <pthread.h>
 #include <queue>
 
-#include "observer.h"
-#include "observed.h"
-#include "ethernet.h"
-#include "buffer.h"
-#include "traits.h"
-#include "debug.h"
+#include "api/traits.h"
+#include "api/network/ethernet.h"
+#include "api/util/debug.h"
+#include "api/util/observer.h"
+#include "api/util/observed.h"
+#include "api/util/buffer.h"
 
 // Foward Declaration
 class Initializer;

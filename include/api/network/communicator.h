@@ -1,11 +1,10 @@
 #ifndef COMMUNICATOR_H
 #define COMMUNICATOR_H
 
-
-#include "observer.h"
-#include "message.h"
-#include "traits.h"
-#include "debug.h"
+#include "api/traits.h"
+#include "api/network/message.h"
+#include "api/util/observer.h"
+#include "api/util/debug.h"
 
 template <typename Channel>
 class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data, typename Channel::Observer::Observing_Condition>
@@ -16,6 +15,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         typedef typename Channel::Buffer Buffer;
         typedef typename Channel::Address Address;
         typedef typename Channel::Port Port;
+        typedef Message<Channel> Message;
         static constexpr const unsigned int MAX_MESSAGE_SIZE = Channel::MTU; // Maximum message size in bytes
 
         // Constructor and Destructor
@@ -23,7 +23,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         ~Communicator();
         
         // Communication methods
-        bool send(const Message& message);
+        bool send(const Message* message);
         bool receive(Message* message);
 
         // Address getter
@@ -59,10 +59,10 @@ Communicator<Channel>::~Communicator() {
 }
 
 template <typename Channel>
-bool Communicator<Channel>::send(const Message& message) {
+bool Communicator<Channel>::send(const Message* message) {
     db<Communicator>(TRC) << "Communicator<Channel>::send() called!\n";
     
-    int result = _channel->send(_address, Address::BROADCAST, message.data(), message.size());
+    int result = _channel->send(_address, Address::BROADCAST, message->data(), message->size());
     db<Communicator>(INF) << "[Communicator] Channel::send() return value " << std::to_string(result) << "\n";
     
     return result;
@@ -86,7 +86,7 @@ bool Communicator<Channel>::receive(Message* message) {
         return false;
 
     // Deserialize the raw data into the message
-    *message = Message::deserialize(temp_data, size);
+    *message = Message::deserialize(temp_data, result);
     db<Communicator>(INF) << "[Communicator] Received message from: " << message->origin().to_string() << "\n";
 
     return true;

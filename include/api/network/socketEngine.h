@@ -18,9 +18,9 @@
 #include <pthread.h>
 #include <atomic>
 
-#include "ethernet.h"
-#include "traits.h"
-#include "debug.h"
+#include "api/network/ethernet.h"
+#include "api/traits.h"
+#include "api/util/debug.h"
 
 
 class SocketEngine{

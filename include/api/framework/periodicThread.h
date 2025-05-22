@@ -6,6 +6,8 @@
 #include <atomic>
 #include <thread>
 #include <functional>
+#include <condition_variable>
+#include <mutex>
 
 
 template <typename Owner>
@@ -13,7 +15,7 @@ class Periodic_Thread {
     public:
         Periodic_Thread() = default;
         template <typename ...Tn>
-        Periodic_Thread(Owner* owner, void (Owner::*task)(Tn...), Tn&&...an);
+        Periodic_Thread(Owner* owner, void (Owner::*task)(Tn...), Tn...an);
         ~Periodic_Thread();
 
         void start(std::chrono::microseconds period);
@@ -34,13 +36,15 @@ class Periodic_Thread {
         std::chrono::microseconds _period;
         std::atomic<bool> _running;
         pthread_t _thread;
+        std::condition_variable _cv;
         std::function<void()> _task;
+        std::mutex _mutex;
 };
 
 /***** Periodic Thread Implementation *****/
 template <typename Owner>
 template <typename ...Tn>
-Periodic_Thread<Owner>::Periodic_Thread(Owner* owner, void (Owner::*task)(Tn...), Tn&&...an) : _period(std::chrono::microseconds::zero()), _running(false), _thread(0) {
+Periodic_Thread<Owner>::Periodic_Thread(Owner* owner, void (Owner::*task)(Tn...), Tn...an) : _period(std::chrono::microseconds::zero()), _running(false), _thread(0) {
     _task = std::bind(task, owner, std::forward<Tn>(an)...);
 }
 
@@ -53,6 +57,7 @@ template <typename Owner>
 void Periodic_Thread<Owner>::join() {
     if (running()) {
         _running.store(false, std::memory_order_release);
+        _cv.notify_all();
         pthread_join(_thread, nullptr);
     }
 }

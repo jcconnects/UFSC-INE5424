@@ -1,10 +1,9 @@
 #ifndef INITIALIZER_H
 #define INITIALIZER_H
 
-#include "debug.h"
-#include "socketEngine.h"
-#include "nic.h"
-#include "protocol.h"
+#include "api/network/socketEngine.h"
+#include "api/network/nic.h"
+#include "api/network/protocol.h"
 
 /**
  * @brief This class initializes the API
