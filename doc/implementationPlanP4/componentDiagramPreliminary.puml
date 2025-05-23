@@ -1,0 +1,108 @@
+@startuml name=componentDiagram
+!theme vibrant
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam defaultTextAlignment center
+skinparam packageStyle rectangle
+
+title Component Diagram: Revised Integrated Communication Architecture
+
+' === Central Communication Bus ===
+component CAN <<Singleton>> as CANBus {
+  interface "InternalBus\n(IBus)" as IBus_CAN
+}
+' Note: Connection to IBus_CAN is made by components using it.
+
+' === User Application Layer ===
+package "User Applications\n(Internal Components / POSIX Threads)" {
+  component Lidar <<Sensor App>> as LidarApp
+  component Camera <<Sensor App>> as CameraApp
+  component ECU <<Controller App>> as EcuApp
+
+  ' Connections to Internal Bus
+  LidarApp  <--> IBus_CAN : produces/consumes data
+  CameraApp <--> IBus_CAN : produces/consumes data
+  EcuApp    <--> IBus_CAN : produces/consumes data
+
+  ' Connections to Clock for timestamps
+  LidarApp  <--> ClockComp : uses for timestamps
+  CameraApp <--> ClockComp : uses for timestamps
+  EcuApp    <--> ClockComp : uses for timestamps
+}
+
+' === Vehicle Utilities Layer ===
+package "Vehicle Utilities" {
+    ' Clock is correctly placed here
+    component Clock <<Singleton>> as ClockComp {
+      interface "TimeService\n(PTP State Machine)" as ITimePTP
+    }
+    ' Note: Connection to ITimePTP is made by ProtoComp using it.
+
+    component "LeaderKeyStorage\n(Thread-Safe)" as LeaderKeyStore
+
+    component Gateway <<Component>> as GatewayComp {
+      component "CAN Handler\n(Thread)"        as G_CAN
+      component "NET Handler\n(Thread)"        as G_NET
+      component "MessageRouter\n(handle_message())" as RouterFunc
+    }
+
+    component Status <<Component>> as StatusComp
+
+    component Communicator_Gateway <<Communicator>> as CommGw
+    component Communicator_Status  <<Communicator>> as CommStatus
+
+    component Protocol <<Shared Instance>>    as ProtoComp
+    component NIC <<Shared Instance>>        as NIC_Comp
+    component SocketEngine <<Raw Ethernet,\nShared Instance>> as SEngine
+
+    ' --- Gateway Connections ---
+    GatewayComp  <--> IBus_CAN      : G_CAN observes/posts to CAN
+    G_CAN        <--> RouterFunc     : pass msgs
+    G_NET        <--> RouterFunc     : pass msgs
+    RouterFunc   <--> CommGw          : send outgoing external
+    CommGw       <--> G_NET           : notify incoming external
+    RouterFunc   <--> LeaderKeyStore  : uses key for MACs
+    RouterFunc   <--> ClockComp       : uses for ext. msg timestamps
+
+    ' --- Status Connections ---
+    StatusComp   <--> CommStatus      : group management msgs
+    StatusComp   <--> IBus_CAN        : produces/consumes status info
+    StatusComp   <--> LeaderKeyStore  : updates leader key & info
+    StatusComp   <--> ClockComp       : uses for status msg timestamps
+
+    ' --- Network Stack & PTP ---
+    CommGw       <--> ProtoComp       : sends/receives data
+    CommStatus   <--> ProtoComp       : sends/receives status/control
+    ProtoComp    <--> NIC_Comp        : multiplexes/demultiplexes
+    NIC_Comp     <--> SEngine         : frame I/O
+    ProtoComp    <--> ITimePTP        : triggers PTP SM on msg events
+    ProtoComp    <--> LeaderKeyStore  : reads leader info for PTP role
+}
+
+' === External World ===
+package "External Network\n(Broadcast Domain)" {
+  [Other Autonomous\nSystems] as ExtVehicles
+  SEngine <--> ExtVehicles : raw Ethernet frames
+}
+
+' === Notes ===
+note right of RouterFunc
+  • Both G_CAN and G_NET invoke handle_message()  
+    via observer callbacks.  
+  • handle_message() routes messages, applies/verifies  
+    MACs, timestamps, and reposts internally or sends externally.
+end note
+
+note bottom of ProtoComp
+  **PTP Handling (P4):** - Protocol triggers Clock’s PTP state machine.  
+  - Reads LeaderKeyStore to determine master/slave role.  
+  - ClockComp maintains synchronized time.
+end note
+
+note top of LeaderKeyStore
+  **LeaderKeyStorage (P5):** - Stores group leader identity & MAC key.  
+  - Updated by Status component.  
+  - Read by Router and Protocol for MAC/PTP.
+end note
+
+@enduml
