@@ -31,8 +31,8 @@ AgentStub::AgentStub(CAN* can) : _can_bus(can) {
     can->attach(&_observer, _condition);
 }
 
-void AgentStub::send(void* data) {
-    Message msg(ME)
+void AgentStub::send(void* data, CANCondition condition) {
+    // create a message with the types in condition
     _can_bus->send(&msg);
 }
 
