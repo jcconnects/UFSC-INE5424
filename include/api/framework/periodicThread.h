@@ -6,9 +6,44 @@
 #include <atomic>
 #include <thread>
 #include <functional>
-#include <condition_variable>
-#include <mutex>
 
+#ifndef __GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
+#include <cstring>
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <linux/sched.h>
+#include <errno.h>
+#include <signal.h>  // For signal handling
+
+// Definition of sched_attr structure
+struct sched_attr {
+    uint32_t size;
+    uint32_t sched_policy;
+    uint64_t sched_flags;
+    int32_t  sched_nice;
+    uint32_t sched_priority;
+    // SCHED_DEADLINE specific fields
+    uint64_t sched_runtime;
+    uint64_t sched_deadline;
+    uint64_t sched_period;
+};
+
+// Signal handler for thread interruption
+// Use a single static handler for the entire component system
+extern "C" void component_signal_handler(int sig) {
+    // Simply wake up the thread to check its running state
+    if (sig == SIGUSR1) {
+        // No action needed, just unblock from system calls
+    }
+}
+
+// Wrapper for the sched_setattr system call
+int sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags) {
+    return syscall(SYS_sched_setattr, pid, attr, flags);
+}
 
 template <typename Owner>
 class Periodic_Thread {
@@ -33,19 +68,20 @@ class Periodic_Thread {
     private:
         std::int64_t mdc(std::int64_t a, std::int64_t b);
 
-        std::chrono::microseconds _period;
+        std::atomic<std::chrono::microseconds> _period;
         std::atomic<bool> _running;
         pthread_t _thread;
-        std::condition_variable _cv;
         std::function<void()> _task;
         std::mutex _mutex;
+        std::thread::id _thread;
 };
 
 /***** Periodic Thread Implementation *****/
 template <typename Owner>
 template <typename ...Tn>
-Periodic_Thread<Owner>::Periodic_Thread(Owner* owner, void (Owner::*task)(Tn...), Tn...an) : _period(std::chrono::microseconds::zero()), _running(false), _thread(0) {
+Periodic_Thread<Owner>::Periodic_Thread(Owner* owner, void (Owner::*task)(Tn...), Tn...an) : _running(false), _thread(0) {
     _task = std::bind(task, owner, std::forward<Tn>(an)...);
+    _period.store(std::chrono::microseconds::zero(), std::memory_order_release);
 }
 
 template <typename Owner>
@@ -57,8 +93,10 @@ template <typename Owner>
 void Periodic_Thread<Owner>::join() {
     if (running()) {
         _running.store(false, std::memory_order_release);
-        _cv.notify_all();
-        pthread_join(_thread, nullptr);
+        // Send a signal to interrupt any blocked thread (critical for proper thread termination)
+        if (_thread != 0) {
+            pthread_kill(_thread, SIGUSR1);
+        }
     }
 }
 
@@ -67,27 +105,52 @@ void Periodic_Thread<Owner>::start(std::chrono::microseconds period) {
     if (!running()) {
         _period = period;
         _running.store(true, std::memory_order_release);
-        pthread_create(&_thread, nullptr, Periodic_Thread::run, this);
+        _thread = pthread_create(&_thread, nullptr, Periodic_Thread::run, this);
     }
 }
 
 template <typename Owner>
 void Periodic_Thread<Owner>::adjust_period(std::chrono::microseconds period) {
-    _period = std::chrono::microseconds(mdc(_period.count(), period.count()));
+    _period.store(std::chrono::microseconds(mdc(_period.load(std::memory_order_aquire).count(), period.count())), std::memory_order_release);
 }
 
 template <typename Owner>
 std::chrono::microseconds Periodic_Thread<Owner>::period() const {
-    return _period;
+    return _period.load(std::memory_order_acquire);
 }
 
 template <typename Owner>
 void* Periodic_Thread<Owner>::run(void* arg) {
     Periodic_Thread* thread = static_cast<Periodic_Thread*>(arg);
 
+    // Install the signal handler for thread interruption
+    struct sigaction sa;
+    std::memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = component_signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGUSR1, &sa, nullptr);
+
+    struct sched_attr attr_dl;
+    memset(&attr_dl, 0, sizeof(attr_dl));
+    attr_dl.size = sizeof(attr_dl);
+    attr_dl.sched_policy = SCHED_DEADLINE;
+    attr_dl.sched_flags = 0;
+
     while (thread->running()) {
+        current_period = thread->period().load(std::memory_order_acquire);
+        // Update SCHED_DEADLINE parameters based on current period
+        attr_dl.sched_runtime = current_period * 500; // 50% of period in ns
+        attr_dl.sched_deadline = current_period * 1000; // Period in ns
+        attr_dl.sched_period = current_period * 1000; // Period in ns
+        int result = sched_setattr(0, &attr_dl, 0);
+        if (result != 0) {
+            std::cerr << "Error setting SCHED_DEADLINE: " << strerror(errno) << std::endl;
+            return nullptr;
+        }
+
         thread->_task();
-        std::this_thread::sleep_for(thread->period());
+        std::this_thread::sleep_for(thread->period().load(std::memory_order_acquire));
     }
 
     return nullptr;
