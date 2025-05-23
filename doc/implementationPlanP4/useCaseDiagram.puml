@@ -1,0 +1,173 @@
+@startuml UsecaseDiagram_AutonomousSystemCommunication
+!theme vibrant
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseStyle rectangle
+skinparam ArrowColor #33658A
+skinparam ActorBorderColor #2F4858
+skinparam UsecaseBorderColor #F6AE2D
+skinparam PackageBorderColor #86BBD8
+skinparam NoteBorderColor #F26419
+skinparam NoteBackgroundColor #FDFFFC
+
+' Colors for different vehicles (from example)
+skinparam rectangleBackgroundColor<<Vehicle1>> #D4F0F0
+skinparam rectangleBorderColor<<Vehicle1>> #2F6D80
+skinparam packageBackgroundColor<<V1>> #E6F5F5
+skinparam packageBorderColor<<V1>> #2F6D80
+
+skinparam rectangleBackgroundColor<<Vehicle2>> #F0E6D4
+skinparam rectangleBorderColor<<Vehicle2>> #8D6E2F
+skinparam packageBackgroundColor<<V2>> #F5F0E6
+skinparam packageBorderColor<<V2>> #8D6E2F
+
+title Autonomous Vehicle System Communication Use Cases
+
+' === Actors Definition ===
+' Actors are based on the components from our previous component diagram discussions.
+rectangle "Vehicle 1 System" <<Vehicle1>> {
+  package "User Applications V1" as V1_UserApps <<V1>> {
+    actor "LidarApp V1" as Lidar_V1
+    actor "CameraApp V1" as Camera_V1
+    actor "ECUApp V1" as ECU_V1
+  }
+  package "Vehicle Utilities V1" as V1_Utilities <<V1>> {
+    actor "Gateway V1" as Gateway_V1
+    actor "StatusHandler V1" as Status_V1
+    actor "PTP Service V1" as PTP_Service_V1
+  }
+}
+
+rectangle "Vehicle 2 System" <<Vehicle2>> {
+  package "User Applications V2" as V2_UserApps <<V2>> {
+    actor "LidarApp V2" as Lidar_V2
+    actor "CameraApp V2" as Camera_V2
+    actor "ECUApp V2" as ECU_V2
+  }
+  package "Vehicle Utilities V2" as V2_Utilities <<V2>> {
+    actor "Gateway V2" as Gateway_V2
+    actor "StatusHandler V2" as Status_V2
+    actor "PTP Service V2" as PTP_Service_V2
+  }
+}
+
+' === Use Cases Definition ===
+
+rectangle "Internal Vehicle Communication (via CAN)" {
+  usecase "Publish Data Internally" as UC_Internal_Publish
+  note bottom of UC_Internal_Publish
+    <b>Intra-Vehicle Data Sharing</b>
+    LidarApp, CameraApp, or ECUApp publish data
+    (e.g., sensor readings, processed objects)
+    onto the internal CAN bus. Other authorized
+    internal components consume this data via
+    an observer pattern. This addresses P2.
+  end note
+}
+
+rectangle "External Inter-Vehicle Communication" {
+  usecase "Request External Data (Interest Msg)" as UC_External_Interest
+  note bottom of UC_External_Interest
+    <b>Inter-Vehicle Data Request</b>
+    An ECUApp (e.g., in Vehicle 1) determines a need
+    for external data. It instructs its Gateway
+    to broadcast an "Interest" message.
+    The Gateway applies a MAC (P5) and uses PTP
+    timestamps (P4). This addresses P3 & P7.
+  end note
+
+  usecase "Provide External Data (Response Msg)" as UC_External_Response
+  note bottom of UC_External_Response
+    <b>Inter-Vehicle Data Provision</b>
+    An App (e.g., LidarApp in Vehicle 2) has data
+    matching a received "Interest" message.
+    It instructs its Gateway to broadcast a "Response"
+    message with the data. The Gateway applies
+    a MAC (P5) and uses PTP timestamps (P4).
+    This addresses P3.
+  end note
+}
+
+rectangle "Group Management & Security Services" {
+  usecase "Broadcast Vehicle Status (STATUS Msg)" as UC_Group_StatusBroadcast
+  note bottom of UC_Group_StatusBroadcast
+    <b>Group Awareness & Formation</b>
+    The StatusHandler in each vehicle periodically
+    broadcasts a "STATUS" message containing its
+    vehicle's age and key presence (P5).
+  end note
+
+  usecase "Manage Group Leadership & MAC Key" as UC_Group_Management
+  note bottom of UC_Group_Management
+    <b>Dynamic Group Security</b>
+    StatusHandlers exchange STATUS messages to
+    dynamically elect a group leader. The leader
+    generates and ensures distribution/agreement of
+    the MAC key for the current session (P5).
+    The key is stored in LeaderKeyStorage.
+  end note
+
+  usecase "Ensure Message Authenticity (MAC)" as UC_Security_MAC
+  note bottom of UC_Security_MAC
+    <b>Data Integrity & Authenticity</b>
+    The Gateway, for all outgoing external Interest
+    and Response messages, generates and appends a
+    Message Authentication Code (MAC) using the
+    current group key (P5). It also verifies the MAC
+    on incoming messages, discarding those that fail.
+  end note
+}
+
+rectangle "Time Synchronization Services" {
+  usecase "Synchronize Clocks (PTP)" as UC_Time_PTP
+  note bottom of UC_Time_PTP
+    <b>Network-Wide Time Coherency</b>
+    The PTP Service (representing Protocol/Clock logic)
+    in each vehicle participates in the Precision Time
+    Protocol (PTP). Messages are exchanged, and clocks
+    are synchronized to the PTP master (which is the
+    current group leader) (P4, P5).
+  end note
+}
+
+' === Relationships: Actors to Use Cases ===
+
+' Internal Communication
+Lidar_V1 --> UC_Internal_Publish : (publishes sensor data)
+Camera_V1 --> UC_Internal_Publish : (publishes image data)
+ECU_V1 --> UC_Internal_Publish : (publishes/consumes data)
+
+' External Data Request
+ECU_V1 --> UC_External_Interest : (triggers request)
+Gateway_V1 --> UC_External_Interest : (sends secured Interest msg)
+
+' External Data Provision
+ECU_V2 --> UC_External_Response : (triggers response with data)
+Lidar_V2 --> UC_External_Response : (provides sensor data)
+Camera_V2 --> UC_External_Response : (provides image data)
+Gateway_V2 --> UC_External_Response : (sends secured Response msg)
+
+' Group Management & Security
+Status_V1 --> UC_Group_StatusBroadcast : (broadcasts own status)
+Status_V2 --> UC_Group_StatusBroadcast : (broadcasts own status)
+
+Status_V1 --> UC_Group_Management : (participates in election/key mgmt)
+Status_V2 --> UC_Group_Management : (participates in election/key mgmt)
+
+Gateway_V1 --> UC_Security_MAC : (applies/verifies MACs)
+Gateway_V2 --> UC_Security_MAC : (applies/verifies MACs)
+
+' Time Synchronization
+PTP_Service_V1 --> UC_Time_PTP : (participates in PTP)
+PTP_Service_V2 --> UC_Time_PTP : (participates in PTP)
+
+' Indicate that MAC security is part of external data exchange
+UC_External_Interest ..> UC_Security_MAC : <<include>>
+UC_External_Response ..> UC_Security_MAC : <<include>>
+
+
+' Hidden links for layout aid
+UC_Internal_Publish -[hidden]- UC_External_Interest
+UC_Group_StatusBroadcast -[hidden]- UC_Group_Management
+
+@enduml

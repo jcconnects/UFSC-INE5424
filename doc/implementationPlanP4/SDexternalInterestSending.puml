@@ -1,0 +1,132 @@
+@startuml SD2_External_Interest_Broadcast_NIC_Handles_MAC_Time
+!theme vibrant
+title SD2: External "Interest" Message Broadcast (NIC handles MAC & PTP Timestamp)
+
+actor "ECUApp V1" as ECUApp
+participant "canBus:CAN" as CANbus
+participant "gateway_V1:Gateway" as Gateway
+participant "interestMsgForCAN:Message" as InterestMsgForCAN
+participant "interestMsgForExternal:Message" as InterestMsgForExternal
+participant "commGw_V1:Communicator" as CommGw
+participant "protocol_V1:Protocol" as Protocol
+participant "nic_V1:NIC" as NIC
+participant "leaderKeyStore:LeaderKeyStorage" as LeaderKeyStore
+participant "clock_V1:Clock" as Clock
+participant "ethBuffer:Buffer<Ethernet::Frame>" as EthBuffer
+participant "socketEngine_V1:SocketEngine" as SocketEngine
+
+skinparam sequenceMessageAlign center
+skinparam actorBackgroundColor LightBlue
+skinparam actorBorderColor Blue
+skinparam participantBackgroundColor LightGreen
+skinparam participantBorderColor Green
+skinparam roundcorner 10
+skinparam noteBackgroundColor LightYellow
+skinparam noteBorderColor Orange
+skinparam sequenceArrowThickness 1.5
+skinparam lifelineMaxMessageSize 375
+
+autonumber "<b>[00]"
+
+== ECUApp Initiates External Interest via CAN ==
+ECUApp -> InterestMsgForCAN ++ : new Message(INTEREST_TYPE_EXTERNAL_PAYLOAD, payload, period)
+    note left
+        ECUApp prepares the core content (payload, type, period)
+        for an external Interest message.
+        The 'unit' might indicate it's destined for external processing.
+    end note
+return interestMsgForCAN_obj
+
+ECUApp -> CANbus ++ : notify(INTEREST_TYPE_EXTERNAL_PAYLOAD, interestMsgForCAN_obj)
+    note right
+        ECUApp publishes this data intent to the internal CAN bus.
+    end note
+return
+destroy interestMsgForCAN_obj
+
+== Gateway Receives from CAN & Prepares for External Dispatch ==
+CANbus -> Gateway ++ : update(INTEREST_TYPE_EXTERNAL_PAYLOAD, msgCloneFromCAN)
+    note right
+        Gateway, observing CAN, receives a clone of the message/data.
+        It recognizes this needs to be an external "Interest" message.
+    end note
+    Gateway -> InterestMsgForExternal ++ : new Message(INTEREST, gwAddress, targetUnit, period, msgCloneFromCAN.payload())
+        note left
+            Gateway constructs the actual external "Interest" Message object.
+            It does *not* add PTP time or MAC here.
+        end note
+    return interestMsgExt_obj
+    Gateway -> Gateway : // Internal: CAN-handler logic passes to Network-handler logic
+return
+
+== Gateway Forwards to Network Stack (Communicator) ==
+Gateway -> CommGw ++ : send(interestMsgExt_obj)
+    note right of CommGw #LightGoldenRodYellow
+        Gateway instructs its Communicator to send
+        the fully formed (but not yet MAC'd/PTP-timestamped by NIC)
+        Interest Message externally.
+    end note
+    CommGw -> Protocol ++ : send(gwAddress, BROADCAST_ADDR, interestMsgExt_obj.data(), interestMsgExt_obj.size())
+        note right of Protocol #LightGoldenRodYellow
+            Communicator forwards the serialized Message
+            payload to the Protocol layer.
+        end note
+        Protocol -> NIC ++ : ethBuffer = alloc(BROADCAST_MAC, ETH_PROTO_TYPE, protocolPacketSize)
+            NIC -> EthBuffer ** : create
+        return ethBuffer
+            note right of NIC #LightGoldenRodYellow
+                Protocol prepares its own packet (header + serialized InterestMsg)
+                within the payload field of the Ethernet Frame in the allocated ethBuffer.
+            end note
+        Protocol -> EthBuffer : setProtocolHeaderAndData(interestMsgExt_obj.data(), interestMsgExt_obj.size())
+
+        Protocol -> NIC ++ : send(ethBuffer)
+            NIC -> Clock ++ : ptpTime = getCurrentPTPTime()
+                note right: NIC fetches precise PTP time from Clock.
+            return ptpTime
+            NIC -> LeaderKeyStore ++ : macKey = getMACKey()
+                note right: NIC fetches current group MAC key from LeaderKeyStorage.
+            return macKey
+
+            note right of NIC #LightYellow
+                **Cross-Layer Operation at NIC:**
+                The NIC modifies the payload within 'ethBuffer'
+                (which contains Protocol Packet + Serialized Message).
+                1. It **embeds/updates** the `ptpTime` into the
+                   Serialized Message data part.
+                2. It **computes MAC** over the (now PTP-timestamped)
+                   Serialized Message data using `macKey`.
+                3. It **embeds/appends** the computed MAC into the
+                   Serialized Message data part.
+                (This assumes Message serialization format and/or
+                Protocol packet structure allows space for or
+                modification of these fields by the NIC).
+            end note
+            NIC -> EthBuffer : embedPTPTimestampInPayload(ptpTime)
+            NIC -> EthBuffer : computeAndEmbedMACInPayload(macKey)
+
+            NIC -> SocketEngine ++ : send(ethBuffer.data(), ethBuffer.size())
+                note right
+                    NIC passes the modified Ethernet Frame
+                    (payload now includes PTP time & MAC)
+                    to SocketEngine for transmission.
+                end note
+            SocketEngine -> SocketEngine : // Sends frame via raw socket
+            return // send status
+            deactivate SocketEngine
+        return // send status
+        deactivate NIC
+
+        Protocol -> NIC ++ : free(ethBuffer)
+        return
+        deactivate NIC
+        destroy EthBuffer
+    return // send status
+    deactivate Protocol
+return // send status
+deactivate CommGw
+deactivate Gateway
+destroy interestMsgExt_obj
+destroy msgCloneFromCAN
+
+@enduml

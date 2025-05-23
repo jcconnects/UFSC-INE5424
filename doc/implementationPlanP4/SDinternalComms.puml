@@ -1,0 +1,128 @@
+@startuml SD1_Internal_Data_Publication_CAN
+!theme vibrant
+title SD1: Internal Data Publication & Consumption via CAN (Design Proposal)
+
+actor "LidarApp Thread" as LidarApp
+participant "originalMsg:Message" as OriginalMsg
+participant "canBus:CAN\n(Concurrent_Observed<Message, Message::Unit>)" as CANbus
+participant "clonedMsgPtr:Message*" as ClonedMsgPtr
+actor "ECUApp Thread" as ECUApp
+participant "ecuObserver:Concurrent_Observer<Message, Message::Unit>" as ECUObserver
+
+
+skinparam sequenceMessageAlign center
+skinparam actor {
+    backgroundColor LightBlue
+    borderColor Blue
+}
+skinparam participant {
+    backgroundColor LightGreen
+    borderColor Green
+}
+skinparam roundcorner 10
+skinparam note {
+    backgroundColor #LightYellow
+    borderColor #Orange
+}
+skinparam sequenceParticipant 강조 #FFD700
+skinparam sequenceArrow {
+    Thickness 1.5
+}
+skinparam lifeline {
+    MaxMessageSize 275 ' Adjusted for potentially longer note text
+}
+
+
+autonumber "<b>[00]"
+
+== Setup: ECUApp Subscribes to LIDAR_DATA_UNIT ==
+ECUApp -> ECUObserver ++ : create(LIDAR_DATA_UNIT)
+    note right of ECUObserver
+        ECUApp instantiates its specific
+        observer object, configured to listen
+        for messages of type LIDAR_DATA_UNIT.
+    end note
+ECUApp -> CANbus ++ : attach(ecuObserver, LIDAR_DATA_UNIT)
+    note right of CANbus
+        ECUApp registers its observer with the CANbus
+        for the specified LIDAR_DATA_UNIT.
+        CANbus (Concurrent_Observed) adds ecuObserver
+        to its thread-safe list of observers.
+        (Ref: PDF Concurrent_Observed::attach)
+    end note
+return
+return
+
+== ECUApp Waits for Data (Asynchronously) ==
+ECUApp -> ECUObserver ++ : receivedMsgPtr = updated()
+    note right of ECUObserver
+        ECUApp's thread calls updated() on its observer.
+        This call blocks (waits on an internal semaphore)
+        until a message is available.
+        (Ref: PDF Concurrent_Observer::updated & _semaphore.p)
+    end note
+
+== LidarApp Publishes Original Data ==
+LidarApp -> OriginalMsg ++ : create(LIDAR_DATA_UNIT, payload)
+    note left of OriginalMsg
+        LidarApp prepares a new Message object
+        containing the sensor data and the
+        appropriate Message::Unit (LIDAR_DATA_UNIT).
+    end note
+return
+
+LidarApp -> CANbus ++ : notify(LIDAR_DATA_UNIT, OriginalMsg)
+    note right of CANbus
+        LidarApp calls notify on the CANbus, providing
+        the message type (LIDAR_DATA_UNIT) and the
+        original message data.
+        (Ref: PDF Concurrent_Observed::notify)
+    end note
+    CANbus -> ClonedMsgPtr ++ : new Message(OriginalMsg) // CAN creates a clone for each relevant observer
+        note right of ClonedMsgPtr
+            As per design: "CAN will ensure that
+            observers receive clones of messages."
+            CANbus creates a new Message instance,
+            copying content from OriginalMsg.
+        end note
+    return
+    CANbus -> ECUObserver ++ : update(LIDAR_DATA_UNIT, ClonedMsgPtr)
+        note right of ECUObserver
+             CANbus (from its notifying thread) calls update()
+             on the registered ecuObserver, passing the
+             cloned message pointer.
+             (Ref: PDF Concurrent_Observer::update)
+        end note
+        ECUObserver -> ECUObserver : _data.insert(ClonedMsgPtr)
+            note right of ECUObserver
+                The cloned message pointer is
+                added to the observer's internal queue.
+            end note
+        ECUObserver -> ECUObserver : _semaphore.v() (sem_post)
+            note right of ECUObserver
+                The semaphore is signaled, which will
+                unblock the ECUApp thread waiting
+                in ecuObserver.updated().
+            end note
+    return
+return
+
+
+== ECUApp Receives and Processes Data ==
+ECUObserver --> ECUApp -- : return ClonedMsgPtr (now as receivedMsgPtr)
+deactivate ECUObserver
+
+ECUApp -> ECUApp : processData(receivedMsgPtr)
+    note left of ECUApp
+        ECUApp has now received the cloned
+        message pointer and can process the data.
+    end note
+ECUApp -> ClonedMsgPtr !! : delete
+    note left of ClonedMsgPtr
+        ECUApp, as the receiver of the dynamically
+        allocated clone, is responsible for
+        deleting it after processing.
+    end note
+destroy ClonedMsgPtr
+
+@enduml

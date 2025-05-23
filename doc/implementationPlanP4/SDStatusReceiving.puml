@@ -1,0 +1,145 @@
+@startuml SD5_Group_Leadership_Update_via_STATUS_Message
+!theme vibrant
+title SD5: Group Leadership Update via STATUS Message Processing
+
+participant "socketEngine_V1:SocketEngine" as SocketEngine
+participant "nic_V1:NIC" as NIC
+participant "clock_V1:Clock" as Clock
+participant "protocol_V1:Protocol" as Protocol
+participant "commStatus_V1:Communicator" as CommStatus
+actor "statusComp_V1:Status" as StatusComp
+participant "receivedStatusMsg:Message" as ReceivedStatusMsg
+participant "leaderKeyStore:LeaderKeyStorage" as LeaderKeyStore
+participant "appDataBuffer:Buffer<Ethernet::Frame>" as AppDataBuffer
+
+skinparam sequenceMessageAlign center
+skinparam actorBackgroundColor LightBlue
+skinparam actorBorderColor Blue
+skinparam participantBackgroundColor LightGreen
+skinparam participantBorderColor Green
+skinparam roundcorner 10
+skinparam noteBackgroundColor LightYellow
+skinparam noteBorderColor Orange
+skinparam sequenceArrowThickness 1.5
+skinparam lifelineMaxMessageSize 400
+
+autonumber "<b>[00]"
+
+== SocketEngine Receives External STATUS Message Frame ==
+SocketEngine -> SocketEngine : run() loop receives raw frame (e.g., via epoll_wait & recvfrom)
+
+SocketEngine -> NIC ++ : handle(rawFrameData, rawFrameSize)
+note right of NIC #LightYellow
+  NIC recebe o frame Ethernet bruto contendo STATUS.
+  Irá extrair PTP time e preparar payload para Protocol.
+end note
+
+NIC -> NIC : extractedPTPTime = extractPTPTimestampFromPayload(rawFrameData)
+
+NIC -> Clock ++ : processReceivedPTPInfo(extractedPTPTime)
+note right of Clock
+  NIC informa o Clock sobre o timestamp PTP
+  para sincronização.
+end note
+deactivate Clock
+return
+
+note right of NIC #LightGreen
+  PTP processado. Segue para camada Protocol.
+end note
+
+NIC -> AppDataBuffer ** : create()
+NIC -> AppDataBuffer : initialize()
+note right of AppDataBuffer
+  Buffer criado para armazenar aplicação.
+end note
+deactivate AppDataBuffer
+return
+
+NIC -> NIC : appDataForProtocol = extractApplicationPayload(rawFrameData)
+NIC -> AppDataBuffer : setData(frameHeaderInfo, appDataForProtocol)
+
+NIC -> Protocol ++ : update(frameProtocolType, AppDataBuffer)
+note right of Protocol #LightGoldenRodYellow
+  NIC notifica Protocol com o buffer de dados.
+end note
+
+Protocol -> CommStatus ++ : update(portFromProtoHeader_STATUS, AppDataBuffer)
+note right of CommStatus #LightGoldenRodYellow
+  Protocol identifica porta STATUS e notifica o Communicator.
+end note
+
+CommStatus -> CommStatus : _data.insert(AppDataBuffer); _semaphore.v()
+note left of CommStatus
+  Communicator armazena buffer e libera semaphore.
+end note
+deactivate CommStatus
+return
+deactivate Protocol
+return
+deactivate NIC
+
+== Status Component Retrieves and Processes STATUS Message ==
+StatusComp -> CommStatus ++ : statusMsg_ptr = receive(&ReceivedStatusMsg)
+note left of StatusComp
+  Thread do StatusComp bloqueado no receive.
+end note
+
+CommStatus -> CommStatus : receivedBuffer = _observer.updated()
+CommStatus -> Protocol ++ : actualSize = receive(receivedBuffer, &fromAddr, ReceivedStatusMsg.data_ptr(), ReceivedStatusMsg.capacity())
+note right of Protocol
+  Protocol processa buffer e desserializa Message.
+end note
+
+Protocol -> NIC ++ : actualSize = receive(receivedBuffer, &srcMAC, &dstMAC, protoPayloadPtr, protoPayloadMaxSize)
+note right of NIC
+  NIC extrai payload verificado de AppDataBuffer e libera buffer.
+end note
+NIC -> AppDataBuffer : copyData(protoPayloadPtr)
+NIC -> NIC : free(receivedBuffer)
+destroy AppDataBuffer
+deactivate NIC
+return actualSize
+
+Protocol -> ReceivedStatusMsg : deserialize(protoPayloadPtr, actualSize)
+deactivate Protocol
+return statusMsg_ptr
+deactivate CommStatus
+
+StatusComp -> ReceivedStatusMsg : processContent()
+note left of StatusComp
+  StatusComp extrai idade, chave e origem da mensagem.
+end note
+
+StatusComp -> StatusComp : updateNeighborList(ReceivedStatusMsg.origin(), senderAge, senderKeyInfo)
+StatusComp -> StatusComp : newLeader = determineGroupLeader()
+
+alt newLeader == self_identity
+  StatusComp -> StatusComp : currentMACKey = ensureValidMACKey()
+  StatusComp -> LeaderKeyStore ++ : setLeader(self_identity)
+  note right of LeaderKeyStore
+    Define self como líder no armazenamento de chaves.
+  end note
+  deactivate LeaderKeyStore
+  StatusComp -> LeaderKeyStore ++ : setMACKey(currentMACKey)
+  note right of LeaderKeyStore
+    Atualiza chave MAC de grupo.
+  end note
+  deactivate LeaderKeyStore
+
+else newLeader != self_identity and newLeader_is_known
+  StatusComp -> LeaderKeyStore ++ : setLeader(newLeader_identity)
+  note right of LeaderKeyStore
+    Define novo líder no armazenamento de chaves.
+  end note
+  deactivate LeaderKeyStore
+  StatusComp -> LeaderKeyStore ++ : setMACKey(agreedKeyFromNewLeader)
+  note right of LeaderKeyStore
+    Atualiza chave MAC de grupo a partir do novo líder.
+  end note
+  deactivate LeaderKeyStore
+end
+
+destroy ReceivedStatusMsg
+
+@enduml

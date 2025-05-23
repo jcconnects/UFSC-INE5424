@@ -1,0 +1,104 @@
+@startuml SD4_Status_Message_Broadcast
+!theme vibrant
+title SD4: STATUS Message Broadcast by Status Component
+
+actor "statusComp_V1:Status" as StatusComp
+participant "statusMsg:Message" as StatusMsg
+participant "commStatus_V1:Communicator" as CommStatus
+participant "protocol_V1:Protocol" as Protocol
+participant "nic_V1:NIC" as NIC
+participant "clock_V1:Clock" as Clock
+participant "ethBuffer:Buffer<Ethernet::Frame>" as EthBuffer
+participant "socketEngine_V1:SocketEngine" as SocketEngine
+
+skinparam sequenceMessageAlign center
+skinparam actorBackgroundColor LightBlue
+skinparam actorBorderColor Blue
+skinparam participantBackgroundColor LightGreen
+skinparam participantBorderColor Green
+skinparam roundcorner 10
+skinparam noteBackgroundColor LightYellow
+skinparam noteBorderColor Orange
+skinparam sequenceArrowThickness 1.5
+skinparam lifelineMaxMessageSize 375
+
+autonumber "<b>[00]"
+
+== Status Component Initiates STATUS Message Broadcast ==
+StatusComp -> StatusMsg ++ : new Message(STATUS, statusCompAddress, unit_STATUS, vehicleAge, ownKeyInfo)
+note left of StatusMsg
+  Status Component prepara nova STATUS message
+  com endereço, tipo, age, e key info.
+  Timestamp inicial pode ser setado pelo construtor.
+end note
+deactivate StatusMsg
+return statusMsg_obj
+
+StatusComp -> CommStatus ++ : send(statusMsg_obj)
+note right of CommStatus #LightGoldenRodYellow
+  StatusComp usa o Communicator dedicado
+  para enviar a STATUS message.
+end note
+
+CommStatus -> Protocol ++ : send(statusCompAddress, BROADCAST_ADDR, statusMsg_obj.data(), statusMsg_obj.size())
+note right of Protocol #LightGoldenRodYellow
+  Communicator encaminha payload serializado
+  de STATUS message para a camada Protocol.
+end note
+
+Protocol -> NIC ++ : ethBuffer = alloc(BROADCAST_MAC, ETH_PROTO_TYPE, protocolPacketSize)
+note right of NIC #LightGoldenRodYellow
+  Protocol aloca um Ethernet Frame (ethBuffer)
+  com cabeçalho e espaço para o payload.
+end note
+deactivate NIC
+return ethBuffer
+
+' Criação explícita do buffer
+NIC -> EthBuffer ++ : create()
+note left of EthBuffer
+  Buffer é criado/ativado para uso.
+end note
+deactivate EthBuffer
+return
+
+Protocol -> EthBuffer : setProtocolHeaderAndData(statusMsg_obj.data(), statusMsg_obj.size())
+
+Protocol -> NIC ++ : send(ethBuffer)
+NIC -> Clock ++ : ptpTime = getCurrentPTPTime()
+note right of Clock
+  NIC busca tempo PTP preciso do Clock
+  para timestamp do frame.
+end note
+deactivate Clock
+return ptpTime
+
+note right of NIC #LightYellow
+  **Timestamping at NIC:**
+  NIC embute/atualiza ptpTime no payload.
+  **Nenhum MAC** é aplicado aqui para STATUS messages.
+end note
+
+NIC -> EthBuffer : embedPTPTimestampInPayload(ptpTime)
+
+NIC -> SocketEngine ++ : send(ethBuffer.data(), ethBuffer.size())
+note right of SocketEngine
+  NIC passa o frame (já com ptpTime)
+  para o SocketEngine transmitir.
+end note
+SocketEngine -> SocketEngine : // envia via raw socket
+deactivate SocketEngine
+return
+
+deactivate NIC
+
+Protocol -> NIC ++ : free(ethBuffer)
+return
+deactivate NIC
+destroy EthBuffer
+
+deactivate Protocol
+deactivate CommStatus
+destroy statusMsg_obj
+
+@enduml
