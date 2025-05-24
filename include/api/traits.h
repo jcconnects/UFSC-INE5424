@@ -21,6 +21,8 @@ inline std::string get_interface_name() {
 template <typename NIC>
 class Protocol;
 
+class AgentStub;
+
 template <typename Engine>
 class NIC;
 
@@ -33,6 +35,8 @@ class Communicator;
 
 template <typename Protocol>
 class Message;
+
+class CAN;
 
 // Traits definition
 template <typename T>
@@ -81,7 +85,20 @@ struct Traits<Communicator<Channel>> : public Traits<void>
 template <typename Protocol>
 struct Traits<Message<Protocol>> : public Traits<void>
 {
+    static const bool debugged = true;
     static constexpr unsigned int MAC_SIZE = 16;
+};
+
+template <>
+struct Traits<CAN> : public Traits<void>
+{
+    static const bool debugged = false;
+};
+
+template <>
+struct Traits<AgentStub> : public Traits<void>
+{
+    static const bool debugged = true;
 };
 
 // Traits for Debug class

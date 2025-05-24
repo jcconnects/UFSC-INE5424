@@ -5,6 +5,8 @@
 #include <cstring>
 #include <vector>
 #include <chrono>
+#include "api/util/debug.h"
+
 
 template <typename Protocol>
 class Message {

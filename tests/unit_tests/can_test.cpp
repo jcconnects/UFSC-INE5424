@@ -1,10 +1,38 @@
 #include <iostream>
 #include <string>
+#include <filesystem>
 
 #include "test_utils.h"
 #include "../testcase.h"
 #include "api/framework/bus.h"
 #include "../stubs/agent_stub.h"
+
+// Helper function to set up a vehicle log directory
+std::string setup_log_directory() {
+    std::string log_file;
+    std::error_code ec;
+    
+    // Try in priority order: Docker logs dir, tests/logs dir, current dir
+    if (std::filesystem::exists("tests/logs")) {
+        std::string test_dir = "test/logs/can_test";
+        std::filesystem::create_directory(test_dir, ec);
+        
+        if (!ec) {
+            return "test/logs/can_test.log";
+        }
+    }
+    
+    // Try tests/logs directory
+    std::string test_logs_dir = "tests/logs/can_test";
+    
+    try {
+        std::filesystem::create_directories(test_logs_dir);
+        return "test/logs/can_test1/can_test.log";
+    } catch (...) {
+        // Fallback to tests/logs without vehicle subfolder
+        return "tests/logs/can_test1.log";
+    }
+}
 
 class CANTest : public TestCase {
     public:
@@ -74,10 +102,13 @@ void CANTest::test_send_and_receive() {
 
     CAN::Message msg;
     _agent1->receive(&msg);
+    msg.period();
     assert_equal(period, msg.period().count(), "Received message should have the same period");
 }
 
 int main () {
+    std::string log_file = setup_log_directory();
+    Debug::set_log_file(log_file);
     CANTest test;
     test.run();
 }

@@ -1,5 +1,6 @@
 #include "api/framework/bus.h"
 #include "api/framework/gateway.h"
+#include "api/util/debug.h"
 
 class AgentStub {
     public:
@@ -48,6 +49,7 @@ int AgentStub::send(Message::Microseconds period) {
 }
 
 int AgentStub::receive(Message* msg) {
-    msg = _producer_observer->updated();
+    *msg = *_producer_observer->updated();
+
     return msg->size();
 }
