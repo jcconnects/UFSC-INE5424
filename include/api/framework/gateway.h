@@ -13,10 +13,10 @@
 
 class Gateway {
     public:
+        typedef Network::Communicator Communicator;
         typedef Network::Protocol Protocol;
-        typedef Communicator<Protocol> Comms;
-        typedef Message<Protocol> Message;
         typedef Protocol::Address Address;
+        typedef Network::Message Message;
         typedef Message::Unit Unit;
         typedef Concurrent_Observer<Message, void> Observer;
         typedef std::unordered_map<Unit, std::unordered_set<Observer*>> Map;
@@ -39,21 +39,18 @@ class Gateway {
         const Address& address();
 
     private:
-        static constexpr std::uint32_t EXTERNAL_BIT = 0x80000000; // Bit 31
-        static constexpr std::uint32_t UNIT_MASK    = 0x7FFFFFFF; // Bits 0–30
-        
-        static inline bool is_external(Unit unit);
-        
         void handle(Message* msg);
-        bool subscribe(Message* message);
-        bool publish(Message* message);
+        void subscribe(Message* message);
+        void publish(Message* message);
 
         unsigned int _id;
         Map _producers;
         Map _interests;
         Network* _network;
-        Comms* _comms;
+        Communicator* _comms;
         pthread_t _receive_thread;
+        pthread_mutex_t _producers_mutex;
+        pthread_mutex_t _interests_mutex;
         std::atomic<bool> _running;
 };
 
@@ -63,7 +60,10 @@ Gateway::Gateway(unsigned int id) : _id(id) {
     
     // Sets communicator
     Address addr(_network->address(), id);
-    _comms = new Comms(_network->channel(), addr);
+    _comms = new Communicator(_network->channel(), addr);
+
+    pthread_mutex_init(&_producers_mutex, nullptr);
+    pthread_mutex_init(&_interests_mutex, nullptr);
 
     _running = true;
     pthread_create(&_receive_thread, nullptr, Gateway::mainloop, this);
@@ -75,17 +75,22 @@ Gateway::~Gateway() {
     _comms->release();
 
     pthread_join(_receive_thread, nullptr);
+    pthread_mutex_destroy(&_producers_mutex);
+    pthread_mutex_destroy(&_interests_mutex);
     delete _comms;
     delete _network;
 }
 
 void Gateway::attach_interest(Observer* obs, Unit type) {
+    pthread_mutex_lock(&_interests_mutex);
     _interests[type].insert(obs);
+    pthread_mutex_unlock(&_interests_mutex);
 }
 
 void Gateway::detach_interest(Observer* obs, Unit type) {
     obs->update(nullptr); // Releases thread waiting for data
 
+    pthread_mutex_lock(&_interests_mutex);
     auto it = _interests.find(type);
 
     if (it != _interests.end()) {
@@ -94,10 +99,13 @@ void Gateway::detach_interest(Observer* obs, Unit type) {
             _interests.erase(it);  // removes type if there are no observers
         }
     }
+    pthread_mutex_unlock(&_interests_mutex);
 }
 
 void Gateway::attach_producer(Observer* obs, Unit type) {
+    pthread_mutex_lock(&_producers_mutex);
     _producers[type].insert(obs);
+    pthread_mutex_unlock(&_producers_mutex);
 }
 
 bool Gateway::send(Message* message) {
@@ -105,55 +113,58 @@ bool Gateway::send(Message* message) {
         return false;
     }
 
-    if (is_external(message->unit())) {
-        return _comms->send(message);
-    }
-    
+    bool result = _comms->send(message);
     handle(message);
+
+    return result;
 }
 
 bool Gateway::receive(Message* message) {
     return _comms->receive(message);
 }
 
-bool Gateway::subscribe(Message* message) {
-    Unit uid = message->unit();
-    auto it = _producers.find(uid);
+void Gateway::subscribe(Message* buf) {
+    Unit uid = buf->unit();
 
+    pthread_mutex_lock(&_producers_mutex);
+    auto it = _producers.find(uid);
+    
     if (it != _producers.end()) {
         for (auto* obs : it->second) {
-            obs->update(message);
+            Message* msg = new Message(*buf);
+            obs->update(msg);
         }
-        return true;
     }
-    return false;
+    pthread_mutex_lock(&_producers_mutex);
 }
 
-void Gateway::handle(Message* msg) {
-    switch (msg->message_type())
-    {
-        case Message::Type::INTEREST:
-            subscribe(msg);
-            break;
-        case Message::Type::RESPONSE:
-            publish(msg);
-            break;
-        default:
-            break;
-    }
-}
+void Gateway::publish(Message* buf) {
+    Unit uid = buf->unit();
 
-bool Gateway::publish(Message* message) {
-    Unit uid = message->unit();
+    pthread_mutex_lock(&_interests_mutex);
     auto it = _interests.find(uid);
 
     if (it != _interests.end()) {
         for (auto* obs : it->second) {
-            obs->update(message);
+            Message* msg = new Message(*buf);
+            obs->update(msg);
         }
-        return true;
     }
-    return false;
+    pthread_mutex_unlock(&_interests_mutex);
+}
+
+void Gateway::handle(Message* message) {
+    switch (message->message_type())
+    {
+        case Message::Type::INTEREST:
+            subscribe(message);
+            break;
+        case Message::Type::RESPONSE:
+            publish(message);
+            break;
+        default:
+            break;
+    }
 }
 
 void* Gateway::mainloop(void* arg) {
@@ -165,6 +176,7 @@ void* Gateway::mainloop(void* arg) {
             self->handle(&msg);
         }
     }
+    return nullptr;
 }
 
 bool Gateway::running() const {
@@ -173,10 +185,6 @@ bool Gateway::running() const {
 
 const Gateway::Address& Gateway::address() {
     return _comms->address();
-}
-
-bool Gateway::is_external(Unit unit) {
-    return unit & EXTERNAL_BIT;
 }
 
 #endif // GATEWAY_H

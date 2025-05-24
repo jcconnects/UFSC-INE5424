@@ -7,6 +7,8 @@ class Network {
     public:
         typedef Initializer::NIC_T NIC;
         typedef Initializer::Protocol_T Protocol;
+        typedef Initializer::Message Message;
+        typedef Initializer::Communicator_T Communicator;
 
         Network(unsigned int id = 0);
         ~Network();

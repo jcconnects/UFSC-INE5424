@@ -15,7 +15,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         typedef typename Channel::Buffer Buffer;
         typedef typename Channel::Address Address;
         typedef typename Channel::Port Port;
-        typedef Message<Channel> Message;
+        typedef Message<Channel> Message_T;
         static constexpr const unsigned int MAX_MESSAGE_SIZE = Channel::MTU; // Maximum message size in bytes
 
         // Constructor and Destructor
@@ -23,8 +23,8 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         ~Communicator();
         
         // Communication methods
-        bool send(const Message* message);
-        bool receive(Message* message);
+        bool send(const Message_T* message);
+        bool receive(Message_T* message);
 
         // Address getter
         const Address& address() const;
@@ -49,7 +49,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
 
 /*************** Communicator Implementation *****************/
 template <typename Channel>
-Communicator<Channel>::Communicator(Channel* channel, Address address) : Observer(address.port()), _channel(channel), _address(address), _closed(false) {
+Communicator<Channel>::Communicator(Channel* channel, Address address) : Observer(address.port()), _channel(channel), _address(address) {
     _channel->attach(this, address);
 }
 
@@ -59,7 +59,7 @@ Communicator<Channel>::~Communicator() {
 }
 
 template <typename Channel>
-bool Communicator<Channel>::send(const Message* message) {
+bool Communicator<Channel>::send(const Message_T* message) {
     db<Communicator>(TRC) << "Communicator<Channel>::send() called!\n";
     
     int result = _channel->send(_address, Address::BROADCAST, message->data(), message->size());
@@ -69,7 +69,7 @@ bool Communicator<Channel>::send(const Message* message) {
 }
 
 template <typename Channel>
-bool Communicator<Channel>::receive(Message* message) {
+bool Communicator<Channel>::receive(Message_T* message) {
     db<Communicator>(TRC) << "Communicator<Channel>::receive() called!\n";
     
     Buffer* buf = Observer::updated();
@@ -86,7 +86,7 @@ bool Communicator<Channel>::receive(Message* message) {
         return false;
 
     // Deserialize the raw data into the message
-    *message = Message::deserialize(temp_data, result);
+    *message = Message_T::deserialize(temp_data, result);
     db<Communicator>(INF) << "[Communicator] Received message from: " << message->origin().to_string() << "\n";
 
     return true;
@@ -94,7 +94,7 @@ bool Communicator<Channel>::receive(Message* message) {
 
 template <typename Channel>
 void Communicator<Channel>::release() {
-    update(nullptr, rank(), nullptr);
+    update(nullptr, this->rank(), nullptr);
 }
 
 template <typename Channel>

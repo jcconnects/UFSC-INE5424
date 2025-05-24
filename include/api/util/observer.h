@@ -9,7 +9,7 @@ template <typename T, typename Condition>
 class Conditionally_Data_Observed;
 
 // Fundamentals for Observer X Observed
-template <typename T, typename Condition = void>
+template <typename T, typename Condition>
 class Conditional_Data_Observer {
     friend class Conditionally_Data_Observed<T, Condition>;
     
@@ -56,15 +56,15 @@ class Conditional_Data_Observer<T, void> {
 
     public:
         typedef T Observed_Data;
-        typedef Conditionally_Data_Observed<T, Condition> Observed;
+        typedef Conditionally_Data_Observed<T, void> Observed;
 
         Conditional_Data_Observer() = default;
-        virtual ~Conditionally_Data_Observed() = default;
+        virtual ~Conditional_Data_Observer() = default;
 
         virtual void update(Observed_Data* d) { _data.insert(d); }
         virtual T* updated() { return _data.empty() ? nullptr : _data.remove(); }
 
-    private:
+    protected:
         List<T> _data;
 };
 /*****************************************************************************************/
@@ -75,7 +75,7 @@ template <typename D, typename C>
 class Concurrent_Observed;
 
 // Conditional Observer x Conditionally Observed with Data decoupled by a Semaphore
-template<typename D, typename C = void>
+template<typename D, typename C>
 class Concurrent_Observer : public Conditional_Data_Observer<D, C> {
     friend class Concurrent_Observed<D, C>;
 
@@ -97,12 +97,12 @@ class Concurrent_Observer : public Conditional_Data_Observer<D, C> {
 
 /***************** CONCURRENT_OBSERVER IMPLEMENTATION *************************/
 template <typename D, typename C>
-void Concurrent_Observer<D, C>::Concurrent_Observer(C rank) : Conditional_Data_Observer<D, C>(rank) {
+Concurrent_Observer<D, C>::Concurrent_Observer(C rank) : Conditional_Data_Observer<D, C>(rank) {
     sem_init(&_semaphore, 0, 0);
 }
 
 template <typename D, typename C>
-void Concurrent_Observer<D, C>::~Concurrent_Observer() {
+Concurrent_Observer<D, C>::~Concurrent_Observer() {
     sem_destroy(&_semaphore);
 }
 
@@ -129,18 +129,21 @@ class Concurrent_Observer<D, void> : public Conditional_Data_Observer<D, void> {
         typedef D Observed_Data;
         typedef Concurrent_Observed<D, void> Observed;
     
-        Concurrent_Observer() = default;
-        ~Concurrent_Observer() = default;
+        Concurrent_Observer() { sem_init(&_semaphore, 0, 0); };
+        ~Concurrent_Observer() { sem_destroy(&_semaphore); };
 
         void update(D* d) {
             this->_data.insert(d);
-            _semaphore.post();
+            sem_post(&_semaphore);
         };
 
         D* updated() {
-            _semaphore.wait();
+            sem_wait(&_semaphore);
             return this->_data.remove();
         }
+    
+    private:
+        sem_t _semaphore;
 };
 /*******************************************************************************/
 

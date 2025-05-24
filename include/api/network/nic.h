@@ -186,7 +186,7 @@ void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
     buf->setData(frame, size);
 
     // 4. Notify Observers
-    if (!notify(proto, buf)) {
+    if (!notify(buf, proto)) {
         db<NIC>(INF) << "[NIC] data received, but no one was notified (" << proto << ")\n";
         free(buf); // if no one is listening, release buffer
     }

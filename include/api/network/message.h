@@ -2,6 +2,7 @@
 #define MESSAGE_H
 
 #include <cstdint>
+#include <cstring>
 #include <vector>
 #include <chrono>
 
@@ -21,14 +22,16 @@ class Message {
 
         typedef typename Protocol::Address Origin;
         typedef typename Protocol::Physical_Address Physical_Address;
-        typedef typename Protocol::Port Unit;
+        typedef typename Protocol::Port Port;
+        typedef std::uint32_t Unit;
         typedef std::vector<std::uint8_t> Array;
         typedef std::chrono::microseconds Microseconds;
-        static const Microseconds ZERO = Microseconds::zero();
+        static constexpr Microseconds ZERO = Microseconds::zero();
         // static const unsigned int MAC_SIZE;
 
         /* Methods */
         Message(Type message_type, const Origin& origin, Unit unit, Microseconds period = ZERO, const void* value_data = nullptr, const unsigned int value_size = 0);
+        Message(const Message& other);
         Message() = default;
         ~Message() = default;
 
@@ -45,8 +48,6 @@ class Message {
         static Message deserialize(const void* serialized, const unsigned int size);
         
     private:
-        friend Message deserialize<>(const void*, const unsigned int);
-
         // Setters
         void message_type(const Type message_type);
         void origin(const Origin addr);
@@ -106,10 +107,25 @@ Message<Protocol>::Message(Type message_type, const Origin& origin, Unit unit, M
         switch (_message_type) {
             case Type::INTEREST:
                 this->period(period);
+                break;
             case Type::RESPONSE:
                 this->value(value_data, value_size);
+                break;
+            default:
+                break;
         }
     }
+}
+
+template <typename Protocol>
+Message<Protocol>::Message(const Message& other) {
+    _message_type = other.message_type();
+    _origin = other.origin();
+    _timestamp = other.timestamp();
+    _period = other.period();
+    _unit = other.unit();
+    value(other.value(), other.value_size());
+    // TODO:: serialized data
 }
 
 template <typename Protocol>
@@ -133,7 +149,7 @@ const typename Message<Protocol>::Unit& Message<Protocol>::unit() const {
 }
 
 template <typename Protocol>
-const Message<Protocol>::Microseconds& Message<Protocol>::period() const {
+const typename Message<Protocol>::Microseconds& Message<Protocol>::period() const {
     return _period;
 }
 
@@ -179,10 +195,11 @@ Message<Protocol> Message<Protocol>::deserialize(const void* serialized, const u
         msg.unit(extract_unit(bytes, offset, size));
 
         switch (msg.message_type()) {
-            case Type::INTEREST:
+            case Type::INTEREST: {
                 msg.period(extract_microseconds(bytes, offset, size));
                 break;
-            case Type::RESPONSE:
+            }
+            case Type::RESPONSE: {
                 unsigned int value_len = size - offset;
                 if (value_len > 0) {
                     msg.value(bytes + offset, value_len);
@@ -190,6 +207,8 @@ Message<Protocol> Message<Protocol>::deserialize(const void* serialized, const u
                 } else {
                     msg.message_type(Type::INVALID);
                 }
+                break;
+            }
             default:
                 break;
         }
@@ -218,7 +237,7 @@ void Message<Protocol>::origin(const Origin addr) {
 template <typename Protocol>
 void Message<Protocol>::timestamp(const Microseconds timestamp) {
     if (timestamp <= ZERO) {
-        message_type(Type:INVALID);
+        message_type(Type::INVALID);
         return;
     }
 

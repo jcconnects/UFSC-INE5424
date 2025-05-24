@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -I./include -g
+CXXFLAGS = -std=c++17 -Wall -I./include -I./include/api/ -g
 LDFLAGS = -pthread
 
 # Directories

@@ -4,18 +4,17 @@
 #include <chrono>
 #include <string>
 
-#include "component.h"
-#include "debug.h"
+#include "api/util/debug.h"
+#include "api/framework/agent.h"
+#include "api/framework/gateway.h"
+#include "app/vehicle.h"
 
-class ECUComponent : public Component {
+class ECU : public Agent {
     public:
         // ECU receives a port for identification
-        ECUComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, 
-                    VehicleProt* protocol, Vehicle::Ports port = Vehicle::Ports::ECU1);
+        ECU(Vehicle* vehicle, Gateway* gateway);
+        ~ECU();
 
-        ~ECUComponent() = default;
-
-        // The main loop for the ECU component thread
         void run() override;
 
     private:
@@ -28,10 +27,7 @@ class ECUComponent : public Component {
 };
 
 /*********** ECU Component Implementation **********/
-ECUComponent::ECUComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, 
-                           VehicleProt* protocol, Vehicle::Ports port) 
-    : Component(vehicle, vehicle_id, name) 
-{
+ECU::ECU(Vehicle* vehicle, Gateway* gateway, Vehicle::Port port) : Agent(gateway) {
     // Sets CSV result Header
     open_log_file();
     if (_log_file.is_open()) {

@@ -1,47 +1,92 @@
-#include "api/network/initializer.h"
-#include "api/network/message.h"
-#include "api/app/datatypes.h"
+#ifndef CAN_H
+#define CAN_H
+
 #include "api/util/observed.h"
-#include "test_stubs/agent_stub.h"
+#include "api/network/message.h"
+#include "api/traits.h"
+#include "api/network/initializer.h"
+#include <cstring>
 
-
-struct CANCondition {
-    DataTypes data_type;
-    Message::Type message_type;
-}
-
-class CAN: public Concurrent_Observed<Message, CANCondition> {
-
-    friend class Initializer;
-    friend class Agent_Stub;
-
+class Condition {
     public:
+        typedef Initializer::Message Message;
+        typedef Message::Unit Unit;
+        typedef Message::Type Type;
 
-        typedef Message Observed_Data;
-        typedef DataTypes Observing_Condition;
-        typedef Concurrent_Observer<Message, CANCondition> Observer;
-        // Public Destructor
-        ~CAN() = default;
+        Condition(Unit unit, Type type);
+        Condition() = default;
+        ~Condition() = default;
 
-        unsigned int send(Message* msg);
+        const Unit unit() const;
+        const Type type() const;
 
-    protected:
-        CAN();
+        inline bool operator==(const Condition& other) const;
+        inline bool operator!=(const Condition& other) const;
+
+    private:
+        Unit _unit;
+        Type _type;
 };
 
-inline bool operator==(const CANCondition& a, const CANCondition& b) {
-    return std::memcmp(&a, &b, sizeof(CANCondition)) == 0;
+Condition::Condition(Unit unit, Type type) {
+    _unit = unit;
+    _type = type;
 }
 
-inline bool operator!=(const CANCondition& a, const CANCondition& b) {
-    return std::memcmp(&a, &b, sizeof(CANCondition)) != 0;
+const Condition::Unit Condition::unit() const {
+    return _unit;
 }
 
-CAN::CAN() : Concurrent_Observed<Message, DataTypes>() {}
-
-unsigned int CAN::send(Message* msg) {
-    CANCondition c;
-    c.message_type = msg->message_type();
-    return notify(c, msg);
+const Condition::Type Condition::type() const {
+    return _type;
 }
 
+bool Condition::operator==(const Condition& other) const {
+    return ((_unit == other.unit()) && (_type == other.type()));
+}
+
+bool Condition::operator!=(const Condition& other) const {
+    return !(*this == other);
+}
+
+class CAN : public Concurrent_Observed<Initializer::Message, Condition>{
+    public:
+        typedef Initializer::Message Message;
+        typedef Initializer::Protocol_T::Address Address;
+        typedef Message::Unit Unit;
+        typedef Message::Type Type;
+        typedef Concurrent_Observer<Message, Condition> Observer;
+        typedef Concurrent_Observed<Message, Condition> Observed;
+        
+        CAN() = default;
+        ~CAN() = default;
+
+        int send(Message* msg);
+        bool notify(Message* buf, Condition c) override;
+};
+
+int CAN::send(Message* msg) {
+    Condition c(msg->unit(), msg->message_type());
+    if (!notify(msg, c))
+        return 0;
+    
+    return msg->size();
+}
+
+bool CAN::notify(Message* buf, Condition c) {
+    pthread_mutex_lock(&_mtx);
+    bool notified = false;
+    
+    for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+        if ((*obs)->rank() == c) {
+            Message* msg = new Message(*buf);
+            (*obs)->update(c, msg);
+            notified = true;
+        }
+    }
+    
+    pthread_mutex_unlock(&_mtx);
+    return notified;
+}
+
+#endif // CAN_H

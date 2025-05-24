@@ -14,6 +14,7 @@
 class Agent {
     public:
         typedef Gateway::Message Message;
+        typedef Message::Origin Origin;
         typedef Message::Array Value;
         typedef Message::Unit Unit;
         typedef Message::Microseconds Microseconds;
@@ -41,6 +42,7 @@ class Agent {
         void reply(Unit unit);
     
     private:
+        Origin _address;
         Gateway* _gateway;
         Threads _periodic_threads;
         Observer _interest_obs;

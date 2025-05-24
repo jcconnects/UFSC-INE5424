@@ -20,7 +20,7 @@ class Protocol: private NIC::Observer
         
         typedef typename NIC::DataBuffer Buffer;
         typedef typename NIC::Address Physical_Address;
-        typedef std::uint32_t Port;
+        typedef std::uint16_t Port;
         
         // Change to use Concurrent_Observer for Communicator interactions
         typedef Conditional_Data_Observer<Buffer, Port> Observer;

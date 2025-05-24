@@ -4,6 +4,8 @@
 #include "api/network/socketEngine.h"
 #include "api/network/nic.h"
 #include "api/network/protocol.h"
+#include "api/network/communicator.h"
+#include "api/network/message.h"
 
 /**
  * @brief This class initializes the API
@@ -19,7 +21,8 @@ class Initializer {
     public:
         typedef NIC<SocketEngine> NIC_T;
         typedef Protocol<NIC_T> Protocol_T;
-
+        typedef Communicator<Protocol_T> Communicator_T;
+        typedef Communicator_T::Message_T Message;
 
         Initializer() = default;
         ~Initializer() = default;

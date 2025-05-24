@@ -12,8 +12,15 @@
 
 // Vehicle class definition
 class Vehicle {
-
     public:
+        enum class Port : Gateway::Protocol::Port {
+            BROADCAST = 0,
+            CAMERA,
+            ECU,
+            LIDAR,
+            INS,
+        };
+
         // Update constructor signature to use the concrete types/aliases
         Vehicle(unsigned int id);
         ~Vehicle();
@@ -79,7 +86,7 @@ void Vehicle::stop() {
 
 template <typename ComponentType>
 void Vehicle::create_component() {
-    _components.push_back(std::make_unique<ComponentType>(_gateway));   
+    _components.push_back(std::make_unique<ComponentType>(this, _gateway));   
 }
 
 const unsigned int Vehicle::id() const {
