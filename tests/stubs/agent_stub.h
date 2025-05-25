@@ -8,6 +8,7 @@ class AgentStub {
         typedef CAN::Message Message;
         typedef CAN::Address Address;
 
+        AgentStub(CAN* can, Condition::Type type, Message::Unit unit);
         AgentStub(CAN* can, Message::Unit interest, Message::Unit producer);
         ~AgentStub();
 
@@ -33,6 +34,16 @@ AgentStub::AgentStub(CAN* can, Message::Unit interest, Message::Unit producer) :
     _can->attach(_interest_observer, interest_condition);
     _can->attach(_producer_observer, producer_condition);
 }
+
+AgentStub::AgentStub(CAN* can, Condition::Type type, Message::Unit unit) : _can(can), _interest_unit(unit), _producer_unit(unit) 
+{
+    Condition condition(unit, type);
+    _interest_observer = new Observer(condition);
+    _producer_observer = new Observer(condition);
+
+    _can->attach(_interest_observer, condition);
+    _can->attach(_producer_observer, condition);
+}	
 
 AgentStub::~AgentStub() {
     Condition interest_condition(_interest_unit, Message::Type::RESPONSE);

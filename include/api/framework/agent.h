@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "api/framework/gateway.h"
+#include "api/framework/bus.h"
 #include "api/framework/periodicThread.h"
 #include "api/util/observer.h"
 
@@ -22,7 +22,7 @@ class Agent {
         typedef std::unordered_map<Unit, Thread> Threads;
         typedef Concurrent_Observer<Message, void> Observer;
     
-        Agent(Gateway* protocol);
+        Agent(CAN* bus);
         virtual ~Agent();
 
         void add_produced_type(Unit type);
@@ -43,7 +43,7 @@ class Agent {
     
     private:
         Origin _address;
-        Gateway* _gateway;
+        CAN* _can;
         Threads _periodic_threads;
         Observer _interest_obs;
         Observer _response_obs;
@@ -53,11 +53,11 @@ class Agent {
 };
 
 /****** Agent Implementation *****/
-Agent::Agent(Gateway* gateway) {
-    if (!gateway)
+Agent::Agent(CAN* bus) {
+    if (!bus)
         throw std::invalid_argument("Gateway cannot be null");
     
-    _gateway = gateway;
+    _can = bus;
 
     _running = true;
     pthread_create(&_thread, nullptr, Agent::run, this);

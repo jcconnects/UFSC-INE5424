@@ -27,10 +27,10 @@ std::string setup_log_directory() {
     
     try {
         std::filesystem::create_directories(test_logs_dir);
-        return "test/logs/can_test1/can_test.log";
+        return "test/logs/can_test/can_test.log";
     } catch (...) {
         // Fallback to tests/logs without vehicle subfolder
-        return "tests/logs/can_test1.log";
+        return "tests/logs/can_test.log";
     }
 }
 
@@ -52,6 +52,7 @@ class CANTest : public TestCase {
         /* TESTS */
         void test_send_no_observer();
         void test_send_and_receive();
+        void test_observe_all();
 
     private:
         CAN* _can;
@@ -63,6 +64,7 @@ class CANTest : public TestCase {
 CANTest::CANTest() {
     DEFINE_TEST(test_send_no_observer);
     DEFINE_TEST(test_send_and_receive);
+    DEFINE_TEST(test_observe_all);
 }
 
 void CANTest::setUp() {
@@ -102,6 +104,23 @@ void CANTest::test_send_and_receive() {
 
     CAN::Message msg;
     _agent1->receive(&msg);
+    msg.period();
+    assert_equal(period, msg.period().count(), "Received message should have the same period");
+}
+
+void CANTest::test_observe_all() {
+    // Create a new agent that observes all types
+    AgentStub* agent = new AgentStub(_can, CAN::Message::Type::UNKNOWN, static_cast<std::uint32_t>(DataTypes::TIPO4));
+    CAN::Message::Microseconds::rep period = 2;
+
+    // Exercise SUT
+    int result = _agent1->send(CAN::Message::Microseconds(period));
+    
+    // Result Verification
+    assert_true(result != 0, "Message was sent, three agents should've been notified");
+
+    CAN::Message msg;
+    agent->receive(&msg);
     msg.period();
     assert_equal(period, msg.period().count(), "Received message should have the same period");
 }
