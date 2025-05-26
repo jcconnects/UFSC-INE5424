@@ -2,9 +2,8 @@
 #define CAN_H
 
 #include "api/util/observed.h"
-#include "api/network/message.h"
-#include "api/traits.h"
 #include "api/network/initializer.h"
+#include "api/traits.h"
 #include "api/util/debug.h"
 #include <cstring>
 

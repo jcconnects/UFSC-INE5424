@@ -6,8 +6,9 @@
 #include <atomic>
 #include <thread>
 #include <functional>
+#include <cstdint>
 
-#ifndef __GNU_SOURCE
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 
@@ -53,11 +54,11 @@ class Periodic_Thread {
         Periodic_Thread(Owner* owner, void (Owner::*task)(Tn...), Tn...an);
         ~Periodic_Thread();
 
-        void start(std::chrono::microseconds period);
+        void start(std::int64_t period);
         void join();
 
-        void adjust_period(std::chrono::microseconds period);
-        std::chrono::microseconds period() const;
+        void adjust_period(std::int64_t period);
+        std::int64_t period() const;
         
         static void* run(void* arg);
         bool running();
@@ -68,12 +69,10 @@ class Periodic_Thread {
     private:
         std::int64_t mdc(std::int64_t a, std::int64_t b);
 
-        std::atomic<std::chrono::microseconds> _period;
+        std::atomic<std::int64_t> _period;
         std::atomic<bool> _running;
         pthread_t _thread;
         std::function<void()> _task;
-        std::mutex _mutex;
-        std::thread::id _thread;
 };
 
 /***** Periodic Thread Implementation *****/
@@ -81,7 +80,7 @@ template <typename Owner>
 template <typename ...Tn>
 Periodic_Thread<Owner>::Periodic_Thread(Owner* owner, void (Owner::*task)(Tn...), Tn...an) : _running(false), _thread(0) {
     _task = std::bind(task, owner, std::forward<Tn>(an)...);
-    _period.store(std::chrono::microseconds::zero(), std::memory_order_release);
+    _period.store(0, std::memory_order_release);
 }
 
 template <typename Owner>
@@ -101,21 +100,21 @@ void Periodic_Thread<Owner>::join() {
 }
 
 template <typename Owner>
-void Periodic_Thread<Owner>::start(std::chrono::microseconds period) {
+void Periodic_Thread<Owner>::start(std::int64_t period) {
     if (!running()) {
-        _period = period;
+        _period.store(period, std::memory_order_release);
         _running.store(true, std::memory_order_release);
         _thread = pthread_create(&_thread, nullptr, Periodic_Thread::run, this);
     }
 }
 
 template <typename Owner>
-void Periodic_Thread<Owner>::adjust_period(std::chrono::microseconds period) {
-    _period.store(std::chrono::microseconds(mdc(_period.load(std::memory_order_aquire).count(), period.count())), std::memory_order_release);
+void Periodic_Thread<Owner>::adjust_period(std::int64_t period) {
+    _period.store(mdc(_period.load(std::memory_order_acquire), period), std::memory_order_release);
 }
 
 template <typename Owner>
-std::chrono::microseconds Periodic_Thread<Owner>::period() const {
+std::int64_t Periodic_Thread<Owner>::period() const {
     return _period.load(std::memory_order_acquire);
 }
 
@@ -138,7 +137,7 @@ void* Periodic_Thread<Owner>::run(void* arg) {
     attr_dl.sched_flags = 0;
 
     while (thread->running()) {
-        current_period = thread->period().load(std::memory_order_acquire);
+        uint64_t current_period = thread->period();
         // Update SCHED_DEADLINE parameters based on current period
         attr_dl.sched_runtime = current_period * 500; // 50% of period in ns
         attr_dl.sched_deadline = current_period * 1000; // Period in ns
@@ -150,7 +149,7 @@ void* Periodic_Thread<Owner>::run(void* arg) {
         }
 
         thread->_task();
-        std::this_thread::sleep_for(thread->period().load(std::memory_order_acquire));
+        std::this_thread::sleep_for(std::chrono::milliseconds(thread->period()));
     }
 
     return nullptr;

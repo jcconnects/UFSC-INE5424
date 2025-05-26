@@ -8,7 +8,7 @@
 #include "api/util/debug.h"
 
 
-template <typename Protocol>
+template <typename Channel>
 class Message {
 
     public:
@@ -22,9 +22,9 @@ class Message {
             JOIN,
         };
 
-        typedef typename Protocol::Address Origin;
-        typedef typename Protocol::Physical_Address Physical_Address;
-        typedef typename Protocol::Port Port;
+        typedef typename Channel::Address Origin;
+        typedef typename Channel::Physical_Address Physical_Address;
+        typedef typename Channel::Port Port;
         typedef std::uint32_t Unit;
         typedef std::vector<std::uint8_t> Array;
         typedef std::chrono::microseconds Microseconds;
@@ -90,8 +90,8 @@ class Message {
 /********* Message Implementation *********/
 // const unsigned int Message::MAC_SIZE = Traits<Message>::MAC_SIZE;
 
-template <typename Protocol>
-Message<Protocol>::Message(Type message_type, const Origin& origin, Unit unit, Microseconds period, const void* value_data, const unsigned int value_size) :
+template <typename Channel>
+Message<Channel>::Message(Type message_type, const Origin& origin, Unit unit, Microseconds period, const void* value_data, const unsigned int value_size) :
     _message_type(Type::UNKNOWN),
     _origin(),
     _timestamp(ZERO),
@@ -119,8 +119,8 @@ Message<Protocol>::Message(Type message_type, const Origin& origin, Unit unit, M
     }
 }
 
-template <typename Protocol>
-Message<Protocol>::Message(const Message& other) {
+template <typename Channel>
+Message<Channel>::Message(const Message& other) {
     _message_type = other.message_type();
     _origin = other.origin();
     _timestamp = other.timestamp();
@@ -130,43 +130,43 @@ Message<Protocol>::Message(const Message& other) {
     // TODO:: serialized data
 }
 
-template <typename Protocol>
-const typename Message<Protocol>::Type& Message<Protocol>::message_type() const {
+template <typename Channel>
+const typename Message<Channel>::Type& Message<Channel>::message_type() const {
     return _message_type;
 }
 
-template <typename Protocol>
-const typename Message<Protocol>::Origin& Message<Protocol>::origin() const {
+template <typename Channel>
+const typename Message<Channel>::Origin& Message<Channel>::origin() const {
     return _origin;
 }
 
-template <typename Protocol>
-const typename Message<Protocol>::Microseconds& Message<Protocol>::timestamp() const {
+template <typename Channel>
+const typename Message<Channel>::Microseconds& Message<Channel>::timestamp() const {
     return _timestamp;
 }
 
-template <typename Protocol>
-const typename Message<Protocol>::Unit& Message<Protocol>::unit() const {
+template <typename Channel>
+const typename Message<Channel>::Unit& Message<Channel>::unit() const {
     return _unit;
 }
 
-template <typename Protocol>
-const typename Message<Protocol>::Microseconds& Message<Protocol>::period() const {
+template <typename Channel>
+const typename Message<Channel>::Microseconds& Message<Channel>::period() const {
     return _period;
 }
 
-template <typename Protocol>
-const std::uint8_t* Message<Protocol>::value() const {
+template <typename Channel>
+const std::uint8_t* Message<Channel>::value() const {
     return _value.data();
 }
 
-template <typename Protocol>
-const unsigned int Message<Protocol>::value_size() const {
+template <typename Channel>
+const unsigned int Message<Channel>::value_size() const {
     return _value.size();
 }
 
-template <typename Protocol>
-const void* Message<Protocol>::data() const {
+template <typename Channel>
+const void* Message<Channel>::data() const {
     // Ensures message is serialized
     const_cast<Message*>(this)->serialize();
 
@@ -174,8 +174,8 @@ const void* Message<Protocol>::data() const {
     return static_cast<const void*>(_serialized_data.data());
 }
 
-template <typename Protocol>
-const unsigned int Message<Protocol>::size() const {
+template <typename Channel>
+const unsigned int Message<Channel>::size() const {
     // Ensure message is serialized
     const_cast<Message*>(this)->serialize();
 
@@ -183,8 +183,8 @@ const unsigned int Message<Protocol>::size() const {
     return static_cast<const unsigned int>(_serialized_data.size());
 }
 
-template <typename Protocol>
-Message<Protocol> Message<Protocol>::deserialize(const void* serialized, const unsigned int size) {
+template <typename Channel>
+Message<Channel> Message<Channel>::deserialize(const void* serialized, const unsigned int size) {
     const std::uint8_t* bytes = static_cast<const std::uint8_t*>(serialized);
 
     Message msg;
@@ -221,13 +221,13 @@ Message<Protocol> Message<Protocol>::deserialize(const void* serialized, const u
     return msg;
 }
 
-template <typename Protocol>
-void Message<Protocol>::message_type(const Type message_type) {
+template <typename Channel>
+void Message<Channel>::message_type(const Type message_type) {
     _message_type = message_type;
 }
 
-template <typename Protocol>
-void Message<Protocol>::origin(const Origin addr) {
+template <typename Channel>
+void Message<Channel>::origin(const Origin addr) {
     if (addr == Origin()){
         message_type(Type::INVALID);
         return;
@@ -236,8 +236,8 @@ void Message<Protocol>::origin(const Origin addr) {
     _origin = addr;
 }
 
-template <typename Protocol>
-void Message<Protocol>::timestamp(const Microseconds timestamp) {
+template <typename Channel>
+void Message<Channel>::timestamp(const Microseconds timestamp) {
     if (timestamp <= ZERO) {
         message_type(Type::INVALID);
         return;
@@ -246,13 +246,13 @@ void Message<Protocol>::timestamp(const Microseconds timestamp) {
     _timestamp = timestamp;
 }
 
-template <typename Protocol>
-void Message<Protocol>::unit(const Unit unit) {
+template <typename Channel>
+void Message<Channel>::unit(const Unit unit) {
     _unit = unit;
 }
 
-template <typename Protocol>
-void Message<Protocol>::period(const Microseconds period) {
+template <typename Channel>
+void Message<Channel>::period(const Microseconds period) {
     if (period <= ZERO) {
         message_type(Type::INVALID);
         return;
@@ -261,8 +261,8 @@ void Message<Protocol>::period(const Microseconds period) {
     _period = period;
 }
 
-template <typename Protocol>
-void Message<Protocol>::value(const void* data, const unsigned int size) {
+template <typename Channel>
+void Message<Channel>::value(const void* data, const unsigned int size) {
     if (!data || !size) {
         message_type(Type::INVALID);
         return;
@@ -272,8 +272,8 @@ void Message<Protocol>::value(const void* data, const unsigned int size) {
     std::memcpy(_value.data(), data, size);
 }
 
-template <typename Protocol>
-void Message<Protocol>::serialize() {
+template <typename Channel>
+void Message<Channel>::serialize() {
     // Clear before any operations
     _serialized_data.clear();
 
@@ -288,33 +288,33 @@ void Message<Protocol>::serialize() {
         append_value();
 }
 
-template <typename Protocol>
-void Message<Protocol>::append_origin() {
+template <typename Channel>
+void Message<Channel>::append_origin() {
     // TODO
 }
 
-template <typename Protocol>
-void Message<Protocol>::append_type() {
+template <typename Channel>
+void Message<Channel>::append_type() {
     _serialized_data.push_back(static_cast<std::uint8_t>(_message_type));
 }
 
-template <typename Protocol>
-void Message<Protocol>::append_unit() {
+template <typename Channel>
+void Message<Channel>::append_unit() {
     // TODO
 }
 
-template <typename Protocol>
-void Message<Protocol>::append_microseconds(const Microseconds& value) {
+template <typename Channel>
+void Message<Channel>::append_microseconds(const Microseconds& value) {
     // TODO
 }
 
-template <typename Protocol>
-void Message<Protocol>::append_value() {
+template <typename Channel>
+void Message<Channel>::append_value() {
     _serialized_data.insert(_serialized_data.end(), _value.begin(), _value.end());
 }
 
-template <typename Protocol>
-typename Message<Protocol>::Origin Message<Protocol>::extract_origin(const std::uint8_t* data, unsigned int& offset, unsigned int size) {
+template <typename Channel>
+typename Message<Channel>::Origin Message<Channel>::extract_origin(const std::uint8_t* data, unsigned int& offset, unsigned int size) {
     unsigned int paddr_size = sizeof(Physical_Address);
     if (offset + paddr_size > size)
         return Origin();
@@ -334,8 +334,8 @@ typename Message<Protocol>::Origin Message<Protocol>::extract_origin(const std::
     return Origin(addr, port);
 }
 
-template <typename Protocol>
-typename Message<Protocol>::Type Message<Protocol>::extract_type(const std::uint8_t* data, unsigned int& offset, unsigned int size) {
+template <typename Channel>
+typename Message<Channel>::Type Message<Channel>::extract_type(const std::uint8_t* data, unsigned int& offset, unsigned int size) {
     if (offset + sizeof(std::uint8_t) > size)
         return Type::UNKNOWN;
 
@@ -343,8 +343,8 @@ typename Message<Protocol>::Type Message<Protocol>::extract_type(const std::uint
     return static_cast<Type>(raw_type);
 }
 
-template <typename Protocol>
-typename Message<Protocol>::Unit Message<Protocol>::extract_unit(const std::uint8_t* data, unsigned int& offset, unsigned int size) {
+template <typename Channel>
+typename Message<Channel>::Unit Message<Channel>::extract_unit(const std::uint8_t* data, unsigned int& offset, unsigned int size) {
     unsigned int unit_size = sizeof(Unit);
 
     if (offset + unit_size > size)
@@ -357,8 +357,8 @@ typename Message<Protocol>::Unit Message<Protocol>::extract_unit(const std::uint
     return unit;
 }
 
-template <typename Protocol>
-typename Message<Protocol>::Microseconds Message<Protocol>::extract_microseconds(const std::uint8_t* data, unsigned int& offset, unsigned int size) {
+template <typename Channel>
+typename Message<Channel>::Microseconds Message<Channel>::extract_microseconds(const std::uint8_t* data, unsigned int& offset, unsigned int size) {
     unsigned int rep_size = sizeof(Microseconds::rep);
 
     if (offset + rep_size > size)

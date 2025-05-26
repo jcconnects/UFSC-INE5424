@@ -7,9 +7,16 @@
 #include <pthread.h>
 
 #include "api/network/communicator.h"
+#include "api/framework/bus.h"
 #include "api/framework/network.h"
 #include "api/util/observer.h"
 #include "api/network/message.h"
+#include <signal.h>
+
+
+void handler(int sig) {
+    // No action needed, just unblock from system calls
+}
 
 class Gateway {
     public:
@@ -23,18 +30,18 @@ class Gateway {
 
         static const unsigned int MAX_MESSAGE_SIZE = Protocol::MTU;
 
-        Gateway(unsigned int id);
+        Gateway(unsigned int id, CAN* can);
         ~Gateway();
-
-        void attach_interest(Observer* obs, Unit type);
-        void detach_interest(Observer* obs, Unit type);
-        void attach_producer(Observer* obs, Unit type);
 
         bool send(Message* message);
         bool receive(Message* msg);
+        bool internalReceive(Message* msg);
         
         bool running() const;
         static void* mainloop(void* arg);
+        static void* internalLoop(void* arg);
+
+        void set_handler();
         
         const Address& address();
 
@@ -44,29 +51,26 @@ class Gateway {
         void publish(Message* message);
 
         unsigned int _id;
-        Map _producers;
-        Map _interests;
         Network* _network;
         Communicator* _comms;
+        CAN* _can;
+        Observer _can_observer(Condition(Message::Type::UNKNOWN, Message::Type::INTEREST));
         pthread_t _receive_thread;
-        pthread_mutex_t _producers_mutex;
-        pthread_mutex_t _interests_mutex;
+        pthread_t _internal_thread;
         std::atomic<bool> _running;
 };
 
 /******** Gateway Implementation ********/
-Gateway::Gateway(unsigned int id) : _id(id) {
+Gateway::Gateway(unsigned int id, CAN* can) : _id(id), _can(can) {
     _network = new Network(id);
     
     // Sets communicator
     Address addr(_network->address(), id);
     _comms = new Communicator(_network->channel(), addr);
 
-    pthread_mutex_init(&_producers_mutex, nullptr);
-    pthread_mutex_init(&_interests_mutex, nullptr);
-
     _running = true;
     pthread_create(&_receive_thread, nullptr, Gateway::mainloop, this);
+    pthread_create(&_internal_thread, nullptr, Gateway::internalLoop, this);
 }
 
 Gateway::~Gateway() {
@@ -74,38 +78,11 @@ Gateway::~Gateway() {
     _running.store(false, std::memory_order_release);
     _comms->release();
 
-    pthread_join(_receive_thread, nullptr);
-    pthread_mutex_destroy(&_producers_mutex);
-    pthread_mutex_destroy(&_interests_mutex);
+    pthread_kill(_receive_thread, SIGUSR1);
+    pthread_kill(_internal_thread, SIGUSR1);
+
     delete _comms;
     delete _network;
-}
-
-void Gateway::attach_interest(Observer* obs, Unit type) {
-    pthread_mutex_lock(&_interests_mutex);
-    _interests[type].insert(obs);
-    pthread_mutex_unlock(&_interests_mutex);
-}
-
-void Gateway::detach_interest(Observer* obs, Unit type) {
-    obs->update(nullptr); // Releases thread waiting for data
-
-    pthread_mutex_lock(&_interests_mutex);
-    auto it = _interests.find(type);
-
-    if (it != _interests.end()) {
-        it->second.erase(obs); // removes observer
-        if (it->second.empty()) {
-            _interests.erase(it);  // removes type if there are no observers
-        }
-    }
-    pthread_mutex_unlock(&_interests_mutex);
-}
-
-void Gateway::attach_producer(Observer* obs, Unit type) {
-    pthread_mutex_lock(&_producers_mutex);
-    _producers[type].insert(obs);
-    pthread_mutex_unlock(&_producers_mutex);
 }
 
 bool Gateway::send(Message* message) {
@@ -114,7 +91,8 @@ bool Gateway::send(Message* message) {
     }
 
     bool result = _comms->send(message);
-    handle(message);
+    // maybe we should not call handle here
+    // handle(message);
 
     return result;
 }
@@ -123,44 +101,14 @@ bool Gateway::receive(Message* message) {
     return _comms->receive(message);
 }
 
-void Gateway::subscribe(Message* buf) {
-    Unit uid = buf->unit();
-
-    pthread_mutex_lock(&_producers_mutex);
-    auto it = _producers.find(uid);
-    
-    if (it != _producers.end()) {
-        for (auto* obs : it->second) {
-            Message* msg = new Message(*buf);
-            obs->update(msg);
-        }
-    }
-    pthread_mutex_lock(&_producers_mutex);
-}
-
-void Gateway::publish(Message* buf) {
-    Unit uid = buf->unit();
-
-    pthread_mutex_lock(&_interests_mutex);
-    auto it = _interests.find(uid);
-
-    if (it != _interests.end()) {
-        for (auto* obs : it->second) {
-            Message* msg = new Message(*buf);
-            obs->update(msg);
-        }
-    }
-    pthread_mutex_unlock(&_interests_mutex);
-}
-
 void Gateway::handle(Message* message) {
     switch (message->message_type())
     {
         case Message::Type::INTEREST:
-            subscribe(message);
+            _can->send(message);
             break;
         case Message::Type::RESPONSE:
-            publish(message);
+            _can->send(message);
             break;
         default:
             break;
@@ -169,6 +117,7 @@ void Gateway::handle(Message* message) {
 
 void* Gateway::mainloop(void* arg) {
     Gateway* self = reinterpret_cast<Gateway*>(arg);
+    self->set_handler();
 
     while (self->running()) {
         Message msg;
@@ -177,6 +126,41 @@ void* Gateway::mainloop(void* arg) {
         }
     }
     return nullptr;
+}
+
+bool Gateway::internalReceive(Message* msg) {
+    msg = _can_observer.updated();
+    if (!msg) 
+        return false;
+    
+    return false;
+}
+
+void* Gateway::internalLoop(void* arg) {
+    Gateway* self = reinterpret_cast<Gateway*>(arg);
+    self->set_handler();
+
+    while (self->running()) {
+        Message msg;
+        if (self->internalReceive(&msg)) {
+            self->send(&msg);
+        }
+    }
+    return nullptr;
+}
+
+void Gateway::set_handler() {
+    // Install the signal handler for thread interruption
+    struct sigaction sa;
+    std::memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGUSR1, &sa, nullptr);
+
+    if (sigaction(SIGUSR1, &sa, nullptr) == -1) {
+        throw std::runtime_error("Failed to set signal handler for SIGUSR1");
+    }
 }
 
 bool Gateway::running() const {

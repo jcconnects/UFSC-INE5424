@@ -130,4 +130,6 @@ int main () {
     Debug::set_log_file(log_file);
     CANTest test;
     test.run();
+
+    return 0;
 }
