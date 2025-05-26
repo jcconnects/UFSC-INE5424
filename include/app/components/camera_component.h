@@ -11,13 +11,14 @@
 #include <iomanip> // For std::fixed, std::setprecision
 
 #include "api/framework/agent.h"
-#include "api/util/debug.h"
+#include "api/network/bus.h"
+#include "../api/util/debug.h"
 #include "app/datatypes.h"
 
 
 class CameraComponent : public Agent {
     public:
-        CameraComponent(Gateway* gateway);
+        CameraComponent(CAN* can, const std::string name = "CameraComponent");
         ~CameraComponent() = default;
 
         Agent::Value get(Agent::Unit unit) override;
@@ -35,17 +36,14 @@ class CameraComponent : public Agent {
 };
 
 /******** Camera Component Implementation *********/
-CameraComponent::CameraComponent(Gateway* gateway) : Agent(gateway),
+CameraComponent::CameraComponent(CAN* can, const std::string& name) : Agent(can, name),
     _gen(_rd()),
     _coord_dist(0.0, 1920.0), // Example camera resolution width
     _size_dist(50.0, 300.0),   // Example bounding box size
     _label_dist(0, _labels.size() - 1),
     _delay_dist(50, 150) // Milliseconds delay between sends
-{
-    add_produced_type(static_cast<std::uint32_t>(DataTypes::RGB_IMAGE));
-    add_produced_type(static_cast<std::uint32_t>(DataTypes::VIDEO_STREAM));
-    add_produced_type(static_cast<std::uint32_t>(DataTypes::PIXEL_MATRIX));
-    add_produced_type(static_cast<std::uint32_t>(DataTypes::CAMERA_METADATA));
+{   
+    add_produced_type(DataTypes::EXTERNAL_PIXEL_MATRIX, CAN::Message::Type::INSTEREST);
 }
 
 Agent::Value get(Agent::Unit unit) {

@@ -7,7 +7,7 @@
 #include <pthread.h>
 
 #include "api/network/communicator.h"
-#include "api/framework/bus.h"
+#include "api/network/bus.h"
 #include "api/framework/network.h"
 #include "api/util/observer.h"
 #include "api/network/message.h"
@@ -25,12 +25,13 @@ class Gateway {
         typedef Protocol::Address Address;
         typedef Network::Message Message;
         typedef Message::Unit Unit;
-        typedef Concurrent_Observer<Message, void> Observer;
+        typedef CAN::Observer Observer;
         typedef std::unordered_map<Unit, std::unordered_set<Observer*>> Map;
 
         static const unsigned int MAX_MESSAGE_SIZE = Protocol::MTU;
+        const unsigned int PORT = 0;
 
-        Gateway(unsigned int id, CAN* can);
+        Gateway(unsigned int id);
         ~Gateway();
 
         bool send(Message* message);
@@ -44,6 +45,7 @@ class Gateway {
         void set_handler();
         
         const Address& address();
+        CAN* bus() { return _can; }
 
     private:
         void handle(Message* msg);
@@ -54,19 +56,22 @@ class Gateway {
         Network* _network;
         Communicator* _comms;
         CAN* _can;
-        Observer _can_observer(Condition(Message::Type::UNKNOWN, Message::Type::INTEREST));
+        Observer* _can_observer;
         pthread_t _receive_thread;
         pthread_t _internal_thread;
         std::atomic<bool> _running;
 };
 
 /******** Gateway Implementation ********/
-Gateway::Gateway(unsigned int id, CAN* can) : _id(id), _can(can) {
+Gateway::Gateway(unsigned int id) : _id(id) {
     _network = new Network(id);
     
     // Sets communicator
-    Address addr(_network->address(), id);
+    Address addr(_network->address(), PORT);
     _comms = new Communicator(_network->channel(), addr);
+    _can = _network->bus();
+    Condition c(0, Message::Type::UNKNOWN);
+    _can_observer = new Observer(c);
 
     _running = true;
     pthread_create(&_receive_thread, nullptr, Gateway::mainloop, this);
@@ -83,6 +88,8 @@ Gateway::~Gateway() {
 
     delete _comms;
     delete _network;
+    delete _can;
+    delete _can_observer;
 }
 
 bool Gateway::send(Message* message) {
@@ -101,6 +108,7 @@ bool Gateway::receive(Message* message) {
     return _comms->receive(message);
 }
 
+// TODO - Edit origin in message
 void Gateway::handle(Message* message) {
     switch (message->message_type())
     {
@@ -129,7 +137,7 @@ void* Gateway::mainloop(void* arg) {
 }
 
 bool Gateway::internalReceive(Message* msg) {
-    msg = _can_observer.updated();
+    msg = _can_observer->updated();
     if (!msg) 
         return false;
     

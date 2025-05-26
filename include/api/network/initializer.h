@@ -6,7 +6,6 @@
 #include "api/network/protocol.h"
 #include "api/network/communicator.h"
 #include "api/network/message.h"
-#include "api/network/bus.h"
 
 
 /**

@@ -11,8 +11,9 @@
 #include <iomanip> // For std::fixed, std::setprecision
 #include <cmath>   // For M_PI if needed, though using numeric literal is safer
 
-#include "component.h"
-#include "debug.h"
+#include "api/framework/agent.h"
+#include "api/network/bus.h"
+#include "../api/util/debug.h"
 
 // Constants
 constexpr double PI_INS = 3.14159265358979323846;
@@ -20,15 +21,12 @@ constexpr double G_TO_MS2_INS = 9.80665;
 constexpr double DEG_TO_RAD_INS = PI_INS / 180.0;
 
 
-class INSComponent : public Component {
+class INSComponent : public Agent {
     public:
-        static const unsigned int PORT;
-
-        INSComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, VehicleProt* protocol);
-
+        INSComponent(CAN* can, const std::string name = "INSComponent");
         ~INSComponent() override = default;
 
-        void run() override;
+        Agent::Value get(Agent::Unit unit) override;
 
     private:
         // Random number generation
@@ -44,10 +42,7 @@ class INSComponent : public Component {
         std::uniform_int_distribution<> _delay_dist;
 };
 
-/********** INS Component Implementation ***********/
-const unsigned int INSComponent::PORT = static_cast<unsigned int>(Vehicle::Ports::INS);
-
-INSComponent::INSComponent(Vehicle* vehicle, const unsigned int vehicle_id, const std::string& name, VehicleProt* protocol) : Component(vehicle, vehicle_id, name),
+INSComponent::INSComponent(CAN* can, const std::string& name) : Agent(can, name),
     _gen(_rd()),
     // Define realistic ranges for dummy data
     _lat_dist(-PI_INS/2.0, PI_INS/2.0), // Latitude in radians (-90 to +90 deg)
@@ -59,19 +54,43 @@ INSComponent::INSComponent(Vehicle* vehicle, const unsigned int vehicle_id, cons
     _heading_dist(0, 2.0 * PI_INS),  // Heading rad (0 to 360 deg)
     _delay_dist(90, 110)        // Milliseconds delay (INS typically ~10Hz)
 {
-    // Sets CSV result header
-    open_log_file();
-    if (_log_file.is_open()) {
-        _log_file.seekp(0);
-        _log_file << "timestamp_us,source_vehicle,message_id,event_type,destination_address,latitude_rad,longitude_rad,altitude_m,velocity_mps,accel_x_mps2,accel_y_mps2,accel_z_mps2,gyro_x_radps,gyro_y_radps,gyro_z_radps,heading_rad\n";
-        _log_file.flush();
-    }
+    add_produced_type(DataTypes::EXTERNAL_PIXEL_MATRIX, CAN::Message::Type::INSTEREST);
+}
 
-    // Sets own address
-    Address addr(_vehicle->address(), INSComponent::PORT);
+Agent::Value get(Agent::Unit unit) {
+    auto now_system = std::chrono::system_clock::now();
+    auto time_us_system = std::chrono::duration_cast<std::chrono::microseconds>(now_system.time_since_epoch()).count();
 
-    // Sets own communicator
-    _communicator = new Comms(protocol, addr);
+    // Generate dummy INS data
+    double lat = _lat_dist(_gen);
+    double lon = _lon_dist(_gen);
+    double alt = _alt_dist(_gen);
+    double vel = _vel_dist(_gen);
+    double accel_x = _accel_dist(_gen);
+    double accel_y = _accel_dist(_gen);
+    double accel_z = _accel_dist(_gen);
+    double gyro_x = _gyro_dist(_gen);
+    double gyro_y = _gyro_dist(_gen);
+    double gyro_z = _gyro_dist(_gen);
+    double heading = _heading_dist(_gen);
+
+    std::stringstream payload_ss;
+    payload_ss << std::fixed << std::setprecision(8) // High precision for GPS/IMU
+            << "INSData: {"
+            << "Lat: " << lat << ", Lon: " << lon << ", Alt: " << alt
+            << ", Vel: " << std::setprecision(3) << vel // Lower precision for others
+            << ", Accel: [" << accel_x << ", " << accel_y << ", " << accel_z << "]"
+            << ", Gyro: [" << std::setprecision(5) << gyro_x << ", " << gyro_y << ", " << gyro_z << "]"
+            << ", Heading: " << heading
+            << "}";
+    std::string payload = payload_ss.str();
+
+    // Construct the full message string
+    std::string msg = "[" + Component::getName() + "] Vehicle " + std::to_string(vehicle()->id()) + " message " + std::to_string(counter) + " at " + std::to_string(time_us_system) + ": " + payload;
+
+    db<INSComponent>(TRC) << "[INSComponent] " <<
+
+    return Agent::Value(msg.begin(), msg.end());
 }
 
 void INSComponent::run() {

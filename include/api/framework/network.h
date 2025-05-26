@@ -2,6 +2,7 @@
 #define NETWORK_H
 
 #include "api/network/initializer.h"
+#include "api/network/bus.h"
 
 class Network {
     public:
@@ -14,12 +15,14 @@ class Network {
         ~Network();
 
         Protocol* channel();
+        CAN* bus();
         const NIC::Address address();
-
+        
     private:
         unsigned int _id;
         Protocol* _protocol;
         NIC* _nic;
+        CAN* _can;
 };
 
 Network::Network(unsigned int id) : _id(id) {
@@ -36,15 +39,21 @@ Network::Network(unsigned int id) : _id(id) {
     }
 
     _protocol = Initializer::create_protocol(_nic);
+    _can = new CAN();
 }
 
 Network::~Network() {
     delete _protocol;
     delete _nic;
+    delete _can; // Assuming _can is created somewhere else in the code
 }
 
 Network::Protocol* Network::channel() {
     return _protocol;
+}
+
+CAN* Network::bus() {
+    return _can;
 }
 
 const Network::NIC::Address Network::address() {

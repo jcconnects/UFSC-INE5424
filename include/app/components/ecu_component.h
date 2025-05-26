@@ -4,67 +4,61 @@
 #include <chrono>
 #include <string>
 
-#include "api/util/debug.h"
+#include "../api/util/debug.h"
 #include "api/framework/agent.h"
-#include "api/framework/gateway.h"
+#include "api/network/bus.h"
 #include "app/vehicle.h"
 
-class ECU : public Agent {
+class ECUComponent : public Agent {
     public:
         // ECU receives a port for identification
-        ECU(Vehicle* vehicle, Gateway* gateway);
-        ~ECU();
+        ECUComponent(CAN* can, const std::string name = "ECUComponent");
+        ~ECUComponent();
 
-        void run() override;
+        virtual void handle_response(Message* msg) override;
+        void process_message(const Message& message, const std::chrono::microseconds& recv_time);
 
     private:
         // Helper methods to process received messages
-        void process_message(const Message& message, const std::chrono::microseconds& recv_time);
         void process_interest_message(const Message& message, std::string& message_details);
         void process_response_message(const Message& message, std::string& message_details);
         void log_message(const Message& message, const std::chrono::microseconds& recv_time, 
                         const std::chrono::microseconds& timestamp, const std::string& message_details);
+        void open_log_file();
 };
 
 /*********** ECU Component Implementation **********/
-ECU::ECU(Vehicle* vehicle, Gateway* gateway, Vehicle::Port port) : Agent(gateway) {
-    // Sets CSV result Header
+ECUComponent::ECUComponent(CAN* can, const std::string& name) : Agent(can, name) {
     open_log_file();
     if (_log_file.is_open()) {
         _log_file.seekp(0); // Go to beginning to overwrite if file exists
         // Define log header
-        _log_file << "receive_timestamp_us,source_address,message_type,type_id,event_type,"
-                  << "send_timestamp_us,latency_us,message_details\n";
+        _log_file << "timestamp_us,received_distance_m,received_angle_deg,received_confidence,validity\n";
         _log_file.flush();
     }
-
-    // Sets own address
-    Address addr(vehicle->address(), static_cast<unsigned int>(port));
-
-    // Sets own communicator
-    _communicator = new Comms(protocol, addr);
+    // TODO - review this so that ECU can receive other message types
+    add_produced_type(DataTypes::EXTERNAL_POINT_CLOUD_XYZ, CAN::Message::Type::UKNOWN);
 }
 
-void ECUComponent::run() {
-    db<ECUComponent>(INF) << "[ECUComponent] " << Component::getName() << " thread running.\n";
-
-    while (running()) {
-        // Create a message object to receive into (needs to be created with new_message)
-        Message message = _communicator->new_message(Message::Type::RESPONSE, 0);
-        
-        // Receive message directly into message object
-        bool received = _communicator->receive(&message);
-
-        if (received) {
-            auto recv_time = std::chrono::system_clock::now();
-            auto recv_time_us = std::chrono::duration_cast<std::chrono::microseconds>(
-                recv_time.time_since_epoch());
-            
-            process_message(message, recv_time_us);
+void ECUComponent::open_log_file() {
+    try {
+        _log_file.open(_filename);
+        if (!_log_file.is_open()) {
+            db<ECUComponent>(ERR) << "[Component] [" << _name << "] Failed to open log file: " << _filename << "\n";
+        } else {
+            db<ECUComponent>(INF) << "[Component] [" << _name << "] Opened log file: " << _filename << "\n";
         }
+    } catch (const std::exception& e) {
+        db<ECUComponent>(ERR) << "[Component] [" << _name << "] Exception opening log file: " << e.what() << "\n";
     }
+}
 
-    db<ECUComponent>(INF) << "[ECUComponent] " << Component::getName() << " thread terminated.\n";
+void ECUComponent::handle_response(Message* msg) {
+    auto recv_time = std::chrono::system_clock::now();
+    auto recv_time_us = std::chrono::duration_cast<std::chrono::microseconds>(
+        recv_time.time_since_epoch());
+    
+    process_message((*message), recv_time_us);
 }
 
 void ECUComponent::process_message(const Message& message, const std::chrono::microseconds& recv_time) {
@@ -86,24 +80,12 @@ void ECUComponent::process_message(const Message& message, const std::chrono::mi
     
     // Process based on message type
     std::string message_details;
-    if (message_type == Message::Type::INTEREST) {
-        process_interest_message(message, message_details);
-    } else if (message_type == Message::Type::RESPONSE) {
+    if (message_type == Message::Type::RESPONSE) {
         process_response_message(message, message_details);
     }
     
     // Log the message to CSV
     log_message(message, recv_time, std::chrono::microseconds(timestamp), message_details);
-}
-
-void ECUComponent::process_interest_message(const Message& message, std::string& message_details) {
-    auto period = message.period();
-    message_details = "period=" + std::to_string(period) + "ms";
-    
-    db<ECUComponent>(INF) << "[ECUComponent] " << Component::getName()
-                         << " Received INTEREST message with period " << period << "ms\n";
-    
-    // Handle interest message - in a real implementation, we might set up a periodic response
 }
 
 void ECUComponent::process_response_message(const Message& message, std::string& message_details) {

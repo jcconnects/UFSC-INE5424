@@ -85,8 +85,8 @@ void Vehicle::stop() {
 }
 
 template <typename ComponentType>
-void Vehicle::create_component() {
-    _components.push_back(std::make_unique<ComponentType>(this, _gateway));   
+void Vehicle::create_component(std::string name) {
+    _components.push_back(std::make_unique<ComponentType>(_gateway->bus(), name));   
 }
 
 const unsigned int Vehicle::id() const {

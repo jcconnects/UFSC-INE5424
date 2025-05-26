@@ -21,6 +21,8 @@ inline std::string get_interface_name() {
 template <typename NIC>
 class Protocol;
 
+class Agent;
+
 class AgentStub;
 
 template <typename Engine>
@@ -97,6 +99,12 @@ struct Traits<CAN> : public Traits<void>
 
 template <>
 struct Traits<AgentStub> : public Traits<void>
+{
+    static const bool debugged = false;
+};
+
+template <>
+struct Traits<Agent> : public Traits<void>
 {
     static const bool debugged = true;
 };

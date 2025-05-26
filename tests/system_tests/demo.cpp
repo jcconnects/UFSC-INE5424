@@ -7,13 +7,13 @@
 #include <random>
 #include <chrono>
 
-#include "vehicle.h"
-#include "debug.h"
-#include "components/ecu_component.h"
-#include "components/ins_component.h"
-#include "components/lidar_component.h"
-#include "components/battery_component.h"
-#include "test_utils.h"
+#include "../../include/app/vehicle.h"
+#include "../../include/api/util/debug.h"
+#include "../../include/app/components/ecu_component.h"
+#include "../../include/app/components/ins_component.h"
+#include "../../include/app/components/lidar_component.h"
+#include "../testcase.h"
+#include "../test_utils.h"
 
 // Helper function to set up a vehicle log directory
 std::string setup_log_directory(unsigned int vehicle_id) {
@@ -42,47 +42,37 @@ std::string setup_log_directory(unsigned int vehicle_id) {
     }
 }
 
-void run_vehicle(Vehicle* v) {
-    db<Vehicle>(TRC) << "run_vehicle() called!\n";
+class Demo: TesCase {
+    public:
+        Demo();
+        ~Demo() = default;
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist_lifetime(20, 40); // Lifetime from 20 to 40 seconds
-    int lifetime = dist_lifetime(gen);
-    unsigned int vehicle_id = v->id(); // Store ID before deletion
+        void setUp() override;
+        void tearDown() override;
 
-    // Create all components
-    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] creating components\n";
-    v->create_component<ECUComponent>("ECU1", Vehicle::Ports::ECU1);
-    v->create_component<ECUComponent>("ECU2", Vehicle::Ports::ECU2);
-    v->create_component<LidarComponent>("Lidar");
-    v->create_component<INSComponent>("INS");
-    v->create_component<BatteryComponent>("Battery");
-
-    // Start the vehicle
-    v->start();
-    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] started for " << lifetime << "s lifetime\n";
-
-    // Wait for vehicle lifetime
-    sleep(lifetime);
-    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] lifetime ended, stopping\n";
-
-    try {
-        // Stop vehicle and clean up
-        v->stop();
-        delete v;
-        db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] terminated cleanly\n";
-    } catch (const std::exception& e) {
-        db<Vehicle>(ERR) << "[Vehicle " << vehicle_id << "] Exception during cleanup: " << e.what() << "\n";
-    } catch (...) {
-        db<Vehicle>(ERR) << "[Vehicle " << vehicle_id << "] Unknown error during cleanup\n";
-    }
+        /* TESTS */
+        void run_demo()
+    private:
+        void run_vehicle(Vehicle* v);
 }
 
-int main(int argc, char* argv[]) {
+Demo::Demo() {
+    // Constructor implementation if needed
     TEST_INIT("system_demo");
     TEST_LOG("Application started!");
+    DEFINE_TEST(run_demo);
+}
 
+void Demo::setUp() {
+    // Set up code if needed
+}
+
+void Demo::tearDown() {
+    // Tear down code if needed
+    TEST_LOG("Demo test case completed.");
+}
+
+void Demo::run_demo() {
     // Set number of test vehicles
     const unsigned int n_vehicles = 3;
 
@@ -153,4 +143,51 @@ int main(int argc, char* argv[]) {
 
     TEST_LOG(successful ? "Application completed successfully!" : "Application terminated with errors!");
     return successful ? 0 : -1;
+}
+
+void Demo::run_vehicle(Vehicle* v) {
+    db<Vehicle>(TRC) << "run_vehicle() called!\n";
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist_lifetime(20, 40); // Lifetime from 20 to 40 seconds
+    std::uniform_int_distribution<> start_delay(0, 10);
+    int delay = start_delay(gen);
+    int lifetime = dist_lifetime(gen);
+    unsigned int vehicle_id = v->id(); // Store ID before deletion
+
+    // Create all components
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] creating components\n";
+    v->create_component<ECUComponent>("ECU1");
+    v->create_component<ECUComponent>("ECU2");
+    v->create_component<LidarComponent>("Lidar");
+    v->create_component<INSComponent>("INS");
+
+    sleep(delay); // Simulate startup delay
+
+    // Start the vehicle
+    v->start();
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] started for " << lifetime << "s lifetime\n";
+
+    // Wait for vehicle lifetime
+    sleep(lifetime);
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] lifetime ended, stopping\n";
+
+    try {
+        // Stop vehicle and clean up
+        v->stop();
+        delete v;
+        db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] terminated cleanly\n";
+    } catch (const std::exception& e) {
+        db<Vehicle>(ERR) << "[Vehicle " << vehicle_id << "] Exception during cleanup: " << e.what() << "\n";
+    } catch (...) {
+        db<Vehicle>(ERR) << "[Vehicle " << vehicle_id << "] Unknown error during cleanup\n";
+    }
+}
+
+int main(int argc, char* argv[]) {
+    Demo demo;
+    demo.run();
+
+    return 0;
 }

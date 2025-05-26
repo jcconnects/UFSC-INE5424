@@ -5,9 +5,12 @@
 #include <chrono>
 #include <vector>
 #include <algorithm>
+#include <string>
 
-#include "api/framework/bus.h"
+#include "api/network/bus.h"
 #include "api/framework/periodicThread.h"
+#include "api/util/debug.h"
+#include "api/traits.h"
 
 
 class Agent {
@@ -16,22 +19,23 @@ class Agent {
         typedef Message::Origin Address;
         typedef Message::Array Value;
         typedef Message::Unit Unit;
+        typedef Message::Type Type;
         typedef Message::Microseconds Microseconds;
         typedef Periodic_Thread<Agent> Thread;
         typedef std::unordered_map<Unit, Thread> Threads;
-        typedef Concurrent_Observer<Message, void> Observer;
+        typedef CAN::Observer Observer;
 
     
-        Agent(CAN* bus, Address address = {});
+        Agent(CAN* bus, const std::string& name, Address address = {});
         virtual ~Agent();
 
         // Vehicle adds on creation
-        // void add_produced_type(Unit type);
+        void add_produced_type(Unit unit, Type type) ;
 
         virtual Value get(Unit type) = 0;
 
         int send(Unit unit, Microseconds period); // Send will always be INTEREST (this is exposed to application)
-        // int receive(void* value_data, unsigned int value_size); // Receive will aways be RESPONSE (this is exposed to application)
+        int receive(Message* msg);
         
         virtual void handle_response(Message* msg) { /* Default implementation - do nothing */}
         
@@ -45,15 +49,17 @@ class Agent {
     private:
         Address _address;
         CAN* _can;
+        std::string _name;
         Threads _periodic_threads;
-        Observer _can_observer;
+        Observer* _can_observer;
         pthread_t _thread;
         Threads _threads;
         std::atomic<bool> _running;
 };
 
 /****** Agent Implementation *****/
-Agent::Agent(CAN* bus, Address address) : _address(address) {
+Agent::Agent(CAN* bus, const std::string& name, Address address) : _address(address), _name(name) {
+    db<Agent>(INF) << "[Agent] " << _name << " created with address: " << _address.to_string() << "\n";
     if (!bus)
         throw std::invalid_argument("Gateway cannot be null");
     
@@ -68,14 +74,19 @@ Agent::~Agent() {
     pthread_join(_thread, nullptr);
 
     delete _can;
+    delete _can_observer;
 }
 
-// Vehicle adds on creation
-// void Agent::add_produced_type(Unit unit) {
-//     _gateway->attach_producer(&_interest_obs, unit);
-// }
+//Vehicle adds on creation
+void Agent::add_produced_type(Unit unit, Type type) {
+    db<Agent>(INF) << "[Agent] " << _name << " adding produced type: " << unit << " of type: " << static_cast<int>(type) << "\n";
+    Condition c(unit, type);
+    _can_observer = new Observer(c);
+    _can->attach(_can_observer, c);
+}
 
 int Agent::send(Unit unit, Microseconds period) {
+    db<Agent>(INF) << "[Agent] " << _name << " sending INTEREST for unit: " << unit << " with period: " << period.count() << " microseconds\n";
     if (period == Microseconds::zero())
         return 0;
     
@@ -91,31 +102,36 @@ int Agent::send(Unit unit, Microseconds period) {
     return result;
 }
 
-// int Agent::receive(void* value_data, unsigned int value_size) {
-//     bool received = false;
+int Agent::receive(Message* msg) {
+    (*msg) = (*_can_observer->updated());
 
-//     Message* msg = _can_observer.updated();
-    
-//     if (msg->value_size() > value_size) {
-//         return -1;
-//     }
-
-//     std::memcpy(value_data, msg->value(), msg->value_size());
-//     return msg->value_size();
-// }
+    return msg->value_size();
+}
 
 
 void* Agent::run(void* arg) {
     Agent* agent = reinterpret_cast<Agent*>(arg);
 
     while (agent->running()) {
-        Message* msg = agent->_can_observer.updated();
+        Message* msg;
+        int received = agent->receive(msg);
+
+        if (received <= 0) {
+            db<Agent>(WRN) << "[Agent] " << agent->_name << " received an empty or invalid message\n";
+            delete msg; // Clean up the message object
+
+            continue; // Skip processing if no valid message was received
+        }
 
         if (msg->message_type() == Message::Type::RESPONSE) 
             agent->handle_response(msg);
         else if (msg->message_type() == Message::Type::INTEREST) 
             agent->handle_interest(msg->unit(), msg->period());
+
+        delete msg; // Clean up the message object after processing
     }
+
+    return nullptr;
 }
 
 bool Agent::running() {
@@ -139,8 +155,11 @@ void Agent::handle_interest(Unit unit, Microseconds period) {
 
 
 void Agent::reply(Unit unit) {
+    db<Agent>(INF) << "[Agent] " << _name << " sending RESPONSE for unit: " << unit << "\n";
     Value value = get(unit);
     Message msg(Message::Type::RESPONSE, _address, unit, Microseconds::zero(), value.data(), value.size());
+
+    _can->send(&msg);
 }
 
 
