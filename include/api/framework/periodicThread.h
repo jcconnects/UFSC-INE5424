@@ -161,7 +161,7 @@ void* Periodic_Thread<Owner>::run(void* arg) {
             thread->_task();
         }
         
-        std::this_thread::sleep_for(std::chrono::milliseconds(thread->period()));
+        std::this_thread::sleep_for(std::chrono::milliseconds(thread->period()/1000));
     }
 
     return nullptr;

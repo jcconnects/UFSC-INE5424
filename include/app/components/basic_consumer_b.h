@@ -3,10 +3,10 @@
 
 #include <cstring>
 
-#include "api/framework/agent.h"
-#include "api/network/bus.h"
-#include "../api/util/debug.h"
-#include "app/datatypes.h"
+#include "../../api/framework/agent.h"
+#include "../../api/network/bus.h"
+#include "../../api/util/debug.h"
+#include "../datatypes.h"
 
 class BasicConsumerB : public Agent {
     public:
@@ -32,20 +32,12 @@ Agent::Value BasicConsumerB::get(Agent::Unit unit) {
 }
 
 void BasicConsumerB::handle_response(Message* msg) {
-    if (msg->value_size() == sizeof(float)) {
-        float received_value;
-        std::memcpy(&received_value, msg->value(), sizeof(float));
-        
-        // Add 1 to the received value
-        _last_received_value = received_value + 1.0f;
-        
-        db<BasicConsumerB>(INF) << "[BasicConsumerB] " << name() 
-                               << " received value: " << received_value 
-                               << ", processed value: " << _last_received_value << "\n";
-    } else {
-        db<BasicConsumerB>(WRN) << "[BasicConsumerB] " << name() 
-                               << " received message with unexpected size: " << msg->value_size() << "\n";
-    }
+    const std::uint8_t* received_value = msg->value();
+    _last_received_value = *reinterpret_cast<const float*>(received_value);
+    
+    db<BasicConsumerB>(INF) << "[BasicConsumerB] " << name() 
+                            << " received RESPONSE message with value: " << _last_received_value 
+                            << " and value size: " << msg->value_size() << "\n";
 }
 
 #endif // BASIC_CONSUMER_B_H 

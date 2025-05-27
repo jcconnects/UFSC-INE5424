@@ -5,7 +5,7 @@
 #include <cstring>
 #include <vector>
 #include <chrono>
-#include "api/util/debug.h"
+#include "../util/debug.h"
 
 
 template <typename Channel>
@@ -49,14 +49,16 @@ class Message {
         const unsigned int size() const;
         static Message deserialize(const void* serialized, const unsigned int size);
         
-    private:
-        // Setters
+        // Public Setters
         void message_type(const Type message_type);
         void origin(const Origin addr);
         void timestamp(const Microseconds timestamp);
         void unit(const Unit type);
         void period(const Microseconds period);
         void value(const void* data, const unsigned int size);
+
+    private:
+        // Internal helper
         void serialize();
 
         // Serialization auxiliar methods
@@ -248,11 +250,6 @@ void Message<Channel>::message_type(const Type message_type) {
 
 template <typename Channel>
 void Message<Channel>::origin(const Origin addr) {
-    if (addr == Origin()){
-        message_type(Type::INVALID);
-        return;
-    }
-
     _origin = addr;
 }
 

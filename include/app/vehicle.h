@@ -106,7 +106,12 @@ void Vehicle::stop() {
 
 template <typename ComponentType>
 void Vehicle::create_component(const std::string& name) {
-    auto component = std::make_unique<ComponentType>(_gateway->bus(), _gateway->address(), name);
+    // CRITICAL FIX: Create unique address for each agent instead of using gateway address
+    // This prevents the gateway from filtering out agent messages as "self-originated"
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = std::make_unique<ComponentType>(_gateway->bus(), component_addr, name);
     
     // Set up CSV logging for the component
     component->set_csv_logger(_log_dir);

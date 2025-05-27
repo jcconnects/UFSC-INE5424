@@ -8,13 +8,13 @@
 #include <chrono>
 #include <sstream>
 
-#include "api/network/communicator.h"
-#include "api/network/bus.h"
-#include "api/framework/network.h"
-#include "api/util/observer.h"
-#include "api/util/csv_logger.h"
-#include "api/network/message.h"
-#include "api/util/debug.h"
+#include "../network/communicator.h"
+#include "../network/bus.h"
+#include "network.h"
+#include "../util/observer.h"
+#include "../util/csv_logger.h"
+#include "../network/message.h"
+#include "../util/debug.h"
 #include <signal.h>
 
 
@@ -158,21 +158,32 @@ bool Gateway::receive(Message* message) {
 
 // TODO - Edit origin in message
 void Gateway::handle(Message* message) {
-    db<Gateway>(INF) << "[Gateway " << _id << "] handling external message of type " << static_cast<int>(message->message_type()) 
-                     << " for unit " << message->unit() << "\n";
+    // CRITICAL FIX: Check if message originated from this gateway to prevent feedback loop
+    if (message->origin() == _comms->address()) {
+        db<Gateway>(INF) << "[Gateway " << _id << "] ignoring message from self (origin: " 
+                         << message->origin().to_string() << ", self: " << _comms->address().to_string() << ")\n";
+        return;
+    }
     
-    switch (message->message_type())
+    db<Gateway>(INF) << "[Gateway " << _id << "] handling external message of type " << static_cast<int>(message->message_type()) 
+                     << " for unit " << message->unit() << " from origin " << message->origin().to_string() << "\n";
+    
+
+    Message modified_message = *message; 
+    modified_message.origin(_comms->address());
+
+    switch (modified_message.message_type())
     {
         case Message::Type::INTEREST:
-            db<Gateway>(INF) << "[Gateway " << _id << "] forwarding INTEREST to CAN bus\n";
-            _can->send(message);
+            db<Gateway>(INF) << "[Gateway " << _id << "] forwarding INTEREST to CAN bus with modified origin\n";
+            _can->send(&modified_message);
             break;
         case Message::Type::RESPONSE:
-            db<Gateway>(INF) << "[Gateway " << _id << "] forwarding RESPONSE to CAN bus\n";
-            _can->send(message);
+            db<Gateway>(INF) << "[Gateway " << _id << "] forwarding RESPONSE to CAN bus with modified origin\n";
+            _can->send(&modified_message);
             break;
         default:
-            db<Gateway>(WRN) << "[Gateway " << _id << "] unknown message type: " << static_cast<int>(message->message_type()) << "\n";
+            db<Gateway>(WRN) << "[Gateway " << _id << "] unknown message type: " << static_cast<int>(modified_message.message_type()) << "\n";
             break;
     }
 }
@@ -222,7 +233,15 @@ void* Gateway::internalLoop(void* arg) {
     while (self->running()) {
         Message msg;
         if (self->internalReceive(&msg)) {
-            db<Gateway>(INF) << "[Gateway " << self->_id << "] forwarding internal message externally\n";
+            // CRITICAL FIX: Check if message originated from this gateway to prevent feedback loop
+            if (msg.origin() == self->_comms->address()) {
+                db<Gateway>(INF) << "[Gateway " << self->_id << "] ignoring internal message from self (origin: " 
+                                 << msg.origin().to_string() << ", self: " << self->_comms->address().to_string() << ")\n";
+                continue;
+            }
+            
+            db<Gateway>(INF) << "[Gateway " << self->_id << "] forwarding internal message externally from origin " 
+                             << msg.origin().to_string() << "\n";
             self->send(&msg);
         }
     }

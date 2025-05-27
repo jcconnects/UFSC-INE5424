@@ -7,8 +7,8 @@ enum class DataTypes : std::uint32_t {
     /* Internal (bit 31 = 0) */
     
     // Simple test units
-    UNIT_A                   = 0x00000001,
-    UNIT_B                   = 0x00000002,
+    UNIT_A                   = 0x00000055,
+    UNIT_B                   = 0x00000066,
     
     // Camera
     RGB_IMAGE                = 0x00000010,

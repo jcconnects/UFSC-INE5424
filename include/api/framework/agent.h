@@ -8,11 +8,11 @@
 #include <string>
 #include <sstream>
 
-#include "api/network/bus.h"
-#include "api/framework/periodicThread.h"
-#include "api/util/debug.h"
-#include "api/util/csv_logger.h"
-#include "api/traits.h"
+#include "../network/bus.h"
+#include "periodicThread.h"
+#include "../util/debug.h"
+#include "../util/csv_logger.h"
+#include "../traits.h"
 
 
 class Agent {
@@ -77,7 +77,7 @@ Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address ad
     // Only send initial INTEREST if this agent is a consumer (observing RESPONSE messages)
     // Producers (observing INTEREST messages) should not send INTEREST
     if (type == Type::RESPONSE) {
-        Microseconds period(1000);
+        Microseconds period(1000000);
         send(unit, period); // Send initial INTEREST
     }
 
