@@ -22,7 +22,6 @@ class Agent {
         typedef Message::Type Type;
         typedef Message::Microseconds Microseconds;
         typedef Periodic_Thread<Agent> Thread;
-        typedef std::unordered_map<Unit, Thread> Threads;
         typedef CAN::Observer Observer;
 
     
@@ -30,7 +29,7 @@ class Agent {
         virtual ~Agent();
 
         // Vehicle adds on creation
-        void add_produced_type(Unit unit, Type type) ;
+        void add_observed_type(Unit unit, Type type) ;
 
         virtual Value get(Unit type) = 0;
 
@@ -41,6 +40,8 @@ class Agent {
         
         static void* run(void* arg); // Run will always receive INTEREST messages, and set periodic thread
         bool running();
+
+        std::string name() const { return _name; }
         
     private:
         void handle_interest(Unit unit, Microseconds period);
@@ -50,15 +51,14 @@ class Agent {
         Address _address;
         CAN* _can;
         std::string _name;
-        Threads _periodic_threads;
         Observer* _can_observer;
         pthread_t _thread;
-        Threads _threads;
+        Thread* _periodic_thread;
         std::atomic<bool> _running;
 };
 
 /****** Agent Implementation *****/
-Agent::Agent(CAN* bus, const std::string& name, Address address) : _address(address), _name(name) {
+Agent::Agent(CAN* bus, const std::string& name, Address address) : _address(address), _name(name), _periodic_thread(nullptr) {
     db<Agent>(INF) << "[Agent] " << _name << " created with address: " << _address.to_string() << "\n";
     if (!bus)
         throw std::invalid_argument("Gateway cannot be null");
@@ -78,7 +78,7 @@ Agent::~Agent() {
 }
 
 //Vehicle adds on creation
-void Agent::add_produced_type(Unit unit, Type type) {
+void Agent::add_observed_type(Unit unit, Type type) {
     db<Agent>(INF) << "[Agent] " << _name << " adding produced type: " << unit << " of type: " << static_cast<int>(type) << "\n";
     Condition c(unit, type);
     _can_observer = new Observer(c);
@@ -113,7 +113,7 @@ void* Agent::run(void* arg) {
     Agent* agent = reinterpret_cast<Agent*>(arg);
 
     while (agent->running()) {
-        Message* msg;
+        Message* msg = new Message();
         int received = agent->receive(msg);
 
         if (received <= 0) {
@@ -139,17 +139,12 @@ bool Agent::running() {
 }
 
 void Agent::handle_interest(Unit unit, Microseconds period) {
-    auto it = _periodic_threads.find(unit);
 
-    if (it == _periodic_threads.end()) {
-        Thread thread(this, &Agent::reply, unit);
-
-        thread.start(period);
-
-        _threads.emplace(unit, std::move(thread));
+    if (!_periodic_thread) {
+        _periodic_thread = new Thread(this, &Agent::reply, unit);
     } else {
         // Ajusta o período com MDC entre o atual e o novo
-        it->second.adjust_period(period);
+        _periodic_thread->adjust_period(period.count());
     }
 }
 

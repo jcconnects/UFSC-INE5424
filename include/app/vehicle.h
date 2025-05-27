@@ -32,7 +32,7 @@ class Vehicle {
         void stop();
 
         template <typename ComponentType>
-        void create_component();
+        void create_component(const std::string& name);
         
     private:
         unsigned int _id;
@@ -85,7 +85,7 @@ void Vehicle::stop() {
 }
 
 template <typename ComponentType>
-void Vehicle::create_component(std::string name) {
+void Vehicle::create_component(const std::string& name) {
     _components.push_back(std::make_unique<ComponentType>(_gateway->bus(), name));   
 }
 

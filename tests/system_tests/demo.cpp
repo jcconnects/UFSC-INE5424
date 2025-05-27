@@ -42,7 +42,7 @@ std::string setup_log_directory(unsigned int vehicle_id) {
     }
 }
 
-class Demo: TesCase {
+class Demo: public TestCase {
     public:
         Demo();
         ~Demo() = default;
@@ -51,13 +51,12 @@ class Demo: TesCase {
         void tearDown() override;
 
         /* TESTS */
-        void run_demo()
+        int run_demo();
     private:
         void run_vehicle(Vehicle* v);
-}
+};
 
 Demo::Demo() {
-    // Constructor implementation if needed
     TEST_INIT("system_demo");
     TEST_LOG("Application started!");
     DEFINE_TEST(run_demo);
@@ -69,10 +68,12 @@ void Demo::setUp() {
 
 void Demo::tearDown() {
     // Tear down code if needed
+    TEST_INIT("test teardown");
     TEST_LOG("Demo test case completed.");
 }
 
-void Demo::run_demo() {
+int Demo::run_demo() {
+    TEST_INIT("the demo test case");
     // Set number of test vehicles
     const unsigned int n_vehicles = 3;
 
@@ -189,5 +190,5 @@ int main(int argc, char* argv[]) {
     Demo demo;
     demo.run();
 
-    return 0;
+ return 0;
 }

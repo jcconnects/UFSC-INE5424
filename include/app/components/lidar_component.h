@@ -17,7 +17,7 @@
 
 class LidarComponent : public Agent {
     public:
-        LidarComponent(CAN* can, const std::string name = "LidarComponent");
+        LidarComponent(CAN* can, const std::string& name = "LidarComponent");
         ~LidarComponent() override = default;
 
         Agent::Value get(Agent::Unit unit) override;
@@ -34,7 +34,6 @@ class LidarComponent : public Agent {
 };
 
 /********** Lidar Component Implementation ***********/
-const unsigned int LidarComponent::PORT = static_cast<unsigned int>(Vehicle::Ports::LIDAR);
 
 LidarComponent::LidarComponent(CAN* can, const std::string& name) : Agent(can, name),
     _gen(_rd()),
@@ -44,10 +43,10 @@ LidarComponent::LidarComponent(CAN* can, const std::string& name) : Agent(can, n
     _delay_dist(80, 180),      // Milliseconds delay between scans
     _counter(0)  // Initialize counter for message numbering
 {
-    add_produced_type(DataTypes::EXTERNAL_POINT_CLOUD_XYZ, CAN::Message::Type::INSTEREST);
+    add_observed_type(static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), CAN::Message::Type::UNKNOWN);
 }
 
-Agent::Value get(Agent::Unit unit) {
+Agent::Value LidarComponent::get(Agent::Unit unit) {
     auto now_system = std::chrono::system_clock::now();
     auto time_us_system = std::chrono::duration_cast<std::chrono::microseconds>(now_system.time_since_epoch()).count();
 
@@ -68,7 +67,7 @@ Agent::Value get(Agent::Unit unit) {
     std::string payload = payload_ss.str();
 
     // Construct the full message string
-    std::string msg = "[" + Component::getName() + "] Vehicle " + std::to_string(vehicle()->id()) + " message " + std::to_string(_counter) + " at " + std::to_string(time_us_system) + ": " + payload;
+    std::string msg = "[" + name() + "] message " + std::to_string(_counter) + " at " + std::to_string(time_us_system) + ": " + payload;
 
     _counter++;
 

@@ -43,7 +43,7 @@ CameraComponent::CameraComponent(CAN* can, const std::string& name) : Agent(can,
     _label_dist(0, _labels.size() - 1),
     _delay_dist(50, 150) // Milliseconds delay between sends
 {   
-    add_produced_type(DataTypes::EXTERNAL_PIXEL_MATRIX, CAN::Message::Type::INSTEREST);
+    add_observed_type(DataTypes::EXTERNAL_PIXEL_MATRIX, CAN::Message::Type::INSTEREST);
 }
 
 Agent::Value get(Agent::Unit unit) {
