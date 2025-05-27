@@ -90,6 +90,10 @@ int Demo::run_demo() {
 
     // Create vehicle processes
     for (unsigned int id = 1; id <= n_vehicles; ++id) {
+
+        // sleep for 500 ms
+        usleep(500000);
+
         pid_t pid = fork();
 
         if (pid < 0) {
