@@ -6,11 +6,15 @@
 enum class DataTypes : std::uint32_t {
     /* Internal (bit 31 = 0) */
     
+    // Simple test units
+    UNIT_A                   = 0x00000001,
+    UNIT_B                   = 0x00000002,
+    
     // Camera
-    RGB_IMAGE                = 0x00000001,
-    VIDEO_STREAM             = 0x00000002,
-    PIXEL_MATRIX             = 0x00000003,
-    CAMERA_METADATA          = 0x00000004,
+    RGB_IMAGE                = 0x00000010,
+    VIDEO_STREAM             = 0x00000011,
+    PIXEL_MATRIX             = 0x00000012,
+    CAMERA_METADATA          = 0x00000013,
 
     // ECU
     SENSOR_DATA              = 0x00000101,
@@ -29,11 +33,15 @@ enum class DataTypes : std::uint32_t {
 
     /* External (bit 31 = 1) */
 
+    // Simple test units
+    EXTERNAL_UNIT_A                   = 0x80000001,
+    EXTERNAL_UNIT_B                   = 0x80000002,
+
     // Camera
-    EXTERNAL_RGB_IMAGE                = 0x80000001,
-    EXTERNAL_VIDEO_STREAM             = 0x80000002,
-    EXTERNAL_PIXEL_MATRIX             = 0x80000003,
-    EXTERNAL_CAMERA_METADATA          = 0x80000004,
+    EXTERNAL_RGB_IMAGE                = 0x80000010,
+    EXTERNAL_VIDEO_STREAM             = 0x80000011,
+    EXTERNAL_PIXEL_MATRIX             = 0x80000012,
+    EXTERNAL_CAMERA_METADATA          = 0x80000013,
 
     // ECU
     EXTERNAL_SENSOR_DATA              = 0x80000101,

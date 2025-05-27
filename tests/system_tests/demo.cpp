@@ -9,9 +9,10 @@
 
 #include "../../include/app/vehicle.h"
 #include "../../include/api/util/debug.h"
-#include "../../include/app/components/ecu_component.h"
-#include "../../include/app/components/ins_component.h"
-#include "../../include/app/components/lidar_component.h"
+#include "../../include/app/components/basic_producer_a.h"
+#include "../../include/app/components/basic_consumer_a.h"
+#include "../../include/app/components/basic_producer_b.h"
+#include "../../include/app/components/basic_consumer_b.h"
 #include "../testcase.h"
 #include "../test_utils.h"
 
@@ -155,18 +156,24 @@ void Demo::run_vehicle(Vehicle* v) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist_lifetime(3, 7); // Lifetime from 20 to 40 seconds
+    std::uniform_int_distribution<> dist_lifetime(3, 7); // Lifetime from 3 to 7 seconds
     std::uniform_int_distribution<> start_delay(0, 3);
     int delay = start_delay(gen);
     int lifetime = dist_lifetime(gen);
     unsigned int vehicle_id = v->id(); // Store ID before deletion
 
-    // Create all components
+    // Create simple components based on vehicle ID
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] creating components\n";
-    v->create_component<ECUComponent>("ECU1");
-    v->create_component<ECUComponent>("ECU2");
-    v->create_component<LidarComponent>("Lidar");
-    v->create_component<INSComponent>("INS");
+    
+    // Even ID vehicles produce A and consume B
+    // Odd ID vehicles produce B and consume A
+    if (vehicle_id % 2 == 0) {
+        v->create_component<BasicProducerA>("ProducerA");
+        v->create_component<BasicConsumerB>("ConsumerB");
+    } else {
+        v->create_component<BasicProducerB>("ProducerB");
+        v->create_component<BasicConsumerA>("ConsumerA");
+    }
 
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] components created, starting in " << delay << "s\n";
 

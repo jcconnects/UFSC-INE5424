@@ -74,8 +74,12 @@ Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address ad
     _can_observer = new Observer(c);
     _can->attach(_can_observer, c);
 
-    Microseconds period(1000);
-    send(unit, period); // Send initial INTEREST with zero period
+    // Only send initial INTEREST if this agent is a consumer (observing RESPONSE messages)
+    // Producers (observing INTEREST messages) should not send INTEREST
+    if (type == Type::RESPONSE) {
+        Microseconds period(1000);
+        send(unit, period); // Send initial INTEREST
+    }
 
     _running = true;
     int result = pthread_create(&_thread, nullptr, Agent::run, this);
@@ -179,6 +183,14 @@ bool Agent::running() {
 
 void Agent::handle_interest(Unit unit, Microseconds period) {
     db<Agent>(INF) << "[Agent] " << _name << " received INTEREST for unit: " << unit << " with period: " << period.count() << " microseconds\n";
+    
+    // Only respond to INTEREST if this agent is a producer (observing INTEREST messages)
+    // Consumers (observing RESPONSE messages) should not respond to INTEREST
+    if (_c.type() != Type::INTEREST) {
+        db<Agent>(WRN) << "[Agent] " << _name << " ignoring INTEREST message (not a producer)\n";
+        return;
+    }
+    
     if (!_periodic_thread) {
         _periodic_thread = new Thread(this, &Agent::reply, unit);
         _periodic_thread->start(period.count()); // Actually start the thread!
