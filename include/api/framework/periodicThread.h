@@ -95,6 +95,9 @@ void Periodic_Thread<Owner>::join() {
         // Send a signal to interrupt any blocked thread (critical for proper thread termination)
         if (_thread != 0) {
             pthread_kill(_thread, SIGUSR1);
+            // Actually join the thread
+            pthread_join(_thread, nullptr);
+            _thread = 0;
         }
     }
 }
@@ -104,7 +107,12 @@ void Periodic_Thread<Owner>::start(std::int64_t period) {
     if (!running()) {
         _period.store(period, std::memory_order_release);
         _running.store(true, std::memory_order_release);
-        _thread = pthread_create(&_thread, nullptr, Periodic_Thread::run, this);
+        // Fix: pthread_create returns error code, not thread ID
+        int result = pthread_create(&_thread, nullptr, Periodic_Thread::run, this);
+        if (result != 0) {
+            _running.store(false, std::memory_order_release);
+            throw std::runtime_error("Failed to create periodic thread");
+        }
     }
 }
 
@@ -148,7 +156,11 @@ void* Periodic_Thread<Owner>::run(void* arg) {
             return nullptr;
         }
 
-        thread->_task();
+        // Double-check running status before calling task
+        if (thread->running()) {
+            thread->_task();
+        }
+        
         std::this_thread::sleep_for(std::chrono::milliseconds(thread->period()));
     }
 

@@ -75,7 +75,7 @@ void Demo::tearDown() {
 int Demo::run_demo() {
     TEST_INIT("the demo test case");
     // Set number of test vehicles
-    const unsigned int n_vehicles = 3;
+    const unsigned int n_vehicles = 10;
 
     // Ensure tests/logs directory exists
     try {

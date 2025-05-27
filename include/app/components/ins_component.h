@@ -43,7 +43,7 @@ class INSComponent : public Agent {
         std::uniform_int_distribution<> _delay_dist;
 };
 
-INSComponent::INSComponent(CAN* can, Message::Origin addr, const std::string& name) : Agent(can, name, static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX), CAN::Message::Type::INTEREST, addr),
+INSComponent::INSComponent(CAN* can, Message::Origin addr, const std::string& name) : Agent(can, name, static_cast<std::uint32_t>(DataTypes::EXTERNAL_INERTIAL_POSITION), CAN::Message::Type::INTEREST, addr),
     _counter(0),
     _gen(_rd()),
     // Define realistic ranges for dummy data

@@ -228,6 +228,14 @@ Message<Channel> Message<Channel>::deserialize(const void* serialized, const uns
         }
 
         msg.serialize();
+        
+        db<Message<Channel>>(TRC) << "Message::deserialize() - type: " << static_cast<int>(msg.message_type()) 
+                                  << ", origin: " << msg.origin().to_string() 
+                                  << ", unit: " << msg.unit() 
+                                  << ", input size: " << size 
+                                  << ", final offset: " << offset << "\n";
+    } else {
+        db<Message<Channel>>(WRN) << "Message::deserialize() - failed to deserialize message of size " << size << "\n";
     }
 
     return msg;
@@ -297,11 +305,24 @@ void Message<Channel>::serialize() {
         append_microseconds(_period);
     else if (_message_type == Type::RESPONSE)
         append_value();
+        
+    db<Message<Channel>>(TRC) << "Message::serialize() - type: " << static_cast<int>(_message_type) 
+                              << ", origin: " << _origin.to_string() 
+                              << ", unit: " << _unit 
+                              << ", serialized size: " << _serialized_data.size() << "\n";
 }
 
 template <typename Channel>
 void Message<Channel>::append_origin() {
-    // TODO
+    // Serialize physical address
+    const auto& paddr = _origin.paddr();
+    const std::uint8_t* paddr_bytes = reinterpret_cast<const std::uint8_t*>(&paddr);
+    _serialized_data.insert(_serialized_data.end(), paddr_bytes, paddr_bytes + sizeof(Physical_Address));
+    
+    // Serialize port
+    const auto& port = _origin.port();
+    const std::uint8_t* port_bytes = reinterpret_cast<const std::uint8_t*>(&port);
+    _serialized_data.insert(_serialized_data.end(), port_bytes, port_bytes + sizeof(Port));
 }
 
 template <typename Channel>
@@ -311,12 +332,15 @@ void Message<Channel>::append_type() {
 
 template <typename Channel>
 void Message<Channel>::append_unit() {
-    // TODO
+    const std::uint8_t* unit_bytes = reinterpret_cast<const std::uint8_t*>(&_unit);
+    _serialized_data.insert(_serialized_data.end(), unit_bytes, unit_bytes + sizeof(Unit));
 }
 
 template <typename Channel>
 void Message<Channel>::append_microseconds(const Microseconds& value) {
-    // TODO
+    auto raw_value = value.count();
+    const std::uint8_t* value_bytes = reinterpret_cast<const std::uint8_t*>(&raw_value);
+    _serialized_data.insert(_serialized_data.end(), value_bytes, value_bytes + sizeof(Microseconds::rep));
 }
 
 template <typename Channel>

@@ -6,10 +6,12 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+#include <sstream>
 
 #include "api/network/bus.h"
 #include "api/framework/periodicThread.h"
 #include "api/util/debug.h"
+#include "api/util/csv_logger.h"
 #include "api/traits.h"
 
 
@@ -40,6 +42,10 @@ class Agent {
 
         std::string name() const { return _name; }
         
+        // CSV logging methods
+        void set_csv_logger(const std::string& log_dir);
+        void log_message(const Message& msg, const std::string& direction);
+        
     private:
         void handle_interest(Unit unit, Microseconds period);
         void reply(Unit unit);
@@ -53,6 +59,7 @@ class Agent {
         Thread* _periodic_thread;
         std::atomic<bool> _running;
         Condition _c;
+        std::unique_ptr<CSVLogger> _csv_logger;
 };
 
 /****** Agent Implementation *****/
@@ -71,23 +78,41 @@ Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address ad
     send(unit, period); // Send initial INTEREST with zero period
 
     _running = true;
-    pthread_create(&_thread, nullptr, Agent::run, this);
+    int result = pthread_create(&_thread, nullptr, Agent::run, this);
+    if (result != 0) {
+        _running = false;
+        throw std::runtime_error("Failed to create agent thread");
+    }
 }
 
 Agent::~Agent() {
+    // First, stop the running flag to prevent new operations
     _running.store(false, std::memory_order_release);
-    Message* msg = new Message();
-    _can_observer->update(_c, msg);
-    pthread_join(_thread, nullptr);
-
-    delete msg;
+    
+    // Stop periodic thread first if it exists - CRITICAL: Do this before anything else
     if (_periodic_thread) {
         _periodic_thread->join();
         delete _periodic_thread;
+        _periodic_thread = nullptr;
     }
+    
+    // Send a dummy message to wake up the main thread if it's waiting
+    Message* dummy_msg = new Message();
+    _can_observer->update(_c, dummy_msg);
+    
+    // Wait for the main thread to finish
+    pthread_join(_thread, nullptr);
+    
+    // Detach from CAN bus before deleting observer
     if (_can_observer) {
+        _can->detach(_can_observer, _c);
         delete _can_observer;
+        _can_observer = nullptr;
     }
+    
+    // Clean up the dummy message
+    delete dummy_msg;
+    
     db<Agent>(INF) << "[Agent] " << _name << " destroyed successfully\n";
 }
 
@@ -98,8 +123,10 @@ int Agent::send(Unit unit, Microseconds period) {
     
     Message msg(Message::Type::INTEREST, _address, unit, period);
     
+    // Log sent message to CSV
+    log_message(msg, "SEND");
+    
     int result = _can->send(&msg);
-
 
     if (!result)
         return -1; 
@@ -110,6 +137,9 @@ int Agent::send(Unit unit, Microseconds period) {
 int Agent::receive(Message* msg) {
     db<Agent>(INF) << "[Agent] " << _name << " waiting for messages...\n";
     (*msg) = *(_can_observer->updated());
+
+    // Log received message to CSV
+    log_message(*msg, "RECEIVE");
 
     return msg->size();
 }
@@ -151,6 +181,7 @@ void Agent::handle_interest(Unit unit, Microseconds period) {
     db<Agent>(INF) << "[Agent] " << _name << " received INTEREST for unit: " << unit << " with period: " << period.count() << " microseconds\n";
     if (!_periodic_thread) {
         _periodic_thread = new Thread(this, &Agent::reply, unit);
+        _periodic_thread->start(period.count()); // Actually start the thread!
     } else {
         // Ajusta o período com MDC entre o atual e o novo
         _periodic_thread->adjust_period(period.count());
@@ -159,12 +190,62 @@ void Agent::handle_interest(Unit unit, Microseconds period) {
 
 
 void Agent::reply(Unit unit) {
+    // Safety check: don't reply if agent is being destroyed
+    if (!running()) {
+        return;
+    }
+    
+    // Additional safety check: ensure periodic thread is still valid
+    if (!_periodic_thread || !_periodic_thread->running()) {
+        return;
+    }
+    
     db<Agent>(INF) << "[Agent] " << _name << " sending RESPONSE for unit: " << unit << "\n";
+    
+    // Final safety check before calling virtual method
+    if (!running()) {
+        return;
+    }
+    
     Value value = get(unit);
     Message msg(Message::Type::RESPONSE, _address, unit, Microseconds::zero(), value.data(), value.size());
+
+    // Log sent message to CSV
+    log_message(msg, "SEND");
 
     _can->send(&msg);
 }
 
+void Agent::set_csv_logger(const std::string& log_dir) {
+    std::string csv_file = log_dir + "/" + _name + "_messages.csv";
+    std::string header = "timestamp_us,message_type,direction,origin,destination,unit,period_us,value_size,latency_us";
+    _csv_logger = std::make_unique<CSVLogger>(csv_file, header);
+}
+
+void Agent::log_message(const Message& msg, const std::string& direction) {
+    if (!_csv_logger || !_csv_logger->is_open()) return;
+    
+    auto now = std::chrono::system_clock::now();
+    auto timestamp_us = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    
+    // Calculate latency for received messages
+    auto latency_us = 0L;
+    if (direction == "RECEIVE") {
+        latency_us = timestamp_us - msg.timestamp().count();
+    }
+    
+    std::ostringstream csv_line;
+    csv_line << timestamp_us << ","
+             << (msg.message_type() == Message::Type::INTEREST ? "INTEREST" : "RESPONSE") << ","
+             << direction << ","
+             << (direction == "SEND" ? _address.to_string() : msg.origin().to_string()) << ","
+             << (direction == "SEND" ? "BROADCAST" : _address.to_string()) << ","
+             << msg.unit() << ","
+             << msg.period().count() << ","
+             << msg.value_size() << ","
+             << latency_us;
+    
+    _csv_logger->log(csv_line.str());
+}
 
 #endif // AGENT_H
