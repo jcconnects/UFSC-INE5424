@@ -151,8 +151,8 @@ void Demo::run_vehicle(Vehicle* v) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist_lifetime(20, 40); // Lifetime from 20 to 40 seconds
-    std::uniform_int_distribution<> start_delay(0, 10);
+    std::uniform_int_distribution<> dist_lifetime(3, 7); // Lifetime from 20 to 40 seconds
+    std::uniform_int_distribution<> start_delay(0, 3);
     int delay = start_delay(gen);
     int lifetime = dist_lifetime(gen);
     unsigned int vehicle_id = v->id(); // Store ID before deletion
@@ -164,7 +164,11 @@ void Demo::run_vehicle(Vehicle* v) {
     v->create_component<LidarComponent>("Lidar");
     v->create_component<INSComponent>("INS");
 
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] components created, starting in " << delay << "s\n";
+
     sleep(delay); // Simulate startup delay
+
+    db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] starting vehicle after " << delay << "s delay\n";
 
     // Start the vehicle
     v->start();
@@ -177,6 +181,7 @@ void Demo::run_vehicle(Vehicle* v) {
     try {
         // Stop vehicle and clean up
         v->stop();
+        db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] stopped, cleaning up\n";
         delete v;
         db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] terminated cleanly\n";
     } catch (const std::exception& e) {

@@ -55,7 +55,9 @@ Communicator<Channel>::Communicator(Channel* channel, Address address) : Observe
 
 template <typename Channel>
 Communicator<Channel>::~Communicator() {
+    db<Communicator>(TRC) << "Communicator<Channel>::~Communicator() called!\n";
     _channel->detach(this, _address);
+    db<Communicator>(INF) << "[Communicator] Channel detached from address: " << _address.to_string() << "\n";
 }
 
 template <typename Channel>
@@ -74,6 +76,7 @@ bool Communicator<Channel>::receive(Message_T* message) {
     
     Buffer* buf = Observer::updated();
     if (!buf) {
+        db<Communicator>(WRN) << "[Communicator] No buffer available for receiving message!\n";
         return false;
     }
 

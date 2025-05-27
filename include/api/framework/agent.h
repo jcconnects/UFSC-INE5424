@@ -25,11 +25,8 @@ class Agent {
         typedef CAN::Observer Observer;
 
     
-        Agent(CAN* bus, const std::string& name, Address address = {});
+        Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address = {});
         virtual ~Agent();
-
-        // Vehicle adds on creation
-        void add_observed_type(Unit unit, Type type) ;
 
         virtual Value get(Unit type) = 0;
 
@@ -55,15 +52,23 @@ class Agent {
         pthread_t _thread;
         Thread* _periodic_thread;
         std::atomic<bool> _running;
+        Condition _c;
 };
 
 /****** Agent Implementation *****/
-Agent::Agent(CAN* bus, const std::string& name, Address address) : _address(address), _name(name), _periodic_thread(nullptr) {
+Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address) : _address(address), _name(name), _periodic_thread(nullptr) {
     db<Agent>(INF) << "[Agent] " << _name << " created with address: " << _address.to_string() << "\n";
     if (!bus)
         throw std::invalid_argument("Gateway cannot be null");
     
     _can = bus;
+    Condition c(unit, type);
+    _c = c;
+    _can_observer = new Observer(c);
+    _can->attach(_can_observer, c);
+
+    Microseconds period(1000);
+    send(unit, period); // Send initial INTEREST with zero period
 
     _running = true;
     pthread_create(&_thread, nullptr, Agent::run, this);
@@ -71,18 +76,19 @@ Agent::Agent(CAN* bus, const std::string& name, Address address) : _address(addr
 
 Agent::~Agent() {
     _running.store(false, std::memory_order_release);
+    Message* msg = new Message();
+    _can_observer->update(_c, msg);
     pthread_join(_thread, nullptr);
 
-    delete _can;
-    delete _can_observer;
-}
-
-//Vehicle adds on creation
-void Agent::add_observed_type(Unit unit, Type type) {
-    db<Agent>(INF) << "[Agent] " << _name << " adding produced type: " << unit << " of type: " << static_cast<int>(type) << "\n";
-    Condition c(unit, type);
-    _can_observer = new Observer(c);
-    _can->attach(_can_observer, c);
+    delete msg;
+    if (_periodic_thread) {
+        _periodic_thread->join();
+        delete _periodic_thread;
+    }
+    if (_can_observer) {
+        delete _can_observer;
+    }
+    db<Agent>(INF) << "[Agent] " << _name << " destroyed successfully\n";
 }
 
 int Agent::send(Unit unit, Microseconds period) {
@@ -91,21 +97,21 @@ int Agent::send(Unit unit, Microseconds period) {
         return 0;
     
     Message msg(Message::Type::INTEREST, _address, unit, period);
+    
     int result = _can->send(&msg);
+
 
     if (!result)
         return -1; 
-
-    // Gateway attaches automatically on receive
-    // _gateway->attach_interest(&_response_obs, unit);
 
     return result;
 }
 
 int Agent::receive(Message* msg) {
-    (*msg) = (*_can_observer->updated());
+    db<Agent>(INF) << "[Agent] " << _name << " waiting for messages...\n";
+    (*msg) = *(_can_observer->updated());
 
-    return msg->value_size();
+    return msg->size();
 }
 
 
@@ -116,12 +122,15 @@ void* Agent::run(void* arg) {
         Message* msg = new Message();
         int received = agent->receive(msg);
 
-        if (received <= 0) {
-            db<Agent>(WRN) << "[Agent] " << agent->_name << " received an empty or invalid message\n";
+        if (received <= 0 || !msg) {
+            db<Agent>(WRN) << "[Agent] " << agent->name() << " received an empty (received=" << received << ") or invalid message\n";
             delete msg; // Clean up the message object
 
             continue; // Skip processing if no valid message was received
         }
+
+        db<Agent>(INF) << "[Agent] " << agent->name() << " received message of type: " << static_cast<int>(msg->message_type()) 
+                       << " for unit: " << msg->unit() << " with size: " << msg->value_size() << "\n";
 
         if (msg->message_type() == Message::Type::RESPONSE) 
             agent->handle_response(msg);
@@ -139,7 +148,7 @@ bool Agent::running() {
 }
 
 void Agent::handle_interest(Unit unit, Microseconds period) {
-
+    db<Agent>(INF) << "[Agent] " << _name << " received INTEREST for unit: " << unit << " with period: " << period.count() << " microseconds\n";
     if (!_periodic_thread) {
         _periodic_thread = new Thread(this, &Agent::reply, unit);
     } else {

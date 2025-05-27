@@ -102,6 +102,12 @@ Message<Channel>::Message(Type message_type, const Origin& origin, Unit unit, Mi
     _timestamp = Microseconds(std::chrono::duration_cast<std::chrono::microseconds>(now_system.time_since_epoch()).count());
 
     _message_type = message_type;
+
+    db<Message<Channel>>(TRC) << "Message::Message() called with type: " << static_cast<int>(_message_type) 
+        << ", origin: " << origin.to_string() 
+        << ", unit: " << unit 
+        << ", period: " << period.count() 
+        << ", value_size: " << value_size << "\n";
     
     if (_message_type != Type::UNKNOWN && _message_type != Type::INVALID) {
         this->origin(origin);
@@ -121,12 +127,18 @@ Message<Channel>::Message(Type message_type, const Origin& origin, Unit unit, Mi
 
 template <typename Channel>
 Message<Channel>::Message(const Message& other) {
+    value(other.value(), other.value_size());
     _message_type = other.message_type();
     _origin = other.origin();
     _timestamp = other.timestamp();
     _period = other.period();
     _unit = other.unit();
-    value(other.value(), other.value_size());
+    db<Message<Channel>>(TRC) << "Message::Message(const Message&) called with type: " 
+        << static_cast<int>(_message_type) 
+        << ", origin: " << _origin.to_string() 
+        << ", unit: " << _unit 
+        << ", period: " << _period.count() 
+        << ", value_size: " << _value.size() << "\n";
     // TODO:: serialized data
 }
 
@@ -264,7 +276,6 @@ void Message<Channel>::period(const Microseconds period) {
 template <typename Channel>
 void Message<Channel>::value(const void* data, const unsigned int size) {
     if (!data || !size) {
-        message_type(Type::INVALID);
         return;
     }
 

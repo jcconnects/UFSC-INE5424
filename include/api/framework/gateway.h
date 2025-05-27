@@ -31,7 +31,7 @@ class Gateway {
         static const unsigned int MAX_MESSAGE_SIZE = Protocol::MTU;
         const unsigned int PORT = 0;
 
-        Gateway(unsigned int id);
+        Gateway(const unsigned int id);
         ~Gateway();
 
         bool send(Message* message);
@@ -63,7 +63,7 @@ class Gateway {
 };
 
 /******** Gateway Implementation ********/
-Gateway::Gateway(unsigned int id) : _id(id) {
+Gateway::Gateway(const unsigned int id) : _id(id) {
     _network = new Network(id);
     
     // Sets communicator
@@ -87,9 +87,8 @@ Gateway::~Gateway() {
     pthread_kill(_internal_thread, SIGUSR1);
 
     delete _comms;
-    delete _network;
-    delete _can;
     delete _can_observer;
+    delete _network;
 }
 
 bool Gateway::send(Message* message) {

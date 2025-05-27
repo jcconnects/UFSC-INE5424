@@ -18,7 +18,7 @@
 
 class CameraComponent : public Agent {
     public:
-        CameraComponent(CAN* can, const std::string name = "CameraComponent");
+        CameraComponent(CAN* can, const Message::Origin addr, const std::string name = "CameraComponent");
         ~CameraComponent() = default;
 
         Agent::Value get(Agent::Unit unit) override;
@@ -36,15 +36,13 @@ class CameraComponent : public Agent {
 };
 
 /******** Camera Component Implementation *********/
-CameraComponent::CameraComponent(CAN* can, const std::string& name) : Agent(can, name),
+CameraComponent::CameraComponent(CAN* can, const  Message::Origin addr, const std::string& name) : Agent(can, name, DataTypes::EXTERNAL_PIXEL_MATRIX, CAN::Message::Type::INSTEREST, addr),
     _gen(_rd()),
     _coord_dist(0.0, 1920.0), // Example camera resolution width
     _size_dist(50.0, 300.0),   // Example bounding box size
     _label_dist(0, _labels.size() - 1),
     _delay_dist(50, 150) // Milliseconds delay between sends
-{   
-    add_observed_type(DataTypes::EXTERNAL_PIXEL_MATRIX, CAN::Message::Type::INSTEREST);
-}
+{}
 
 Agent::Value get(Agent::Unit unit) {
     switch (unit) {

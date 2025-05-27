@@ -11,7 +11,7 @@ class Network {
         typedef Initializer::Message Message;
         typedef Initializer::Communicator_T Communicator;
 
-        Network(unsigned int id = 0);
+        Network(const unsigned int id = 0);
         ~Network();
 
         Protocol* channel();
@@ -25,7 +25,7 @@ class Network {
         CAN* _can;
 };
 
-Network::Network(unsigned int id) : _id(id) {
+Network::Network(const unsigned int id) : _id(id) {
     _nic = Initializer::create_nic();
     if (id) {
         NIC::Address addr; // We don't set the address here anymore;
@@ -44,8 +44,8 @@ Network::Network(unsigned int id) : _id(id) {
 
 Network::~Network() {
     delete _protocol;
+    delete _can;
     delete _nic;
-    delete _can; // Assuming _can is created somewhere else in the code
 }
 
 Network::Protocol* Network::channel() {

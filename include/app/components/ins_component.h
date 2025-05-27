@@ -23,7 +23,7 @@ constexpr double DEG_TO_RAD_INS = PI_INS / 180.0;
 
 class INSComponent : public Agent {
     public:
-        INSComponent(CAN* can, const std::string& name = "INSComponent");
+        INSComponent(CAN* can, Message::Origin addr, const std::string& name = "INSComponent");
         ~INSComponent() override = default;
 
         Agent::Value get(Agent::Unit unit) override;
@@ -43,7 +43,7 @@ class INSComponent : public Agent {
         std::uniform_int_distribution<> _delay_dist;
 };
 
-INSComponent::INSComponent(CAN* can, const std::string& name) : Agent(can, name),
+INSComponent::INSComponent(CAN* can, Message::Origin addr, const std::string& name) : Agent(can, name, static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX), CAN::Message::Type::INTEREST, addr),
     _counter(0),
     _gen(_rd()),
     // Define realistic ranges for dummy data
@@ -55,9 +55,7 @@ INSComponent::INSComponent(CAN* can, const std::string& name) : Agent(can, name)
     _gyro_dist(-PI_INS, PI_INS),        // Gyro rad/s (+/- 180 deg/s)
     _heading_dist(0, 2.0 * PI_INS),  // Heading rad (0 to 360 deg)
     _delay_dist(90, 110)        // Milliseconds delay (INS typically ~10Hz)
-{
-    add_observed_type(static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX), CAN::Message::Type::INTEREST);
-}
+{}
 
 Agent::Value INSComponent::get(Agent::Unit unit) {
     auto now_system = std::chrono::system_clock::now();

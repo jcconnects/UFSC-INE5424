@@ -13,7 +13,7 @@
 class ECUComponent : public Agent {
     public:
         // ECU receives a port for identification
-        ECUComponent(CAN* can, const std::string& name = "ECUComponent");
+        ECUComponent(CAN* can, const Message::Origin addr, const std::string& name = "ECUComponent");
         ~ECUComponent() = default;
 
         void handle_response(Message* msg) override;
@@ -30,10 +30,7 @@ class ECUComponent : public Agent {
 };
 
 /*********** ECU Component Implementation **********/
-ECUComponent::ECUComponent(CAN* can, const std::string& name) : Agent(can, name) {
-    // TODO - review this so that ECU can receive other message types
-    add_observed_type(static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), CAN::Message::Type::UNKNOWN);
-}
+ECUComponent::ECUComponent(CAN* can, const Message::Origin addr, const std::string& name) : Agent(can, name, static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), CAN::Message::Type::UNKNOWN, addr) {}
 
 void ECUComponent::handle_response(Message* msg) {
     auto recv_time = std::chrono::system_clock::now();

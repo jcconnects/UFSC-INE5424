@@ -66,6 +66,7 @@ class CAN : public Concurrent_Observed<Initializer::Message, Condition>{
 };
 
 int CAN::send(Message* msg) {
+    db<CAN>(TRC) << "CAN::send() called!\n";
     Condition c(msg->unit(), msg->message_type());
     if (!notify(msg, c))
         return 0;
@@ -81,9 +82,7 @@ bool CAN::notify(Message* buf, Condition c) {
     
     for (typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
 
-
         if ((*obs)->rank() == c || (*obs)->rank().type() == Condition::Type::UNKNOWN) {
-            db<CAN>(INF) << "Notifying observer: type " << static_cast<int>((*obs)->rank().type()) << " unit " << static_cast<int>((*obs)->rank().unit()) << " ALL " << static_cast<int>(Condition::Type::UNKNOWN) << "\n";
             Message* msg = new Message(*buf);
             (*obs)->update((*obs)->rank(), msg);
             notified = true;

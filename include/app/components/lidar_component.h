@@ -17,7 +17,7 @@
 
 class LidarComponent : public Agent {
     public:
-        LidarComponent(CAN* can, const std::string& name = "LidarComponent");
+        LidarComponent(CAN* can, const Message::Origin addr, const std::string& name = "LidarComponent");
         ~LidarComponent() override = default;
 
         Agent::Value get(Agent::Unit unit) override;
@@ -35,16 +35,14 @@ class LidarComponent : public Agent {
 
 /********** Lidar Component Implementation ***********/
 
-LidarComponent::LidarComponent(CAN* can, const std::string& name) : Agent(can, name),
+LidarComponent::LidarComponent(CAN* can, const Message::Origin addr, const std::string& name) : Agent(can, name, static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), CAN::Message::Type::UNKNOWN, addr),
     _gen(_rd()),
     _coord_dist(-50.0, 50.0),   // Example Lidar range meters
     _intensity_dist(0.1, 1.0), // Example intensity value
     _num_points_dist(20, 50), // Number of points per scan
     _delay_dist(80, 180),      // Milliseconds delay between scans
     _counter(0)  // Initialize counter for message numbering
-{
-    add_observed_type(static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), CAN::Message::Type::UNKNOWN);
-}
+{}
 
 Agent::Value LidarComponent::get(Agent::Unit unit) {
     auto now_system = std::chrono::system_clock::now();

@@ -106,13 +106,14 @@ NIC<Engine>::NIC() {
 
     // Setting default address
     _address = Engine::mac_address();
+
 }
 
 template <typename Engine>
 NIC<Engine>::~NIC() {
     sem_destroy(&_buffer_sem);
     sem_destroy(&_binary_sem);
-
+    db<NIC>(INF) << "[NIC] semaphores destroyed\n";
     // Engine stops itself on its own
 }
 

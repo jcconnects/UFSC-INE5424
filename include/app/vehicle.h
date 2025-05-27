@@ -58,7 +58,9 @@ Vehicle::~Vehicle() {
     _components.clear(); // Explicitly clear vector
 
     // Protocol and NIC are owned by Vehicle in this design
+    db<Vehicle>(TRC) << "Vehicle::~Vehicle() called for ID " << _id << "!\n";
     delete _gateway;
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] destroyed successfully.\n";
 }
 
 void Vehicle::start() {
@@ -82,11 +84,12 @@ void Vehicle::stop() {
     }
 
     _running.store(false, std::memory_order_release); // Mark vehicle as stopped
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] stopped.\n";
 }
 
 template <typename ComponentType>
 void Vehicle::create_component(const std::string& name) {
-    _components.push_back(std::make_unique<ComponentType>(_gateway->bus(), name));   
+    _components.push_back(std::make_unique<ComponentType>(_gateway->bus(), _gateway->address(), name));   
 }
 
 const unsigned int Vehicle::id() const {
