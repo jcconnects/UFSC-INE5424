@@ -99,6 +99,9 @@ class Protocol: private NIC::Observer
         int send(Address from, Address to, const void* data, unsigned int size);
         int receive(Buffer* buf, Address *from, void* data, unsigned int size);
 
+        // Method to free a buffer, crucial for Communicator to prevent leaks
+        void free(Buffer* buf);
+
         static void attach(Observer* obs, Address address);
         static void detach(Observer* obs, Address address);
 
@@ -250,6 +253,14 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
 
     if (!Protocol::_observed.notify(buf)) { // Notify every listener
         db<Protocol>(INF) << "[Protocol] data received, but no one was notified for port. Releasing buffer.\n";
+        _nic->free(buf);
+    }
+}
+
+// Implementation for the new free method
+template <typename NIC>
+void Protocol<NIC>::free(Buffer* buf) {
+    if (_nic) {
         _nic->free(buf);
     }
 }

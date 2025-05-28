@@ -1,10 +1,10 @@
 #ifndef CAN_H
 #define CAN_H
 
-#include "api/util/observed.h"
-#include "api/traits.h"
-#include "api/util/debug.h"
-#include "api/network/initializer.h"
+#include "../util/observed.h"
+#include "../traits.h"
+#include "../util/debug.h"
+#include "initializer.h"
 #include <cstring>
 
 class Condition {

@@ -18,9 +18,9 @@
 #include <pthread.h>
 #include <atomic>
 
-#include "api/network/ethernet.h"
-#include "api/traits.h"
-#include "api/util/debug.h"
+#include "ethernet.h"
+#include "../traits.h"
+#include "../util/debug.h"
 
 
 class SocketEngine{
@@ -97,7 +97,7 @@ void SocketEngine::start() {
 }
 
 void SocketEngine::stop() {
-    db<SocketEngine>(TRC) << "SocketEngine::run() called!\n";
+    db<SocketEngine>(TRC) << "SocketEngine::stop() called!\n";
     
     if (!running()) return;
 
@@ -106,7 +106,18 @@ void SocketEngine::stop() {
     std::uint64_t u = 1;
     write(_stop_ev, &u, sizeof(u));
 
-    pthread_join(_receive_thread, nullptr);
+    // Join the receive thread if it exists
+    if (_receive_thread != 0) {
+        int ret = pthread_join(_receive_thread, nullptr);
+        if (ret == 0) {
+            db<SocketEngine>(INF) << "[SocketEngine] successfully stopped!\n";
+        } else {
+            db<SocketEngine>(ERR) << "[SocketEngine] failed to join thread with error: " << ret << "\n";
+        }
+    } else {
+        db<SocketEngine>(ERR) << "[SocketEngine] receive thread is not running!\n";
+    }
+
     db<SocketEngine>(INF) << "[SocketEngine] sucessfully stopped!\n";
 }
 

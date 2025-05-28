@@ -43,9 +43,9 @@ Network::Network(const unsigned int id) : _id(id) {
 }
 
 Network::~Network() {
-    delete _protocol;
-    delete _can;
     delete _nic;
+    delete _can;
+    delete _protocol;
 }
 
 Network::Protocol* Network::channel() {

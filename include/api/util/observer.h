@@ -2,7 +2,7 @@
 #define OBSERVER_H
 
 #include <semaphore.h>
-#include "api/util/list.h"
+#include "list.h"
 
 // Forward declarations for Conditionally_Data_Observed class
 template <typename T, typename Condition>

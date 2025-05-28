@@ -1,10 +1,10 @@
 #ifndef COMMUNICATOR_H
 #define COMMUNICATOR_H
 
-#include "api/traits.h"
-#include "api/network/message.h"
-#include "api/util/observer.h"
-#include "api/util/debug.h"
+#include "../traits.h"
+#include "message.h"
+#include "../util/observer.h"
+#include "../util/debug.h"
 
 template <typename Channel>
 class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data, typename Channel::Observer::Observing_Condition>
@@ -26,11 +26,15 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         bool send(const Message_T* message);
         bool receive(Message_T* message);
 
+
         // Address getter
         const Address& address() const;
 
         // Release thread waiting for buffer
         void release();
+
+        // Atomic variable running
+        std::atomic<bool> _running;
 
         // Deleted copy constructor and assignment operator to prevent copying
         Communicator(const Communicator&) = delete;
@@ -51,19 +55,39 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
 template <typename Channel>
 Communicator<Channel>::Communicator(Channel* channel, Address address) : Observer(address.port()), _channel(channel), _address(address) {
     _channel->attach(this, address);
+    _running.store(true, std::memory_order_release);
 }
 
 template <typename Channel>
 Communicator<Channel>::~Communicator() {
-    db<Communicator>(TRC) << "Communicator<Channel>::~Communicator() called!\n";
+    db<Communicator>(TRC) << "Communicator<Channel>::~Communicator() called for address: " << _address.to_string() << "\n";
+    
     _channel->detach(this, _address);
     db<Communicator>(INF) << "[Communicator] Channel detached from address: " << _address.to_string() << "\n";
+
+    // Free any pending buffers to prevent leaks and NIC semaphore starvation
+    // The _data member is inherited from Conditional_Data_Observer (List<Buffer*>)
+    while (!this->_data.empty()) {
+        Buffer* pending_buf = this->_data.remove(); // Uses List::remove() which should get from head
+        if (pending_buf) {
+            db<Communicator>(WRN) << "[Communicator] Destructor: Freeing pending buffer for address " << _address.to_string() << "\n";
+            // Assuming Channel (Protocol) has a method to free buffers back to the NIC
+            // This typically would be _channel->nic()->free(pending_buf) or _channel->free_buffer(pending_buf)
+            // For now, let's assume _channel has a free method that does the right thing.
+            _channel->free(pending_buf); 
+        }
+    }
 }
 
 template <typename Channel>
 bool Communicator<Channel>::send(const Message_T* message) {
     db<Communicator>(TRC) << "Communicator<Channel>::send() called!\n";
     
+    if (!_running.load(std::memory_order_acquire)) {
+        db<Communicator>(WRN) << "[Communicator] Not running, skipping send!\n";
+        return false;
+    }
+
     int result = _channel->send(_address, Address::BROADCAST, message->data(), message->size());
     db<Communicator>(INF) << "[Communicator] Channel::send() return value " << std::to_string(result) << "\n";
     
@@ -74,6 +98,11 @@ template <typename Channel>
 bool Communicator<Channel>::receive(Message_T* message) {
     db<Communicator>(TRC) << "Communicator<Channel>::receive() called!\n";
     
+    if (!_running.load(std::memory_order_acquire)) {
+        db<Communicator>(WRN) << "[Communicator] Not running, skipping receive!\n";
+        return false;
+    }
+
     Buffer* buf = Observer::updated();
     if (!buf) {
         db<Communicator>(WRN) << "[Communicator] No buffer available for receiving message!\n";
@@ -97,6 +126,7 @@ bool Communicator<Channel>::receive(Message_T* message) {
 
 template <typename Channel>
 void Communicator<Channel>::release() {
+    _running.store(false, std::memory_order_release);
     update(nullptr, this->rank(), nullptr);
 }
 

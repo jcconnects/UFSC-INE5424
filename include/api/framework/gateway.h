@@ -98,8 +98,17 @@ Gateway::Gateway(const unsigned int id) : _id(id) {
 
 Gateway::~Gateway() {
     db<Gateway>(TRC) << "Gateway::~Gateway() called for ID " << _id << "!\n";
-    
     _running.store(false, std::memory_order_release);
+    
+    // CRITICAL FIX: Detach observer from CAN bus before deleting
+    if (_can_observer) {
+        Condition c(0, Message::Type::UNKNOWN);
+        _can->detach(_can_observer, c);
+        delete _can_observer;
+        _can_observer = nullptr;
+    }
+    delete _network;
+    
     _comms->release();
 
     // Send signals to interrupt threads
@@ -110,16 +119,7 @@ Gateway::~Gateway() {
     pthread_join(_receive_thread, nullptr);
     pthread_join(_internal_thread, nullptr);
 
-    // CRITICAL FIX: Detach observer from CAN bus before deleting
-    if (_can_observer) {
-        Condition c(0, Message::Type::UNKNOWN);
-        _can->detach(_can_observer, c);
-        delete _can_observer;
-        _can_observer = nullptr;
-    }
-    
     delete _comms;
-    delete _network;
     
     db<Gateway>(INF) << "[Gateway " << _id << "] destroyed successfully\n";
 }

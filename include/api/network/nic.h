@@ -111,6 +111,9 @@ NIC<Engine>::NIC() {
 
 template <typename Engine>
 NIC<Engine>::~NIC() {
+    // Destroy engine first
+    Engine::stop();
+
     sem_destroy(&_buffer_sem);
     sem_destroy(&_binary_sem);
     db<NIC>(INF) << "[NIC] semaphores destroyed\n";
