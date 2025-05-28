@@ -6,6 +6,24 @@
 #include <vector>
 #include <chrono>
 #include "../util/debug.h"
+#include "api/framework/clock.h"  // Include Clock for synchronized timestamps
+
+/**
+ * @brief Template class for network messages with Clock integration
+ * 
+ * This Message class is integrated with the Clock singleton to provide
+ * synchronized timestamps across the distributed system. When messages
+ * are created, they automatically use the Clock's getSynchronizedTime()
+ * method instead of local system time, ensuring temporal consistency
+ * in a PTP-synchronized network.
+ * 
+ * Clock Integration Features:
+ * - Automatic synchronized timestamping in constructor
+ * - Static utility methods for getting synchronized timestamps
+ * - Clock synchronization status checking
+ * 
+ * @tparam Protocol The network protocol type (e.g., Ethernet)
+ */
 
 
 template <typename Channel>
@@ -48,6 +66,10 @@ class Message {
         const void* data() const;
         const unsigned int size() const;
         static Message deserialize(const void* serialized, const unsigned int size);
+
+        // Clock integration utilities
+        static Microseconds getSynchronizedTimestamp();
+        static bool isClockSynchronized();
         
         // Public Setters
         void message_type(const Type message_type);
@@ -100,9 +122,11 @@ Message<Channel>::Message(Type message_type, const Origin& origin, Unit unit, Mi
     _period(ZERO),
     _value()
 {
-    auto now_system = std::chrono::system_clock::now();
-    _timestamp = Microseconds(std::chrono::duration_cast<std::chrono::microseconds>(now_system.time_since_epoch()).count());
-
+    // Use Clock singleton for synchronized timestamps instead of system_clock
+    auto& clock = Clock::getInstance();
+    bool is_synchronized;
+    auto synchronized_time = clock.getSynchronizedTime(&is_synchronized);
+    _timestamp = Microseconds(std::chrono::duration_cast<std::chrono::microseconds>(synchronized_time.time_since_epoch()).count());
     _message_type = message_type;
 
     db<Message<Channel>>(TRC) << "Message::Message() called with type: " << static_cast<int>(_message_type) 
@@ -401,6 +425,21 @@ typename Message<Channel>::Microseconds Message<Channel>::extract_microseconds(c
     offset += rep_size;
 
     return Microseconds(raw_value);
+}
+
+// Clock integration utility method implementations
+template <typename Protocol>
+typename Message<Protocol>::Microseconds Message<Protocol>::getSynchronizedTimestamp() {
+    auto& clock = Clock::getInstance();
+    bool sync;
+    auto synchronized_time = clock.getSynchronizedTime(&sync);
+    return Microseconds(std::chrono::duration_cast<std::chrono::microseconds>(synchronized_time.time_since_epoch()).count());
+}
+
+template <typename Protocol>
+bool Message<Protocol>::isClockSynchronized() {
+    auto& clock = Clock::getInstance();
+    return clock.isFullySynchronized();
 }
 
 #endif // MESSAGE_H

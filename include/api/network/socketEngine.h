@@ -104,7 +104,9 @@ void SocketEngine::stop() {
     _running.store(false, std::memory_order_release);
 
     std::uint64_t u = 1;
-    write(_stop_ev, &u, sizeof(u));
+    db<SocketEngine>(TRC) << "[SocketEngine] sending stop signal to receive thread\n";
+    while (static_cast<long unsigned int>(write(_stop_ev, &u, sizeof(u))) < sizeof(u)) {}
+    db<SocketEngine>(TRC) << "[SocketEngine] stop signal sent to receive thread\n";
 
     // Join the receive thread if it exists
     if (_receive_thread != 0) {

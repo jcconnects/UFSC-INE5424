@@ -67,9 +67,6 @@ Vehicle::~Vehicle() {
         stop();
     }
 
-    // Give components time to finish their current operations
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
     // Components are managed by unique_ptr, destruction is automatic.
     // But we clear them explicitly to ensure proper destruction order
     _components.clear();

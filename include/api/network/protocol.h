@@ -10,6 +10,7 @@
 #include "api/util/observed.h"
 #include "api/util/observer.h"
 #include "api/network/ethernet.h"
+#include "api/framework/clock.h"  // Include Clock for timestamping
 
 // Protocol implementation that works with the real Communicator
 template <typename NIC>
@@ -46,21 +47,58 @@ class Protocol: private NIC::Observer
                 unsigned int _size;
         };
         
-        static const unsigned int MTU = NIC::MTU - sizeof(Header);
+                // Timestamp fields structure for NIC-level timestamping
+        struct TimestampFields {
+            bool is_clock_synchronized;      // Clock synchronization status (filled by Protocol on send)
+            TimestampType tx_timestamp;      // Filled by NIC on send
+            TimestampType rx_timestamp;      // Filled by NIC on receive
+            
+            TimestampFields() : 
+                is_clock_synchronized(false),
+                tx_timestamp(TimestampType::min()), 
+                rx_timestamp(TimestampType::min()) {}
+        };
+        
+        static const unsigned int MTU = NIC::MTU - sizeof(Header) - sizeof(TimestampFields);
         typedef std::uint8_t Data[MTU];
         
-        // Packet class that includes header and data
+        // Packet class that includes header, timestamp fields, and data
         class Packet: public Header {
             public:
                 Packet() {}
                 
                 Header* header() { return this; }
+
+                TimestampFields* timestamps() { 
+                    return reinterpret_cast<TimestampFields*>(
+                        reinterpret_cast<uint8_t*>(this) + sizeof(Header)
+                    ); 
+                }
                 
                 template<typename T>
-                T* data() { return reinterpret_cast<T*>(_data); }
+                T* data() { 
+                    return reinterpret_cast<T*>(
+                        reinterpret_cast<uint8_t*>(this) + sizeof(Header) + sizeof(TimestampFields)
+                    ); 
+                }
+                
+                // Calculate offset to timestamp fields from start of packet
+                static constexpr unsigned int sync_status_offset() {
+                    return sizeof(Header) + offsetof(TimestampFields, is_clock_synchronized);
+                }
+                
+                static constexpr unsigned int tx_timestamp_offset() {
+                    return sizeof(Header) + offsetof(TimestampFields, tx_timestamp);
+                }
+                
+                static constexpr unsigned int rx_timestamp_offset() {
+                    return sizeof(Header) + offsetof(TimestampFields, rx_timestamp);
+                }
                 
             private:
                 Data _data;
+                // Note: Actual timestamp fields and data are accessed via pointers
+                // to maintain proper memory layout
         } __attribute__((packed));
         
         // Address class for Protocol layer
@@ -181,7 +219,7 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     db<Protocol>(TRC) << "Protocol<NIC>::send() called!\n";
 
     // Allocate buffer for the entire frame -> NIC alloc adds Frame Header size (this is better for independency)
-    unsigned int packet_size = size + sizeof(Header);
+    unsigned int packet_size = size + sizeof(Header) + sizeof(TimestampFields);
     Buffer* buf = _nic->alloc(to.paddr(), PROTO, packet_size);
 
     // Get pointer to where Protocol packet starts (within the Ethernet payload)
@@ -196,9 +234,10 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     // Copy user data into the packet's data section
     std::memcpy(packet->template data<void>(), data, size);
 
-    // Send the packet via NIC
-    int result = _nic->send(buf); // NIC::send takes the buffer containing the full frame
-    db<Protocol>(INF) << "[Protocol] NIC::send() returned " << result << "\n";
+    // Send the packet via NIC, passing the packet size for timestamp offset calculation
+    int result = _nic->send(buf, packet_size); // Pass packet size to NIC
+    db<Protocol>(INF) << "[Protocol] NIC::send() returned " << result 
+                        << ", clock_synchronized=" << packet->timestamps()->is_clock_synchronized << "\n";
     
     // NIC should release buffer after use
     return result;
@@ -211,10 +250,15 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
     typename NIC::Address src_mac;
     typename NIC::Address dst_mac;
 
-    std::uint8_t temp_buffer[size];
+    std::uint8_t temp_buffer[size + sizeof(Header) + sizeof(TimestampFields)];
     
     int packet_size = _nic->receive(buf, &src_mac, &dst_mac, temp_buffer, NIC::MTU);
     db<Protocol>(INF) << "[Protocol] NIC::receive() returned " << packet_size << ".\n";
+
+    if (packet_size <= 0) {
+        db<Protocol>(WRN) << "[Protocol] No data received or error occurred.\n";
+        return -1; // No data received or error
+    }
     
     // Reinterpretation as packet
     Packet* pkt = reinterpret_cast<Packet*>(temp_buffer);
@@ -223,9 +267,29 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
         from->paddr(src_mac);
         from->port(pkt->header()->from_port());
     }
+    // Extract timestamps and update Clock if this is a PTP-relevant message
+    TimestampFields* timestamps = pkt->timestamps();
+ 
+    // Log the synchronization status from the sender
+    db<Protocol>(INF) << "[Protocol] Received packet with sender_clock_synchronized=" 
+                        << timestamps->is_clock_synchronized << "\n";
+        
+    // Create PTP data structure for Clock
+    PtpRelevantData ptp_data;
+    ptp_data.sender_id = static_cast<LeaderIdType>(src_mac.bytes[5]); // Use last byte of MAC as sender ID
+    ptp_data.ts_tx_at_sender = timestamps->tx_timestamp;
+    ptp_data.ts_local_rx = timestamps->rx_timestamp;
+    
+    // Update Clock with timing information
+    auto& clock = Clock::getInstance();
+    clock.activate(&ptp_data);
+    
+    db<Protocol>(INF) << "[Protocol] Updated Clock with PTP data: sender=" 
+                        << ptp_data.sender_id << ", tx_time=" << timestamps->tx_timestamp.time_since_epoch().count() 
+                        << "us, rx_time=" << timestamps->rx_timestamp.time_since_epoch().count() << "us\n";
 
     // Payload size
-    int payload_size = packet_size - sizeof(Header);
+    int payload_size = packet_size - sizeof(Header) - sizeof(TimestampFields);
 
     // Copies only useful data
     std::memcpy(data, pkt->template data<void>(), payload_size);
@@ -253,7 +317,7 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
 
     if (!Protocol::_observed.notify(buf)) { // Notify every listener
         db<Protocol>(INF) << "[Protocol] data received, but no one was notified for port. Releasing buffer.\n";
-        _nic->free(buf);
+        free(buf);
     }
 }
 

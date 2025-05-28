@@ -237,8 +237,7 @@ void Agent::set_csv_logger(const std::string& log_dir) {
 void Agent::log_message(const Message& msg, const std::string& direction) {
     if (!_csv_logger || !_csv_logger->is_open()) return;
     
-    auto now = std::chrono::system_clock::now();
-    auto timestamp_us = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    auto timestamp_us = Message::getSynchronizedTimestamp().count();
     
     // Calculate latency for received messages
     auto latency_us = 0L;

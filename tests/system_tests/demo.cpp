@@ -13,6 +13,8 @@
 #include "../../include/app/components/basic_consumer_a.h"
 #include "../../include/app/components/basic_producer_b.h"
 #include "../../include/app/components/basic_consumer_b.h"
+#include "../../include/api/framework/rsu.h"
+#include "../../include/api/framework/leaderKeyStorage.h"
 #include "../testcase.h"
 #include "../test_utils.h"
 
@@ -43,6 +45,33 @@ std::string setup_log_directory(unsigned int vehicle_id) {
     }
 }
 
+// Helper function to set up RSU log directory
+std::string setup_rsu_log_directory(unsigned int rsu_id) {
+    std::string log_file;
+    std::error_code ec;
+    
+    // Try in priority order: Docker logs dir, tests/logs dir, current dir
+    if (std::filesystem::exists("/app/logs")) {
+        std::string rsu_dir = "/app/logs/rsu_" + std::to_string(rsu_id);
+        std::filesystem::create_directory(rsu_dir, ec);
+        
+        if (!ec) {
+            return rsu_dir + "/rsu_" + std::to_string(rsu_id) + ".log";
+        }
+    }
+    
+    // Try tests/logs directory
+    std::string test_logs_dir = "tests/logs/rsu_" + std::to_string(rsu_id);
+    
+    try {
+        std::filesystem::create_directories(test_logs_dir);
+        return test_logs_dir + "/rsu_" + std::to_string(rsu_id) + ".log";
+    } catch (...) {
+        // Fallback to tests/logs without RSU subfolder
+        return "tests/logs/rsu_" + std::to_string(rsu_id) + ".log";
+    }
+}
+
 class Demo: public TestCase {
     public:
         Demo();
@@ -55,6 +84,8 @@ class Demo: public TestCase {
         int run_demo();
     private:
         void run_vehicle(Vehicle* v);
+        void run_rsu(unsigned int rsu_id, unsigned int unit, std::chrono::milliseconds period);
+        void setup_rsu_as_leader(unsigned int rsu_id);
 };
 
 Demo::Demo() {
@@ -73,10 +104,86 @@ void Demo::tearDown() {
     TEST_LOG("Demo test case completed.");
 }
 
+void Demo::setup_rsu_as_leader(unsigned int rsu_id) {
+    TEST_INIT("Setting up RSU as leader");
+    // Create a high-age unique key for the RSU to ensure it becomes leader
+    MacKeyType rsu_key;
+    rsu_key.fill(0);
+    // Use RSU ID in the key to make it unique
+    rsu_key[0] = (rsu_id >> 8) & 0xFF;
+    rsu_key[1] = rsu_id & 0xFF;
+    rsu_key[2] = 0xAA; // Marker for RSU
+    rsu_key[3] = 0xBB;
+    
+    // Create RSU MAC address (similar to how Network creates vehicle MACs)
+    Ethernet::Address rsu_mac;
+    rsu_mac.bytes[0] = 0x02; // Locally administered
+    rsu_mac.bytes[1] = 0x00;
+    rsu_mac.bytes[2] = 0x00;
+    rsu_mac.bytes[3] = 0x00;
+    rsu_mac.bytes[4] = (rsu_id >> 8) & 0xFF;
+    rsu_mac.bytes[5] = rsu_id & 0xFF;
+    
+    // Set RSU as leader in LeaderKeyStorage
+    auto& storage = LeaderKeyStorage::getInstance();
+    storage.setLeaderId(rsu_mac);
+    storage.setGroupMacKey(rsu_key);
+    
+    TEST_LOG("RSU " + std::to_string(rsu_id) + " set as leader with MAC: " + 
+             Ethernet::mac_to_string(rsu_mac));
+}
+
+void Demo::run_rsu(unsigned int rsu_id, unsigned int unit, std::chrono::milliseconds period) {
+    try {
+        // Set up logging for RSU process
+        std::string log_file = setup_rsu_log_directory(rsu_id);
+        Debug::set_log_file(log_file);
+        
+        db<RSU>(INF) << "[RSU " << rsu_id << "] Starting RSU process\n";
+        
+        // Setup RSU as leader before creating the RSU instance
+        setup_rsu_as_leader(rsu_id);
+        
+        // Create RSU with specified parameters
+        // Unit 999 is a special unit for RSU broadcasts
+        // Period of 500ms for regular status broadcasts
+        RSU* rsu = new RSU(rsu_id, unit, period);
+        
+        db<RSU>(INF) << "[RSU " << rsu_id << "] RSU created with address " 
+                     << rsu->address().to_string() << "\n";
+        
+        // Start the RSU
+        rsu->start();
+        db<RSU>(INF) << "[RSU " << rsu_id << "] RSU started, broadcasting every " 
+                     << period.count() << "ms\n";
+        
+        // Run RSU for the demo duration (longer than vehicles to maintain leadership)
+        // RSU should run for the entire demo duration plus some buffer
+        sleep(120); // 2 minutes - longer than any vehicle lifetime
+        
+        db<RSU>(INF) << "[RSU " << rsu_id << "] Stopping RSU\n";
+        rsu->stop();
+        delete rsu;
+        
+        Debug::close_log_file();
+        db<RSU>(INF) << "[RSU " << rsu_id << "] RSU process finished\n";
+        
+    } catch (const std::exception& e) {
+        std::cerr << "[RSU " << rsu_id << "] Error in RSU process: " << e.what() << std::endl;
+        exit(1);
+    }
+}
+
 int Demo::run_demo() {
     TEST_INIT("the demo test case");
-    // Set number of test vehicles
-    const unsigned int n_vehicles = 100;
+    
+    // RSU Configuration
+    const unsigned int RSU_ID = 1000; // High ID to distinguish from vehicles
+    const unsigned int RSU_UNIT = 999; // Special unit for RSU
+    const auto RSU_PERIOD = std::chrono::milliseconds(500); // 500ms broadcast period
+    
+    // Vehicle Configuration
+    const unsigned int n_vehicles = 20;
 
     // Ensure tests/logs directory exists
     try {
@@ -87,48 +194,75 @@ int Demo::run_demo() {
     }
 
     std::vector<pid_t> children;
-    children.reserve(n_vehicles);
+    children.reserve(n_vehicles + 1); // +1 for RSU
 
-    // Create vehicle processes
+    // === STEP 1: Create and start RSU process first ===
+    TEST_LOG("Creating RSU process (ID: " + std::to_string(RSU_ID) + ")");
+    
+    pid_t rsu_pid = fork();
+    if (rsu_pid < 0) {
+        TEST_LOG("[ERROR] failed to fork RSU process");
+        return -1;
+    }
+    
+    if (rsu_pid == 0) { // RSU child process
+        std::cout << "[RSU Child " << getpid() << "] creating RSU " << RSU_ID << std::endl;
+        run_rsu(RSU_ID, RSU_UNIT, RSU_PERIOD);
+        exit(0);
+    } else { // Parent process
+        children.push_back(rsu_pid);
+        TEST_LOG("Created RSU process " + std::to_string(rsu_pid) + " for RSU " + std::to_string(RSU_ID));
+        
+        // Give RSU time to start and establish leadership
+        sleep(2);
+        TEST_LOG("RSU startup delay completed, proceeding with vehicle creation");
+    }
+
+    // === STEP 2: Create vehicle processes ===
+    TEST_LOG("Creating " + std::to_string(n_vehicles) + " vehicle processes");
+    
     for (unsigned int id = 1; id <= n_vehicles; ++id) {
-
-        // sleep for 500 ms
+        // Sleep for 500ms between vehicle creations to stagger startup
         usleep(500000);
 
         pid_t pid = fork();
 
         if (pid < 0) {
-            TEST_LOG("[ERROR] failed to fork process");
+            TEST_LOG("[ERROR] failed to fork vehicle process for ID " + std::to_string(id));
             TEST_LOG("Application terminated.");
             return -1;
         }
 
-        if (pid == 0) { // Child process
+        if (pid == 0) { // Vehicle child process
             try {
                 // Set up logging for child process
                 std::string log_file = setup_log_directory(id);
                 Debug::set_log_file(log_file);
                 
                 // Create and run vehicle
-                std::cout << "[Child " << getpid() << "] creating vehicle " << id << std::endl;
+                std::cout << "[Vehicle Child " << getpid() << "] creating vehicle " << id << std::endl;
                 Vehicle* v = new Vehicle(id);
                 run_vehicle(v);
                 
                 Debug::close_log_file();
-                std::cout << "[Child " << getpid() << "] vehicle " << id << " finished execution" << std::endl;
+                std::cout << "[Vehicle Child " << getpid() << "] vehicle " << id << " finished execution" << std::endl;
                 exit(0);
             } catch (const std::exception& e) {
-                std::cerr << "Error in child process: " << e.what() << std::endl;
+                std::cerr << "Error in vehicle child process: " << e.what() << std::endl;
                 exit(1);
             }
         } else { // Parent process
             children.push_back(pid);
-            TEST_LOG("Created child process " + std::to_string(pid) + " for vehicle " + std::to_string(id));
+            TEST_LOG("Created vehicle child process " + std::to_string(pid) + " for vehicle " + std::to_string(id));
         }
     }
 
-    // Wait for all child processes to complete
+    // === STEP 3: Wait for all child processes to complete ===
+    TEST_LOG("Waiting for all " + std::to_string(children.size()) + " child processes to complete");
+    
     bool successful = true;
+    int completed_processes = 0;
+    
     for (pid_t child_pid : children) {
         int status;
         if (waitpid(child_pid, &status, 0) == -1) {
@@ -136,7 +270,14 @@ int Demo::run_demo() {
             successful = false;
         } else if (WIFEXITED(status)) {
             int exit_status = WEXITSTATUS(status);
-            TEST_LOG("[Parent] child " + std::to_string(child_pid) + " exited with status " + std::to_string(exit_status));
+            completed_processes++;
+            
+            if (child_pid == rsu_pid) {
+                TEST_LOG("[Parent] RSU process " + std::to_string(child_pid) + " exited with status " + std::to_string(exit_status));
+            } else {
+                TEST_LOG("[Parent] Vehicle child " + std::to_string(child_pid) + " exited with status " + std::to_string(exit_status));
+            }
+            
             if (exit_status != 0) successful = false;
         } else if (WIFSIGNALED(status)) {
             TEST_LOG("[Parent] child " + std::to_string(child_pid) + " terminated by signal " + std::to_string(WTERMSIG(status)));
@@ -147,7 +288,9 @@ int Demo::run_demo() {
         }
     }
 
+    TEST_LOG("Demo completed: " + std::to_string(completed_processes) + "/" + std::to_string(children.size()) + " processes finished");
     TEST_LOG(successful ? "Application completed successfully!" : "Application terminated with errors!");
+    
     return successful ? 0 : -1;
 }
 

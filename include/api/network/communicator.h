@@ -64,19 +64,6 @@ Communicator<Channel>::~Communicator() {
     
     _channel->detach(this, _address);
     db<Communicator>(INF) << "[Communicator] Channel detached from address: " << _address.to_string() << "\n";
-
-    // Free any pending buffers to prevent leaks and NIC semaphore starvation
-    // The _data member is inherited from Conditional_Data_Observer (List<Buffer*>)
-    while (!this->_data.empty()) {
-        Buffer* pending_buf = this->_data.remove(); // Uses List::remove() which should get from head
-        if (pending_buf) {
-            db<Communicator>(WRN) << "[Communicator] Destructor: Freeing pending buffer for address " << _address.to_string() << "\n";
-            // Assuming Channel (Protocol) has a method to free buffers back to the NIC
-            // This typically would be _channel->nic()->free(pending_buf) or _channel->free_buffer(pending_buf)
-            // For now, let's assume _channel has a free method that does the right thing.
-            _channel->free(pending_buf); 
-        }
-    }
 }
 
 template <typename Channel>

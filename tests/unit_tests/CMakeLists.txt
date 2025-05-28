@@ -3,6 +3,26 @@ add_executable(component_test components/component_test.cpp)
 target_link_libraries(component_test PRIVATE project_lib pthread)
 add_test(NAME component_test COMMAND component_test)
 
+# Add clock test
+add_executable(clock_test clock_test.cpp)
+target_link_libraries(clock_test PRIVATE project_lib pthread)
+add_test(NAME clock_test COMMAND clock_test)
+
+# Add protocol structure test
+add_executable(protocol_structure_test protocol_structure_test.cpp)
+target_link_libraries(protocol_structure_test PRIVATE project_lib pthread)
+add_test(NAME protocol_structure_test COMMAND protocol_structure_test)
+
+# Add leaderKeyStorage test
+add_executable(leaderKeyStorage_test leaderKeyStorage_test.cpp)
+target_link_libraries(leaderKeyStorage_test PRIVATE project_lib pthread)
+add_test(NAME leaderKeyStorage_test COMMAND leaderKeyStorage_test)
+
+# Add statusManager test
+add_executable(statusManager_test statusManager_test.cpp)
+target_link_libraries(statusManager_test PRIVATE project_lib pthread)
+add_test(NAME statusManager_test COMMAND statusManager_test)
+
 # Add this test to the list of all unit tests
 add_custom_target(unit_tests 
     DEPENDS 
@@ -15,5 +35,9 @@ add_custom_target(unit_tests
         protocol_test
         initializer_test
         vehicle_test
-        component_test # Add the new test
+        clock_test
+        protocol_structure_test
+        component_test
+        leaderKeyStorage_test
+        statusManager_test
 ) 

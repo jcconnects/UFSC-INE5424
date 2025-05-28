@@ -15,12 +15,6 @@
 #include "../util/csv_logger.h"
 #include "../network/message.h"
 #include "../util/debug.h"
-#include <signal.h>
-
-
-void handler(int sig) {
-    // No action needed, just unblock from system calls
-}
 
 class Gateway {
     public:
@@ -45,8 +39,6 @@ class Gateway {
         bool running() const;
         static void* mainloop(void* arg);
         static void* internalLoop(void* arg);
-
-        void set_handler();
         
         const Address& address();
         CAN* bus() { return _can; }
@@ -101,23 +93,21 @@ Gateway::~Gateway() {
     _running.store(false, std::memory_order_release);
 
     _comms->release();
-    
+
     // CRITICAL FIX: Detach observer from CAN bus before deleting
     if (_can_observer) {
+        Message* dummy_msg = new Message();
         Condition c(0, Message::Type::UNKNOWN);
+        _can_observer->update(c, dummy_msg);
         _can->detach(_can_observer, c);
-        delete _can_observer;
-        _can_observer = nullptr;
     }
-    delete _network;
-
-    // Send signals to interrupt threads
-    pthread_kill(_receive_thread, SIGUSR1);
-    pthread_kill(_internal_thread, SIGUSR1);
-    
-    // Actually join the threads before deleting resources
-    pthread_join(_receive_thread, nullptr);
     pthread_join(_internal_thread, nullptr);
+    delete _can_observer;
+    _can_observer = nullptr;
+
+    delete _network;
+    pthread_join(_receive_thread, nullptr);
+    db<Gateway>(TRC) << "[Gateway " << _id << "] threads joined\n";
 
     delete _comms;
     
@@ -129,6 +119,7 @@ bool Gateway::send(Message* message) {
         db<Gateway>(WRN) << "[Gateway " << _id << "] send called but gateway is not running\n";
         return false;
     }
+
     if (message->size() > MAX_MESSAGE_SIZE) {
         db<Gateway>(WRN) << "[Gateway " << _id << "] message too large: " << message->size() << " > " << MAX_MESSAGE_SIZE << "\n";
         return false;
@@ -152,6 +143,7 @@ bool Gateway::receive(Message* message) {
         db<Gateway>(WRN) << "[Gateway " << _id << "] receive called but gateway is not running\n";
         return false;
     }
+
     bool result = _comms->receive(message);
     
     // Log received message to CSV if successful
@@ -198,7 +190,6 @@ void Gateway::handle(Message* message) {
 
 void* Gateway::mainloop(void* arg) {
     Gateway* self = reinterpret_cast<Gateway*>(arg);
-    self->set_handler();
     
     db<Gateway>(INF) << "[Gateway " << self->_id << "] external receive loop started\n";
 
@@ -220,7 +211,7 @@ bool Gateway::internalReceive(Message* msg) {
         db<Gateway>(WRN) << "[Gateway " << _id << "] no internal message received\n";
         return false;
     }
-    
+
     if (!received_msg) {
         return false;
     }
@@ -239,7 +230,6 @@ bool Gateway::internalReceive(Message* msg) {
 
 void* Gateway::internalLoop(void* arg) {
     Gateway* self = reinterpret_cast<Gateway*>(arg);
-    self->set_handler();
     
     db<Gateway>(INF) << "[Gateway " << self->_id << "] internal receive loop started\n";
 
@@ -261,20 +251,6 @@ void* Gateway::internalLoop(void* arg) {
     
     db<Gateway>(INF) << "[Gateway " << self->_id << "] internal receive loop ended\n";
     return nullptr;
-}
-
-void Gateway::set_handler() {
-    // Install the signal handler for thread interruption
-    struct sigaction sa;
-    std::memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    sigaction(SIGUSR1, &sa, nullptr);
-
-    if (sigaction(SIGUSR1, &sa, nullptr) == -1) {
-        throw std::runtime_error("Failed to set signal handler for SIGUSR1");
-    }
 }
 
 bool Gateway::running() const {

@@ -4,6 +4,7 @@
 #include <semaphore.h>
 #include <pthread.h>
 #include <queue>
+#include <atomic>
 
 #include "api/traits.h"
 #include "api/network/ethernet.h"
@@ -11,6 +12,7 @@
 #include "api/util/observer.h"
 #include "api/util/observed.h"
 #include "api/util/buffer.h"
+#include "api/framework/clock.h"  // Include Clock for timestamping
 
 // Foward Declaration
 class Initializer;
@@ -52,7 +54,9 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
     public:
         ~NIC();
         
-        // Send a pre-allocated buffer
+        // Send a pre-allocated buffer with packet size for timestamp offset calculation
+        int send(DataBuffer* buf, unsigned int packet_size);
+        // Legacy send method for backward compatibility
         int send(DataBuffer* buf);
 
         // Process a received buffer
@@ -72,6 +76,8 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         
         // Get network statistics
         const Statistics& statistics();
+
+        void stop();
         
         // Attach/detach observers
         // void attach(Observer* obs, Protocol_Number prot); // inherited
@@ -80,19 +86,26 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
     private:
         void handle(Ethernet::Frame* frame, unsigned int size) override;
 
+        // Helper method to fill TX timestamp in packet
+        void fillTxTimestamp(DataBuffer* buf, unsigned int packet_size);
+        
+        // Helper method to fill RX timestamp in packet
+        void fillRxTimestamp(void* packet_data, unsigned int packet_size);
+
     private:
 
         Address _address;
         Statistics _statistics;
         DataBuffer _buffer[N_BUFFERS];
         std::queue<DataBuffer*> _free_buffers;
+        std::atomic<bool> _running;
         sem_t _buffer_sem;
         sem_t _binary_sem;
 };
 
 /*********** NIC Implementation ************/
 template <typename Engine>
-NIC<Engine>::NIC() {
+NIC<Engine>::NIC() : _running(true) {
     // Engine starts on its own
 
     for (unsigned int i = 0; i < N_BUFFERS; ++i) {
@@ -106,7 +119,6 @@ NIC<Engine>::NIC() {
 
     // Setting default address
     _address = Engine::mac_address();
-
 }
 
 template <typename Engine>
@@ -121,8 +133,45 @@ NIC<Engine>::~NIC() {
 }
 
 template <typename Engine>
+void NIC<Engine>::stop() {
+    db<NIC>(TRC) << "NIC<Engine>::stop() called!\n";
+    _running.store(false, std::memory_order_release);
+    int sem_value;
+    sem_getvalue(&_buffer_sem, &sem_value);
+    for (unsigned int i = 0; i < N_BUFFERS - sem_value; ++i) {
+        sem_post(&_buffer_sem); // Release the semaphore for each buffer
+    }
+}
+
+template <typename Engine>
+int NIC<Engine>::send(DataBuffer* buf, unsigned int packet_size) {
+    db<NIC>(TRC) << "NIC<Engine>::send() called!\n";
+
+    // Fill TX timestamp before sending
+    fillTxTimestamp(buf, packet_size);
+
+    int result = Engine::send(buf->data(), buf->size());
+    db<NIC>(INF) << "[NIC] Engine::send returned " << result << "\n";
+
+    if (result <= 0) {
+        _statistics.tx_drops++;
+        result = 0;
+    } else {
+        _statistics.packets_sent++;
+        _statistics.bytes_sent += result;
+    }
+
+    return result;
+}
+
+template <typename Engine>
 int NIC<Engine>::send(DataBuffer* buf) {
     db<NIC>(TRC) << "NIC<Engine>::send() called!\n";
+
+    if (!_running.load(std::memory_order_acquire)) {
+        db<NIC>(ERR) << "[NIC] send() called when NIC is inactive\n";
+        return -1;
+    }
 
     int result = Engine::send(buf->data(), buf->size());
     db<NIC>(INF) << "[NIC] Engine::send returned " << result << "\n";
@@ -142,6 +191,11 @@ template <typename Engine>
 int NIC<Engine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size) {
     db<NIC>(TRC) << "NIC<Engine>::receive() called!\n";
 
+    if (!_running.load(std::memory_order_acquire)) {
+        db<NIC>(ERR) << "[NIC] receive() called when NIC is inactive\n";
+        return -1;
+    }
+
     Ethernet::Frame* frame = buf->data();
     db<NIC>(INF) << "[NIC] frame extracted from buffer: {src = " << Ethernet::mac_to_string(frame->src) << ", dst = " << Ethernet::mac_to_string(frame->dst) << ", prot = " << std::to_string(frame->prot) << ", size = " << buf->size() << "}\n";
     
@@ -152,13 +206,16 @@ int NIC<Engine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data
     // 2. Payload size
     unsigned int payload_size = buf->size() - Ethernet::HEADER_SIZE;
 
-    // 3. Copies payload to data pointer
+    // 3. Fill RX timestamp in the packet data before copying
+    fillRxTimestamp(frame->payload, payload_size);
+
+    // 4. Copies payload to data pointer
     std::memcpy(data, frame->payload, payload_size);
 
-    // 4. Releases the buffer
+    // 5. Releases the buffer
     free(buf);
 
-    // 5. Return size of copied bytes
+    // 6. Return size of copied bytes
     return payload_size;
 }
 
@@ -186,6 +243,11 @@ void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
 
     DataBuffer * buf = alloc(dst, proto, packet_size);
 
+    if (!buf) {
+        db<NIC>(ERR) << "[NIC] alloc called, but NIC is not running\n";
+        return;
+    }
+
     // 3. Copy frame to buffer
     buf->setData(frame, size);
 
@@ -199,6 +261,11 @@ void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
 template <typename Engine>
 typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Number prot, unsigned int size) {
     db<NIC>(TRC) << "NIC<Engine>::alloc() called!\n";
+
+    if (!_running.load(std::memory_order_acquire)) {
+        db<NIC>(ERR) << "[NIC] alloc() called when NIC is inactive\n";
+        return nullptr;
+    }
     
     // Acquire free buffers counter semaphore
     sem_wait(&_buffer_sem);
@@ -228,6 +295,11 @@ template <typename Engine>
 void NIC<Engine>::free(DataBuffer* buf) {
     db<NIC>(TRC) << "NIC<Engine>::free() called!\n";
 
+    if (!_running.load(std::memory_order_acquire)) {
+        db<NIC>(ERR) << "[NIC] free() called when NIC is inactive\n";
+        return;
+    }
+
     // Clear buffer
     buf->clear();
     
@@ -256,6 +328,67 @@ void NIC<Engine>::setAddress(Address address) {
 template <typename Engine>
 const typename NIC<Engine>::Statistics& NIC<Engine>::statistics() {
     return _statistics;
+}
+
+template <typename Engine>
+void NIC<Engine>::fillTxTimestamp(DataBuffer* buf, unsigned int packet_size) {
+    db<NIC>(TRC) << "NIC<Engine>::fillTxTimestamp() called!\n";
+    
+    // Get current synchronized time from Clock
+    auto& clock = Clock::getInstance();
+    bool sync;
+    TimestampType tx_time = clock.getSynchronizedTime(&sync);
+    
+    // Calculate correct offset for TX timestamp accounting for structure alignment
+    // Header: 8 bytes (2×uint16_t + uint32_t)
+    // TimestampFields: bool at offset 0, tx_timestamp at offset 8 (due to alignment)
+    const unsigned int header_size = sizeof(std::uint16_t) * 2 + sizeof(std::uint32_t); // 8 bytes
+    const unsigned int tx_timestamp_offset = header_size + 8; // Header + offsetof(TimestampFields, tx_timestamp)
+    
+    // Get pointer to the packet within the Ethernet frame payload
+    Ethernet::Frame* frame = buf->data();
+    uint8_t* packet_start = frame->payload;
+    
+    // Fill TX timestamp at the calculated offset
+    if (packet_size > tx_timestamp_offset + sizeof(TimestampType)) {
+        TimestampType* tx_timestamp_ptr = reinterpret_cast<TimestampType*>(packet_start + tx_timestamp_offset);
+        *tx_timestamp_ptr = tx_time;
+        
+        db<NIC>(INF) << "[NIC] Filled TX timestamp at offset " << tx_timestamp_offset 
+                      << ": " << tx_time.time_since_epoch().count() << "us\n";
+    } else {
+        db<NIC>(WRN) << "[NIC] Packet too small for TX timestamp. Size: " << packet_size 
+                      << ", required: " << (tx_timestamp_offset + sizeof(TimestampType)) << "\n";
+    }
+}
+
+template <typename Engine>
+void NIC<Engine>::fillRxTimestamp(void* packet_data, unsigned int packet_size) {
+    db<NIC>(TRC) << "NIC<Engine>::fillRxTimestamp() called!\n";
+    
+    // Get current synchronized time from Clock
+    auto& clock = Clock::getInstance();
+    bool sync;
+    TimestampType rx_time = clock.getSynchronizedTime(&sync);
+    
+    // Calculate correct offset for RX timestamp accounting for structure alignment
+    // Header: 8 bytes (2×uint16_t + uint32_t)
+    // TimestampFields: bool at offset 0, tx_timestamp at offset 8, rx_timestamp at offset 16
+    const unsigned int header_size = sizeof(std::uint16_t) * 2 + sizeof(std::uint32_t); // 8 bytes
+    const unsigned int rx_timestamp_offset = header_size + 16; // Header + offsetof(TimestampFields, rx_timestamp)
+    
+    // Fill RX timestamp at the calculated offset
+    if (packet_size > rx_timestamp_offset + sizeof(TimestampType)) {
+        uint8_t* packet_bytes = static_cast<uint8_t*>(packet_data);
+        TimestampType* rx_timestamp_ptr = reinterpret_cast<TimestampType*>(packet_bytes + rx_timestamp_offset);
+        *rx_timestamp_ptr = rx_time;
+        
+        db<NIC>(INF) << "[NIC] Filled RX timestamp at offset " << rx_timestamp_offset 
+                      << ": " << rx_time.time_since_epoch().count() << "us\n";
+    } else {
+        db<NIC>(WRN) << "[NIC] Packet too small for RX timestamp. Size: " << packet_size 
+                      << ", required: " << (rx_timestamp_offset + sizeof(TimestampType)) << "\n";
+    }
 }
 
 #endif // NIC_H
