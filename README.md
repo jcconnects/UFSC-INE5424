@@ -212,28 +212,7 @@ The hierarchical addressing scheme supports potential implementation of multicas
 
 This addressing structure provides the flexibility to implement efficient one-to-many communication patterns in future extensions.
 
-## Encapsulation Hierarchy
-
-```
-Application Layer:
-└── Message<MaxSize>
-    ├── _data[] (actual application data)
-    ├── _size (data size)
-    └── _origin (source address)
-    
-Transport Layer (Protocol):
-└── Protocol::Packet
-    ├── Header (from_port, to_port, size)
-    └── Data[] (contains Message's _data)
-    
-Network Layer (Ethernet):
-└── DataBuffer
-    └── Ethernet::Frame
-        ├── Header (src MAC, dst MAC, protocol)
-        └── payload[] (contains Protocol::Packet)
-```
-
-### Illustration of the Encapsulation
+## Illustration of the Encapsulation
 
 ![Encapsulation](./doc/img/encapsulation.png)
 
