@@ -14,6 +14,12 @@ class Network {
         Network(const unsigned int id = 0);
         ~Network();
 
+        void stop() {
+            if (_nic) {
+                _nic->stop();
+            }
+        }
+
         Protocol* channel();
         CAN* bus();
         const NIC::Address address();

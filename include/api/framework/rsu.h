@@ -144,8 +144,11 @@ void RSU::start() {
 void RSU::stop() {
     db<RSU>(TRC) << "RSU::stop() called!\n";
     
-    if (_running.load()) {
-        _running.store(false);
+    _comm->release();
+    if (_running.load(std::memory_order_acquire)) {
+        _running.store(false, std::memory_order_release);
+        _network->stop();
+        db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " stopping broadcasting\n";
         _periodic_thread.join();
         db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " stopped broadcasting\n";
     }
@@ -195,6 +198,9 @@ void RSU::broadcast() {
         msg = new Message(Message::Type::RESPONSE, address(), _unit, 
                          Message::ZERO, _data.data(), _data.size());
     }
+
+    db<RSU>(TRC) << "[RSU] RSU " << _rsu_id << " broadcasting RESPONSE for unit " << _unit 
+               << " with data size " << _data.size() << "\n";
 
     // Send broadcast message
     bool sent = _comm->send(msg);

@@ -105,8 +105,9 @@ Gateway::~Gateway() {
     delete _can_observer;
     _can_observer = nullptr;
 
-    delete _network;
+    _network->stop();
     pthread_join(_receive_thread, nullptr);
+    delete _network;
     db<Gateway>(TRC) << "[Gateway " << _id << "] threads joined\n";
 
     delete _comms;
@@ -115,10 +116,6 @@ Gateway::~Gateway() {
 }
 
 bool Gateway::send(Message* message) {
-    if (!_running.load(std::memory_order_acquire)) {
-        db<Gateway>(WRN) << "[Gateway " << _id << "] send called but gateway is not running\n";
-        return false;
-    }
 
     if (message->size() > MAX_MESSAGE_SIZE) {
         db<Gateway>(WRN) << "[Gateway " << _id << "] message too large: " << message->size() << " > " << MAX_MESSAGE_SIZE << "\n";
@@ -131,6 +128,10 @@ bool Gateway::send(Message* message) {
     // Log sent message to CSV
     log_message(*message, "SEND");
 
+    if (!running()) {
+        db<Gateway>(WRN) << "[Gateway " << _id << "] send called but gateway is not running\n";
+        return false;
+    }
     bool result = _comms->send(message);
     
     db<Gateway>(INF) << "[Gateway " << _id << "] external send result: " << (result ? "SUCCESS" : "FAILED") << "\n";
