@@ -199,7 +199,7 @@ int Demo::run_demo() {
     // RSU Configuration
     const unsigned int RSU_ID = 1000; // High ID to distinguish from vehicles
     const unsigned int RSU_UNIT = 999; // Special unit for RSU
-    const auto RSU_PERIOD = std::chrono::milliseconds(500); // 500ms broadcast period
+    const auto RSU_PERIOD = std::chrono::milliseconds(250); // 250ms broadcast period
     
     // Vehicle Configuration
     const unsigned int n_vehicles = 20;
