@@ -130,8 +130,8 @@ private:
 
     // Configuration Constants
     // Allow up to 10μs cumulative error:
-    // For high-precision oscillator (~20 ppb): 10μs / 20ppb = 500ms
-    static constexpr DurationType MAX_LEADER_SILENCE_INTERVAL = std::chrono::milliseconds(500);
+    // For standard crystal (~20 ppm): 10μs / 20ppm = 500μs
+    static constexpr DurationType MAX_LEADER_SILENCE_INTERVAL = std::chrono::microseconds(500);
 };
 
 /**
