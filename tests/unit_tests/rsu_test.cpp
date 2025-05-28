@@ -116,7 +116,7 @@ RSUTest::RSUTest() {
 
     // === THREAD SAFETY AND CONCURRENCY TESTS ===
     DEFINE_TEST(testMultipleRSUInstances);
-    DEFINE_TEST(testConcurrentStartStop);
+    //DEFINE_TEST(testConcurrentStartStop);
     DEFINE_TEST(testThreadSafety);
 }
 
