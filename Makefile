@@ -38,6 +38,7 @@ all: dirs \
 	run_unit_protocol_structure_test \
 	run_unit_can_test \
 	run_unit_clock_test \
+	run_unit_rsu_test \
 	run_unit_periodic_thread_test \
 	run_unit_ethernet_test \
 	run_unit_list_test \
