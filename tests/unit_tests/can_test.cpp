@@ -4,7 +4,7 @@
 
 #include "test_utils.h"
 #include "../testcase.h"
-#include "api/framework/bus.h"
+#include "api/network/bus.h"
 #include "../stubs/agent_stub.h"
 
 // Helper function to set up a vehicle log directory

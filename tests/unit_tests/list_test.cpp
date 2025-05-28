@@ -2,7 +2,7 @@
 #include <thread>
 #include <vector>
 #include "test_utils.h"
-#include "list.h"
+#include "util/list.h"
 
 // Test class for List
 class TestItem {

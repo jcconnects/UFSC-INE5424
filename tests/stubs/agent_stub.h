@@ -1,4 +1,4 @@
-#include "api/framework/bus.h"
+#include "api/network/bus.h"
 #include "api/framework/gateway.h"
 #include "api/util/debug.h"
 

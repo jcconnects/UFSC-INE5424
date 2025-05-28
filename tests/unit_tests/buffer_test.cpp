@@ -3,7 +3,7 @@
 
 #include "test_utils.h"
 #include "../testcase.h"
-#include "buffer.h"
+#include "util/buffer.h"
 
 #define DEFINE_TEST(name) registerTest(#name, [this]() { this->name(); });
 
@@ -88,7 +88,8 @@ void TestBuffer::test_create_buffer_with_data() {
     data.value3 = 3.14;
 
     // Exercise SUT
-    BufferT buf(&data, sizeof(TestData));
+    BufferT buf;
+    buf.setData(&data, sizeof(TestData));
 
     // Result Verification
     assert_equal(buf.size(), sizeof(TestData), "Buffer size is different of data size!");
