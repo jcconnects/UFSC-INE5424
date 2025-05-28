@@ -99,6 +99,8 @@ Gateway::Gateway(const unsigned int id) : _id(id) {
 Gateway::~Gateway() {
     db<Gateway>(TRC) << "Gateway::~Gateway() called for ID " << _id << "!\n";
     _running.store(false, std::memory_order_release);
+
+    _comms->release();
     
     // CRITICAL FIX: Detach observer from CAN bus before deleting
     if (_can_observer) {
@@ -108,8 +110,6 @@ Gateway::~Gateway() {
         _can_observer = nullptr;
     }
     delete _network;
-    
-    _comms->release();
 
     // Send signals to interrupt threads
     pthread_kill(_receive_thread, SIGUSR1);
@@ -125,6 +125,10 @@ Gateway::~Gateway() {
 }
 
 bool Gateway::send(Message* message) {
+    if (!_running.load(std::memory_order_acquire)) {
+        db<Gateway>(WRN) << "[Gateway " << _id << "] send called but gateway is not running\n";
+        return false;
+    }
     if (message->size() > MAX_MESSAGE_SIZE) {
         db<Gateway>(WRN) << "[Gateway " << _id << "] message too large: " << message->size() << " > " << MAX_MESSAGE_SIZE << "\n";
         return false;
@@ -144,6 +148,10 @@ bool Gateway::send(Message* message) {
 }
 
 bool Gateway::receive(Message* message) {
+    if (!_running.load(std::memory_order_acquire)) {
+        db<Gateway>(WRN) << "[Gateway " << _id << "] receive called but gateway is not running\n";
+        return false;
+    }
     bool result = _comms->receive(message);
     
     // Log received message to CSV if successful
@@ -208,6 +216,11 @@ void* Gateway::mainloop(void* arg) {
 bool Gateway::internalReceive(Message* msg) {
     // CRITICAL FIX: Get message from observer and copy it to the parameter
     Message* received_msg = _can_observer->updated();
+    if (!received_msg) {
+        db<Gateway>(WRN) << "[Gateway " << _id << "] no internal message received\n";
+        return false;
+    }
+    
     if (!received_msg) {
         return false;
     }
