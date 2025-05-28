@@ -65,7 +65,8 @@ public:
     Clock(const Clock&) = delete;
     Clock& operator=(const Clock&) = delete;
 
-    static Clock& getInstance(); 
+    static Clock& getInstance();
+    void setSelfId(LeaderIdType id);
 
     // --- Core Public Interface ---
 
@@ -88,7 +89,8 @@ private:
         _leader_time_at_last_sync_event(TimestampType::min()),
         _local_time_at_last_sync_event(TimestampType::min()),
         _current_leader_id(INVALID_LEADER_ID),
-        _leader_has_changed_flag(false) {
+        _leader_has_changed_flag(false),
+        _self_id(INVALID_LEADER_ID) {
         doClearSyncData();
         db<Clock>(INF) << "Clock: Initialized in UNSYNCHRONIZED state\n";
     }
@@ -124,6 +126,8 @@ private:
     LeaderIdType _current_leader_id;
     std::atomic<bool> _leader_has_changed_flag;  // Made atomic for better performance
 
+    LeaderIdType _self_id;
+
     // Configuration Constants
     // Allow up to 10μs cumulative error:
     // For high-precision oscillator (~20 ppb): 10μs / 20ppb = 500ms
@@ -139,6 +143,27 @@ private:
 inline Clock& Clock::getInstance() {
     static Clock instance;
     return instance;
+}
+
+/**
+ * @brief Set the self ID for this clock instance (node's own PTP-relevant ID)
+ * @param id The LeaderIdType of this node
+ *
+ * Thread-safe: Protected by mutex
+ */
+inline void Clock::setSelfId(LeaderIdType id) {
+    std::lock_guard<std::mutex> lock(_mutex);
+    if (_self_id == INVALID_LEADER_ID && id != INVALID_LEADER_ID) {
+        _self_id = id;
+        db<Clock>(INF) << "Clock: Self ID set to " << _self_id << "\n";
+    } else if (id != INVALID_LEADER_ID && _self_id != id && _self_id != INVALID_LEADER_ID) {
+        // If already set and trying to change to a different valid ID
+        db<Clock>(WRN) << "Clock: Attempt to change self ID from " << _self_id 
+                       << " to " << id << ". Current self ID maintained.\n";
+    } else if (id == _self_id) {
+        // Setting to the same ID, no action needed but maybe log for debugging
+        db<Clock>(TRC) << "Clock: Self ID re-confirmed to " << _self_id << "\n";
+    }
 }
 
 /**
@@ -158,8 +183,27 @@ inline void Clock::activate(const PtpRelevantData* new_msg_data) {
         storage_leader_id = storage_leader.bytes[5];
     }
 
-    // Check and handle leader change
-    checkAndHandleLeaderChange(storage_leader_id);
+    // NEW: Check if this node IS the leader (according to storage)
+    if (_self_id != INVALID_LEADER_ID && _self_id == storage_leader_id) {
+        if (_currentState.load(std::memory_order_acquire) != State::SYNCHRONIZED || _current_leader_id != _self_id) {
+            db<Clock>(INF) << "Clock: This node (" << _self_id << ") is the PTP leader. Forcing SYNCHRONIZED state.\n";
+            _currentState.store(State::SYNCHRONIZED, std::memory_order_release);
+            _current_leader_id = _self_id; // This node is the leader
+            _current_offset = DurationType::zero();
+            _current_drift_fe = 0.0;
+            _local_time_at_last_sync_event = getLocalSteadyHardwareTime();
+            _leader_time_at_last_sync_event = _local_time_at_last_sync_event; // Leader time is its own local time
+            _msg1_data = PtpInternalMessageInfo(); // Clear old sync message data
+            _msg2_data = PtpInternalMessageInfo();
+            _leader_has_changed_flag.store(false, std::memory_order_release); 
+        }
+        // As a leader, its clock is authoritative. No further processing of PTP messages for sync.
+        return;
+    }
+
+    // If this node is NOT the leader, proceed with normal PTP logic.
+    // Check and handle leader change (original logic, might set state to UNSYNCHRONIZED)
+    [[maybe_unused]] bool actual_leader_change_occurred = checkAndHandleLeaderChange(storage_leader_id);
 
     State current_state_local = _currentState.load(std::memory_order_acquire);
     State new_state = current_state_local;
@@ -262,7 +306,17 @@ inline Clock::State Clock::getState() {
 
     State current_state_local = _currentState.load(std::memory_order_acquire);
     
-    // Only check timeout for states that expect leader messages
+    // NEW: If this node is the leader, it's always synchronized.
+    if (_self_id != INVALID_LEADER_ID && _current_leader_id == _self_id) {
+        if (current_state_local != State::SYNCHRONIZED) {
+             // This ensures that if somehow the state was different, it's corrected.
+            db<Clock>(INF) << "Clock::getState: This node (" << _self_id << ") is leader. Correcting state to SYNCHRONIZED.\n";
+            _currentState.store(State::SYNCHRONIZED, std::memory_order_release);
+        }
+        return State::SYNCHRONIZED;
+    }
+    
+    // Only check timeout for states that expect leader messages (non-leader case)
     if (current_state_local == State::AWAITING_SECOND_MSG || 
         current_state_local == State::SYNCHRONIZED) {
         
@@ -315,6 +369,7 @@ inline void Clock::reset() {
     _currentState.store(State::UNSYNCHRONIZED, std::memory_order_release);
     _current_leader_id = INVALID_LEADER_ID;
     doClearSyncData();
+    _self_id = INVALID_LEADER_ID; // Reset self_id as well for testing
 }
 
 inline void Clock::doClearSyncData() {
@@ -385,6 +440,12 @@ void Clock::doProcessSubsequentLeaderMsg(const PtpRelevantData& msg_data) {
 }
 
 bool Clock::isLeaderMessageTimedOut() const {
+    // NEW: If this node is the current leader, it doesn't time out on itself.
+    // Note: _current_leader_id and _self_id are read. Callers must hold _mutex.
+    if (_self_id != INVALID_LEADER_ID && _current_leader_id == _self_id) {
+        return false;
+    }
+
     if (_local_time_at_last_sync_event == TimestampType::min() || !isLeaderAssigned()) {
             // No sync event yet or no leader, so not "timed out" in the sense of expecting a message
         return false;

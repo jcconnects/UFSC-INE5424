@@ -234,6 +234,12 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     // Copy user data into the packet's data section
     std::memcpy(packet->template data<void>(), data, size);
 
+    // Set clock synchronization status in the packet
+    auto& clock = Clock::getInstance();
+    bool sync_status;
+    clock.getSynchronizedTime(&sync_status); // We only need the status
+    packet->timestamps()->is_clock_synchronized = sync_status;
+
     // Send the packet via NIC, passing the packet size for timestamp offset calculation
     int result = _nic->send(buf, packet_size); // Pass packet size to NIC
     db<Protocol>(INF) << "[Protocol] NIC::send() returned " << result 

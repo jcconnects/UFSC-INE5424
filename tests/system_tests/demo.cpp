@@ -6,6 +6,8 @@
 #include <vector>
 #include <random>
 #include <chrono>
+#include <signal.h>
+#include <errno.h>
 
 #include "../../include/app/vehicle.h"
 #include "../../include/api/util/debug.h"
@@ -17,6 +19,18 @@
 #include "../../include/api/framework/leaderKeyStorage.h"
 #include "../testcase.h"
 #include "../test_utils.h"
+
+// Global flag for RSU termination - volatile for signal safety
+volatile sig_atomic_t rsu_should_terminate = 0;
+
+// Signal handler for RSU termination
+void rsu_signal_handler(int signal) {
+    if (signal == SIGUSR1) {
+        rsu_should_terminate = 1;
+        // Write to stderr for immediate output (safer in signal handler)
+        write(STDERR_FILENO, "[RSU Signal] Received SIGUSR1, setting termination flag\n", 56);
+    }
+}
 
 // Helper function to set up a vehicle log directory
 std::string setup_log_directory(unsigned int vehicle_id) {
@@ -135,6 +149,9 @@ void Demo::setup_rsu_as_leader(unsigned int rsu_id) {
 
 void Demo::run_rsu(unsigned int rsu_id, unsigned int unit, std::chrono::milliseconds period) {
     try {
+        // Set up signal handler for graceful termination
+        signal(SIGUSR1, rsu_signal_handler);
+        
         // Set up logging for RSU process
         std::string log_file = setup_rsu_log_directory(rsu_id);
         Debug::set_log_file(log_file);
@@ -157,11 +174,13 @@ void Demo::run_rsu(unsigned int rsu_id, unsigned int unit, std::chrono::millisec
         db<RSU>(INF) << "[RSU " << rsu_id << "] RSU started, broadcasting every " 
                      << period.count() << "ms\n";
         
-        // Run RSU for the demo duration (longer than vehicles to maintain leadership)
-        // RSU should run for the entire demo duration plus some buffer
-        sleep(120); // 2 minutes - longer than any vehicle lifetime
+        // Wait for signal to stop instead of fixed duration
+        db<RSU>(INF) << "[RSU " << rsu_id << "] Waiting for all vehicles to complete...\n";
+        while (!rsu_should_terminate) {
+            pause(); // Wait for signal - more responsive than sleep(1)
+        }
         
-        db<RSU>(INF) << "[RSU " << rsu_id << "] Stopping RSU\n";
+        db<RSU>(INF) << "[RSU " << rsu_id << "] Received termination signal, stopping RSU\n";
         rsu->stop();
         delete rsu;
         
@@ -257,38 +276,78 @@ int Demo::run_demo() {
         }
     }
 
-    // === STEP 3: Wait for all child processes to complete ===
-    TEST_LOG("Waiting for all " + std::to_string(children.size()) + " child processes to complete");
+    // === STEP 3: Wait for all vehicle processes to complete first ===
+    TEST_LOG("Waiting for all " + std::to_string(n_vehicles) + " vehicle processes to complete");
     
     bool successful = true;
-    int completed_processes = 0;
+    int completed_vehicles = 0;
     
-    for (pid_t child_pid : children) {
+    // Wait for all vehicle processes (excluding RSU)
+    for (size_t i = 1; i < children.size(); ++i) { // Skip RSU (index 0)
+        pid_t child_pid = children[i];
         int status;
         if (waitpid(child_pid, &status, 0) == -1) {
-            TEST_LOG("[ERROR] failed to wait for child " + std::to_string(child_pid));
+            TEST_LOG("[ERROR] failed to wait for vehicle child " + std::to_string(child_pid));
             successful = false;
         } else if (WIFEXITED(status)) {
             int exit_status = WEXITSTATUS(status);
-            completed_processes++;
-            
-            if (child_pid == rsu_pid) {
-                TEST_LOG("[Parent] RSU process " + std::to_string(child_pid) + " exited with status " + std::to_string(exit_status));
-            } else {
-                TEST_LOG("[Parent] Vehicle child " + std::to_string(child_pid) + " exited with status " + std::to_string(exit_status));
-            }
-            
+            completed_vehicles++;
+            TEST_LOG("[Parent] Vehicle child " + std::to_string(child_pid) + " exited with status " + std::to_string(exit_status));
             if (exit_status != 0) successful = false;
         } else if (WIFSIGNALED(status)) {
-            TEST_LOG("[Parent] child " + std::to_string(child_pid) + " terminated by signal " + std::to_string(WTERMSIG(status)));
+            TEST_LOG("[Parent] Vehicle child " + std::to_string(child_pid) + " terminated by signal " + std::to_string(WTERMSIG(status)));
             successful = false;
         } else {
-            TEST_LOG("[Parent] child " + std::to_string(child_pid) + " terminated abnormally");
+            TEST_LOG("[Parent] Vehicle child " + std::to_string(child_pid) + " terminated abnormally");
             successful = false;
         }
     }
 
-    TEST_LOG("Demo completed: " + std::to_string(completed_processes) + "/" + std::to_string(children.size()) + " processes finished");
+    TEST_LOG("All vehicles completed: " + std::to_string(completed_vehicles) + "/" + std::to_string(n_vehicles) + " vehicles finished");
+    
+    // === STEP 4: Signal RSU to terminate ===
+    TEST_LOG("Signaling RSU to terminate");
+    if (kill(rsu_pid, SIGUSR1) == -1) {
+        TEST_LOG("[ERROR] Failed to signal RSU process: " + std::string(strerror(errno)));
+        successful = false;
+    } else {
+        TEST_LOG("Successfully signaled RSU to terminate");
+    }
+    
+    // === STEP 5: Wait for RSU to complete ===
+    TEST_LOG("Waiting for RSU process to complete");
+    int status;
+    // Add a timeout in case RSU doesn't respond - wait up to 10 seconds
+    pid_t wait_result = waitpid(rsu_pid, &status, WNOHANG);
+    int timeout_counter = 0;
+    while (wait_result == 0 && timeout_counter < 10) {
+        sleep(1);
+        timeout_counter++;
+        TEST_LOG("Waiting for RSU... (" + std::to_string(timeout_counter) + "/10 seconds)");
+        wait_result = waitpid(rsu_pid, &status, WNOHANG);
+    }
+    
+    if (wait_result == -1) {
+        TEST_LOG("[ERROR] failed to wait for RSU process " + std::to_string(rsu_pid) + ": " + std::string(strerror(errno)));
+        successful = false;
+    } else if (wait_result == 0) {
+        TEST_LOG("[ERROR] RSU process " + std::to_string(rsu_pid) + " did not terminate within timeout, killing it");
+        kill(rsu_pid, SIGKILL);
+        waitpid(rsu_pid, &status, 0);
+        successful = false;
+    } else if (WIFEXITED(status)) {
+        int exit_status = WEXITSTATUS(status);
+        TEST_LOG("[Parent] RSU process " + std::to_string(rsu_pid) + " exited with status " + std::to_string(exit_status));
+        if (exit_status != 0) successful = false;
+    } else if (WIFSIGNALED(status)) {
+        TEST_LOG("[Parent] RSU process " + std::to_string(rsu_pid) + " terminated by signal " + std::to_string(WTERMSIG(status)));
+        successful = false;
+    } else {
+        TEST_LOG("[Parent] RSU process " + std::to_string(rsu_pid) + " terminated abnormally");
+        successful = false;
+    }
+
+    TEST_LOG("Demo completed: " + std::to_string(completed_vehicles) + " vehicles and 1 RSU finished");
     TEST_LOG(successful ? "Application completed successfully!" : "Application terminated with errors!");
     
     return successful ? 0 : -1;

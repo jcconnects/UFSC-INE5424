@@ -12,6 +12,7 @@
 #include "api/util/csv_logger.h"
 #include "api/framework/gateway.h"
 #include "api/framework/agent.h"
+#include "api/framework/clock.h"
 
 // Forward declarations
 class ECUComponent;
@@ -59,6 +60,18 @@ Vehicle::Vehicle(unsigned int id) : _id(id), _running(false)
     // Set up CSV logging directory
     _log_dir = CSVLogger::create_vehicle_log_dir(_id);
     setup_csv_logging();
+
+    // Set self ID for the Clock instance
+    // Assuming Gateway's address is the Vehicle's primary address for PTP ID purposes
+    // The last byte of the MAC address is used as LeaderIdType
+    LeaderIdType self_leader_id = static_cast<LeaderIdType>(_gateway->address().paddr().bytes[5]);
+    if (self_leader_id != INVALID_LEADER_ID) {
+        Clock::getInstance().setSelfId(self_leader_id);
+        db<Vehicle>(INF) << "[Vehicle " << _id << "] registered self_id " << self_leader_id << " with Clock.\n";
+        Clock::getInstance().activate(nullptr); // Activate clock to evaluate leader state
+    } else {
+        db<Vehicle>(WRN) << "[Vehicle " << _id << "] has an INVALID_LEADER_ID based on its Gateway MAC. Clock self_id not set.\n";
+    }
 }
 
 Vehicle::~Vehicle() {

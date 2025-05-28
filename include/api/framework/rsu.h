@@ -9,6 +9,7 @@
 #include "api/framework/network.h"
 #include "api/framework/periodicThread.h"
 #include "api/util/debug.h"
+#include "api/framework/clock.h"
 
 class RSU {
 public:
@@ -118,6 +119,16 @@ RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period,
     _comm = new Communicator(_network->channel(), rsu_addr);
 
     db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " initialized with address " << rsu_addr.to_string() << "\n";
+
+    // Set self ID for the Clock instance
+    LeaderIdType self_leader_id = static_cast<LeaderIdType>(rsu_addr.paddr().bytes[5]);
+    if (self_leader_id != INVALID_LEADER_ID) {
+        Clock::getInstance().setSelfId(self_leader_id);
+        db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " registered self_id " << self_leader_id << " with Clock.\n";
+        Clock::getInstance().activate(nullptr); // Activate clock to evaluate leader state
+    } else {
+        db<RSU>(WRN) << "[RSU] RSU " << _rsu_id << " has an INVALID_LEADER_ID based on its MAC. Clock self_id not set.\n";
+    }
 }
 
 RSU::~RSU() {
@@ -144,12 +155,20 @@ void RSU::start() {
 void RSU::stop() {
     db<RSU>(TRC) << "RSU::stop() called!\n";
     
-    _comm->release();
     if (_running.load(std::memory_order_acquire)) {
+        // Step 1: Signal threads to stop
         _running.store(false, std::memory_order_release);
-        _network->stop();
         db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " stopping broadcasting\n";
+        
+        // Step 2: Release communicator to unblock any waiting operations
+        _comm->release();
+        
+        // Step 3: Stop periodic thread and wait for it to finish
         _periodic_thread.join();
+        db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " periodic thread stopped\n";
+        
+        // Step 4: Stop network stack after threads are fully stopped
+        _network->stop();
         db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " stopped broadcasting\n";
     }
 }
