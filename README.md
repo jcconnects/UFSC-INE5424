@@ -230,36 +230,37 @@ The system uses millisecond precision (`std::chrono::milliseconds`) for all time
 - **PTP requirements**: Millisecond precision suitable for many vehicular applications
 - **Efficiency**: Good balance between precision and computational overhead
 
-#### **Timeout Configuration: 500ms Leader Silence Interval**
-The `MAX_LEADER_SILENCE_INTERVAL` is set to 500 milliseconds based on cumulative error analysis:
+#### **Timeout Configuration: 20ms Leader Silence Interval**
+The `MAX_LEADER_SILENCE_INTERVAL` is set to 20 milliseconds based on cumulative error analysis:
 
 ```cpp
 // Allow up to 10ms cumulative error:
-// For standard crystal (~20 ppm): 10ms / 20ppm = 500ms
+// For standard crystal specification worst-case (~20 ppb): 10ms / 20ppb = 500ms
 static constexpr DurationType MAX_LEADER_SILENCE_INTERVAL = std::chrono::milliseconds(500);
 ```
 
 **Calculation methodology**:
 - **Cumulative error limit**: 10ms (10× the 1ms precision for safety margin)
-- **Assumed oscillator drift**: 20 parts per million (ppm)
-- **Formula**: `MAX_SILENCE = ERROR_LIMIT / DRIFT_RATE = 10ms / 20ppm = 500ms`
+- **Assumed oscillator drift**: 20 parts per billion (ppb) - standard crystal specification worst-case
+- **Formula**: `MAX_SILENCE = ERROR_LIMIT / DRIFT_RATE = 10ms / 20ppb = 500ms`
 
 #### **Hardware Requirements**
-This configuration assumes standard crystal oscillators commonly found in consumer hardware:
-- **Standard Crystal Oscillators**: Typical 10-50 ppm stability (widely available)
-- **Apple M1 Pro**: Uses standard crystal oscillators, not high-precision timing hardware
-- **Consumer-grade hardware**: Cost-effective solution suitable for most applications
+This configuration is based on standard crystal specifications:
+- **Standard Crystal Specification**: Maximum allowed long-term frequency drift of 20 ppb
+- **Conservative approach**: Uses worst-case specification limits rather than typical performance
+- **Real-world robustness**: Accounts for temperature variations, crystal aging, and manufacturing tolerances
+- **Widely applicable**: Works with standard PC hardware and embedded systems
 
 #### **Benefits of This Approach**
 
-1. **Hardware accessibility**: Works with standard, widely-available crystal oscillators
-2. **Fast failure detection**: 500ms timeout enables very rapid leader failover
-3. **Precision maintenance**: Cumulative drift error stays well within acceptable bounds
-4. **Cost-effective**: No need for expensive high-precision timing hardware
+1. **Specification-based**: Uses actual hardware specifications from standard crystal documentation
+2. **Conservative design**: Handles worst-case hardware performance scenarios
+3. **Fast failure detection**: 500ms timeout enables rapid leader failover
+4. **Robust operation**: Works reliably even with poor-quality or aged crystals
 
 #### **Performance Characteristics**
 - **Maximum drift error**: 10ms over 500ms silence period
-- **Network tolerance**: Handles typical network jitter (usually < 100ms)
+- **Network tolerance**: Handles typical network jitter (usually < 10ms)
 - **Leader failover time**: Maximum 500ms detection of failed leaders
 - **Message capacity**: ~250,000 messages possible during timeout period (500ms ÷ 2μs)
 

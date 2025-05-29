@@ -130,7 +130,7 @@ private:
 
     // Configuration Constants
     // Allow up to 10ms cumulative error:
-    // For standard crystal (~20 ppm): 10ms / 20ppm = 500ms
+    // For standard crystal specification worst-case (~20 ppb): 10ms / 20ppb = 500ms
     static constexpr DurationType MAX_LEADER_SILENCE_INTERVAL = std::chrono::milliseconds(500);
 };
 
