@@ -40,6 +40,9 @@ class Message;
 
 class CAN;
 
+// Forward declaration for Gateway
+class Gateway;
+
 // Traits definition
 template <typename T>
 struct Traits {
@@ -109,15 +112,21 @@ struct Traits<Agent> : public Traits<void>
     static const bool debugged = true;
 };
 
+// Traits for Gateway class
+template<>
+struct Traits<Gateway> : public Traits<void>
+{
+    static const bool debugged = true;
+};
+
 // Traits for Debug class
 template<>
 struct Traits<Debug> : public Traits<void>
 {
-    static const bool error = true;
-    static const bool warning = true;
-    static const bool info = true;
-    static const bool trace = true;
+    static const bool error = false;
+    static const bool warning = false;
+    static const bool info = false;
+    static const bool trace = false;
 };
-
 
 #endif // TRAITS_H
