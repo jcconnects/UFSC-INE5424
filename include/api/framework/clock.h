@@ -12,11 +12,11 @@
 #include "api/network/ethernet.h"  // For Ethernet::Address
 
 // --- Placeholder types (These should be defined in appropriate common headers) ---
-// Represents a timestamp, using milliseconds since a steady epoch
-using TimestampType = std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds>;
+// Represents a timestamp, using microseconds since a steady epoch
+using TimestampType = std::chrono::time_point<std::chrono::steady_clock, std::chrono::microseconds>;
 
 // Represents a duration, e.g., for offsets
-using DurationType = std::chrono::milliseconds;
+using DurationType = std::chrono::microseconds;
 
 // Represents frequency error, unitless (e.g., parts per million or direct ratio)
 using FrequencyErrorType = double;
@@ -131,7 +131,7 @@ private:
     // Configuration Constants
     // Allow up to 10ms cumulative error:
     // For standard crystal specification worst-case (~20 ppb): 10ms / 20ppb = 500ms
-    static constexpr DurationType MAX_LEADER_SILENCE_INTERVAL = std::chrono::milliseconds(500);
+    static constexpr DurationType MAX_LEADER_SILENCE_INTERVAL = std::chrono::microseconds(500000);
 };
 
 /**
@@ -279,7 +279,7 @@ inline TimestampType Clock::getSynchronizedTime(bool* is_synchronized) {
     // leader_increment = elapsed_local * (1.0 - current_drift_fe)
     // sync_time = leader_time_at_last_sync_event + leader_increment
     double leader_increment_double = static_cast<double>(elapsed_since_last_sync.count()) * (1.0 - _current_drift_fe);
-    DurationType leader_increment = std::chrono::milliseconds(static_cast<long long>(leader_increment_double));
+    DurationType leader_increment = std::chrono::microseconds(static_cast<long long>(leader_increment_double));
     *is_synchronized = true;
     return _leader_time_at_last_sync_event + leader_increment;
 }
@@ -343,7 +343,7 @@ inline LeaderIdType Clock::getCurrentLeader() const {
 
 // Provides the local hardware time (monotonic steady clock)
 inline TimestampType Clock::getLocalSteadyHardwareTime() const {
-    return std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
+    return std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::steady_clock::now());
 }
 
 // Provides the local system time (wall clock, can change)
@@ -388,7 +388,7 @@ void Clock::doProcessFirstLeaderMsg(const PtpRelevantData& msg_data) {
     _msg1_data.ts_tx_at_sender = msg_data.ts_tx_at_sender;
     _msg1_data.ts_local_rx = msg_data.ts_local_rx;
 
-    _msg1_data.d_tx_calc = std::chrono::milliseconds(2);
+    _msg1_data.d_tx_calc = std::chrono::microseconds(2);
 
     _msg1_data.leader_time_at_local_rx_event = _msg1_data.ts_tx_at_sender + _msg1_data.d_tx_calc;
     _current_offset = _msg1_data.ts_local_rx - _msg1_data.leader_time_at_local_rx_event;
@@ -398,7 +398,7 @@ void Clock::doProcessFirstLeaderMsg(const PtpRelevantData& msg_data) {
     _current_drift_fe = 0.0;
     
     db<Clock>(INF) << "Clock: Processed first leader message. Offset: " 
-        << _current_offset.count() << "ms\n";
+        << _current_offset.count() << "us\n";
 }
 
 void Clock::doProcessSecondLeaderMsgAndCalcDrift(const PtpRelevantData& msg_data) {
@@ -406,7 +406,7 @@ void Clock::doProcessSecondLeaderMsgAndCalcDrift(const PtpRelevantData& msg_data
     _msg2_data.ts_tx_at_sender = msg_data.ts_tx_at_sender;
     _msg2_data.ts_local_rx = msg_data.ts_local_rx;
 
-    _msg2_data.d_tx_calc = std::chrono::milliseconds(2);
+    _msg2_data.d_tx_calc = std::chrono::microseconds(2);
     _msg2_data.leader_time_at_local_rx_event = _msg2_data.ts_tx_at_sender + _msg2_data.d_tx_calc;
 
     DurationType o1 = _msg1_data.ts_local_rx - _msg1_data.leader_time_at_local_rx_event;
@@ -427,7 +427,7 @@ void Clock::doProcessSecondLeaderMsgAndCalcDrift(const PtpRelevantData& msg_data
     _local_time_at_last_sync_event = _msg2_data.ts_local_rx;
     
     db<Clock>(INF) << "Clock: Processed second leader message. New Offset: " 
-        << _current_offset.count() << "ms, Drift FE: " << _current_drift_fe << "\n";
+        << _current_offset.count() << "us, Drift FE: " << _current_drift_fe << "\n";
 }
 
 void Clock::doProcessSubsequentLeaderMsg(const PtpRelevantData& msg_data) {
@@ -436,7 +436,7 @@ void Clock::doProcessSubsequentLeaderMsg(const PtpRelevantData& msg_data) {
     doProcessSecondLeaderMsgAndCalcDrift(msg_data);
     
     db<Clock>(INF) << "Clock: Processed subsequent leader message. Updated Offset: " 
-        << _current_offset.count() << "ms, Updated Drift FE: " << _current_drift_fe << "\n";
+        << _current_offset.count() << "us, Updated Drift FE: " << _current_drift_fe << "\n";
 }
 
 bool Clock::isLeaderMessageTimedOut() const {
