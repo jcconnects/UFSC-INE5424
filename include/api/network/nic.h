@@ -243,7 +243,9 @@ void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
     }
 
     // 3. Fill RX timestamp in the buffer
-    buf->setRX(clock.getSynchronizedTime(&sync)tp.time_since_epoch().count())
+    auto& clock = Clock::getInstance();
+    bool is_sync;
+    buf->setRX(clock.getSynchronizedTime(&is_sync).time_since_epoch().count());
 
     // 4. Copy frame to buffer
     buf->setData(frame, size);
@@ -338,8 +340,8 @@ void NIC<Engine>::fillTxTimestamp(DataBuffer* buf, unsigned int packet_size) {
     
     // Get current synchronized time from Clock
     auto& clock = Clock::getInstance();
-    bool sync;
-    TimestampType tx_time = clock.getSynchronizedTime(&sync);
+    bool is_sync;
+    TimestampType tx_time = clock.getSynchronizedTime(&is_sync);
     
     // Calculate correct offset for TX timestamp accounting for structure alignment
     // Header: 8 bytes (2×uint16_t + uint32_t)

@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <atomic>
+#include <chrono>
 
 #include "api/traits.h"
 #include "api/util/debug.h"
@@ -87,10 +88,6 @@ class Protocol: private NIC::Observer
                 
                 static constexpr unsigned int tx_timestamp_offset() {
                     return sizeof(Header) + offsetof(TimestampFields, tx_timestamp);
-                }
-                
-                static constexpr unsigned int rx_timestamp_offset() {
-                    return sizeof(Header) + offsetof(TimestampFields, rx_timestamp);
                 }
                 
             private:
@@ -271,10 +268,6 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
         from->paddr(src_mac);
         from->port(pkt->header()->from_port());
     }
-    
-    db<Protocol>(INF) << "[Protocol] Updated Clock with PTP data: sender=" 
-                        << ptp_data.sender_id << ", tx_time=" << timestamps->tx_timestamp.time_since_epoch().count() 
-                        << "us, rx_time=" << timestamps->rx_timestamp.time_since_epoch().count() << "us\n";
 
     // Payload size
     int payload_size = packet_size - sizeof(Header) - sizeof(TimestampFields);
@@ -313,7 +306,10 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
                         << timestamps->is_clock_synchronized << "\n";
         
     // convert buffer (std::int64_t) _rx_time back to TimestampType
-    TimestampType rx_timestamp(buf->rx());
+    TimestampType rx_timestamp(std::chrono::milliseconds(buf->rx()));
+    
+    typename NIC::Address src_mac = buf->data()->src;
+    
     // Create PTP data structure for Clock
     PtpRelevantData ptp_data;
     ptp_data.sender_id = static_cast<LeaderIdType>(src_mac.bytes[5]); // Use last byte of MAC as sender ID

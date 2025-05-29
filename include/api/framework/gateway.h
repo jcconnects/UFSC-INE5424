@@ -15,6 +15,7 @@
 #include "../util/csv_logger.h"
 #include "../network/message.h"
 #include "../util/debug.h"
+#include "../traits.h"
 
 class Gateway {
     public:
@@ -26,7 +27,7 @@ class Gateway {
         typedef CAN::Observer Observer;
         typedef std::unordered_map<Unit, std::unordered_set<Observer*>> Map;
 
-        static const unsigned int MAX_MESSAGE_SIZE = Protocol::MTU;
+        static const unsigned int MAX_MESSAGE_SIZE;
         const unsigned int PORT = 0;
 
         Gateway(const unsigned int id);
@@ -293,5 +294,8 @@ void Gateway::log_message(const Message& msg, const std::string& direction) {
     
     _csv_logger->log(csv_line.str());
 }
+
+// Out-of-class definition for the static const member
+const unsigned int Gateway::MAX_MESSAGE_SIZE = Protocol::MTU - sizeof(Protocol::Header) - sizeof(Protocol::TimestampFields);
 
 #endif // GATEWAY_H
