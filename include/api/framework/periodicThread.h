@@ -19,7 +19,12 @@
 #include <errno.h>
 #include <signal.h>  // For signal handling
 
-// Definition of sched_attr structure
+// Definition of sched_attr structure (only if not already defined)
+#ifndef __has_include
+#define __has_include(x) 0
+#endif
+
+#if !__has_include(<linux/sched/types.h>) && !defined(__SCHED_ATTR_SIZE__)
 struct sched_attr {
     uint32_t size;
     uint32_t sched_policy;
@@ -31,6 +36,7 @@ struct sched_attr {
     uint64_t sched_deadline;
     uint64_t sched_period;
 };
+#endif
 
 // Signal handler for thread interruption
 // Use a single static handler for the entire component system
@@ -41,10 +47,16 @@ extern "C" void component_signal_handler(int sig) {
     }
 }
 
-// Wrapper for the sched_setattr system call
+// Wrapper for the sched_setattr system call (only if not already available)
+#ifndef SYS_sched_setattr
+#define SYS_sched_setattr 314
+#endif
+
+#if !defined(HAVE_SCHED_SETATTR)
 int sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags) {
     return syscall(SYS_sched_setattr, pid, attr, flags);
 }
+#endif
 
 template <typename Owner>
 class Periodic_Thread {
