@@ -51,12 +51,10 @@ class Protocol: private NIC::Observer
         struct TimestampFields {
             bool is_clock_synchronized;      // Clock synchronization status (filled by Protocol on send)
             TimestampType tx_timestamp;      // Filled by NIC on send
-            TimestampType rx_timestamp;      // Filled by NIC on receive
             
             TimestampFields() : 
                 is_clock_synchronized(false),
-                tx_timestamp(TimestampType::min()), 
-                rx_timestamp(TimestampType::min()) {}
+                tx_timestamp(TimestampType::min()) {}
         };
         
         static const unsigned int MTU = NIC::MTU - sizeof(Header) - sizeof(TimestampFields);
@@ -273,22 +271,6 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
         from->paddr(src_mac);
         from->port(pkt->header()->from_port());
     }
-    // Extract timestamps and update Clock if this is a PTP-relevant message
-    TimestampFields* timestamps = pkt->timestamps();
- 
-    // Log the synchronization status from the sender
-    db<Protocol>(INF) << "[Protocol] Received packet with sender_clock_synchronized=" 
-                        << timestamps->is_clock_synchronized << "\n";
-        
-    // Create PTP data structure for Clock
-    PtpRelevantData ptp_data;
-    ptp_data.sender_id = static_cast<LeaderIdType>(src_mac.bytes[5]); // Use last byte of MAC as sender ID
-    ptp_data.ts_tx_at_sender = timestamps->tx_timestamp;
-    ptp_data.ts_local_rx = timestamps->rx_timestamp;
-    
-    // Update Clock with timing information
-    auto& clock = Clock::getInstance();
-    clock.activate(&ptp_data);
     
     db<Protocol>(INF) << "[Protocol] Updated Clock with PTP data: sender=" 
                         << ptp_data.sender_id << ", tx_time=" << timestamps->tx_timestamp.time_since_epoch().count() 
@@ -321,10 +303,36 @@ template <typename NIC>
 void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     db<Protocol>(TRC) << "Protocol<NIC>::update() called!\n";
 
+    Packet* pkt = reinterpret_cast<Packet*>(buf->data()->payload);
+
+    // Extract timestamps and update Clock if this is a PTP-relevant message
+    TimestampFields* timestamps = pkt->timestamps();
+ 
+    // Log the synchronization status from the sender
+    db<Protocol>(INF) << "[Protocol] Received packet with sender_clock_synchronized=" 
+                        << timestamps->is_clock_synchronized << "\n";
+        
+    // convert buffer (std::int64_t) _rx_time back to TimestampType
+    TimestampType tp(DurationType(buf->rx()));
+    // Create PTP data structure for Clock
+    PtpRelevantData ptp_data;
+    ptp_data.sender_id = static_cast<LeaderIdType>(src_mac.bytes[5]); // Use last byte of MAC as sender ID
+    ptp_data.ts_tx_at_sender = timestamps->tx_timestamp;
+    ptp_data.ts_local_rx = tp;
+    
+    // Update Clock with timing information
+    auto& clock = Clock::getInstance();
+    clock.activate(&ptp_data);
+
+    if (!buf) {
+        db<Protocol>(INF) << "[Protocol] data received, but buffer is null. Releasing buffer.\n";
+    }
+
     if (!Protocol::_observed.notify(buf)) { // Notify every listener
         db<Protocol>(INF) << "[Protocol] data received, but no one was notified for port. Releasing buffer.\n";
         free(buf);
     }
+    db<Protocol>(INF) << "[Protocol] data received, notify succeeded.\n";
 }
 
 // Implementation for the new free method

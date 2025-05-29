@@ -50,7 +50,6 @@ Network::Network(const unsigned int id) : _id(id) {
 
 Network::~Network() {
     delete _can;
-    _nic->stop();
     delete _protocol;
     delete _nic;
 }

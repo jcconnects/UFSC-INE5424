@@ -105,7 +105,9 @@ void SocketEngine::stop() {
 
     std::uint64_t u = 1;
     db<SocketEngine>(TRC) << "[SocketEngine] sending stop signal to receive thread\n";
-    while (static_cast<long unsigned int>(write(_stop_ev, &u, sizeof(u))) < sizeof(u)) {}
+    while (static_cast<long unsigned int>(write(_stop_ev, &u, sizeof(u))) < sizeof(u)) {
+
+    }
     db<SocketEngine>(TRC) << "[SocketEngine] stop signal sent to receive thread\n";
 
     // Join the receive thread if it exists
@@ -240,10 +242,12 @@ void* SocketEngine::run(void* arg)  {
 
     SocketEngine* engine = static_cast<SocketEngine*>(arg);
 
-    struct epoll_event events[10];
+    struct epoll_event events[1024];
 
     while (engine->running()) {
-        int n = epoll_wait(engine->_ep_fd, events, 10, -1);
+        int n = epoll_wait(engine->_ep_fd, events, 1024, -1);
+
+        db<SocketEngine>(TRC) << "[SocketEngine] epoll event detected\n";
         
         if (n < 0) {
             if (errno == EINTR) continue;

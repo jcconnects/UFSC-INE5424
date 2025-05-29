@@ -88,9 +88,6 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
 
         // Helper method to fill TX timestamp in packet
         void fillTxTimestamp(DataBuffer* buf, unsigned int packet_size);
-        
-        // Helper method to fill RX timestamp in packet
-        void fillRxTimestamp(void* packet_data, unsigned int packet_size);
 
     private:
 
@@ -206,16 +203,13 @@ int NIC<Engine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data
     // 2. Payload size
     unsigned int payload_size = buf->size() - Ethernet::HEADER_SIZE;
 
-    // 3. Fill RX timestamp in the packet data before copying
-    fillRxTimestamp(frame->payload, payload_size);
-
-    // 4. Copies payload to data pointer
+    // 3. Copies payload to data pointer
     std::memcpy(data, frame->payload, payload_size);
 
-    // 5. Releases the buffer
+    // 4. Releases the buffer
     free(buf);
 
-    // 6. Return size of copied bytes
+    // 5. Return size of copied bytes
     return payload_size;
 }
 
@@ -248,10 +242,18 @@ void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
         return;
     }
 
-    // 3. Copy frame to buffer
+    // 3. Fill RX timestamp in the buffer
+    buf->setRX(clock.getSynchronizedTime(&sync)tp.time_since_epoch().count())
+
+    // 4. Copy frame to buffer
     buf->setData(frame, size);
 
-    // 4. Notify Observers
+   if (!_running.load(std::memory_order_acquire)) {
+        db<NIC>(ERR) << "[NIC] trying to notify protocol when NIC is inactive\n";
+        return;
+    }
+
+    // 5. Notify Observers
     if (!notify(buf, proto)) {
         db<NIC>(INF) << "[NIC] data received, but no one was notified (" << proto << ")\n";
         free(buf); // if no one is listening, release buffer
@@ -359,35 +361,6 @@ void NIC<Engine>::fillTxTimestamp(DataBuffer* buf, unsigned int packet_size) {
     } else {
         db<NIC>(WRN) << "[NIC] Packet too small for TX timestamp. Size: " << packet_size 
                       << ", required: " << (tx_timestamp_offset + sizeof(TimestampType)) << "\n";
-    }
-}
-
-template <typename Engine>
-void NIC<Engine>::fillRxTimestamp(void* packet_data, unsigned int packet_size) {
-    db<NIC>(TRC) << "NIC<Engine>::fillRxTimestamp() called!\n";
-    
-    // Get current synchronized time from Clock
-    auto& clock = Clock::getInstance();
-    bool sync;
-    TimestampType rx_time = clock.getSynchronizedTime(&sync);
-    
-    // Calculate correct offset for RX timestamp accounting for structure alignment
-    // Header: 8 bytes (2×uint16_t + uint32_t)
-    // TimestampFields: bool at offset 0, tx_timestamp at offset 8, rx_timestamp at offset 16
-    const unsigned int header_size = sizeof(std::uint16_t) * 2 + sizeof(std::uint32_t); // 8 bytes
-    const unsigned int rx_timestamp_offset = header_size + 16; // Header + offsetof(TimestampFields, rx_timestamp)
-    
-    // Fill RX timestamp at the calculated offset
-    if (packet_size > rx_timestamp_offset + sizeof(TimestampType)) {
-        uint8_t* packet_bytes = static_cast<uint8_t*>(packet_data);
-        TimestampType* rx_timestamp_ptr = reinterpret_cast<TimestampType*>(packet_bytes + rx_timestamp_offset);
-        *rx_timestamp_ptr = rx_time;
-        
-        db<NIC>(INF) << "[NIC] Filled RX timestamp at offset " << rx_timestamp_offset 
-                      << ": " << rx_time.time_since_epoch().count() << "us\n";
-    } else {
-        db<NIC>(WRN) << "[NIC] Packet too small for RX timestamp. Size: " << packet_size 
-                      << ", required: " << (rx_timestamp_offset + sizeof(TimestampType)) << "\n";
     }
 }
 

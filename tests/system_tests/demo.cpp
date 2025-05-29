@@ -202,7 +202,7 @@ int Demo::run_demo() {
     const auto RSU_PERIOD = std::chrono::milliseconds(250); // 250ms broadcast period
     
     // Vehicle Configuration
-    const unsigned int n_vehicles = 20;
+    const unsigned int n_vehicles = 200;
 
     // Ensure tests/logs directory exists
     try {

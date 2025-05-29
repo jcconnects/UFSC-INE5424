@@ -18,6 +18,8 @@ class Buffer{
         void setData(const void* data, unsigned int size);
         const unsigned int size() const;
         void clear();
+        void setRX(std::int64_t rx);
+        const std::int64_t rx();
     
     private:
         void setSize(unsigned int size);
@@ -25,6 +27,7 @@ class Buffer{
     private:
         std::uint8_t _data[MAX_SIZE];
         unsigned int _size;
+        std::int64_t _rx_time;
 };
 
 template <typename T>
@@ -65,6 +68,16 @@ template <typename T>
 void Buffer<T>::clear() {
     std::memset(_data, 0, MAX_SIZE);
     _size = 0;
+}
+
+template <typename T>
+void Buffer<T>::setRX(std::int64_t rx) {
+    _rx_time = rx;
+}
+
+template <typename T>
+const std::int64_t Buffer<T>::rx() {
+    return _rx_time;
 }
 
 #endif // BUFFER_H
