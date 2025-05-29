@@ -313,12 +313,12 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
                         << timestamps->is_clock_synchronized << "\n";
         
     // convert buffer (std::int64_t) _rx_time back to TimestampType
-    TimestampType tp(DurationType(buf->rx()));
+    TimestampType rx_timestamp(buf->rx());
     // Create PTP data structure for Clock
     PtpRelevantData ptp_data;
     ptp_data.sender_id = static_cast<LeaderIdType>(src_mac.bytes[5]); // Use last byte of MAC as sender ID
     ptp_data.ts_tx_at_sender = timestamps->tx_timestamp;
-    ptp_data.ts_local_rx = tp;
+    ptp_data.ts_local_rx = rx_timestamp;
     
     // Update Clock with timing information
     auto& clock = Clock::getInstance();
