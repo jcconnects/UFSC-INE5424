@@ -222,44 +222,44 @@ The system implements a high-precision PTP (Precision Time Protocol) clock synch
 
 ### Design Rationale
 
-#### **Precision Choice: Microsecond Resolution**
-The system uses microsecond precision (`std::chrono::microseconds`) for all timestamp operations:
+#### **Precision Choice: Millisecond Resolution**
+The system uses millisecond precision (`std::chrono::milliseconds`) for all timestamp operations:
 
-- **Message transmission time**: 2μs per message
-- **Hardware capability**: macOS M1 Pro reliably delivers microsecond precision (verified through testing)
-- **PTP requirements**: Microsecond precision meets IEEE 1588 standards for vehicular applications
-- **Efficiency**: Optimal balance between precision and computational overhead
+- **Message transmission time**: 2us per message
+- **Hardware capability**: macOS M1 Pro reliably delivers millisecond precision
+- **PTP requirements**: Millisecond precision suitable for many vehicular applications
+- **Efficiency**: Good balance between precision and computational overhead
 
 #### **Timeout Configuration: 500ms Leader Silence Interval**
 The `MAX_LEADER_SILENCE_INTERVAL` is set to 500 milliseconds based on cumulative error analysis:
 
 ```cpp
-// Allow up to 10μs cumulative error:
-// For high-precision oscillator (~20 ppb): 10μs / 20ppb = 500ms
+// Allow up to 10ms cumulative error:
+// For standard crystal (~20 ppm): 10ms / 20ppm = 500ms
 static constexpr DurationType MAX_LEADER_SILENCE_INTERVAL = std::chrono::milliseconds(500);
 ```
 
 **Calculation methodology**:
-- **Cumulative error limit**: 10μs (10× the 1μs precision for safety margin)
-- **Assumed oscillator drift**: 20 parts per billion (ppb)
-- **Formula**: `MAX_SILENCE = ERROR_LIMIT / DRIFT_RATE = 10μs / 20ppb = 500ms`
+- **Cumulative error limit**: 10ms (10× the 1ms precision for safety margin)
+- **Assumed oscillator drift**: 20 parts per million (ppm)
+- **Formula**: `MAX_SILENCE = ERROR_LIMIT / DRIFT_RATE = 10ms / 20ppm = 500ms`
 
 #### **Hardware Requirements**
-This configuration assumes high-precision oscillators:
-- **OCXO (Oven Controlled Crystal Oscillator)**: Typical 1-100 ppb stability
-- **GPS-disciplined oscillators**: Sub-ppb long-term stability
-- **High-quality TCXO**: 0.1-10 ppm (acceptable with shorter timeouts)
+This configuration assumes standard crystal oscillators commonly found in consumer hardware:
+- **Standard Crystal Oscillators**: Typical 10-50 ppm stability (widely available)
+- **Apple M1 Pro**: Uses standard crystal oscillators, not high-precision timing hardware
+- **Consumer-grade hardware**: Cost-effective solution suitable for most applications
 
 #### **Benefits of This Approach**
 
-1. **Network robustness**: 500ms timeout tolerates network jitter and temporary delays
-2. **Precision maintenance**: Cumulative drift error stays well within acceptable bounds
-3. **False positive prevention**: Long timeout reduces unnecessary leader failovers
-4. **Scalability**: Supports large vehicle networks with varying message frequencies
+1. **Hardware accessibility**: Works with standard, widely-available crystal oscillators
+2. **Fast failure detection**: 500ms timeout enables very rapid leader failover
+3. **Precision maintenance**: Cumulative drift error stays well within acceptable bounds
+4. **Cost-effective**: No need for expensive high-precision timing hardware
 
 #### **Performance Characteristics**
-- **Maximum drift error**: 10μs over 500ms silence period
-- **Network tolerance**: Handles typical automotive network delays (1-100ms)
+- **Maximum drift error**: 10ms over 500ms silence period
+- **Network tolerance**: Handles typical network jitter (usually < 100ms)
 - **Leader failover time**: Maximum 500ms detection of failed leaders
 - **Message capacity**: ~250,000 messages possible during timeout period (500ms ÷ 2μs)
 
