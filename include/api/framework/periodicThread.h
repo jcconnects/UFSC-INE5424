@@ -153,22 +153,45 @@ void* Periodic_Thread<Owner>::run(void* arg) {
     sa.sa_flags = 0;
     sigaction(SIGUSR1, &sa, nullptr);
 
+    // SCHED_DEADLINE limits (conservative estimates for portability)
+    static constexpr uint64_t MAX_DEADLINE_PERIOD_US = 1000000ULL;    // 1 second in microseconds
+    
+    bool use_deadline_scheduling = false;
     struct sched_attr attr_dl;
-    memset(&attr_dl, 0, sizeof(attr_dl));
-    attr_dl.size = sizeof(attr_dl);
-    attr_dl.sched_policy = SCHED_DEADLINE;
-    attr_dl.sched_flags = 0;
-
+    
     while (thread->running()) {
-        uint64_t current_period = thread->period();
-        // Update SCHED_DEADLINE parameters based on current period
-        attr_dl.sched_runtime = current_period * 500; // 50% of period in ns
-        attr_dl.sched_deadline = current_period * 1000; // Period in ns
-        attr_dl.sched_period = current_period * 1000; // Period in ns
-        int result = sched_setattr(0, &attr_dl, 0);
-        if (result != 0) {
-            std::cerr << "Error setting SCHED_DEADLINE: " << strerror(errno) << std::endl;
-            return nullptr;
+        uint64_t current_period_us = thread->period();
+        
+        // Determine if we should use SCHED_DEADLINE based on period length
+        bool should_use_deadline = (current_period_us <= MAX_DEADLINE_PERIOD_US);
+        
+        // Only attempt SCHED_DEADLINE for periods <= 1 second
+        if (should_use_deadline && !use_deadline_scheduling) {
+            memset(&attr_dl, 0, sizeof(attr_dl));
+            attr_dl.size = sizeof(attr_dl);
+            attr_dl.sched_policy = SCHED_DEADLINE;
+            attr_dl.sched_flags = 0;
+            
+            // Convert microseconds to nanoseconds for SCHED_DEADLINE
+            uint64_t period_ns = current_period_us * 1000;
+            attr_dl.sched_runtime = period_ns / 2;  // 50% of period for execution
+            attr_dl.sched_deadline = period_ns;     // Deadline equals period
+            attr_dl.sched_period = period_ns;       // Period in nanoseconds
+            
+            int result = sched_setattr(0, &attr_dl, 0);
+            if (result == 0) {
+                use_deadline_scheduling = true;
+            } else {
+                use_deadline_scheduling = false;
+            }
+        } else if (!should_use_deadline && use_deadline_scheduling) {
+            // Switch back to regular scheduling for long periods
+            struct sched_param param;
+            param.sched_priority = 0;
+            int result = pthread_setschedparam(pthread_self(), SCHED_OTHER, &param);
+            if (result == 0) {
+                use_deadline_scheduling = false;
+            }
         }
 
         // Double-check running status before calling task
@@ -176,7 +199,8 @@ void* Periodic_Thread<Owner>::run(void* arg) {
             thread->_task();
         }
         
-        std::this_thread::sleep_for(std::chrono::milliseconds(thread->period()/1000));
+        // Sleep for the specified period (convert microseconds to milliseconds)
+        std::this_thread::sleep_for(std::chrono::microseconds(current_period_us));
     }
 
     return nullptr;

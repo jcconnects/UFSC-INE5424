@@ -721,7 +721,7 @@ void RSUTest::testVeryShortPeriod() {
 void RSUTest::testVeryLongPeriod() {
     const unsigned int RSU_ID = 121;
     const unsigned int UNIT = 62;
-    const auto LONG_PERIOD = 9s; // 10 is set to the max practical limit for periodic thread
+    const auto LONG_PERIOD = 9s; // Long period that exceeds SCHED_DEADLINE limits (falls back to regular scheduling)
     
     RSU rsu(RSU_ID, UNIT, LONG_PERIOD);
     // Convert both to milliseconds for comparison
