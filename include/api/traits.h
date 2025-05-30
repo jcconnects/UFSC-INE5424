@@ -20,28 +20,20 @@ inline std::string get_interface_name() {
 // Foward Declarations
 template <typename NIC>
 class Protocol;
-
 class Agent;
-
 class AgentStub;
-
 template <typename Engine>
 class NIC;
-
 class SocketEngine;
-
 class Debug;
-
 template <typename Channel>
 class Communicator;
-
 template <typename Protocol>
 class Message;
-
 class CAN;
-
-// Forward declaration for Gateway
 class Gateway;
+class Clock;
+class LeaderKeyStorage;
 
 // Traits definition
 template <typename T>
@@ -119,14 +111,28 @@ struct Traits<Gateway> : public Traits<void>
     static const bool debugged = true;
 };
 
+// Traits for Clock class
+template<>
+struct Traits<Clock> : public Traits<void>
+{
+    static const bool debugged = false;
+};
+
+// Traits for LeaderKeyStorage class
+template<>
+struct Traits<LeaderKeyStorage> : public Traits<void>
+{
+    static const bool debugged = false;
+};
+
 // Traits for Debug class
 template<>
 struct Traits<Debug> : public Traits<void>
 {
-    static const bool error = false;
-    static const bool warning = false;
-    static const bool info = false;
-    static const bool trace = false;
+    static const bool error = true;
+    static const bool warning = true;
+    static const bool info = true;
+    static const bool trace = true;
 };
 
 #endif // TRAITS_H
