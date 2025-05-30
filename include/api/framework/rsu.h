@@ -156,16 +156,17 @@ void RSU::stop() {
     db<RSU>(TRC) << "RSU::stop() called!\n";
     
     if (_running.load(std::memory_order_acquire)) {
-        // Step 1: Signal threads to stop
+        // Step 1: Signal RSU that it should stop its operations
         _running.store(false, std::memory_order_release);
         db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " stopping broadcasting\n";
         
-        // Step 2: Release communicator to unblock any waiting operations
-        _comm->release();
-        
-        // Step 3: Stop periodic thread and wait for it to finish
+        // Step 2: Stop periodic thread and wait for it to finish.
+        // This ensures RSU::broadcast() (and thus _comm->send()) is no longer called.
         _periodic_thread.join();
         db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " periodic thread stopped\n";
+        
+        // Step 3: Release communicator now that the thread is guaranteed to not use it.
+        _comm->release();
         
         // Step 4: Stop network stack after threads are fully stopped
         _network->stop();

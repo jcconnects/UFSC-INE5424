@@ -24,7 +24,8 @@
 #define __has_include(x) 0
 #endif
 
-#if !__has_include(<linux/sched/types.h>) && !defined(__SCHED_ATTR_SIZE__)
+// Always define sched_attr if it's not available from system headers
+#if !__has_include(<linux/sched/types.h>)
 struct sched_attr {
     uint32_t size;
     uint32_t sched_policy;
@@ -36,6 +37,8 @@ struct sched_attr {
     uint64_t sched_deadline;
     uint64_t sched_period;
 };
+#else
+#include <linux/sched/types.h>
 #endif
 
 // Signal handler for thread interruption

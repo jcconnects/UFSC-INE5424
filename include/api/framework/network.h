@@ -17,10 +17,6 @@ class Network {
         void stop() { 
             if (_nic)
                 _nic->stop();
-
-            if (_protocol)
-                delete _protocol;
-
         }
 
         Protocol* channel();
@@ -53,7 +49,11 @@ Network::Network(const unsigned int id) : _id(id) {
 
 Network::~Network() {
     delete _can;
+    _can = nullptr;
+    delete _protocol;
+    _protocol = nullptr;
     delete _nic;
+    _nic = nullptr;
 }
 
 Network::Protocol* Network::channel() {
