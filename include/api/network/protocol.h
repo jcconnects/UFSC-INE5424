@@ -215,7 +215,7 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
 
     if (!_nic) {
         db<Protocol>(TRC) << "Protocol<NIC>::send() called after release!\n";
-        return;
+        return 0;
     }
 
     // Allocate buffer for the entire frame -> NIC alloc adds Frame Header size (this is better for independency)
@@ -260,7 +260,7 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
     
     if (!_nic) {
         db<Protocol>(TRC) << "Protocol<NIC>::receive() called after release!\n";
-        return;
+        return -1;
     }
     
     int packet_size = _nic->receive(buf, &src_mac, &dst_mac, temp_buffer, NIC::MTU);
@@ -299,7 +299,6 @@ void Protocol<NIC>::attach(Observer* obs, Address address) {
 template <typename NIC>
 void Protocol<NIC>::detach(Observer* obs, Address address) {
     _observed.detach(obs, address.port());
-    _nic = nullptr;
     db<Protocol>(INF) << "[Protocol] Detached observer from port " << address.port() << "\n";
 }
 

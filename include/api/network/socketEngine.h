@@ -104,6 +104,7 @@ void SocketEngine::stop() {
     _running.store(false, std::memory_order_release);
 
     std::uint64_t u = 1;
+    ssize_t bytes_written;
     db<SocketEngine>(TRC) << "[SocketEngine] sending stop signal to receive thread\n";
     do {
         bytes_written = write(_stop_ev, &u, sizeof(u));

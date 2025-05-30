@@ -99,7 +99,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         sem_t _buffer_sem;
         sem_t _binary_sem;
 
-        bool running() { _running.load(std::memory_order_acquire) }
+        bool running() { return _running.load(std::memory_order_acquire); }
 };
 
 /*********** NIC Implementation ************/
