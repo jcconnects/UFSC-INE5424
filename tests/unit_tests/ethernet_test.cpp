@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cstring>
-#include "test_utils.h"
+#include "../test_utils.h"
 #include "network/ethernet.h"
 
 int main() {

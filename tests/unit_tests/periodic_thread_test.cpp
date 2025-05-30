@@ -2,7 +2,7 @@
 #include <string>
 #include <cstdint>
 
-#include "test_utils.h"
+#include "../test_utils.h"
 #include "../testcase.h"
 #include "../../include/api/framework/periodicThread.h"
 

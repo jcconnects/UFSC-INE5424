@@ -11,7 +11,7 @@
 #include "../../include/socketEngine.h"
 #include "../../include/ethernet.h"
 #include "../../include/traits.h"
-#include "test_utils.h"
+#include "../test_utils.h"
 
 class Initializer {
     public:
