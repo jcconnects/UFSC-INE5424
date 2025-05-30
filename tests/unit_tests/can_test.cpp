@@ -14,11 +14,11 @@ std::string setup_log_directory() {
     
     // Try in priority order: Docker logs dir, tests/logs dir, current dir
     if (std::filesystem::exists("tests/logs")) {
-        std::string test_dir = "test/logs/can_test";
+        std::string test_dir = "tests/logs/can_test";
         std::filesystem::create_directory(test_dir, ec);
         
         if (!ec) {
-            return "test/logs/can_test.log";
+            return "tests/logs/can_test/can_test.log";
         }
     }
     
@@ -27,7 +27,7 @@ std::string setup_log_directory() {
     
     try {
         std::filesystem::create_directories(test_logs_dir);
-        return "test/logs/can_test/can_test.log";
+        return "tests/logs/can_test/can_test.log";
     } catch (...) {
         // Fallback to tests/logs without vehicle subfolder
         return "tests/logs/can_test.log";

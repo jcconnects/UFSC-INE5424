@@ -5,7 +5,7 @@ allowmixing
 title "Test Organization Structure"
 
 package "Test Utils" {
-  class "test_utils.h" as Utils {
+  class "../test_utils.h" as Utils {
     + TEST_INIT(name)
     + TEST_LOG(message)
     + TEST_ASSERT(condition, message)

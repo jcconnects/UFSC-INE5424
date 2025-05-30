@@ -11,6 +11,8 @@
 // Test constants
 const LeaderIdType TEST_LEADER_ID = 1;
 const LeaderIdType NON_LEADER_ID = 2;
+// Add a remote leader ID for testing follower behavior
+const LeaderIdType REMOTE_LEADER_ID = 10; // Clearly different from local vehicle IDs
 
 using namespace std::chrono_literals;
 
@@ -534,16 +536,19 @@ void ClockTest::testStateRemainsInSynchronizedWithSubsequentMessages() {
  * receive a second message within MAX_LEADER_SILENCE_INTERVAL (5 seconds),
  * it transitions back to UNSYNCHRONIZED state. This prevents the Clock from
  * remaining indefinitely in a partially synchronized state when the leader
- * becomes unavailable.
+ * becomes unavailable. Tests a follower vehicle's clock behavior.
  */
 void ClockTest::testTimeoutTransitionFromAwaitingSecondMessageToUnsynchronized() {
     auto& clock = Clock::getInstance();
     auto& storage = LeaderKeyStorage::getInstance();
-    const LeaderIdType TEST_LEADER_ID = 1;
     
-    // Set leader in storage
+    // Use remote leader ID to ensure we're testing a follower vehicle's clock
+    // The local vehicle being tested is NOT the leader
+    const LeaderIdType REMOTE_LEADER_ID = 10;
+    
+    // Set remote leader in storage
     Ethernet::Address leader_addr;
-    leader_addr.bytes[5] = static_cast<uint8_t>(TEST_LEADER_ID);
+    leader_addr.bytes[5] = static_cast<uint8_t>(REMOTE_LEADER_ID);
     storage.setLeaderId(leader_addr);
     
     // Test 1: Timeout in AWAITING_SECOND_MSG
@@ -566,33 +571,37 @@ void ClockTest::testTimeoutTransitionFromAwaitingSecondMessageToUnsynchronized()
  * messages from the leader within MAX_LEADER_SILENCE_INTERVAL (5 seconds),
  * it transitions back to UNSYNCHRONIZED state. This ensures the Clock doesn't
  * continue to provide potentially stale synchronized time when the leader
- * becomes unavailable.
+ * becomes unavailable. Tests a follower vehicle's clock behavior.
  */
 void ClockTest::testTimeoutTransitionFromSynchronizedToUnsynchronized() {
     auto& clock = Clock::getInstance();
     auto& storage = LeaderKeyStorage::getInstance();
-    const LeaderIdType TEST_LEADER_ID = 1;
     
-    // Set leader in storage
+    // Use remote leader ID to ensure we're testing a follower vehicle's clock
+    // The local vehicle being tested is NOT the leader
+    const LeaderIdType REMOTE_LEADER_ID = 10;
+    
+    // Set remote leader in storage
     Ethernet::Address leader_addr;
-    leader_addr.bytes[5] = static_cast<uint8_t>(TEST_LEADER_ID);
+    leader_addr.bytes[5] = static_cast<uint8_t>(REMOTE_LEADER_ID);
     storage.setLeaderId(leader_addr);
     
     auto now = clock.getLocalSteadyHardwareTime();
     
-    // Get to SYNCHRONIZED state
-    auto ptp_data1 = createPtpData(TEST_LEADER_ID, now, now + 100us);
+    // Get to SYNCHRONIZED state by receiving messages from remote leader
+    auto ptp_data1 = createPtpData(REMOTE_LEADER_ID, now, now + 100us);
     clock.activate(&ptp_data1);
     
-    auto ptp_data2 = createPtpData(TEST_LEADER_ID, now + 1000us, now + 1100us);
+    auto ptp_data2 = createPtpData(REMOTE_LEADER_ID, now + 1000us, now + 1100us);
     clock.activate(&ptp_data2);
     assert_equal(Clock::State::SYNCHRONIZED, clock.getState(), "Should be SYNCHRONIZED");
     
     // Wait for timeout and verify transition back to UNSYNCHRONIZED
-    std::this_thread::sleep_for(clock.getMaxLeaderSilenceInterval());
+    // This should work since the local vehicle is a follower, not the leader
+    std::this_thread::sleep_for(clock.getMaxLeaderSilenceInterval() * 1.1);
     clock.activate(nullptr);
     assert_equal(Clock::State::UNSYNCHRONIZED, clock.getState(), 
-        "Should timeout to UNSYNCHRONIZED from SYNCHRONIZED");
+        "Should timeout to UNSYNCHRONIZED from SYNCHRONIZED when acting as follower");
 }
 
 /**
@@ -602,15 +611,19 @@ void ClockTest::testTimeoutTransitionFromSynchronizedToUnsynchronized() {
  * when messages are received within MAX_LEADER_SILENCE_INTERVAL, no timeout
  * occurs. This test also verifies that the timeout timer is properly reset
  * when new valid messages are received, preventing false timeouts.
+ * Tests a follower vehicle's clock behavior.
  */
 void ClockTest::testNoTimeoutOccursWithRecentMessages() {
     auto& clock = Clock::getInstance();
     auto& storage = LeaderKeyStorage::getInstance();
-    const LeaderIdType TEST_LEADER_ID = 1;
     
-    // Set leader in storage
+    // Use remote leader ID to ensure we're testing a follower vehicle's clock
+    // The local vehicle being tested is NOT the leader
+    const LeaderIdType REMOTE_LEADER_ID = 10;
+    
+    // Set remote leader in storage
     Ethernet::Address leader_addr;
-    leader_addr.bytes[5] = static_cast<uint8_t>(TEST_LEADER_ID);
+    leader_addr.bytes[5] = static_cast<uint8_t>(REMOTE_LEADER_ID);
     storage.setLeaderId(leader_addr);
     
     // Test 1: Verify timeout doesn't occur in UNSYNCHRONIZED state (no sync event yet)
@@ -625,7 +638,7 @@ void ClockTest::testNoTimeoutOccursWithRecentMessages() {
     
     // Test 2: Timeout in AWAITING_SECOND_MSG state
     auto now = clock.getLocalSteadyHardwareTime();
-    auto ptp_data1 = createPtpData(TEST_LEADER_ID, now, now + 100us);
+    auto ptp_data1 = createPtpData(REMOTE_LEADER_ID, now, now + 100us);
     clock.activate(&ptp_data1);
     assert_equal(Clock::State::AWAITING_SECOND_MSG, clock.getState(), 
         "Should transition to AWAITING_SECOND_MSG");
@@ -639,16 +652,16 @@ void ClockTest::testNoTimeoutOccursWithRecentMessages() {
     // Test 3: Timeout in SYNCHRONIZED state
     // First get back to SYNCHRONIZED
     now = clock.getLocalSteadyHardwareTime();
-    ptp_data1 = createPtpData(TEST_LEADER_ID, now, now + 100us);
+    ptp_data1 = createPtpData(REMOTE_LEADER_ID, now, now + 100us);
     clock.activate(&ptp_data1);
     
-    auto ptp_data2 = createPtpData(TEST_LEADER_ID, now + 1000us, now + 1100us);
+    auto ptp_data2 = createPtpData(REMOTE_LEADER_ID, now + 1000us, now + 1100us);
     clock.activate(&ptp_data2);
     assert_equal(Clock::State::SYNCHRONIZED, clock.getState(), 
         "Should be in SYNCHRONIZED state");
     
     // Wait for timeout and verify transition back to UNSYNCHRONIZED
-    std::this_thread::sleep_for(clock.getMaxLeaderSilenceInterval());
+    std::this_thread::sleep_for(clock.getMaxLeaderSilenceInterval() * 1.1);
     clock.activate(nullptr);
     assert_equal(Clock::State::UNSYNCHRONIZED, clock.getState(), 
         "Should timeout to UNSYNCHRONIZED from SYNCHRONIZED");
@@ -658,7 +671,7 @@ void ClockTest::testNoTimeoutOccursWithRecentMessages() {
     storage.setLeaderId(leader_addr);
     
     now = clock.getLocalSteadyHardwareTime();
-    ptp_data1 = createPtpData(TEST_LEADER_ID, now, now + 100us);
+    ptp_data1 = createPtpData(REMOTE_LEADER_ID, now, now + 100us);
     clock.activate(&ptp_data1);
     assert_equal(Clock::State::AWAITING_SECOND_MSG, clock.getState(), 
         "Should be in AWAITING_SECOND_MSG");
@@ -674,7 +687,7 @@ void ClockTest::testNoTimeoutOccursWithRecentMessages() {
     storage.setLeaderId(leader_addr);
     
     now = clock.getLocalSteadyHardwareTime();
-    ptp_data1 = createPtpData(TEST_LEADER_ID, now, now + 100us);
+    ptp_data1 = createPtpData(REMOTE_LEADER_ID, now, now + 100us);
     clock.activate(&ptp_data1);
     
     // Wait exactly the timeout period
@@ -689,7 +702,7 @@ void ClockTest::testNoTimeoutOccursWithRecentMessages() {
     storage.setLeaderId(leader_addr);
     
     now = clock.getLocalSteadyHardwareTime();
-    ptp_data1 = createPtpData(TEST_LEADER_ID, now, now + 100us);
+    ptp_data1 = createPtpData(REMOTE_LEADER_ID, now, now + 100us);
     clock.activate(&ptp_data1);
     
     // Wait a little bit less than timeout
@@ -710,10 +723,10 @@ void ClockTest::testNoTimeoutOccursWithRecentMessages() {
     storage.setLeaderId(leader_addr);
     
     now = clock.getLocalSteadyHardwareTime();
-    ptp_data1 = createPtpData(TEST_LEADER_ID, now, now + 100us);
+    ptp_data1 = createPtpData(REMOTE_LEADER_ID, now, now + 100us);
     clock.activate(&ptp_data1);
     
-    ptp_data2 = createPtpData(TEST_LEADER_ID, now + 1000us, now + 1100us);
+    ptp_data2 = createPtpData(REMOTE_LEADER_ID, now + 1000us, now + 1100us);
     clock.activate(&ptp_data2);
     assert_equal(Clock::State::SYNCHRONIZED, clock.getState(), 
         "Should be SYNCHRONIZED");
@@ -722,14 +735,14 @@ void ClockTest::testNoTimeoutOccursWithRecentMessages() {
     std::this_thread::sleep_for(clock.getMaxLeaderSilenceInterval() / 2);
     // Use current time for the third message to properly reset the timeout timer
     auto now_after_wait = clock.getLocalSteadyHardwareTime();
-    auto ptp_data3 = createPtpData(TEST_LEADER_ID, now_after_wait, now_after_wait + 100us);
+    auto ptp_data3 = createPtpData(REMOTE_LEADER_ID, now_after_wait, now_after_wait + 100us);
     clock.activate(&ptp_data3);
     assert_equal(Clock::State::SYNCHRONIZED, clock.getState(), 
         "Should remain SYNCHRONIZED after receiving new message");
     
     // Send another message with current timestamps to ensure timer reset
     now_after_wait = clock.getLocalSteadyHardwareTime();
-    ptp_data3 = createPtpData(TEST_LEADER_ID, now_after_wait, now_after_wait + 100us);
+    ptp_data3 = createPtpData(REMOTE_LEADER_ID, now_after_wait, now_after_wait + 100us);
     clock.activate(&ptp_data3);
 
     // Wait half of the timeout period and check timeout
@@ -749,21 +762,25 @@ void ClockTest::testNoTimeoutOccursWithRecentMessages() {
  * Verifies the Clock's timeout behavior when the silence interval is exactly
  * at the MAX_LEADER_SILENCE_INTERVAL boundary. This ensures that the timeout
  * logic is implemented correctly and handles edge cases appropriately, such
- * as when the timeout occurs exactly at the 5-second mark.
+ * as when the timeout occurs exactly at the 5-second mark. Tests a follower
+ * vehicle's clock behavior.
  */
 void ClockTest::testTimeoutBoundaryConditionsAtExactInterval() {
     auto& clock = Clock::getInstance();
     auto& storage = LeaderKeyStorage::getInstance();
-    const LeaderIdType TEST_LEADER_ID = 1;
     
-    // Set leader in storage
+    // Use remote leader ID to ensure we're testing a follower vehicle's clock
+    // The local vehicle being tested is NOT the leader
+    const LeaderIdType REMOTE_LEADER_ID = 10;
+    
+    // Set remote leader in storage
     Ethernet::Address leader_addr;
-    leader_addr.bytes[5] = static_cast<uint8_t>(TEST_LEADER_ID);
+    leader_addr.bytes[5] = static_cast<uint8_t>(REMOTE_LEADER_ID);
     storage.setLeaderId(leader_addr);
     
     // First, get to AWAITING_SECOND_MSG state by sending a message
     auto now = clock.getLocalSteadyHardwareTime();
-    auto ptp_data1 = createPtpData(TEST_LEADER_ID, now, now + 100us);
+    auto ptp_data1 = createPtpData(REMOTE_LEADER_ID, now, now + 100us);
     clock.activate(&ptp_data1);
     assert_equal(Clock::State::AWAITING_SECOND_MSG, clock.getState(), 
         "Should be in AWAITING_SECOND_MSG after first message");
@@ -783,15 +800,19 @@ void ClockTest::testTimeoutBoundaryConditionsAtExactInterval() {
  * the timeout timer is properly reset, preventing premature timeouts. This
  * test ensures that continuous message reception maintains synchronization
  * and that the timeout only occurs when there is actual leader silence.
+ * Tests a follower vehicle's clock behavior.
  */
 void ClockTest::testTimeoutTimerResetWithNewValidMessages() {
     auto& clock = Clock::getInstance();
     auto& storage = LeaderKeyStorage::getInstance();
-    const LeaderIdType TEST_LEADER_ID = 1;
     
-    // Set leader in storage
+    // Use remote leader ID to ensure we're testing a follower vehicle's clock
+    // The local vehicle being tested is NOT the leader
+    const LeaderIdType REMOTE_LEADER_ID = 10;
+    
+    // Set remote leader in storage
     Ethernet::Address leader_addr;
-    leader_addr.bytes[5] = static_cast<uint8_t>(TEST_LEADER_ID);
+    leader_addr.bytes[5] = static_cast<uint8_t>(REMOTE_LEADER_ID);
     storage.setLeaderId(leader_addr);
     
     // Wait exactly the timeout period
@@ -803,10 +824,10 @@ void ClockTest::testTimeoutTimerResetWithNewValidMessages() {
 
     // Test 7: Verify that new valid messages reset the timeout timer
     auto now = clock.getLocalSteadyHardwareTime();
-    auto ptp_data1 = createPtpData(TEST_LEADER_ID, now, now + 100us);
+    auto ptp_data1 = createPtpData(REMOTE_LEADER_ID, now, now + 100us);
     clock.activate(&ptp_data1);
     
-    auto ptp_data2 = createPtpData(TEST_LEADER_ID, now + 1000us, now + 1100us);
+    auto ptp_data2 = createPtpData(REMOTE_LEADER_ID, now + 1000us, now + 1100us);
     clock.activate(&ptp_data2);
     assert_equal(Clock::State::SYNCHRONIZED, clock.getState(), 
         "Should be SYNCHRONIZED");
@@ -815,14 +836,14 @@ void ClockTest::testTimeoutTimerResetWithNewValidMessages() {
     std::this_thread::sleep_for(clock.getMaxLeaderSilenceInterval() / 2);
     // Use current time for the third message to properly reset the timeout timer
     auto now_after_wait = clock.getLocalSteadyHardwareTime();
-    auto ptp_data3 = createPtpData(TEST_LEADER_ID, now_after_wait, now_after_wait + 100us);
+    auto ptp_data3 = createPtpData(REMOTE_LEADER_ID, now_after_wait, now_after_wait + 100us);
     clock.activate(&ptp_data3);
     assert_equal(Clock::State::SYNCHRONIZED, clock.getState(), 
         "Should remain SYNCHRONIZED after receiving new message");
     
     // Send another message with current timestamps to ensure timer reset
     now_after_wait = clock.getLocalSteadyHardwareTime();
-    ptp_data3 = createPtpData(TEST_LEADER_ID, now_after_wait, now_after_wait + 100us);
+    ptp_data3 = createPtpData(REMOTE_LEADER_ID, now_after_wait, now_after_wait + 100us);
     clock.activate(&ptp_data3);
 
     // Wait half of the timeout period and check timeout

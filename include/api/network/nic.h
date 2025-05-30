@@ -5,6 +5,8 @@
 #include <pthread.h>
 #include <queue>
 #include <atomic>
+#include <time.h>
+#include <errno.h>
 
 #include "api/traits.h"
 #include "api/network/ethernet.h"
@@ -105,19 +107,24 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
 /*********** NIC Implementation ************/
 template <typename Engine>
 NIC<Engine>::NIC() : _running(true) {
-    // Engine starts on its own
-
+    // Initialize buffers FIRST - before starting Engine
+    db<NIC>(INF) << "[NIC] [constructor] initializing buffers and semaphores\n";
+    
     for (unsigned int i = 0; i < N_BUFFERS; ++i) {
         _buffer[i] = DataBuffer();
         _free_buffers.push(&_buffer[i]);
     }
-    db<NIC>(INF) << "[NIC] " << std::to_string(N_BUFFERS) << " buffers created\n";
     
     sem_init(&_buffer_sem, 0, N_BUFFERS);
+    
     sem_init(&_binary_sem, 0, 1);
-
-    // Setting default address
+    
+    // Setting default address - must be done before starting Engine
     _address = Engine::mac_address();
+    
+    // NOW it's safe to start the Engine - all NIC infrastructure is ready
+    Engine::start();
+    db<NIC>(INF) << "[NIC] [constructor] NIC fully initialized and Engine started\n";
 }
 
 template <typename Engine>
@@ -127,13 +134,13 @@ NIC<Engine>::~NIC() {
 
     sem_destroy(&_buffer_sem);
     sem_destroy(&_binary_sem);
-    db<NIC>(INF) << "[NIC] semaphores destroyed\n";
+    db<NIC>(INF) << "[NIC] [destructor] semaphores destroyed\n";
     // Engine stops itself on its own
 }
 
 template <typename Engine>
 void NIC<Engine>::stop() {
-    db<NIC>(TRC) << "NIC<Engine>::stop() called!\n";
+    db<NIC>(TRC) << "[NIC] [stop()] called!\n";
     _running.store(false, std::memory_order_release);
     int sem_value;
     sem_getvalue(&_buffer_sem, &sem_value);
@@ -222,11 +229,17 @@ int NIC<Engine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data
 
 template <typename Engine>
 void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
-    db<NIC>(TRC) << "NIC::handle() called!\n";
+    db<NIC>(TRC) << "[NIC] [handle()] called!\n";
 
+    // Additional safety check - ensure we're fully initialized
+    if (!running()) {
+        db<NIC>(WRN) << "[NIC] [handle()] called but NIC is not running - ignoring packet\n";
+        return;
+    }
+    
     // Filter check (optional, engine might do this): ignore packets sent by self
     if (frame->src == _address) {
-        db<NIC>(INF) << "[NIC] ignoring frame from self: {src=" << Ethernet::mac_to_string(frame->src) << "}\n";
+        db<NIC>(INF) << "[NIC] [handle()] ignoring frame from self: {src=" << Ethernet::mac_to_string(frame->src) << "}\n";
         return;
    }
 
@@ -237,55 +250,69 @@ void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
     // 2. Allocate buffer
     unsigned int packet_size = size - Ethernet::HEADER_SIZE;
     if (packet_size == 0) {
-        db<NIC>(INF) << "[NIC] dropping empty frame\n";
+        db<NIC>(INF) << "[NIC] [handle()] dropping empty frame\n";
         _statistics.rx_drops++;
         return;
     }
 
+    db<NIC>(TRC) << "[NIC] [handle()] allocating buffer\n";
     DataBuffer * buf = alloc(dst, proto, packet_size);
+    db<NIC>(TRC) << "[NIC] [handle()] buffer allocated\n";
 
     if (!buf) {
-        db<NIC>(ERR) << "[NIC] alloc called, but NIC is not running\n";
+        db<NIC>(ERR) << "[NIC] [handle()] alloc called, but NIC is not running\n";
         return;
     }
 
     // 3. Fill RX timestamp in the buffer
+    db<NIC>(TRC) << "[NIC] [handle()] filling RX timestamp in the buffer\n";
     auto& clock = Clock::getInstance();
+    db<NIC>(TRC) << "[NIC] [handle()] getting synchronized time from clock\n";
     bool is_sync;
+    db<NIC>(TRC) << "[NIC] [handle()] getting synchronized time from clock\n";
     buf->setRX(clock.getSynchronizedTime(&is_sync).time_since_epoch().count());
+    db<NIC>(TRC) << "[NIC] [handle()] RX timestamp filled in the buffer\n";
 
     // 4. Copy frame to buffer
+    db<NIC>(TRC) << "[NIC] [handle()] copying frame to buffer\n";
     buf->setData(frame, size);
+    db<NIC>(TRC) << "[NIC] [handle()] frame copied to buffer\n";
 
    if (!running()) {
-        db<NIC>(ERR) << "[NIC] trying to notify protocol when NIC is inactive\n";
+        db<NIC>(ERR) << "[NIC] [handle()] trying to notify protocol when NIC is inactive\n";
         return;
     }
 
     // 5. Notify Observers
     if (!notify(buf, proto)) {
-        db<NIC>(INF) << "[NIC] data received, but no one was notified (" << proto << ")\n";
+        db<NIC>(INF) << "[NIC] [handle()] data received, but no one was notified (" << proto << ")\n";
         free(buf); // if no one is listening, release buffer
     }
 }
 
 template <typename Engine>
 typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Number prot, unsigned int size) {
-    db<NIC>(TRC) << "NIC<Engine>::alloc() called!\n";
+    db<NIC>(TRC) << "[NIC] [alloc()] called!\n";
 
     if (!running()) {
-        db<NIC>(ERR) << "[NIC] alloc() called when NIC is inactive\n";
+        db<NIC>(ERR) << "[NIC] [alloc()] called when NIC is inactive\n";
         return nullptr;
     }
     
     // Acquire free buffers counter semaphore
+    db<NIC>(TRC) << "[NIC] [alloc()] acquiring free buffers counter semaphore\n";
     sem_wait(&_buffer_sem);
-    
+    db<NIC>(TRC) << "[NIC] [alloc()] free buffers counter semaphore acquired\n";
+
     // Remove first buffer of the free buffers queue
+    db<NIC>(TRC) << "[NIC] [alloc()] acquiring binary semaphore\n";
     sem_wait(&_binary_sem);
+    db<NIC>(TRC) << "[NIC] [alloc()] binary semaphore acquired\n";
     DataBuffer* buf = _free_buffers.front();
     _free_buffers.pop();
+    db<NIC>(TRC) << "[NIC] [alloc()] buffer removed from free buffers queue\n";
     sem_post(&_binary_sem);
+    db<NIC>(TRC) << "[NIC] [alloc()] binary semaphore released\n";
 
     // Set Frame
     Ethernet::Frame frame;
@@ -297,7 +324,7 @@ typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Numbe
     // Set buffer data
     buf->setData(&frame, frame_size);
 
-    db<NIC>(INF) << "[NIC] buffer allocated for frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << std::to_string(frame.prot) << ", size = " << buf->size() << "}\n";
+    db<NIC>(INF) << "[NIC] [alloc()] buffer allocated for frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << std::to_string(frame.prot) << ", size = " << buf->size() << "}\n";
 
     return buf;
 }
@@ -311,18 +338,26 @@ void NIC<Engine>::free(DataBuffer* buf) {
         return;
     }
 
+    // Debug: Check semaphore state before freeing
+    int sem_value;
+    sem_getvalue(&_buffer_sem, &sem_value);
+    db<NIC>(INF) << "[NIC] [free()] freeing buffer, current semaphore value: " << sem_value << "\n";
+
     // Clear buffer
     buf->clear();
     
     // Add to free buffers queue
     sem_wait(&_binary_sem);
     _free_buffers.push(buf);
+    size_t queue_size = _free_buffers.size();
     sem_post(&_binary_sem);
     
     // Increase free buffers counter
     sem_post(&_buffer_sem);
-
-    db<NIC>(INF) << "[NIC] buffer released\n";
+    
+    // Debug: Check semaphore state after freeing
+    sem_getvalue(&_buffer_sem, &sem_value);
+    db<NIC>(INF) << "[NIC] buffer released, new semaphore value: " << sem_value << ", queue size: " << queue_size << "\n";
 }
 
 template <typename Engine>
