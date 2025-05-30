@@ -77,8 +77,6 @@ void ProtocolStructureTest::testHeaderStructureSize() {
         "uint16_t must be 2 bytes");
     assert_equal(4u, static_cast<unsigned int>(sizeof(unsigned int)), 
         "unsigned int must be 4 bytes");
-    
-    std::cout << "✓ Header structure size verified: " << actual_header_size << " bytes" << std::endl;
 }
 
 /**
@@ -104,8 +102,6 @@ void ProtocolStructureTest::testTimestampFieldsStructureSize() {
     // Verify bool size
     assert_equal(1u, static_cast<unsigned int>(sizeof(bool)),
         "bool must be 1 byte");
-    
-    std::cout << "✓ TimestampFields structure size verified: " << actual_timestamp_fields_size << " bytes" << std::endl;
 }
 
 /**
@@ -131,10 +127,10 @@ void ProtocolStructureTest::testTimestampFieldsOffsets() {
         static_cast<unsigned int>(offsetof(TimestampFields, rx_timestamp)),
         "RX timestamp offset must be 16 (critical for NIC layer)");
     
-    std::cout << "✓ TimestampFields offsets verified:" << std::endl;
-    std::cout << "  - sync_status: " << offsetof(TimestampFields, is_clock_synchronized) << std::endl;
-    std::cout << "  - tx_timestamp: " << offsetof(TimestampFields, tx_timestamp) << std::endl;
-    std::cout << "  - rx_timestamp: " << offsetof(TimestampFields, rx_timestamp) << std::endl;
+    // std::cout << "✓ TimestampFields offsets verified:" << std::endl;
+    // std::cout << "  - sync_status: " << offsetof(TimestampFields, is_clock_synchronized) << std::endl;
+    // std::cout << "  - tx_timestamp: " << offsetof(TimestampFields, tx_timestamp) << std::endl;
+    // std::cout << "  - rx_timestamp: " << offsetof(TimestampFields, rx_timestamp) << std::endl;
 }
 
 /**
@@ -151,10 +147,10 @@ void ProtocolStructureTest::testOverallPacketLayout() {
     assert_equal(32u, total_protocol_overhead,
         "Total protocol overhead must be 32 bytes");
     
-    std::cout << "✓ Protocol overhead breakdown:" << std::endl;
-    std::cout << "  - Header: " << header_size << " bytes" << std::endl;
-    std::cout << "  - TimestampFields: " << timestamp_fields_size << " bytes" << std::endl;
-    std::cout << "  - Total: " << total_protocol_overhead << " bytes" << std::endl;
+    // std::cout << "✓ Protocol overhead breakdown:" << std::endl;
+    // std::cout << "  - Header: " << header_size << " bytes" << std::endl;
+    // std::cout << "  - TimestampFields: " << timestamp_fields_size << " bytes" << std::endl;
+    // std::cout << "  - Total: " << total_protocol_overhead << " bytes" << std::endl;
 }
 
 /**
@@ -171,10 +167,10 @@ void ProtocolStructureTest::testAlignmentRequirements() {
     assert_equal(1u, bool_size, "bool should be 1 byte");
     assert_equal(7u, padding_bytes, "Should have 7 bytes of padding after bool for alignment");
     
-    std::cout << "✓ Alignment analysis:" << std::endl;
-    std::cout << "  - bool size: " << bool_size << " byte" << std::endl;
-    std::cout << "  - Padding after bool: " << padding_bytes << " bytes" << std::endl;
-    std::cout << "  - TX timestamp starts at offset: " << tx_timestamp_offset << std::endl;
+    // std::cout << "✓ Alignment analysis:" << std::endl;
+    // std::cout << "  - bool size: " << bool_size << " byte" << std::endl;
+    // std::cout << "  - Padding after bool: " << padding_bytes << " bytes" << std::endl;
+    // std::cout << "  - TX timestamp starts at offset: " << tx_timestamp_offset << std::endl;
 }
 
 /**
@@ -204,10 +200,10 @@ void ProtocolStructureTest::testNicOffsetCalculations() {
     assert_equal(actual_rx_offset, nic_rx_timestamp_offset,
         "NIC RX timestamp offset must match actual structure layout");
     
-    std::cout << "✓ NIC offset verification:" << std::endl;
-    std::cout << "  - Header size: " << header_size << " bytes (NIC) vs " << actual_header_size << " bytes (actual)" << std::endl;
-    std::cout << "  - TX offset: " << nic_tx_timestamp_offset << " bytes (NIC) vs " << actual_tx_offset << " bytes (actual)" << std::endl;
-    std::cout << "  - RX offset: " << nic_rx_timestamp_offset << " bytes (NIC) vs " << actual_rx_offset << " bytes (actual)" << std::endl;
+    // std::cout << "✓ NIC offset verification:" << std::endl;
+    // std::cout << "  - Header size: " << header_size << " bytes (NIC) vs " << actual_header_size << " bytes (actual)" << std::endl;
+    // std::cout << "  - TX offset: " << nic_tx_timestamp_offset << " bytes (NIC) vs " << actual_tx_offset << " bytes (actual)" << std::endl;
+    // std::cout << "  - RX offset: " << nic_rx_timestamp_offset << " bytes (NIC) vs " << actual_rx_offset << " bytes (actual)" << std::endl;
 }
 
 // Main function
