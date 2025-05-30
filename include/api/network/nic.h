@@ -5,6 +5,8 @@
 #include <pthread.h>
 #include <queue>
 #include <atomic>
+#include <time.h>
+#include <errno.h>
 
 #include "api/traits.h"
 #include "api/network/ethernet.h"
@@ -112,21 +114,17 @@ NIC<Engine>::NIC() : _running(true) {
         _buffer[i] = DataBuffer();
         _free_buffers.push(&_buffer[i]);
     }
-    db<NIC>(TRC) << "[NIC] [constructor] number of buffers created: " << std::to_string(N_BUFFERS) << "\n";
     
-    db<NIC>(TRC) << "[NIC] [constructor] initializing free buffers counter semaphore\n";
     sem_init(&_buffer_sem, 0, N_BUFFERS);
     
-    db<NIC>(TRC) << "[NIC] [constructor] initializing binary semaphore\n";
     sem_init(&_binary_sem, 0, 1);
-    db<NIC>(TRC) << "[NIC] [constructor] binary semaphore initialized\n";
     
+    // Setting default address - must be done before starting Engine
     _address = Engine::mac_address();
-    db<NIC>(TRC) << "[NIC] [constructor] address set to: " << Ethernet::mac_to_string(_address) << "\n";
     
     // NOW it's safe to start the Engine - all NIC infrastructure is ready
-    db<NIC>(TRC) << "[NIC] [constructor] starting Engine after full NIC initialization\n";
-    db<NIC>(TRC) << "[NIC] [constructor] NIC fully initialized and Engine started\n";
+    Engine::start();
+    db<NIC>(INF) << "[NIC] [constructor] NIC fully initialized and Engine started\n";
 }
 
 template <typename Engine>
@@ -233,6 +231,12 @@ template <typename Engine>
 void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
     db<NIC>(TRC) << "[NIC] [handle()] called!\n";
 
+    // Additional safety check - ensure we're fully initialized
+    if (!running()) {
+        db<NIC>(WRN) << "[NIC] [handle()] called but NIC is not running - ignoring packet\n";
+        return;
+    }
+    
     // Filter check (optional, engine might do this): ignore packets sent by self
     if (frame->src == _address) {
         db<NIC>(INF) << "[NIC] [handle()] ignoring frame from self: {src=" << Ethernet::mac_to_string(frame->src) << "}\n";
@@ -299,7 +303,7 @@ typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Numbe
     db<NIC>(TRC) << "[NIC] [alloc()] acquiring free buffers counter semaphore\n";
     sem_wait(&_buffer_sem);
     db<NIC>(TRC) << "[NIC] [alloc()] free buffers counter semaphore acquired\n";
-    
+
     // Remove first buffer of the free buffers queue
     db<NIC>(TRC) << "[NIC] [alloc()] acquiring binary semaphore\n";
     sem_wait(&_binary_sem);
@@ -334,18 +338,26 @@ void NIC<Engine>::free(DataBuffer* buf) {
         return;
     }
 
+    // Debug: Check semaphore state before freeing
+    int sem_value;
+    sem_getvalue(&_buffer_sem, &sem_value);
+    db<NIC>(INF) << "[NIC] [free()] freeing buffer, current semaphore value: " << sem_value << "\n";
+
     // Clear buffer
     buf->clear();
     
     // Add to free buffers queue
     sem_wait(&_binary_sem);
     _free_buffers.push(buf);
+    size_t queue_size = _free_buffers.size();
     sem_post(&_binary_sem);
     
     // Increase free buffers counter
     sem_post(&_buffer_sem);
-
-    db<NIC>(INF) << "[NIC] buffer released\n";
+    
+    // Debug: Check semaphore state after freeing
+    sem_getvalue(&_buffer_sem, &sem_value);
+    db<NIC>(INF) << "[NIC] buffer released, new semaphore value: " << sem_value << ", queue size: " << queue_size << "\n";
 }
 
 template <typename Engine>

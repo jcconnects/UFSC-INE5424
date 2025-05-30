@@ -72,7 +72,11 @@ class SocketEngine{
 /********** SocketEngine Implementation **********/
 
 SocketEngine::SocketEngine() : _stop_ev(eventfd(0, EFD_NONBLOCK)), _running(false) {
-    start();
+    // Do NOT auto-start - let NIC control when to start
+    // Initialize socket and epoll setup only
+    setUpSocket();
+    setUpEpoll();
+    db<SocketEngine>(INF) << "[SocketEngine] constructor completed - ready to start\n";
 };
 
 SocketEngine::~SocketEngine()  {
@@ -88,8 +92,13 @@ SocketEngine::~SocketEngine()  {
 void SocketEngine::start() {
     db<SocketEngine>(TRC) << "SocketEngine::start() called!\n";
 
-    setUpSocket();
-    setUpEpoll();
+    if (_running.load()) {
+        db<SocketEngine>(WRN) << "[SocketEngine] Already running, ignoring start() call\n";
+        return;
+    }
+    
+    // Socket and epoll are already set up in constructor
+    // Just start the receive thread
     _running.store(true, std::memory_order_release);
     pthread_create(&_receive_thread, nullptr, SocketEngine::run, this);
     
