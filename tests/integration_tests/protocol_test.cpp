@@ -15,7 +15,7 @@
 #include "../../include/ethernet.h"
 #include "../../include/traits.h"
 #include "../../include/debug.h"
-#include "test_utils.h"
+#include "../test_utils.h"
 
 // Helper class for testing the Protocol implementation
 class ProtocolTestEngine : public SocketEngine {

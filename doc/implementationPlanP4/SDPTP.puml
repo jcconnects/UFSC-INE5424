@@ -1,0 +1,109 @@
+@startuml SD6_PTP_Clock_Synchronization_Event
+!theme vibrant
+title SD6: PTP Clock Synchronization Event (Protocol & Clock Interaction)
+
+participant "nic_V1:NIC" as NIC
+participant "networkMsgBuffer:Buffer<Ethernet::Frame>" as NetworkMsgBuffer
+participant "protocol_V1:Protocol" as Protocol
+participant "leaderKeyStore:LeaderKeyStorage" as LeaderKeyStore
+participant "clock_V1:Clock" as Clock
+
+skinparam sequenceMessageAlign center
+skinparam actorBackgroundColor LightBlue
+skinparam actorBorderColor Blue
+skinparam participantBackgroundColor LightGreen
+skinparam participantBorderColor Green
+skinparam roundcorner 10
+skinparam noteBackgroundColor LightYellow
+skinparam noteBorderColor Orange
+skinparam sequenceArrowThickness 1.5
+skinparam lifelineMaxMessageSize 400
+
+autonumber "<b>[00]"
+
+== NIC Notifies Protocol of PTP-Relevant Message/Event ==
+NIC -> Protocol ++ : update(PTP_PROTOCOL_TYPE, NetworkMsgBuffer)
+    note right of Protocol #LightGoldenRodYellow
+        NIC has received a frame, potentially timestamped it at ingress,
+        and identified its payload (in NetworkMsgBuffer) as relevant
+        for PTP processing by the Protocol layer.
+        This could be a dedicated PTP message or any message
+        whose timestamps are used for PTP.
+    end note
+
+== Protocol Processes PTP Message ==
+Protocol -> NetworkMsgBuffer : ptpEventData = extractPTPRelevantInfo()
+    note left of NetworkMsgBuffer
+        Protocol extracts PTP message fields,
+        precise timestamps (t1, t2, t3, t4 if available
+        at this stage from NIC/Buffer), and other
+        relevant data from the buffer.
+    end note
+return ptpEventData
+
+Protocol -> LeaderKeyStore ++ : leaderInfo = getLeaderInfo()
+    note right of LeaderKeyStore
+        Protocol queries LeaderKeyStorage to determine
+        if the current vehicle is the PTP master (group leader)
+        or to get information about the current PTP master.
+       
+    end note
+return leaderInfo
+deactivate LeaderKeyStore
+
+Protocol -> Protocol : currentPTPRole = determinePTPRole(leaderInfo)
+
+note right of Protocol #LightYellow
+    Based on the PTP message type within 'ptpEventData'
+    and its 'currentPTPRole' (Master or Slave),
+    Protocol will trigger the appropriate action
+    on the Clock's PTP state machine.
+end note
+
+Protocol -> Clock ++ : processPTPEvent(ptpEventData, currentPTPRole)
+    note right of Clock
+        Protocol invokes a method on the Clock's ITimePTP
+        interface, passing the extracted PTP data and current role.
+        The Clock's internal PTP state machine (IEEE 1588 logic)
+        will process this event.
+        This may involve:
+        - Calculating clock offsets and path delays.
+        - Adjusting the local Clock time.
+        - Preparing data for PTP response messages
+          (e.g., Delay_Resp, Follow_Up).
+       
+    end note
+    Clock -> Clock : // Internal PTP state machine logic runs...
+    Clock -> Clock : // Time adjustment calculations...
+    opt PTP response needs to be sent
+        Clock -> Protocol !! : preparePTPResponse(responseData)
+            note left
+                If Clock needs Protocol to send a response
+                (e.g., Delay_Resp), it signals Protocol back.
+                (This is an asynchronous signal or callback).
+            end note
+    end
+return // status of PTP event processing
+deactivate Clock
+
+opt PTP response was prepared by Clock
+    Protocol -> NIC ++ : // Sequence to send the PTP response message
+        note right
+            Protocol would now use NIC (and potentially Clock again
+            for egress timestamps) to send the prepared PTP response.
+            This would follow a similar path to SD2/SD4 for sending.
+        end note
+    return
+    deactivate NIC
+end
+
+' Protocol may free the NetworkMsgBuffer if it was responsible for it after NIC.update
+' This depends on buffer ownership rules between NIC and Protocol.
+' Assuming NIC's observer pattern for 'update' implies Protocol should handle
+' the buffer it received, potentially by calling a 'free' or 'release' on NIC later
+' or if the buffer is processed by a higher layer (Communicator) which then calls NIC.receive->NIC.free
+' For this diagram, focus is on PTP processing itself, not generic buffer freeing by Protocol.
+
+deactivate Protocol
+
+@enduml

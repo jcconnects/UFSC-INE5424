@@ -1,0 +1,157 @@
+@startuml SD3_External_Response_Reception_NIC_Handles_MAC_Time
+!theme vibrant
+title SD3: External "Response" Message Reception & Internal Delivery (NIC handles MAC Verification & PTP Time)
+
+participant "socketEngine_V1:SocketEngine" as SocketEngine
+participant "nic_V1:NIC" as NIC
+participant "leaderKeyStore:LeaderKeyStorage" as LeaderKeyStore
+participant "clock_V1:Clock" as Clock
+participant "protocol_V1:Protocol" as Protocol
+participant "commGw_V1:Communicator" as CommGw
+participant "gateway_V1:Gateway" as Gateway
+participant "canBus:CAN" as CANbus
+participant "ecuApp_V1:ECUApp" as ECUApp
+participant "responseMsg:Message" as ResponseMsg
+
+skinparam sequenceMessageAlign center
+skinparam actorBackgroundColor LightBlue
+skinparam actorBorderColor Blue
+skinparam participantBackgroundColor LightGreen
+skinparam participantBorderColor Green
+skinparam roundcorner 10
+skinparam noteBackgroundColor LightYellow
+skinparam noteBorderColor Orange
+skinparam sequenceArrowThickness 1.5
+skinparam lifelineMaxMessageSize 400
+
+autonumber "<b>[00]"
+
+== SocketEngine Receives Ethernet Frame ==
+SocketEngine -> SocketEngine : run() loop receives raw frame (e.g., via epoll_wait & recvfrom)
+
+SocketEngine -> NIC ++ : handle(rawFrameData, rawFrameSize)
+note right of NIC #LightYellow
+  NIC receives the raw Ethernet frame data.
+  It will now perform PTP time processing and MAC verification.
+end note
+
+NIC -> NIC : extractedPTPTime = extractPTPTimestampFromPayload(rawFrameData)
+NIC -> NIC : extractedMAC = extractMACFromPayload(rawFrameData)
+NIC -> NIC : payloadForMACCheck = extractPayloadForMACCheck(rawFrameData)
+
+NIC -> Clock ++ : processReceivedPTPInfo(extractedPTPTime)
+note right of Clock
+  NIC informs Clock about the PTP timestamp from the message
+  for synchronization adjustments based on PTP state machine.
+end note
+deactivate Clock
+return
+
+NIC -> LeaderKeyStore ++ : macKey = getMACKey()
+note right of LeaderKeyStore
+  NIC fetches the current group MAC key.
+end note
+deactivate LeaderKeyStore
+return macKey
+
+NIC -> NIC : isValidMAC = verifyMAC(extractedMAC, macKey, payloadForMACCheck)
+
+alt isValidMAC
+  note right of NIC #LightGreen
+    MAC is valid. Frame payload will be processed further.
+    PTP info has been passed to Clock.
+  end note
+
+  create participant "verifiedDataBuffer:Buffer<Ethernet::Frame>" as VerifiedDataBuffer
+  NIC -> VerifiedDataBuffer : initialize()
+
+  NIC -> NIC : appDataForProtocol = extractVerifiedAppData(rawFrameData)
+  NIC -> VerifiedDataBuffer : setData(frameHeaderInfo, appDataForProtocol)
+
+  NIC -> Protocol ++ : update(frameProtocolType, VerifiedDataBuffer)
+  note right of Protocol #LightGoldenRodYellow
+    NIC notifies Protocol layer with a buffer
+    containing the verified application data.
+  end note
+
+  Protocol -> CommGw ++ : update(portFromProtoHeader, VerifiedDataBuffer)
+  note right of CommGw #LightGoldenRodYellow
+    Protocol identifies port and notifies the
+    registered Communicator instance (Gateway's).
+  end note
+
+  CommGw -> CommGw : _data.insert(VerifiedDataBuffer); _semaphore.v()
+  note left of CommGw
+    Communicator stores buffer & signals its semaphore.
+  end note
+  deactivate CommGw
+  return
+
+  deactivate Protocol
+
+else
+  note right of NIC #Tomato
+    MAC is invalid. Frame is discarded by NIC.
+    No further processing for this frame.
+  end note
+  NIC -> NIC : discardFrame(rawFrameData)
+end
+
+deactivate NIC
+
+== Gateway Retrieves Message via Communicator (if MAC was valid) ==
+opt isValidMAC
+  Gateway -> CommGw ++ : responseMsg_ptr = receive(&ResponseMsg)
+  note left of Gateway
+    Gateway's mainloop/network-thread was
+    blocked on Communicator's receive.
+  end note
+
+  CommGw -> CommGw : receivedBuffer = _observer.updated()
+  CommGw -> Protocol ++ : actualSize = receive(receivedBuffer, &fromAddr, ResponseMsg.data_ptr(), ResponseMsg.capacity())
+  note right of Protocol
+    Communicator asks Protocol to process the buffer
+    and deserialize the Message.
+  end note
+
+  Protocol -> NIC ++ : actualSize = receive(receivedBuffer, &srcMAC, &dstMAC, protoPayloadPtr, protoPayloadMaxSize)
+  note right of NIC
+    Protocol asks NIC to extract the protocol payload
+    from the VerifiedDataBuffer and free the buffer.
+  end note
+
+  NIC -> VerifiedDataBuffer : copyData(protoPayloadPtr)
+  NIC -> NIC : free(receivedBuffer)
+  destroy VerifiedDataBuffer
+  deactivate NIC
+  return actualSize
+
+  deactivate Protocol
+
+  return responseMsg_ptr
+  deactivate CommGw
+
+  note right of Gateway #LightYellow
+    Gateway now has the deserialized ResponseMsg.
+    MAC has already been verified by NIC.
+    PTP timestamp has been processed by NIC/Clock.
+    Gateway proceeds with internal routing.
+  end note
+
+  Gateway -> Gateway : // Network-facing logic passes to CAN-facing logic
+  Gateway -> CANbus ++ : notify(ResponseMsg.unit(), ResponseMsg_clone)
+  note right of CANbus
+    Gateway publishes the verified external message to the internal CAN bus.
+  end note
+  deactivate CANbus
+  return
+
+  CANbus -> ECUApp ++ : update(ResponseMsg.unit(), ResponseMsg_clone)
+  note left of ECUApp
+    Interested ECUApp is notified by CAN.
+  end note
+  deactivate ECUApp
+  destroy ResponseMsg_clone
+end
+
+@enduml

@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     make \
     iproute2 \
     sudo \
-    git 
+    git \
+    linux-libc-dev
 
 # Adiciona o repositório oficial com GCC 14
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test && \

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstring>
-#include "test_utils.h"
-#include "ethernet.h"
+#include "../test_utils.h"
+#include "network/ethernet.h"
 
 int main() {
     TEST_INIT("ethernet_test");

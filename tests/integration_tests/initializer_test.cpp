@@ -11,7 +11,7 @@
 #include "../../include/protocol.h"
 #include "../../include/ethernet.h"
 #include "../../include/socketEngine.h"
-#include "test_utils.h"
+#include "../test_utils.h"
 
 // Include new component headers
 #include "../../include/components/ecu_component.h"

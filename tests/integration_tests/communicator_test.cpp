@@ -6,7 +6,7 @@
 #include <cstring> // For strlen
 
 #include "../testcase.h"
-#include "test_utils.h"
+#include "../test_utils.h"
 #include "message.h"
 #include "communicator.h"
 #include "protocol.h"

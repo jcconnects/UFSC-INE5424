@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstring>
-#include "test_utils.h"
-#include "message.h"
+#include "../test_utils.h"
+#include "network/message.h"
 
 int main() {
     TEST_INIT("message_test");

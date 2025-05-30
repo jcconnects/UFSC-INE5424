@@ -14,7 +14,7 @@
 #include "ethernet.h"
 #include "socketEngine.h"
 #include "component.h"
-#include "test_utils.h"
+#include "../test_utils.h"
 
 // Define port constants (needed if components require them, even TestComponent needs constructor args)
 // Note: These might be defined elsewhere if other test files are compiled together.

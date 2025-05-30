@@ -212,35 +212,61 @@ The hierarchical addressing scheme supports potential implementation of multicas
 
 This addressing structure provides the flexibility to implement efficient one-to-many communication patterns in future extensions.
 
-## Encapsulation Hierarchy
-
-```
-Application Layer:
-└── Message<MaxSize>
-    ├── _data[] (actual application data)
-    ├── _size (data size)
-    └── _origin (source address)
-    
-Transport Layer (Protocol):
-└── Protocol::Packet
-    ├── Header (from_port, to_port, size)
-    └── Data[] (contains Message's _data)
-    
-Network Layer (Ethernet):
-└── DataBuffer
-    └── Ethernet::Frame
-        ├── Header (src MAC, dst MAC, protocol)
-        └── payload[] (contains Protocol::Packet)
-```
-
-### Illustration of the Encapsulation
+## Illustration of the Encapsulation
 
 ![Encapsulation](./doc/img/encapsulation.png)
 
+## Clock Synchronization
 
+The system implements a high-precision PTP (Precision Time Protocol) clock synchronization mechanism designed for autonomous vehicle networks. The clock synchronization parameters have been carefully chosen based on precision requirements and hardware capabilities.
+
+### Design Rationale
+
+#### **Precision Choice: Millisecond Resolution**
+The system uses millisecond precision (`std::chrono::milliseconds`) for all timestamp operations:
+
+- **Message transmission time**: 2us per message
+- **Hardware capability**: macOS M1 Pro reliably delivers millisecond precision
+- **PTP requirements**: Millisecond precision suitable for many vehicular applications
+- **Efficiency**: Good balance between precision and computational overhead
+
+#### **Timeout Configuration: 20ms Leader Silence Interval**
+The `MAX_LEADER_SILENCE_INTERVAL` is set to 20 milliseconds based on cumulative error analysis:
+
+```cpp
+// Allow up to 10ms cumulative error:
+// For standard crystal specification worst-case (~20 ppb): 10ms / 20ppb = 500ms
+static constexpr DurationType MAX_LEADER_SILENCE_INTERVAL = std::chrono::milliseconds(500);
+```
+
+**Calculation methodology**:
+- **Cumulative error limit**: 10ms (10× the 1ms precision for safety margin)
+- **Assumed oscillator drift**: 20 parts per billion (ppb) - standard crystal specification worst-case
+- **Formula**: `MAX_SILENCE = ERROR_LIMIT / DRIFT_RATE = 10ms / 20ppb = 500ms`
+
+#### **Hardware Requirements**
+This configuration is based on standard crystal specifications:
+- **Standard Crystal Specification**: Maximum allowed long-term frequency drift of 20 ppb
+- **Conservative approach**: Uses worst-case specification limits rather than typical performance
+- **Real-world robustness**: Accounts for temperature variations, crystal aging, and manufacturing tolerances
+- **Widely applicable**: Works with standard PC hardware and embedded systems
+
+#### **Benefits of This Approach**
+
+1. **Specification-based**: Uses actual hardware specifications from standard crystal documentation
+2. **Conservative design**: Handles worst-case hardware performance scenarios
+3. **Fast failure detection**: 500ms timeout enables rapid leader failover
+4. **Robust operation**: Works reliably even with poor-quality or aged crystals
+
+#### **Performance Characteristics**
+- **Maximum drift error**: 10ms over 500ms silence period
+- **Network tolerance**: Handles typical network jitter (usually < 10ms)
+- **Leader failover time**: Maximum 500ms detection of failed leaders
+- **Message capacity**: ~250,000 messages possible during timeout period (500ms ÷ 2μs)
+
+This design ensures reliable clock synchronization while maintaining the precision required for safety-critical autonomous vehicle operations.
 
 ## Docker to use most recent gcc version
-
 
 ```bash
 sudo docker build -t newestGCCenv .

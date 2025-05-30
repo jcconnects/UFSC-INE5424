@@ -9,11 +9,11 @@
 #include <sstream>
 
 // Include the test utilities
-#include "test_utils.h"
+#include "../test_utils.h"
 
 // Include the actual header files
-#include "observer.h"
-#include "observed.h"
+#include "util/observer.h"
+#include "util/observed.h"
 
 // Global logger for this test
 test::Logger* test_logger = nullptr;

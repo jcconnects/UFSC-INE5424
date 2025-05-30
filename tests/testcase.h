@@ -4,6 +4,8 @@
 #include <functional>
 #include <string>
 
+#define DEFINE_TEST(name) registerTest(#name, [this]() { this->name(); });
+
 class TestCase {
     public:
         virtual ~TestCase() = default;
