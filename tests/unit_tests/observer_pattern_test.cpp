@@ -9,7 +9,7 @@
 #include <sstream>
 
 // Include the test utilities
-#include "test_utils.h"
+#include "../test_utils.h"
 
 // Include the actual header files
 #include "util/observer.h"
