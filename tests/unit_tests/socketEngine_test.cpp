@@ -3,8 +3,8 @@
 #include <thread>
 #include <chrono>
 #include "../test_utils.h"
-#include "network/socketEngine.h"
-#include "network/ethernet.h"
+#include "../../include/api/network/socketEngine.h"
+#include "../../include/api/network/ethernet.h"
 #include <linux/if_ether.h> // For ETH_FRAME_LEN
 
 // Concrete implementation of SocketEngine for testing

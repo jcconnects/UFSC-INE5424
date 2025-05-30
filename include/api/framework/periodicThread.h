@@ -20,12 +20,19 @@
 #include <signal.h>  // For signal handling
 
 // Definition of sched_attr structure (only if not already defined)
-#ifndef __has_include
-#define __has_include(x) 0
+// Robust __has_include detection for cross-platform compatibility
+#ifdef __has_include
+  // Compiler supports __has_include builtin
+  #if __has_include(<linux/sched/types.h>)
+    #include <linux/sched/types.h>
+    #define __SCHED_ATTR_AVAILABLE__ 1
+  #endif
+#else
+  // Compiler doesn't support __has_include, define fallback
+  #define __has_include(x) 0
 #endif
 
-// Always define sched_attr if it's not available from system headers
-#if !__has_include(<linux/sched/types.h>)
+#if !defined(__SCHED_ATTR_AVAILABLE__) && !defined(__SCHED_ATTR_SIZE__)
 struct sched_attr {
     uint32_t size;
     uint32_t sched_policy;
@@ -51,9 +58,9 @@ extern "C" void component_signal_handler(int sig) {
 }
 
 // Wrapper for the sched_setattr system call (only if not already available)
-#ifndef SYS_sched_setattr
-#define SYS_sched_setattr 314
-#endif
+// #ifndef SYS_sched_setattr
+// #define SYS_sched_setattr 314
+// #endif
 
 #if !defined(HAVE_SCHED_SETATTR)
 int sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags) {
