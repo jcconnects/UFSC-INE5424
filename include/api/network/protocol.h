@@ -213,6 +213,11 @@ template <typename NIC>
 int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int size) {
     db<Protocol>(TRC) << "Protocol<NIC>::send() called!\n";
 
+    if (!_nic) {
+        db<Protocol>(TRC) << "Protocol<NIC>::send() called after release!\n";
+        return;
+    }
+
     // Allocate buffer for the entire frame -> NIC alloc adds Frame Header size (this is better for independency)
     unsigned int packet_size = size + sizeof(Header) + sizeof(TimestampFields);
     Buffer* buf = _nic->alloc(to.paddr(), PROTO, packet_size);
@@ -253,6 +258,11 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
 
     std::uint8_t temp_buffer[size + sizeof(Header) + sizeof(TimestampFields)];
     
+    if (!_nic) {
+        db<Protocol>(TRC) << "Protocol<NIC>::receive() called after release!\n";
+        return;
+    }
+    
     int packet_size = _nic->receive(buf, &src_mac, &dst_mac, temp_buffer, NIC::MTU);
     db<Protocol>(INF) << "[Protocol] NIC::receive() returned " << packet_size << ".\n";
 
@@ -289,12 +299,18 @@ void Protocol<NIC>::attach(Observer* obs, Address address) {
 template <typename NIC>
 void Protocol<NIC>::detach(Observer* obs, Address address) {
     _observed.detach(obs, address.port());
+    _nic = nullptr;
     db<Protocol>(INF) << "[Protocol] Detached observer from port " << address.port() << "\n";
 }
 
 template <typename NIC>
 void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     db<Protocol>(TRC) << "Protocol<NIC>::update() called!\n";
+
+    if (!buf) {
+        db<Protocol>(INF) << "[Protocol] data received, but buffer is null. Releasing buffer.\n";
+        return;
+    }
 
     Packet* pkt = reinterpret_cast<Packet*>(buf->data()->payload);
 
@@ -319,10 +335,6 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     // Update Clock with timing information
     auto& clock = Clock::getInstance();
     clock.activate(&ptp_data);
-
-    if (!buf) {
-        db<Protocol>(INF) << "[Protocol] data received, but buffer is null. Releasing buffer.\n";
-    }
 
     if (!Protocol::_observed.notify(buf)) { // Notify every listener
         db<Protocol>(INF) << "[Protocol] data received, but no one was notified for port. Releasing buffer.\n";

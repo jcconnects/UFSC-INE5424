@@ -98,6 +98,8 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         std::atomic<bool> _running;
         sem_t _buffer_sem;
         sem_t _binary_sem;
+
+        bool running() { _running.load(std::memory_order_acquire) }
 };
 
 /*********** NIC Implementation ************/
@@ -121,7 +123,7 @@ NIC<Engine>::NIC() : _running(true) {
 template <typename Engine>
 NIC<Engine>::~NIC() {
     // Destroy engine first
-    Engine::stop();
+    stop();
 
     sem_destroy(&_buffer_sem);
     sem_destroy(&_binary_sem);
@@ -138,11 +140,16 @@ void NIC<Engine>::stop() {
     for (unsigned int i = 0; i < N_BUFFERS - sem_value; ++i) {
         sem_post(&_buffer_sem); // Release the semaphore for each buffer
     }
+    Engine::stop();
 }
 
 template <typename Engine>
 int NIC<Engine>::send(DataBuffer* buf, unsigned int packet_size) {
     db<NIC>(TRC) << "NIC<Engine>::send() called!\n";
+    if (!running()) {
+        db<NIC>(TRC) << "[NIC] send called when NIC is not running \n";
+        return 0;
+    }
 
     // Fill TX timestamp before sending
     fillTxTimestamp(buf, packet_size);
@@ -165,7 +172,7 @@ template <typename Engine>
 int NIC<Engine>::send(DataBuffer* buf) {
     db<NIC>(TRC) << "NIC<Engine>::send() called!\n";
 
-    if (!_running.load(std::memory_order_acquire)) {
+    if (!running()) {
         db<NIC>(ERR) << "[NIC] send() called when NIC is inactive\n";
         return -1;
     }
@@ -188,7 +195,7 @@ template <typename Engine>
 int NIC<Engine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data, unsigned int size) {
     db<NIC>(TRC) << "NIC<Engine>::receive() called!\n";
 
-    if (!_running.load(std::memory_order_acquire)) {
+    if (!running()) {
         db<NIC>(ERR) << "[NIC] receive() called when NIC is inactive\n";
         return -1;
     }
@@ -250,7 +257,7 @@ void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
     // 4. Copy frame to buffer
     buf->setData(frame, size);
 
-   if (!_running.load(std::memory_order_acquire)) {
+   if (!running()) {
         db<NIC>(ERR) << "[NIC] trying to notify protocol when NIC is inactive\n";
         return;
     }
@@ -266,7 +273,7 @@ template <typename Engine>
 typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Number prot, unsigned int size) {
     db<NIC>(TRC) << "NIC<Engine>::alloc() called!\n";
 
-    if (!_running.load(std::memory_order_acquire)) {
+    if (!running()) {
         db<NIC>(ERR) << "[NIC] alloc() called when NIC is inactive\n";
         return nullptr;
     }
@@ -299,7 +306,7 @@ template <typename Engine>
 void NIC<Engine>::free(DataBuffer* buf) {
     db<NIC>(TRC) << "NIC<Engine>::free() called!\n";
 
-    if (!_running.load(std::memory_order_acquire)) {
+    if (!running()) {
         db<NIC>(ERR) << "[NIC] free() called when NIC is inactive\n";
         return;
     }

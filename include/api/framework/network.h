@@ -14,10 +14,12 @@ class Network {
         Network(const unsigned int id = 0);
         ~Network();
 
-        void stop() {
-            if (_nic) {
+        void stop() { 
+            if (_protocol)
+                _protocol->detach();
+
+            if (_nic)
                 _nic->stop();
-            }
         }
 
         Protocol* channel();

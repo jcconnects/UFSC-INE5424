@@ -105,9 +105,9 @@ void SocketEngine::stop() {
 
     std::uint64_t u = 1;
     db<SocketEngine>(TRC) << "[SocketEngine] sending stop signal to receive thread\n";
-    while (static_cast<long unsigned int>(write(_stop_ev, &u, sizeof(u))) < sizeof(u)) {
-
-    }
+    do {
+        bytes_written = write(_stop_ev, &u, sizeof(u));
+    } while (bytes_written == -1 && errno == EINTR); // Retry only on EINTR
     db<SocketEngine>(TRC) << "[SocketEngine] stop signal sent to receive thread\n";
 
     // Join the receive thread if it exists
