@@ -239,49 +239,55 @@ int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
 }
 
 void* SocketEngine::run(void* arg)  {
-    db<SocketEngine>(TRC) << "SocketEngine::run() called!\n";
+    db<SocketEngine>(TRC) << "[SocketEngine] [run()] called!\n";
 
     SocketEngine* engine = static_cast<SocketEngine*>(arg);
 
     struct epoll_event events[1024];
 
     while (engine->running()) {
+        db<SocketEngine>(TRC) << "[SocketEngine] [run()] epoll_wait() called\n";
         int n = epoll_wait(engine->_ep_fd, events, 1024, -1);
 
-        db<SocketEngine>(TRC) << "[SocketEngine] epoll event detected\n";
+        db<SocketEngine>(TRC) << "[SocketEngine] [run()] epoll event detected\n";
         
         if (n < 0) {
+            db<SocketEngine>(TRC) << "[SocketEngine] [run()] epoll_wait() returned error: " << errno << "\n";
             if (errno == EINTR) continue;
+            db<SocketEngine>(TRC) << "[SocketEngine] [run()] epoll_wait() returned error: " << errno << "\n";
             perror("epoll_wait");
             break;
         }
 
         // Iterates over all events detected by epoll
         for (int i = 0; i < n; ++i) {
+            db<SocketEngine>(TRC) << "[SocketEngine] [run()] epoll event " << i << " detected\n";
             int fd = events[i].data.fd;
 
             if (fd == engine->_sock_fd) {
-                db<SocketEngine>(INF) << "[SocketEngine] epoll socket event detected\n";
+                db<SocketEngine>(INF) << "[SocketEngine] [run()] epoll socket event detected\n";
                 engine->receive();
+                db<SocketEngine>(TRC) << "[SocketEngine] [run()] receive() called\n";
             } else if (fd == engine->_stop_ev) {
-                db<SocketEngine>(INF) << "[SocketEngine] epoll stop event detected\n";
+                db<SocketEngine>(INF) << "[SocketEngine] [run()] epoll stop event detected\n";
                 uint64_t u;
                 read(engine->_stop_ev, &u, sizeof(u)); // clears eventfd
+                db<SocketEngine>(TRC) << "[SocketEngine] [run()] stop event cleared\n";
                 break; // Next loop, thread will finish
             }
         }
     }
 
-    db<SocketEngine>(INF) << "[SocketEngine] receive thread terminated!\n";
+    db<SocketEngine>(INF) << "[SocketEngine] [run()] receive thread terminated!\n";
     return nullptr;
 };
 
 void SocketEngine::receive() {
-    db<SocketEngine>(TRC) << "SocketEngine::receive() called!\n";
+    db<SocketEngine>(TRC) << "[SocketEngine] [receive()] called!\n";
 
     // Checks weather engine is still active
     if (!running()) {
-        db<SocketEngine>(ERR) << "[SocketEngine] receive() called when engine is inactive\n";
+        db<SocketEngine>(ERR) << "[SocketEngine] [receive()] called when engine is inactive\n";
         return;
     }
 
@@ -293,7 +299,7 @@ void SocketEngine::receive() {
     
     // Checks weather receive was sucessful
     if (bytes_received < 0) {
-        db<SocketEngine>(INF) << "[SocketEngine] no data received\n";
+        db<SocketEngine>(INF) << "[SocketEngine] [receive()] no data received\n";
         if (errno != EAGAIN && errno != EWOULDBLOCK) {
             perror("recvfrom");
         }
@@ -302,13 +308,13 @@ void SocketEngine::receive() {
 
     // Checks for valid Ethernet frame size (at least header size)
     if (static_cast<unsigned int>(bytes_received) < Ethernet::HEADER_SIZE) {
-        db<SocketEngine>(ERR) << "[SocketExternalEngine] Received undersized frame (" << bytes_received << " bytes)\n";
+        db<SocketEngine>(ERR) << "[SocketEngine] [receive()] Received undersized frame (" << bytes_received << " bytes)\n";
         return;
     }
     
     // Convert protocol from network to host byte order
     frame.prot = ntohs(frame.prot);
-    db<SocketEngine>(INF) << "[SocketEngine] received frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << frame.prot << ", size = " << bytes_received << "}\n";
+    db<SocketEngine>(INF) << "[SocketEngine] [receive()] received frame: {src = " << Ethernet::mac_to_string(frame.src) << ", dst = " << Ethernet::mac_to_string(frame.dst) << ", prot = " << frame.prot << ", size = " << bytes_received << "}\n";
 
     this->handle(&frame, static_cast<unsigned int>(bytes_received));
 }
