@@ -16,7 +16,6 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <linux/sched.h>
-#include <errno.h>
 #include <signal.h>  // For signal handling
 
 // Definition of sched_attr structure (only if not already defined)
@@ -50,7 +49,7 @@ struct sched_attr {
 
 // Signal handler for thread interruption
 // Use a single static handler for the entire component system
-extern "C" void component_signal_handler(int sig) {
+extern "C" inline void component_signal_handler(int sig) {
     // Simply wake up the thread to check its running state
     if (sig == SIGUSR1) {
         // No action needed, just unblock from system calls

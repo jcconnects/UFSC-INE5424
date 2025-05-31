@@ -34,6 +34,7 @@ class CAN;
 class Gateway;
 class Clock;
 class LeaderKeyStorage;
+class RSU;
 
 // Traits definition
 template <typename T>
@@ -123,6 +124,13 @@ template<>
 struct Traits<LeaderKeyStorage> : public Traits<void>
 {
     static const bool debugged = false;
+};
+
+// Traits for RSU class
+template<>
+struct Traits<RSU> : public Traits<void>
+{
+    static const bool debugged = true;
 };
 
 // Traits for Debug class

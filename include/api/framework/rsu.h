@@ -5,6 +5,7 @@
 #include <atomic>
 #include <vector>
 #include <cstdint>
+#include <cstring>
 
 #include "api/framework/network.h"
 #include "api/framework/periodicThread.h"
@@ -19,65 +20,16 @@ public:
     typedef Network::Message Message;
     typedef Message::Unit Unit;
 
-    /**
-     * @brief Construct a new RSU object
-     * @param rsu_id Unique identifier for this RSU (used for MAC address generation)
-     * @param unit The unit type that this RSU will broadcast
-     * @param period The broadcasting period in milliseconds
-     * @param data Optional data payload for the RESPONSE message
-     * @param data_size Size of the data payload
-     */
     RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period, 
         const void* data = nullptr, unsigned int data_size = 0);
-    
-    /**
-     * @brief Destroy the RSU object
-     */
     ~RSU();
-
-    /**
-     * @brief Start the RSU broadcasting
-     */
     void start();
-
-    /**
-     * @brief Stop the RSU broadcasting
-     */
     void stop();
-
-    /**
-     * @brief Check if RSU is currently running
-     * @return true if running, false otherwise
-     */
     bool running() const;
-
-    /**
-     * @brief Get the RSU's network address
-     * @return const Address& RSU's address
-     */
     const Address& address() const;
-
-    /**
-     * @brief Get the unit type being broadcast
-     * @return Unit The unit type
-     */
     Unit unit() const;
-
-    /**
-     * @brief Get the broadcasting period
-     * @return std::chrono::milliseconds The current period
-     */
     std::chrono::milliseconds period() const;
-
-    /**
-     * @brief Adjust the broadcasting period
-     * @param new_period New period in milliseconds
-     */
     void adjust_period(std::chrono::milliseconds new_period);
-
-    /**
-     * @brief Send a single broadcast message (called by periodic thread)
-     */
     void broadcast();
 
 private:
@@ -98,7 +50,16 @@ private:
 
 /********** RSU Implementation **********/
 
-RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period, 
+
+/**
+ * @brief Construct a new RSU object
+ * @param rsu_id Unique identifier for this RSU (used for MAC address generation)
+ * @param unit The unit type that this RSU will broadcast
+ * @param period The broadcasting period in milliseconds
+ * @param data Optional data payload for the RESPONSE message
+ * @param data_size Size of the data payload
+ */
+inline RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period, 
          const void* data, unsigned int data_size) 
     : _rsu_id(rsu_id), _unit(unit), _period(period), _running(false),
       _periodic_thread(this, &RSU::broadcast) {
@@ -131,7 +92,10 @@ RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period,
     }
 }
 
-RSU::~RSU() {
+/**
+ * @brief Destroy the RSU object
+ */
+inline RSU::~RSU() {
     db<RSU>(TRC) << "RSU::~RSU() called!\n";
     
     stop();
@@ -142,7 +106,10 @@ RSU::~RSU() {
     db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " destroyed\n";
 }
 
-void RSU::start() {
+/**
+ * @brief Start the RSU broadcasting
+ */
+inline void RSU::start() {
     db<RSU>(TRC) << "RSU::start() called!\n";
     
     if (!_running.load()) {
@@ -152,7 +119,10 @@ void RSU::start() {
     }
 }
 
-void RSU::stop() {
+/**
+ * @brief Stop the RSU broadcasting
+ */
+inline void RSU::stop() {
     db<RSU>(TRC) << "RSU::stop() called!\n";
     
     if (_running.load(std::memory_order_acquire)) {
@@ -174,23 +144,43 @@ void RSU::stop() {
     }
 }
 
-bool RSU::running() const {
+/**
+ * @brief Check if the RSU is running
+ * @return bool True if running, false otherwise
+ */
+inline bool RSU::running() const {
     return _running.load(std::memory_order_acquire);
 }
 
-const RSU::Address& RSU::address() const {
+/**
+ * @brief Get the RSU's network address
+ * @return const Address& RSU's address
+ */
+inline const RSU::Address& RSU::address() const {
     return _comm->address();
 }
 
-RSU::Unit RSU::unit() const {
+/**
+ * @brief Get the unit type being broadcast
+ * @return Unit The unit type
+ */
+inline RSU::Unit RSU::unit() const {
     return _unit;
 }
 
-std::chrono::milliseconds RSU::period() const {
+/**
+ * @brief Get the broadcasting period
+ * @return std::chrono::milliseconds The current period
+ */
+inline std::chrono::milliseconds RSU::period() const {
     return _period;
 }
 
-void RSU::adjust_period(std::chrono::milliseconds new_period) {
+/**
+ * @brief Adjust the broadcasting period
+ * @param new_period New period in milliseconds
+ */
+inline void RSU::adjust_period(std::chrono::milliseconds new_period) {
     db<RSU>(TRC) << "RSU::adjust_period() called with new_period=" << new_period.count() << "ms\n";
     
     _period = new_period;
@@ -201,7 +191,10 @@ void RSU::adjust_period(std::chrono::milliseconds new_period) {
     db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " period adjusted to " << new_period.count() << "ms\n";
 }
 
-void RSU::broadcast() {
+/**
+ * @brief Send a single broadcast message (called by periodic thread)
+ */
+inline void RSU::broadcast() {
     if (!running()) {
         return;
     }
