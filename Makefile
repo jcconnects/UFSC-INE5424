@@ -172,6 +172,25 @@ clean:
 	rm -rf $(BINDIR)
 	rm -rf $(TESTDIR)/logs
 
+# Documentation targets
+.PHONY: docs
+docs:
+	@echo "Generating documentation with Doxygen..."
+	@mkdir -p doc/doxygen
+	doxygen
+	@echo "Documentation generated in doc/doxygen/html/"
+	@echo "Open doc/doxygen/html/index.html in your browser to view it."
+
+.PHONY: docs-open
+docs-open: docs
+	@echo "Opening documentation in browser..."
+	open doc/doxygen/html/index.html
+
+.PHONY: clean-docs
+clean-docs:
+	@echo "Cleaning documentation..."
+	rm -rf doc/doxygen
+
 .PHONY: setup_dummy_iface
 setup_dummy_iface:
 	@if ip link show $(TEST_IFACE_NAME) > /dev/null 2>&1; then \
