@@ -4,12 +4,10 @@
 #include <chrono>
 #include <random>
 #include <unistd.h>
-#include <thread>
 #include <string>
 #include <sstream>
-#include <vector>
-#include <iomanip> // For std::fixed, std::setprecision
-#include <cmath>   // For M_PI if needed, though using numeric literal is safer
+#include <iomanip>
+#include <ios>
 
 #include "api/framework/agent.h"
 #include "api/network/bus.h"
@@ -57,7 +55,7 @@ INSComponent::INSComponent(CAN* can, Message::Origin addr, const std::string& na
     _delay_dist(90, 110)        // Milliseconds delay (INS typically ~10Hz)
 {}
 
-Agent::Value INSComponent::get(Agent::Unit unit) {
+inline Agent::Value INSComponent::get(Agent::Unit unit) {
     auto now_system = std::chrono::system_clock::now();
     auto time_us_system = std::chrono::duration_cast<std::chrono::microseconds>(now_system.time_since_epoch()).count();
 

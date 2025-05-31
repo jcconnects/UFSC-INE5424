@@ -125,15 +125,15 @@ class Debug
             return oss.str();
         }
 
-        static std::unique_ptr<std::ofstream> _file_stream;
-        static std::ostream* _stream;
-        static pthread_mutex_t _global_mutex; // Single global mutex for all debug operations
+        static inline std::unique_ptr<std::ofstream> _file_stream;
+        static inline std::ostream* _stream = &std::cout;
+        static inline pthread_mutex_t _global_mutex = PTHREAD_MUTEX_INITIALIZER;
         
         bool _message_started; // Track if a message has been started
 
     public:
-        static Begl begl;
-        static Err error;
+        static inline Begl begl;
+        static inline Err error;
 };
 
 class Null_Debug
@@ -249,13 +249,6 @@ db(Debug_Trace l)
     debug_instance << "[TRACE] ";
     return debug_instance;
 }
-
-// Initialize static members
-Debug::Begl Debug::begl;
-Debug::Err Debug::error;
-std::unique_ptr<std::ofstream> Debug::_file_stream;
-std::ostream* Debug::_stream = &std::cout;
-pthread_mutex_t Debug::_global_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Call this at program start
 class DebugInitializer {

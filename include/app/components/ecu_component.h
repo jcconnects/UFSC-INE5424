@@ -1,9 +1,7 @@
 #ifndef ECU_COMPONENT_H
 #define ECU_COMPONENT_H
 
-#include <chrono>
 #include <string>
-#include <sstream>
 
 #include "../api/util/debug.h"
 #include "api/framework/agent.h"
@@ -23,9 +21,9 @@ class ECUComponent : public Agent {
 };
 
 /*********** ECU Component Implementation **********/
-ECUComponent::ECUComponent(CAN* can, const Message::Origin addr, const std::string& name) : Agent(can, name, static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), CAN::Message::Type::UNKNOWN, addr) {}
+inline ECUComponent::ECUComponent(CAN* can, const Message::Origin addr, const std::string& name) : Agent(can, name, static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), CAN::Message::Type::UNKNOWN, addr) {}
 
-void ECUComponent::handle_response(Message* msg) {
+inline void ECUComponent::handle_response(Message* msg) {
     db<ECUComponent>(INF) << "[ECUComponent] " << name() 
                          << " received RESPONSE message from " << msg->origin().to_string()
                          << " for unit " << msg->unit()

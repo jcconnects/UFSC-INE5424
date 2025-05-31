@@ -1,6 +1,11 @@
 #ifndef COMMUNICATOR_H
 #define COMMUNICATOR_H
 
+#include <cstdint>
+#include <cstring>
+#include <atomic>
+#include <string>
+
 #include "../traits.h"
 #include "message.h"
 #include "../util/observer.h"

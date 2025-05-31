@@ -5,6 +5,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 #include "api/network/ethernet.h"
 #include "api/util/debug.h"
 #include "api/traits.h"

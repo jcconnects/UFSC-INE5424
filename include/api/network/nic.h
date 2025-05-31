@@ -6,7 +6,9 @@
 #include <queue>
 #include <atomic>
 #include <time.h>
-#include <errno.h>
+#include <cstdint>
+#include <string>
+#include <cstring>
 
 #include "api/traits.h"
 #include "api/network/ethernet.h"

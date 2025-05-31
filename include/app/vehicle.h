@@ -4,10 +4,7 @@
 #include <atomic> // for std::atomic
 #include <vector> // for std::vector
 #include <memory> // for std::unique_ptr
-#include <thread> // for std::this_thread
-#include <chrono> // for std::chrono
-#include <type_traits> // for std::is_same_v
-
+#include <string> // for std::string
 #include "api/util/debug.h"
 #include "api/util/csv_logger.h"
 #include "api/framework/gateway.h"
@@ -55,7 +52,7 @@ class Vehicle {
 };
 
 /******** Vehicle Implementation *********/
-Vehicle::Vehicle(unsigned int id) : _id(id), _running(false)
+inline Vehicle::Vehicle(unsigned int id) : _id(id), _running(false)
 {
     _gateway = new Gateway(_id);
     
@@ -102,7 +99,7 @@ Vehicle::Vehicle(unsigned int id) : _id(id), _running(false)
                      << Ethernet::mac_to_string(rsu_mac) << " (leader_id=" << static_cast<unsigned int>(rsu_mac.bytes[5]) << ")\n";
 }
 
-Vehicle::~Vehicle() {
+inline Vehicle::~Vehicle() {
     // Ensure vehicle is stopped first
     if (running()) {
         stop();
@@ -118,7 +115,7 @@ Vehicle::~Vehicle() {
     db<Vehicle>(INF) << "[Vehicle " << _id << "] destroyed successfully.\n";
 }
 
-void Vehicle::start() {
+inline void Vehicle::start() {
     db<Vehicle>(TRC) << "Vehicle::start() called for ID " << _id << "!\n";
     if (running()) {
         db<Vehicle>(WRN) << "[Vehicle " << _id << "] start() called but already running.\n";
@@ -130,7 +127,7 @@ void Vehicle::start() {
     db<Vehicle>(INF) << "[Vehicle " << _id << "] started.\n";
 }
 
-void Vehicle::stop() {
+inline void Vehicle::stop() {
     db<Vehicle>(TRC) << "Vehicle::stop() called for ID " << _id << "!\n";
 
     if (!running()) {
@@ -143,7 +140,7 @@ void Vehicle::stop() {
 }
 
 template <typename ComponentType>
-void Vehicle::create_component(const std::string& name) {
+inline void Vehicle::create_component(const std::string& name) {
     // CRITICAL FIX: Create unique address for each agent instead of using gateway address
     // This prevents the gateway from filtering out agent messages as "self-originated"
     static unsigned int component_counter = 1;
@@ -157,16 +154,16 @@ void Vehicle::create_component(const std::string& name) {
     _components.push_back(std::move(component));   
 }
 
-const unsigned int Vehicle::id() const {
+inline const unsigned int Vehicle::id() const {
     return _id;
 }
 
-const bool Vehicle::running() const {
+inline const bool Vehicle::running() const {
     return _running.load(std::memory_order_acquire);
 }
 
 // CSV logging setup
-void Vehicle::setup_csv_logging() {
+inline void Vehicle::setup_csv_logging() {
     // Set up CSV logging for the gateway
     _gateway->setup_csv_logging(_log_dir);
 }

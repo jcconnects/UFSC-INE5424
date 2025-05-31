@@ -7,6 +7,8 @@
 #include <thread>
 #include <functional>
 #include <cstdint>
+#include <stdexcept>
+#include <signal.h>
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -16,7 +18,6 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <linux/sched.h>
-#include <signal.h>  // For signal handling
 
 // Definition of sched_attr structure (only if not already defined)
 // Robust __has_include detection for cross-platform compatibility

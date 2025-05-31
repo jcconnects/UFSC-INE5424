@@ -3,8 +3,10 @@
 
 #include <string>
 #include <cstring>
-#include <atomic>
 #include <chrono>
+#include <cstdint>
+#include <cstddef> // Ensure this is included for offsetof
+#include <stdexcept> // Ensure this is included for std::invalid_argument
 
 #include "api/traits.h"
 #include "api/util/debug.h"

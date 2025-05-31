@@ -3,7 +3,9 @@
 
 #include <cstring>
 #include <cerrno>
+#include <cstdint>
 #include <unistd.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
@@ -12,11 +14,10 @@
 #include <net/ethernet.h>
 #include <net/if.h>
 #include <fcntl.h>
-#include <iostream>
 #include <sys/ioctl.h>
-#include <functional>
 #include <pthread.h>
 #include <atomic>
+#include <stdio.h>
 
 #include "ethernet.h"
 #include "../traits.h"

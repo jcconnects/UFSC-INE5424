@@ -3,12 +3,12 @@
 
 #include <chrono>
 #include <random>
-#include <unistd.h> // For usleep
-#include <thread>   // For std::this_thread::sleep_for
+#include <unistd.h>
 #include <string>
-#include <sstream>  // For string formatting
+#include <sstream>
 #include <vector>
-#include <iomanip> // For std::fixed, std::setprecision
+#include <iomanip>
+#include <cstdint>
 
 #include "api/framework/agent.h"
 #include "api/network/bus.h"
@@ -36,7 +36,7 @@ class CameraComponent : public Agent {
 };
 
 /******** Camera Component Implementation *********/
-CameraComponent::CameraComponent(CAN* can, const Message::Origin addr, const std::string& name) : Agent(can, name, static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX), CAN::Message::Type::INTEREST, addr),
+inline CameraComponent::CameraComponent(CAN* can, const Message::Origin addr, const std::string& name) : Agent(can, name, static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX), CAN::Message::Type::INTEREST, addr),
     _gen(_rd()),
     _coord_dist(0.0, 1920.0), // Example camera resolution width
     _size_dist(50.0, 300.0),   // Example bounding box size
@@ -44,7 +44,7 @@ CameraComponent::CameraComponent(CAN* can, const Message::Origin addr, const std
     _delay_dist(50, 150) // Milliseconds delay between sends
 {}
 
-Agent::Value CameraComponent::get(Agent::Unit unit) {
+inline Agent::Value CameraComponent::get(Agent::Unit unit) {
     auto now_system = std::chrono::system_clock::now();
     auto time_us_system = std::chrono::duration_cast<std::chrono::microseconds>(now_system.time_since_epoch()).count();
 

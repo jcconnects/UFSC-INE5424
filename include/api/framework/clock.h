@@ -4,8 +4,8 @@
 #include <chrono>
 #include <atomic>
 #include <mutex>
-#include <cmath>    // For std::abs, std::sqrt
-#include <limits>   // For std::numeric_limits
+#include <cstdint>
+#include <ostream>
 #include "api/util/debug.h"  // For db<> logging
 #include "api/traits.h"      // For traits specialization
 #include "api/framework/leaderKeyStorage.h"  // For LeaderKeyStorage
@@ -383,7 +383,7 @@ inline void Clock::doClearSyncData() {
     db<Clock>(INF) << "Clock: Sync data cleared\n";
 }
 
-void Clock::doProcessFirstLeaderMsg(const PtpRelevantData& msg_data) {
+inline void Clock::doProcessFirstLeaderMsg(const PtpRelevantData& msg_data) {
     // Action for: UNSYNCHRONIZED --> AWAITING_SECOND_MSG
     _msg1_data.ts_tx_at_sender = msg_data.ts_tx_at_sender;
     _msg1_data.ts_local_rx = msg_data.ts_local_rx;
@@ -401,7 +401,7 @@ void Clock::doProcessFirstLeaderMsg(const PtpRelevantData& msg_data) {
         << _current_offset.count() << "us\n";
 }
 
-void Clock::doProcessSecondLeaderMsgAndCalcDrift(const PtpRelevantData& msg_data) {
+inline void Clock::doProcessSecondLeaderMsgAndCalcDrift(const PtpRelevantData& msg_data) {
     // Action for: AWAITING_SECOND_MSG --> SYNCHRONIZED
     _msg2_data.ts_tx_at_sender = msg_data.ts_tx_at_sender;
     _msg2_data.ts_local_rx = msg_data.ts_local_rx;
@@ -430,7 +430,7 @@ void Clock::doProcessSecondLeaderMsgAndCalcDrift(const PtpRelevantData& msg_data
         << _current_offset.count() << "us, Drift FE: " << _current_drift_fe << "\n";
 }
 
-void Clock::doProcessSubsequentLeaderMsg(const PtpRelevantData& msg_data) {
+inline void Clock::doProcessSubsequentLeaderMsg(const PtpRelevantData& msg_data) {
     // Action for: SYNCHRONIZED --> SYNCHRONIZED
     _msg1_data = _msg2_data;
     doProcessSecondLeaderMsgAndCalcDrift(msg_data);
@@ -439,7 +439,7 @@ void Clock::doProcessSubsequentLeaderMsg(const PtpRelevantData& msg_data) {
         << _current_offset.count() << "us, Updated Drift FE: " << _current_drift_fe << "\n";
 }
 
-bool Clock::isLeaderMessageTimedOut() const {
+inline bool Clock::isLeaderMessageTimedOut() const {
     // NEW: If this node is the current leader, it doesn't time out on itself.
     // Note: _current_leader_id and _self_id are read. Callers must hold _mutex.
     if (_self_id != INVALID_LEADER_ID && _current_leader_id == _self_id) {
@@ -474,7 +474,7 @@ inline bool Clock::isLeaderAssigned() const {
  * 
  * Called with _mutex held.
  */
-bool Clock::checkAndHandleLeaderChange(LeaderIdType storage_leader_id) {
+inline bool Clock::checkAndHandleLeaderChange(LeaderIdType storage_leader_id) {
     if (_current_leader_id != storage_leader_id) {
         db<Clock>(INF) << "Clock: Leader changed from " << _current_leader_id 
             << " to " << storage_leader_id << " during activation\n";

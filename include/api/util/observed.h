@@ -2,7 +2,6 @@
 #define OBSERVED_H
 
 #include <pthread.h>
-#include <iostream>
 #include "api/util/list.h"
 
 // Forward declarations for Conditional Observer class

@@ -3,6 +3,8 @@
 
 #include <random>
 #include <cstring>
+#include <cstdint>
+#include <string>
 
 #include "../../api/framework/agent.h"
 #include "../../api/network/bus.h"
@@ -23,13 +25,13 @@ class BasicProducerA : public Agent {
 };
 
 /******** BasicProducerA Implementation *********/
-BasicProducerA::BasicProducerA(CAN* can, const Message::Origin addr, const std::string& name) 
+inline BasicProducerA::BasicProducerA(CAN* can, const Message::Origin addr, const std::string& name) 
     : Agent(can, name, static_cast<std::uint32_t>(DataTypes::UNIT_A), CAN::Message::Type::INTEREST, addr),
       _gen(_rd()),
       _dist(0.0f, 100.0f)
 {}
 
-Agent::Value BasicProducerA::get(Agent::Unit unit) {
+inline Agent::Value BasicProducerA::get(Agent::Unit unit) {
     // Generate a random float value
     float value = _dist(_gen);
     

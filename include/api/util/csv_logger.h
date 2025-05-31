@@ -8,8 +8,13 @@
 #include <chrono>
 #include <sstream>
 #include <iomanip>
+#include <cstddef>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <exception>
+#include <ios>
+#include <ostream>
+#include <ctime>
 
 class CSVLogger {
 public:
@@ -34,7 +39,7 @@ private:
 };
 
 // Implementation
-CSVLogger::CSVLogger(const std::string& filepath, const std::string& header) : _is_open(false) {
+inline CSVLogger::CSVLogger(const std::string& filepath, const std::string& header) : _is_open(false) {
     pthread_mutex_init(&_mutex, nullptr);
     
     // Create directory if it doesn't exist
@@ -59,14 +64,14 @@ CSVLogger::CSVLogger(const std::string& filepath, const std::string& header) : _
     }
 }
 
-CSVLogger::~CSVLogger() {
+inline CSVLogger::~CSVLogger() {
     if (_file && _file->is_open()) {
         _file->close();
     }
     pthread_mutex_destroy(&_mutex);
 }
 
-void CSVLogger::log(const std::string& csv_line) {
+inline void CSVLogger::log(const std::string& csv_line) {
     if (!_is_open || !_file) return;
     
     pthread_mutex_lock(&_mutex);
@@ -75,7 +80,7 @@ void CSVLogger::log(const std::string& csv_line) {
     pthread_mutex_unlock(&_mutex);
 }
 
-void CSVLogger::flush() {
+inline void CSVLogger::flush() {
     if (!_is_open || !_file) return;
     
     pthread_mutex_lock(&_mutex);
@@ -83,11 +88,11 @@ void CSVLogger::flush() {
     pthread_mutex_unlock(&_mutex);
 }
 
-bool CSVLogger::is_open() const {
+inline bool CSVLogger::is_open() const {
     return _is_open;
 }
 
-std::string CSVLogger::create_vehicle_log_dir(unsigned int vehicle_id) {
+inline std::string CSVLogger::create_vehicle_log_dir(unsigned int vehicle_id) {
     std::string base_dir = "tests/logs/vehicle_" + std::to_string(vehicle_id);
     
     if (create_directory(base_dir)) {
@@ -102,7 +107,7 @@ std::string CSVLogger::create_vehicle_log_dir(unsigned int vehicle_id) {
     return "."; // Last resort - current directory
 }
 
-bool CSVLogger::create_directory(const std::string& path) {
+inline bool CSVLogger::create_directory(const std::string& path) {
     // Create directory recursively
     std::string current_path;
     size_t pos = 0;
@@ -133,7 +138,7 @@ bool CSVLogger::create_directory(const std::string& path) {
     return true;
 }
 
-std::string CSVLogger::get_directory_from_path(const std::string& filepath) {
+inline std::string CSVLogger::get_directory_from_path(const std::string& filepath) {
     size_t last_slash = filepath.find_last_of('/');
     if (last_slash != std::string::npos) {
         return filepath.substr(0, last_slash);
@@ -141,7 +146,7 @@ std::string CSVLogger::get_directory_from_path(const std::string& filepath) {
     return "";
 }
 
-std::string CSVLogger::get_timestamp() {
+inline std::string CSVLogger::get_timestamp() {
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(

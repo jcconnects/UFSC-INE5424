@@ -30,7 +30,7 @@ class Network {
         CAN* _can;
 };
 
-Network::Network(const unsigned int id) : _id(id) {
+inline Network::Network(const unsigned int id) : _id(id) {
     _nic = Initializer::create_nic();
     if (id) {
         NIC::Address addr; // We don't set the address here anymore;
@@ -47,7 +47,7 @@ Network::Network(const unsigned int id) : _id(id) {
     _can = new CAN();
 }
 
-Network::~Network() {
+inline Network::~Network() {
     delete _can;
     _can = nullptr;
     delete _protocol;
@@ -56,15 +56,15 @@ Network::~Network() {
     _nic = nullptr;
 }
 
-Network::Protocol* Network::channel() {
+inline Network::Protocol* Network::channel() {
     return _protocol;
 }
 
-CAN* Network::bus() {
+inline CAN* Network::bus() {
     return _can;
 }
 
-const Network::NIC::Address Network::address() {
+inline const Network::NIC::Address Network::address() {
     return _nic->address();
 }
 

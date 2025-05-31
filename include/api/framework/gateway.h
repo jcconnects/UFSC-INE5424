@@ -3,7 +3,6 @@
 
 #include <unordered_map>
 #include <unordered_set>
-#include <stdexcept>
 #include <pthread.h>
 #include <chrono>
 #include <sstream>
@@ -11,7 +10,6 @@
 #include "../network/communicator.h"
 #include "../network/bus.h"
 #include "network.h"
-#include "../util/observer.h"
 #include "../util/csv_logger.h"
 #include "../network/message.h"
 #include "../util/debug.h"
@@ -27,7 +25,7 @@ class Gateway {
         typedef CAN::Observer Observer;
         typedef std::unordered_map<Unit, std::unordered_set<Observer*>> Map;
 
-        static const unsigned int MAX_MESSAGE_SIZE;
+        inline static const unsigned int MAX_MESSAGE_SIZE = Protocol::MTU - sizeof(Protocol::Header) - sizeof(Protocol::TimestampFields);
         const unsigned int PORT = 0;
 
         Gateway(const unsigned int id);
@@ -65,7 +63,7 @@ class Gateway {
 };
 
 /******** Gateway Implementation ********/
-Gateway::Gateway(const unsigned int id) : _id(id) {
+inline Gateway::Gateway(const unsigned int id) : _id(id) {
     db<Gateway>(TRC) << "Gateway::Gateway(" << id << ") called!\n";
     
     _network = new Network(id);
@@ -89,7 +87,7 @@ Gateway::Gateway(const unsigned int id) : _id(id) {
     db<Gateway>(INF) << "[Gateway " << _id << "] threads started\n";
 }
 
-Gateway::~Gateway() {
+inline Gateway::~Gateway() {
     db<Gateway>(TRC) << "Gateway::~Gateway() called for ID " << _id << "!\n";
     _running.store(false, std::memory_order_release);
 
@@ -116,7 +114,7 @@ Gateway::~Gateway() {
     db<Gateway>(INF) << "[Gateway " << _id << "] destroyed successfully\n";
 }
 
-bool Gateway::send(Message* message) {
+inline bool Gateway::send(Message* message) {
 
     if (message->size() > MAX_MESSAGE_SIZE) {
         db<Gateway>(WRN) << "[Gateway " << _id << "] message too large: " << message->size() << " > " << MAX_MESSAGE_SIZE << "\n";
@@ -140,7 +138,7 @@ bool Gateway::send(Message* message) {
     return result;
 }
 
-bool Gateway::receive(Message* message) {
+inline bool Gateway::receive(Message* message) {
     if (!_running.load(std::memory_order_acquire)) {
         db<Gateway>(WRN) << "[Gateway " << _id << "] receive called but gateway is not running\n";
         return false;
@@ -159,7 +157,7 @@ bool Gateway::receive(Message* message) {
 }
 
 // TODO - Edit origin in message
-void Gateway::handle(Message* message) {
+inline void Gateway::handle(Message* message) {
     // CRITICAL FIX: Check if message originated from this gateway to prevent feedback loop
     if (message->origin() == _comms->address()) {
         db<Gateway>(INF) << "[Gateway " << _id << "] ignoring message from self (origin: " 
@@ -190,7 +188,7 @@ void Gateway::handle(Message* message) {
     }
 }
 
-void* Gateway::mainloop(void* arg) {
+inline void* Gateway::mainloop(void* arg) {
     Gateway* self = reinterpret_cast<Gateway*>(arg);
     
     db<Gateway>(INF) << "[Gateway " << self->_id << "] external receive loop started\n";
@@ -206,7 +204,7 @@ void* Gateway::mainloop(void* arg) {
     return nullptr;
 }
 
-bool Gateway::internalReceive(Message* msg) {
+inline bool Gateway::internalReceive(Message* msg) {
     // CRITICAL FIX: Get message from observer and copy it to the parameter
     Message* received_msg = _can_observer->updated();
     if (!received_msg) {
@@ -230,7 +228,7 @@ bool Gateway::internalReceive(Message* msg) {
     return true;
 }
 
-void* Gateway::internalLoop(void* arg) {
+inline void* Gateway::internalLoop(void* arg) {
     Gateway* self = reinterpret_cast<Gateway*>(arg);
     
     db<Gateway>(INF) << "[Gateway " << self->_id << "] internal receive loop started\n";
@@ -255,21 +253,21 @@ void* Gateway::internalLoop(void* arg) {
     return nullptr;
 }
 
-bool Gateway::running() const {
+inline bool Gateway::running() const {
     return _running.load(std::memory_order_acquire);
 }
 
-const Gateway::Address& Gateway::address() {
+inline const Gateway::Address& Gateway::address() {
     return _comms->address();
 }
 
-void Gateway::setup_csv_logging(const std::string& log_dir) {
+inline void Gateway::setup_csv_logging(const std::string& log_dir) {
     std::string csv_file = log_dir + "/gateway_" + std::to_string(_id) + "_messages.csv";
     std::string header = "timestamp_us,message_type,direction,origin,destination,unit,period_us,value_size,latency_us";
     _csv_logger = std::make_unique<CSVLogger>(csv_file, header);
 }
 
-void Gateway::log_message(const Message& msg, const std::string& direction) {
+inline void Gateway::log_message(const Message& msg, const std::string& direction) {
     if (!_csv_logger || !_csv_logger->is_open()) return;
     
     auto now = std::chrono::system_clock::now();
@@ -294,8 +292,5 @@ void Gateway::log_message(const Message& msg, const std::string& direction) {
     
     _csv_logger->log(csv_line.str());
 }
-
-// Out-of-class definition for the static const member
-const unsigned int Gateway::MAX_MESSAGE_SIZE = Protocol::MTU - sizeof(Protocol::Header) - sizeof(Protocol::TimestampFields);
 
 #endif // GATEWAY_H

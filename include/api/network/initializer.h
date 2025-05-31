@@ -5,7 +5,7 @@
 #include "api/network/nic.h"
 #include "api/network/protocol.h"
 #include "api/network/communicator.h"
-#include "api/network/message.h"
+#include <stdexcept>
 
 
 /**
@@ -46,11 +46,11 @@ class Initializer {
 
 /********** Initializer Implementation ***********/
 
-Initializer::NIC_T* Initializer::create_nic() {
+inline Initializer::NIC_T* Initializer::create_nic() {
     return new NIC_T();
 }
 
-Initializer::Protocol_T* Initializer::create_protocol(NIC_T* nic) {
+inline Initializer::Protocol_T* Initializer::create_protocol(NIC_T* nic) {
     if (!nic) {
         throw std::invalid_argument("NIC cannot be null");
     }

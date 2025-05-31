@@ -1,12 +1,13 @@
 #ifndef AGENT_H
 #define AGENT_H
 
-#include <cstdint>
-#include <chrono>
-#include <vector>
-#include <algorithm>
 #include <string>
 #include <sstream>
+#include <memory>
+#include <atomic>
+#include <cassert>
+#include <stdexcept>
+#include <pthread.h>
 
 #include "../network/bus.h"
 #include "periodicThread.h"
@@ -63,7 +64,7 @@ class Agent {
 };
 
 /****** Agent Implementation *****/
-Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address) : _address(address), _name(name), _periodic_thread(nullptr) {
+inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address) : _address(address), _name(name), _periodic_thread(nullptr) {
     db<Agent>(INF) << "[Agent] " << _name << " created with address: " << _address.to_string() << "\n";
     if (!bus)
         throw std::invalid_argument("Gateway cannot be null");
@@ -89,7 +90,7 @@ Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address ad
     }
 }
 
-Agent::~Agent() {
+inline Agent::~Agent() {
     // First, stop the running flag to prevent new operations
     _running.store(false, std::memory_order_release);
     
@@ -120,7 +121,7 @@ Agent::~Agent() {
     db<Agent>(INF) << "[Agent] " << _name << " destroyed successfully\n";
 }
 
-int Agent::send(Unit unit, Microseconds period) {
+inline int Agent::send(Unit unit, Microseconds period) {
     db<Agent>(INF) << "[Agent] " << _name << " sending INTEREST for unit: " << unit << " with period: " << period.count() << " microseconds\n";
     if (period == Microseconds::zero())
         return 0;
@@ -138,7 +139,7 @@ int Agent::send(Unit unit, Microseconds period) {
     return result;
 }
 
-int Agent::receive(Message* msg) {
+inline int Agent::receive(Message* msg) {
     db<Agent>(INF) << "[Agent] " << _name << " waiting for messages...\n";
     (*msg) = *(_can_observer->updated());
 
@@ -149,7 +150,7 @@ int Agent::receive(Message* msg) {
 }
 
 
-void* Agent::run(void* arg) {
+inline void* Agent::run(void* arg) {
     Agent* agent = reinterpret_cast<Agent*>(arg);
 
     while (agent->running()) {
@@ -177,11 +178,11 @@ void* Agent::run(void* arg) {
     return nullptr;
 }
 
-bool Agent::running() {
+inline bool Agent::running() {
     return _running.load(std::memory_order_acquire);
 }
 
-void Agent::handle_interest(Unit unit, Microseconds period) {
+inline void Agent::handle_interest(Unit unit, Microseconds period) {
     db<Agent>(INF) << "[Agent] " << _name << " received INTEREST for unit: " << unit << " with period: " << period.count() << " microseconds\n";
     
     // Only respond to INTEREST if this agent is a producer (observing INTEREST messages)
@@ -201,7 +202,7 @@ void Agent::handle_interest(Unit unit, Microseconds period) {
 }
 
 
-void Agent::reply(Unit unit) {
+inline void Agent::reply(Unit unit) {
     // Safety check: don't reply if agent is being destroyed
     if (!running()) {
         return;
@@ -228,13 +229,13 @@ void Agent::reply(Unit unit) {
     _can->send(&msg);
 }
 
-void Agent::set_csv_logger(const std::string& log_dir) {
+inline void Agent::set_csv_logger(const std::string& log_dir) {
     std::string csv_file = log_dir + "/" + _name + "_messages.csv";
     std::string header = "timestamp_us,message_type,direction,origin,destination,unit,period_us,value_size,latency_us";
     _csv_logger = std::make_unique<CSVLogger>(csv_file, header);
 }
 
-void Agent::log_message(const Message& msg, const std::string& direction) {
+inline void Agent::log_message(const Message& msg, const std::string& direction) {
     if (!_csv_logger || !_csv_logger->is_open()) return;
     
     auto timestamp_us = Message::getSynchronizedTimestamp().count();
