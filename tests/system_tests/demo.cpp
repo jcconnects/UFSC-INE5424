@@ -25,10 +25,10 @@ volatile sig_atomic_t rsu_should_terminate = 0;
 
 // Signal handler for RSU termination
 void rsu_signal_handler(int signal) {
-    if (signal == SIGUSR1) {
+    if (signal == SIGUSR2) {
         rsu_should_terminate = 1;
         // Write to stderr for immediate output (safer in signal handler)
-        write(STDERR_FILENO, "[RSU Signal] Received SIGUSR1, setting termination flag\n", 56);
+        write(STDERR_FILENO, "[RSU Signal] Received SIGUSR2, setting termination flag\n", 56);
     }
 }
 
@@ -150,7 +150,7 @@ void Demo::setup_rsu_as_leader(unsigned int rsu_id) {
 void Demo::run_rsu(unsigned int rsu_id, unsigned int unit, std::chrono::milliseconds period) {
     try {
         // Set up signal handler for graceful termination
-        signal(SIGUSR1, rsu_signal_handler);
+        signal(SIGUSR2, rsu_signal_handler);
         
         // Set up logging for RSU process
         std::string log_file = setup_rsu_log_directory(rsu_id);
@@ -307,7 +307,7 @@ int Demo::run_demo() {
     
     // === STEP 4: Signal RSU to terminate ===
     TEST_LOG("Signaling RSU to terminate");
-    if (kill(rsu_pid, SIGUSR1) == -1) {
+    if (kill(rsu_pid, SIGUSR2) == -1) {
         TEST_LOG("[ERROR] Failed to signal RSU process: " + std::string(strerror(errno)));
         successful = false;
     } else {
@@ -317,23 +317,8 @@ int Demo::run_demo() {
     // === STEP 5: Wait for RSU to complete ===
     TEST_LOG("Waiting for RSU process to complete");
     int status;
-    // Add a timeout in case RSU doesn't respond - wait up to 10 seconds
-    pid_t wait_result = waitpid(rsu_pid, &status, WNOHANG);
-    int timeout_counter = 0;
-    while (wait_result == 0 && timeout_counter < 10) {
-        sleep(1);
-        timeout_counter++;
-        TEST_LOG("Waiting for RSU... (" + std::to_string(timeout_counter) + "/10 seconds)");
-        wait_result = waitpid(rsu_pid, &status, WNOHANG);
-    }
-    
-    if (wait_result == -1) {
+    if (waitpid(rsu_pid, &status, 0) == -1) {
         TEST_LOG("[ERROR] failed to wait for RSU process " + std::to_string(rsu_pid) + ": " + std::string(strerror(errno)));
-        successful = false;
-    } else if (wait_result == 0) {
-        TEST_LOG("[ERROR] RSU process " + std::to_string(rsu_pid) + " did not terminate within timeout, killing it");
-        kill(rsu_pid, SIGKILL);
-        waitpid(rsu_pid, &status, 0);
         successful = false;
     } else if (WIFEXITED(status)) {
         int exit_status = WEXITSTATUS(status);
