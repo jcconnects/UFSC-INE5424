@@ -23,13 +23,13 @@ class BasicProducerB : public Agent {
 };
 
 /******** BasicProducerB Implementation *********/
-BasicProducerB::BasicProducerB(CAN* can, const Message::Origin addr, const std::string& name) 
+inline BasicProducerB::BasicProducerB(CAN* can, const Message::Origin addr, const std::string& name) 
     : Agent(can, name, static_cast<std::uint32_t>(DataTypes::UNIT_B), CAN::Message::Type::INTEREST, addr),
       _gen(_rd()),
       _dist(200.0f, 300.0f)  // Different range for B
 {}
 
-Agent::Value BasicProducerB::get(Agent::Unit unit) {
+inline Agent::Value BasicProducerB::get(Agent::Unit unit) {
     // Generate a random float value
     float value = _dist(_gen);
     
