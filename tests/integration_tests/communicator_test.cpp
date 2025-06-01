@@ -1,10 +1,3 @@
-#include <pthread.h>
-#include <unistd.h>
-#include <atomic>
-#include <iostream>
-#include <chrono> // For sleep_for
-#include <cstring> // For strlen
-
 #include "../testcase.h"
 #include "api/network/initializer.h"
 
