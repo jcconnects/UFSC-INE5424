@@ -10,6 +10,7 @@
 #include "message.h"
 #include "../util/observer.h"
 #include "../util/debug.h"
+#include "beamforming.h"  // Include BeamformingInfo
 
 template <typename Channel>
 class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data, typename Channel::Observer::Observing_Condition>
@@ -29,6 +30,7 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         
         // Communication methods
         bool send(const Message_T* message);
+        bool send(const Message_T* message, const BeamformingInfo& beam_info);
         bool receive(Message_T* message);
 
 
@@ -84,6 +86,21 @@ bool Communicator<Channel>::send(const Message_T* message) {
     db<Communicator>(INF) << "[Communicator] Channel::send() return value " << std::to_string(result) << "\n";
     
     return result;
+}
+
+template <typename Channel>
+bool Communicator<Channel>::send(const Message_T* message, const BeamformingInfo& beam_info) {
+    db<Communicator>(TRC) << "Communicator<Channel>::send() with beamforming called!\n";
+    
+    if (!_running.load(std::memory_order_acquire)) {
+        db<Communicator>(WRN) << "[Communicator] Not running, skipping send!\n";
+        return false;
+    }
+
+    int result = _channel->send(_address, Address::BROADCAST, message->data(), message->size(), beam_info);
+    db<Communicator>(INF) << "[Communicator] Channel::send() with beamforming return value " << std::to_string(result) << "\n";
+    
+    return result > 0;
 }
 
 template <typename Channel>

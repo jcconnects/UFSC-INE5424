@@ -158,6 +158,18 @@ void Demo::run_rsu(unsigned int rsu_id, unsigned int unit, std::chrono::millisec
         
         db<RSU>(INF) << "[RSU " << rsu_id << "] Starting RSU process\n";
         
+        // Load trajectory for RSU (static position)
+        LocationService& location_service = LocationService::getInstance();
+        std::string rsu_trajectory_file = "tests/logs/trajectories/rsu_" + std::to_string(rsu_id) + "_trajectory.csv";
+        
+        if (location_service.loadTrajectory(rsu_trajectory_file)) {
+            db<RSU>(INF) << "[RSU " << rsu_id << "] loaded trajectory from " << rsu_trajectory_file << "\n";
+        } else {
+            db<RSU>(WRN) << "[RSU " << rsu_id << "] failed to load trajectory, using default coordinates\n";
+            // Set default RSU position at map center
+            location_service.setCurrentCoordinates(-27.5919, -48.5432); // Florianópolis center
+        }
+        
         // Setup RSU as leader before creating the RSU instance
         setup_rsu_as_leader(rsu_id);
         
@@ -207,9 +219,26 @@ int Demo::run_demo() {
     // Ensure tests/logs directory exists
     try {
         std::filesystem::create_directories("tests/logs");
-        TEST_LOG("Created tests/logs directory");
+        std::filesystem::create_directories("tests/logs/trajectories");
+        TEST_LOG("Created tests/logs and trajectories directories");
     } catch (const std::exception& e) {
         TEST_LOG("Warning: Could not create tests/logs directory: " + std::string(e.what()));
+    }
+
+    // === STEP 0: Generate trajectories using Python script ===
+    TEST_LOG("Generating trajectory files for " + std::to_string(n_vehicles) + " vehicles and 1 RSU");
+    
+    std::string python_command = "python3 scripts/trajectory_generator_map_1.py";
+    python_command += " --vehicles " + std::to_string(n_vehicles);
+    python_command += " --duration 30";  // 30 seconds simulation
+    python_command += " --output-dir tests/logs/trajectories";
+    python_command += " --update-interval 100";  // 100ms updates
+    
+    int trajectory_result = system(python_command.c_str());
+    if (trajectory_result != 0) {
+        TEST_LOG("Warning: Trajectory generation failed or not available, using manual coordinates");
+    } else {
+        TEST_LOG("Trajectory generation completed successfully");
     }
 
     std::vector<pid_t> children;
@@ -348,6 +377,18 @@ void Demo::run_vehicle(Vehicle* v) {
     int delay = start_delay(gen);
     int lifetime = dist_lifetime(gen);
     unsigned int vehicle_id = v->id(); // Store ID before deletion
+
+    // Load trajectory for this vehicle
+    LocationService& location_service = LocationService::getInstance();
+    std::string trajectory_file = "tests/logs/trajectories/vehicle_" + std::to_string(vehicle_id) + "_trajectory.csv";
+    
+    if (location_service.loadTrajectory(trajectory_file)) {
+        db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] loaded trajectory from " << trajectory_file << "\n";
+    } else {
+        db<Vehicle>(WRN) << "[Vehicle " << vehicle_id << "] failed to load trajectory, using default coordinates\n";
+        // Set a default position if trajectory loading fails
+        location_service.setCurrentCoordinates(-27.5919, -48.5432); // Florianópolis center
+    }
 
     // Create simple components based on vehicle ID
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] creating components\n";
