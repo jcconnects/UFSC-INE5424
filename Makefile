@@ -182,9 +182,19 @@ docs:
 	@echo "Open doc/doxygen/html/index.html in your browser to view it."
 
 .PHONY: docs-open
-docs-open: docs
-	@echo "Opening documentation in browser..."
-	open doc/doxygen/html/index.html
+docs-open:
+	@if command -v doxygen >/dev/null 2>&1; then \
+		echo "Doxygen found. Generating documentation..."; \
+		$(MAKE) docs; \
+		echo "Opening documentation in browser..."; \
+		open doc/doxygen/html/index.html; \
+	elif [ -f doc/doxygen/html/index.html ]; then \
+		echo "Doxygen not found, but documentation exists. Opening existing documentation..."; \
+		open doc/doxygen/html/index.html; \
+	else \
+		echo "Error: Doxygen command not found and documentation does not exist."; \
+		echo "Please install doxygen or generate documentation manually."; \
+	fi
 
 .PHONY: clean-docs
 clean-docs:
