@@ -46,7 +46,7 @@ struct Traits {
 template<>
 struct Traits<SocketEngine> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static constexpr const char* DEFAULT_INTERFACE_NAME = "test-dummy0";
     
     static const char* INTERFACE_NAME() {
