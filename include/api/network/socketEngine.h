@@ -226,6 +226,18 @@ void SocketEngine::setUpEpoll() {
 int SocketEngine::send(Ethernet::Frame* frame, unsigned int size) {
     db<SocketEngine>(TRC) << "SocketEngine::send() called!\n";
 
+    // Check for null frame pointer
+    if (frame == nullptr) {
+        db<SocketEngine>(ERR) << "[SocketEngine] Attempted to send null frame pointer\n";
+        return -1;
+    }
+
+    // Check for invalid size
+    if (size == 0 || size < Ethernet::HEADER_SIZE) {
+        db<SocketEngine>(ERR) << "[SocketEngine] Attempted to send frame with invalid size: " << size << "\n";
+        return -1;
+    }
+
     // Check if engine is running before sending
     if (!running()) {
         db<SocketEngine>(ERR) << "[SocketEngine] Attempted to send while engine is stopping/stopped\n";
