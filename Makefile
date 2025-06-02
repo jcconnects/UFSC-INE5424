@@ -42,6 +42,7 @@ all: dirs \
 	run_unit_periodic_thread_test \
 	run_unit_ethernet_test \
 	run_unit_list_test \
+	run_integration_communicator_test \
 	run_system_demo
 
 # Compile and run all tests in the correct order
