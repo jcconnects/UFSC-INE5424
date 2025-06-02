@@ -83,6 +83,8 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
 
         void stop();
         
+        double radius();
+        void setRadius(double radius);
         // Attach/detach observers
         // void attach(Observer* obs, Protocol_Number prot); // inherited
         // void detach(Observer* obs, Protocol_Number prot); // inherited
@@ -102,6 +104,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         std::atomic<bool> _running;
         sem_t _buffer_sem;
         sem_t _binary_sem;
+        double _radius;
 
         bool running() { return _running.load(std::memory_order_acquire); }
 };
@@ -408,6 +411,16 @@ void NIC<Engine>::fillTxTimestamp(DataBuffer* buf, unsigned int packet_size) {
         db<NIC>(WRN) << "[NIC] Packet too small for TX timestamp. Size: " << packet_size 
                       << ", required: " << (tx_timestamp_offset + sizeof(TimestampType)) << "\n";
     }
+}
+
+template <typename Engine>
+double NIC<Engine>::radius() {
+    return _radius;
+}
+
+template <typename Engine>
+void NIC<Engine>::setRadius(double radius) {
+    _radius = radius;
 }
 
 #endif // NIC_H
