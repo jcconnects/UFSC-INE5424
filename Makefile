@@ -33,14 +33,11 @@ TEST_IFACE_NAME = test-dummy0
 
 # Default target: compile and run all tests
 .PHONY: all
-all: dirs \
-	unit_tests \
-	run_integration_communicator_test \
-	run_system_demo
+all: compile_tests unit_tests integration_tests system_tests
 
 # Compile and run all tests in the correct order
 .PHONY: test
-test: dirs unit_tests system_tests
+test: dirs unit_tests integration_tests system_tests
 
 # Compile all tests
 .PHONY: compile_tests
