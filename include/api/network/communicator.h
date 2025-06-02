@@ -58,7 +58,11 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
 
 /*************** Communicator Implementation *****************/
 template <typename Channel>
-Communicator<Channel>::Communicator(Channel* channel, Address address) : Observer(address.port()), _channel(channel), _address(address) {
+Communicator<Channel>::Communicator(Channel* channel, Address address) : Observer(address.port()), _address(address) {
+    if (!channel)
+        throw std::invalid_argument("Channel cannot be null");
+    
+    _channel = channel;
     _channel->attach(this, address);
     _running.store(true, std::memory_order_release);
 }
