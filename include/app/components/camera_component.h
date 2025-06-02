@@ -18,7 +18,7 @@
 
 class CameraComponent : public Agent {
     public:
-        CameraComponent(CAN* can, const Message::Origin addr, const std::string name = "CameraComponent");
+        CameraComponent(CAN* can, const Message::Origin addr, const std::string& name = "CameraComponent");
         ~CameraComponent() = default;
 
         Agent::Value get(Agent::Unit unit) override;
@@ -60,7 +60,7 @@ inline Agent::Value CameraComponent::get(Agent::Unit unit) {
             payload_ss << "Video_Stream: {fps: 30, codec: H264, bitrate: 5000}";
             break;
         case static_cast<std::uint32_t>(DataTypes::PIXEL_MATRIX):
-        case static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX):
+        case static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX): {
             // Generate dummy object detection data
             payload_ss << "Objects: [";
             int num_objects = _label_dist(_gen) % 3 + 1; // 1-3 objects
@@ -77,6 +77,7 @@ inline Agent::Value CameraComponent::get(Agent::Unit unit) {
             }
             payload_ss << "]";
             break;
+        }
         case static_cast<std::uint32_t>(DataTypes::CAMERA_METADATA):
         case static_cast<std::uint32_t>(DataTypes::EXTERNAL_CAMERA_METADATA):
             payload_ss << "Camera_Meta: {exposure: " << (_coord_dist(_gen) / 1000.0) 
