@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Trajectory Generator for Map 1
-Generates CSV trajectory files for vehicles and RSUs for beamforming simulation.
+Trajectory Generator for Map 1 - Urban Grid Scenario
+Generates CSV trajectory files for vehicles and RSUs for radius-based collision domain simulation.
 
 Usage:
     python3 trajectory_generator_map_1.py --vehicles <num> --duration <seconds> --output-dir <path>

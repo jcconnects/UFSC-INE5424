@@ -65,7 +65,7 @@ class Protocol: private NIC::Observer
         static const unsigned int MTU = NIC::MTU - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates);
         typedef std::uint8_t Data[MTU];
         
-        // Packet class that includes header, timestamp fields, beamforming info, and data
+        // Packet class that includes header, timestamp fields, coordinates, and data
         class Packet: public Header {
             public:
                 Packet() {}
@@ -102,7 +102,7 @@ class Protocol: private NIC::Observer
                 
             private:
                 Data _data;
-                // Note: Actual timestamp fields, beamforming info, and data are accessed via pointers
+                // Note: Actual timestamp fields, coordinates, and data are accessed via pointers
                 // to maintain proper memory layout
         } __attribute__((packed));
         
@@ -250,7 +250,7 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     clock.getSynchronizedTime(&sync_status); // We only need the status
     packet->timestamps()->is_clock_synchronized = sync_status;
 
-    // Copy beamforming info into the packet and set sender location
+    // Set sender location and communication radius
     Coordinates coords;
     coords.radius = _nic->radius();
     LocationService::getCurrentCoordinates(coords.latitude, coords.longitude);
@@ -294,7 +294,7 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
         from->port(pkt->header()->from_port());
     }
 
-    // Payload size (accounting for BeamformingInfo)
+    // Payload size (accounting for Coordinates)
     int payload_size = packet_size - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates);
 
     // Copies only useful data
@@ -328,39 +328,23 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
 
     Packet* pkt = reinterpret_cast<Packet*>(buf->data()->payload);
 
-    // **NEW: Beamforming check**
+    // Radius-based collision domain filtering
     Coordinates* coords = pkt->coordinates();
     
     // Get receiver location
     double rx_lat, rx_lon;
     LocationService::getCurrentCoordinates(rx_lat, rx_lon);
     
-    // Check distance
+    // Check if packet is within sender's communication range
     double distance = GeoUtils::haversineDistance(coords->latitude, coords->longitude, rx_lat, rx_lon);
     
-    if (distance > _nic->radius() + coords->radius) {
-        db<Protocol>(INF) << "[Protocol] Packet dropped: out of range (" << distance << "m > " << _nic->radius() + coords->radius << "m)\n";
+    if (distance > coords->radius) {
+        db<Protocol>(INF) << "[Protocol] Packet dropped: out of range (" << distance << "m > " << coords->radius << "m)\n";
         free(buf);
         return;
     }
     
-    // Check beam angle (if not omnidirectional)
-    // if (beam_info->beam_width_angle < 360.0f) {
-    //     float bearing = GeoUtils::bearing(
-    //         beam_info->sender_latitude, beam_info->sender_longitude,
-    //         rx_lat, rx_lon
-    //     );
-        
-    //     if (!GeoUtils::isInBeam(bearing, beam_info->beam_center_angle, beam_info->beam_width_angle)) {
-    //         db<Protocol>(INF) << "[Protocol] Packet dropped: outside beam (bearing=" 
-    //                           << bearing << ", center=" << beam_info->beam_center_angle 
-    //                           << ", width=" << beam_info->beam_width_angle << ")\n";
-    //         free(buf);
-    //         return;
-    //     }
-    // }
-    
-    // **Continue with existing logic if packet passes beamforming checks**
+    // Packet is within range - continue with protocol processing
 
     // Extract timestamps and update Clock if this is a PTP-relevant message
     TimestampFields* timestamps = pkt->timestamps();
