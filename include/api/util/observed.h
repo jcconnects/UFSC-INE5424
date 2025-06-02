@@ -146,6 +146,8 @@ void Concurrent_Observed<D, C>::attach(Observer* o, C c) {
 template <typename D, typename C>
 void Concurrent_Observed<D, C>::detach(Observer* o, C c) {
     pthread_mutex_lock(&_mtx);
+    o->_is_detached = true;  // Mark as detached
+    o->detach_signal();      // Signal any blocked threads
     _observers.remove(o);
     pthread_mutex_unlock(&_mtx);
 }

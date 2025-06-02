@@ -91,8 +91,14 @@ class Concurrent_Observer : public Conditional_Data_Observer<D, C> {
         void update(C c, D* d) override;
         D* updated();
         
+        // Signal detach to unblock any waiting threads
+        void detach_signal() {
+            sem_post(&_semaphore);
+        }
+        
     private:
         sem_t _semaphore;
+        bool _is_detached{false};
 };
 
 /***************** CONCURRENT_OBSERVER IMPLEMENTATION *************************/
@@ -117,6 +123,9 @@ void Concurrent_Observer<D, C>::update(C c, D* d) {
 template <typename D, typename C>
 D* Concurrent_Observer<D, C>::updated() {
     sem_wait(&_semaphore);
+    if (_is_detached) {
+        return nullptr;
+    }
     return this->_data.remove();
 }
 
