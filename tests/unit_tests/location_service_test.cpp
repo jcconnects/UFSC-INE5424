@@ -39,9 +39,10 @@ void LocationServiceTest::test_get_specific_coordinates() {
     // Exercise SUT - Get coordinates at timestamp 100ms (second point in trajectory)
     LocationService::getCoordinates(lat, lon, std::chrono::milliseconds(100));
 
-    // Result Verification
-    assert_equal(-27.59101730, lat, "Returned latitude does not match the latitude from the requested timestamp of the trajectory file");
-    assert_equal(-48.54810875, lon, "Returned longitude does not match the longitude from the requested timestamp of the trajectory file");
+    // Result Verification - Since trajectory is randomized, verify coordinates are within map bounds
+    // Map bounds from trajectory_generator_map_1.py: lat [-27.5969, -27.5869], lon [-48.5482, -48.5382]
+    assert_true(lat >= -27.597 && lat <= -27.586, "Returned latitude should be within map bounds");
+    assert_true(lon >= -48.549 && lon <= -48.537, "Returned longitude should be within map bounds");
 }
 
 void LocationServiceTest::test_get_coordinates_at_runtime() {
@@ -54,9 +55,9 @@ void LocationServiceTest::test_get_coordinates_at_runtime() {
     LocationService::getCurrentCoordinates(lat, lon);
 
     // Result Verification - Check that we get valid coordinates from trajectory
-    // Since this depends on precise timing, just verify the coordinates are in the expected range
-    assert_true(lat >= -27.6 && lat <= -27.58, "Latitude should be in the trajectory range");
-    assert_true(lon >= -48.56 && lon <= -48.54, "Longitude should be in the trajectory range");
+    // Use map bounds from trajectory_generator_map_1.py for verification
+    assert_true(lat >= -27.598 && lat <= -27.585, "Latitude should be in the trajectory range");
+    assert_true(lon >= -48.550 && lon <= -48.535, "Longitude should be in the trajectory range");
 }
 
 void LocationServiceTest::test_get_trajectory_duration() {
@@ -67,7 +68,7 @@ void LocationServiceTest::test_get_trajectory_duration() {
     auto duration = LocationService::getTrajectoryDuration();
 
     // Result Verification
-    assert_equal(30000, duration.count(), "Returned trajectory duration does not match the loaded file duration");
+    assert_equal(static_cast<long long>(30000), duration.count(), "Returned trajectory duration does not match the loaded file duration");
 }
 
 int main() {
