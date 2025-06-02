@@ -173,6 +173,35 @@ clean:
 	rm -rf $(BINDIR)
 	rm -rf $(TESTDIR)/logs
 
+# Documentation targets
+.PHONY: docs
+docs:
+	@echo "Generating documentation with Doxygen..."
+	@mkdir -p doc/doxygen
+	doxygen
+	@echo "Documentation generated in doc/doxygen/html/"
+	@echo "Open doc/doxygen/html/index.html in your browser to view it."
+
+.PHONY: docs-open
+docs-open:
+	@if command -v doxygen >/dev/null 2>&1; then \
+		echo "Doxygen found. Generating documentation..."; \
+		$(MAKE) docs; \
+		echo "Opening documentation in browser..."; \
+		open doc/doxygen/html/index.html; \
+	elif [ -f doc/doxygen/html/index.html ]; then \
+		echo "Doxygen not found, but documentation exists. Opening existing documentation..."; \
+		open doc/doxygen/html/index.html; \
+	else \
+		echo "Error: Doxygen command not found and documentation does not exist."; \
+		echo "Please install doxygen or generate documentation manually."; \
+	fi
+
+.PHONY: clean-docs
+clean-docs:
+	@echo "Cleaning documentation..."
+	rm -rf doc/doxygen
+
 .PHONY: setup_dummy_iface
 setup_dummy_iface:
 	@if ip link show $(TEST_IFACE_NAME) > /dev/null 2>&1; then \

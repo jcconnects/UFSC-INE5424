@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['basic_5fconsumer_5fa_2eh_0',['basic_consumer_a.h',['../basic__consumer__a_8h.html',1,'']]],
+  ['basic_5fconsumer_5fb_2eh_1',['basic_consumer_b.h',['../basic__consumer__b_8h.html',1,'']]],
+  ['basic_5fproducer_5fa_2eh_2',['basic_producer_a.h',['../basic__producer__a_8h.html',1,'']]],
+  ['basic_5fproducer_5fb_2eh_3',['basic_producer_b.h',['../basic__producer__b_8h.html',1,'']]],
+  ['basicconsumera_4',['BasicConsumerA',['../class_basic_consumer_a.html',1,'BasicConsumerA'],['../class_basic_consumer_a.html#ab2b651195be90b0b32506f0d8bd15f4f',1,'BasicConsumerA::BasicConsumerA()']]],
+  ['basicconsumerb_5',['BasicConsumerB',['../class_basic_consumer_b.html',1,'BasicConsumerB'],['../class_basic_consumer_b.html#a943d7f843900ea23be688fe4def02fde',1,'BasicConsumerB::BasicConsumerB()']]],
+  ['basicproducera_6',['BasicProducerA',['../class_basic_producer_a.html',1,'BasicProducerA'],['../class_basic_producer_a.html#aa807d521c09a82662258eff624e32eea',1,'BasicProducerA::BasicProducerA()']]],
+  ['basicproducerb_7',['BasicProducerB',['../class_basic_producer_b.html',1,'BasicProducerB'],['../class_basic_producer_b.html#a0396b977797f788456c67d490cdb5c12',1,'BasicProducerB::BasicProducerB()']]],
+  ['begin_8',['begin',['../class_ordered___list.html#a3f66ed2f70909de064a01c5c503f191e',1,'Ordered_List']]],
+  ['begl_9',['Begl',['../struct_debug_1_1_begl.html',1,'Debug::Begl'],['../struct_null___debug_1_1_begl.html',1,'Null_Debug::Begl']]],
+  ['begl_10',['begl',['../class_debug.html#aa57266a1575244047fa9f1cf49e6b065',1,'Debug']]],
+  ['benefits_20of_20this_20approach_11',['&lt;b&gt;Benefits of This Approach&lt;/b&gt;',['../index.html#autotoc_md19',1,'']]],
+  ['broadcast_12',['BROADCAST',['../class_ethernet.html#a4d98569f734c1d3050bd1b85aeb30b51',1,'Ethernet::BROADCAST'],['../class_protocol_1_1_address.html#ad5ba9286afd532fff67de8de85236daa',1,'Protocol::Address::BROADCAST'],['../class_vehicle.html#ac472fc90eadd51dbbb7962b8b1296228a81d741a35dc8a42c885b7cc031afd17f',1,'Vehicle::BROADCAST']]],
+  ['broadcast_13',['broadcast',['../class_r_s_u.html#a070711958e52f9417cd0a01df694eb88',1,'RSU']]],
+  ['buffer_14',['Buffer',['../class_buffer.html',1,'Buffer&lt; T &gt;'],['../class_communicator.html#a4eeb6883f7ff2f4ed249181737d4678b',1,'Communicator::Buffer'],['../class_protocol.html#a73dddef2b65c7ff5bf444e5afe632c64',1,'Protocol::Buffer'],['../class_buffer.html#abf76f7f2c115eef11426785a476cd13b',1,'Buffer::Buffer()']]],
+  ['buffer_2eh_15',['buffer.h',['../buffer_8h.html',1,'']]],
+  ['buffer_3c_20ethernet_3a_3aframe_20_3e_16',['Buffer&lt; Ethernet::Frame &gt;',['../class_buffer.html',1,'']]],
+  ['building_20and_20running_20tests_17',['Building and Running Tests',['../index.html#autotoc_md5',1,'']]],
+  ['bus_18',['bus',['../class_gateway.html#adcfdc41879c428b4a0d15524f6e44638',1,'Gateway::bus()'],['../class_network.html#a6d0aa4bf1498f16b4f4e66ba7a72a4f8',1,'Network::bus()']]],
+  ['bus_2eh_19',['bus.h',['../bus_8h.html',1,'']]],
+  ['bytes_20',['bytes',['../struct_ethernet_1_1_address.html#a07cba914a56f6e0e7d8724a46ac8ab2e',1,'Ethernet::Address']]],
+  ['bytes_5freceived_21',['bytes_received',['../struct_n_i_c_1_1_statistics.html#addb42bb5c5205be328bfbc581e0b0418',1,'NIC::Statistics']]],
+  ['bytes_5fsent_22',['bytes_sent',['../struct_n_i_c_1_1_statistics.html#a3e08f47fbc665482337f7964bc191051',1,'NIC::Statistics']]]
+];

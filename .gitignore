@@ -65,3 +65,6 @@ out/
 .cache/
 .clangd
 compile_commands.json
+
+# Doxygen generated documentation
+doc/doxygen/

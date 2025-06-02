@@ -272,3 +272,37 @@ This design ensures reliable clock synchronization while maintaining the precisi
 sudo docker build -t newestGCCenv .
 sudo docker run -it --rm --privileged -v "$(pwd)":/app newestGCCenv
 ```
+
+## 📖 Documentation
+
+### Online Documentation (GitHub Pages)
+The complete API documentation is automatically generated and hosted at:
+**[📚 https://joaopedroschmidtcordeiro.github.io/UFSC-INE5424/](https://joaopedroschmidtcordeiro.github.io/UFSC-INE5424/)**
+
+The documentation includes:
+- Complete API reference for all classes and functions
+- Class inheritance diagrams  
+- File dependency graphs
+- Cross-referenced source code
+- Integration with the project README as the main page
+
+*Note: Documentation is automatically updated whenever code is pushed to the main branch.*
+
+**📋 Want to set up GitHub Pages for your own project?** See our comprehensive setup guide: [`docs-setup.md`](docs-setup.md)
+
+### Local Documentation Generation
+You can also generate the documentation locally using Doxygen:
+
+```bash
+# Generate HTML documentation
+make docs
+
+# Generate and open documentation in browser
+make docs-open
+
+# Clean generated documentation
+make clean-docs
+```
+
+**Prerequisites for local documentation generation:**
+- Doxygen (install with `brew install doxygen` on macOS)
