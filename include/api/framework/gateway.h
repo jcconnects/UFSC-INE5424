@@ -182,6 +182,10 @@ inline void Gateway::handle(Message* message) {
             db<Gateway>(INF) << "[Gateway " << _id << "] forwarding RESPONSE to CAN bus with modified origin\n";
             _can->send(&modified_message);
             break;
+        case Message::Type::STATUS:
+            db<Gateway>(INF) << "[Gateway " << _id << "] forwarding STATUS to CAN bus with modified origin\n";
+            _can->send(&modified_message);
+            break;
         default:
             db<Gateway>(WRN) << "[Gateway " << _id << "] unknown message type: " << static_cast<int>(modified_message.message_type()) << "\n";
             break;
@@ -281,7 +285,7 @@ inline void Gateway::log_message(const Message& msg, const std::string& directio
     
     std::ostringstream csv_line;
     csv_line << timestamp_us << ","
-             << (msg.message_type() == Message::Type::INTEREST ? "INTEREST" : "RESPONSE") << ","
+             << (msg.message_type() == Message::Type::INTEREST ? "INTEREST" : msg.message_type() == Message::Type::RESPONSE ? "RESPONSE" : "STATUS") << ","
              << direction << ","
              << (direction == "SEND" ? address().to_string() : msg.origin().to_string()) << ","
              << (direction == "SEND" ? "NETWORK" : address().to_string()) << ","

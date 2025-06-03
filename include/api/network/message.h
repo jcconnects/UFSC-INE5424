@@ -144,6 +144,7 @@ Message<Channel>::Message(Type message_type, const Origin& origin, Unit unit, Mi
                 this->period(period);
                 break;
             case Type::RESPONSE:
+            case Type::STATUS:  // STATUS messages also use value data
                 this->value(value_data, value_size);
                 break;
             default:
@@ -240,7 +241,8 @@ Message<Channel> Message<Channel>::deserialize(const void* serialized, const uns
                 msg.period(extract_microseconds(bytes, offset, size));
                 break;
             }
-            case Type::RESPONSE: {
+            case Type::RESPONSE: 
+            case Type::STATUS: {  // STATUS messages also have value data
                 unsigned int value_len = size - offset;
                 if (value_len > 0) {
                     msg.value(bytes + offset, value_len);
@@ -325,7 +327,7 @@ void Message<Channel>::serialize() {
 
     if (_message_type == Type::INTEREST)
         append_microseconds(_period);
-    else if (_message_type == Type::RESPONSE)
+    else if (_message_type == Type::RESPONSE || _message_type == Type::STATUS)
         append_value();
         
     db<Message<Channel>>(TRC) << "Message::serialize() - type: " << static_cast<int>(_message_type) 
