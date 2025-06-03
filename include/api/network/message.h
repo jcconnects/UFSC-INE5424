@@ -155,19 +155,37 @@ Message<Channel>::Message(Type message_type, const Origin& origin, Unit unit, Mi
 
 template <typename Channel>
 Message<Channel>::Message(const Message& other) {
-    value(other.value(), other.value_size());
+    // Copy all basic fields first
     _message_type = other.message_type();
     _origin = other.origin();
     _timestamp = other.timestamp();
     _period = other.period();
     _unit = other.unit();
+    
+    // Copy value data if present
+    if (other.value_size() > 0) {
+        value(other.value(), other.value_size());
+    }
+    
+    // Clear and regenerate serialized data to ensure consistency
+    _serialized_data.clear();
+    
     db<Message<Channel>>(TRC) << "Message::Message(const Message&) called with type: " 
         << static_cast<int>(_message_type) 
         << ", origin: " << _origin.to_string() 
         << ", unit: " << _unit 
         << ", period: " << _period.count() 
         << ", value_size: " << _value.size() << "\n";
-    // TODO:: serialized data
+        
+    // Validate the copied message to detect corruption
+    if (_message_type != Type::UNKNOWN && _message_type != Type::INVALID &&
+        _message_type != Type::INTEREST && _message_type != Type::RESPONSE &&
+        _message_type != Type::STATUS && _message_type != Type::PTP &&
+        _message_type != Type::JOIN) {
+        db<Message<Channel>>(ERR) << "Message copy constructor detected corrupted message type: " 
+                                  << static_cast<int>(_message_type) << " - marking as INVALID\n";
+        _message_type = Type::INVALID;
+    }
 }
 
 template <typename Channel>
@@ -399,7 +417,19 @@ typename Message<Channel>::Type Message<Channel>::extract_type(const std::uint8_
         return Type::UNKNOWN;
 
     std::uint8_t raw_type = data[offset++];
-    return static_cast<Type>(raw_type);
+    Type extracted_type = static_cast<Type>(raw_type);
+    
+    // Validate the extracted type to detect corruption
+    if (extracted_type != Type::UNKNOWN && extracted_type != Type::INVALID &&
+        extracted_type != Type::INTEREST && extracted_type != Type::RESPONSE &&
+        extracted_type != Type::STATUS && extracted_type != Type::PTP &&
+        extracted_type != Type::JOIN) {
+        db<Message<Channel>>(ERR) << "Message::extract_type() detected corrupted type value: " 
+                                  << static_cast<int>(raw_type) << " - marking as INVALID\n";
+        return Type::INVALID;
+    }
+    
+    return extracted_type;
 }
 
 template <typename Channel>

@@ -165,6 +165,20 @@ inline void Gateway::handle(Message* message) {
         return;
     }
     
+    // Validate message type to detect corruption
+    auto msg_type = message->message_type();
+    if (msg_type != Message::Type::INTEREST && 
+        msg_type != Message::Type::RESPONSE && 
+        msg_type != Message::Type::STATUS &&
+        msg_type != Message::Type::PTP &&
+        msg_type != Message::Type::JOIN) {
+        db<Gateway>(ERR) << "[Gateway " << _id << "] received corrupted message with invalid type " 
+                         << static_cast<int>(msg_type) << " from origin " << message->origin().to_string() 
+                         << ", unit=" << message->unit() << ", period=" << message->period().count() 
+                         << ", value_size=" << message->value_size() << " - DROPPING MESSAGE\n";
+        return;
+    }
+    
     db<Gateway>(INF) << "[Gateway " << _id << "] handling external message of type " << static_cast<int>(message->message_type()) 
                      << " for unit " << message->unit() << " from origin " << message->origin().to_string() << "\n";
     
@@ -283,9 +297,38 @@ inline void Gateway::log_message(const Message& msg, const std::string& directio
         latency_us = timestamp_us - msg.timestamp().count();
     }
     
+    // Properly map message types instead of assuming unknown types are STATUS
+    std::string msg_type_str;
+    switch (msg.message_type()) {
+        case Message::Type::INTEREST:
+            msg_type_str = "INTEREST";
+            break;
+        case Message::Type::RESPONSE:
+            msg_type_str = "RESPONSE";
+            break;
+        case Message::Type::STATUS:
+            msg_type_str = "STATUS";
+            break;
+        case Message::Type::PTP:
+            msg_type_str = "PTP";
+            break;
+        case Message::Type::JOIN:
+            msg_type_str = "JOIN";
+            break;
+        case Message::Type::UNKNOWN:
+            msg_type_str = "UNKNOWN";
+            break;
+        case Message::Type::INVALID:
+            msg_type_str = "INVALID";
+            break;
+        default:
+            msg_type_str = "CORRUPTED_TYPE_" + std::to_string(static_cast<int>(msg.message_type()));
+            break;
+    }
+    
     std::ostringstream csv_line;
     csv_line << timestamp_us << ","
-             << (msg.message_type() == Message::Type::INTEREST ? "INTEREST" : msg.message_type() == Message::Type::RESPONSE ? "RESPONSE" : "STATUS") << ","
+             << msg_type_str << ","
              << direction << ","
              << (direction == "SEND" ? address().to_string() : msg.origin().to_string()) << ","
              << (direction == "SEND" ? "NETWORK" : address().to_string()) << ","
