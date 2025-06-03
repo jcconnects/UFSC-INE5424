@@ -11,6 +11,8 @@
 #include "api/framework/periodicThread.h"
 #include "api/util/debug.h"
 #include "api/framework/clock.h"
+#include "api/framework/leaderKeyStorage.h"
+
 
 class RSU {
 public:
@@ -20,8 +22,8 @@ public:
     typedef Network::Message Message;
     typedef Message::Unit Unit;
 
-    RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period, 
-        const void* data = nullptr, unsigned int data_size = 0);
+    RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period,
+        double lat, double lon, const void* data = nullptr, unsigned int data_size = 0);
     ~RSU();
     void start();
     void stop();
@@ -38,6 +40,9 @@ private:
     Unit _unit;
     std::chrono::milliseconds _period;
     std::vector<std::uint8_t> _data;
+    MacKeyType _rsu_key
+    double _lat;
+    double _lon;
     
     // Network stack
     Network* _network;
@@ -46,6 +51,7 @@ private:
     // Periodic broadcasting (order matters for initialization)
     std::atomic<bool> _running;
     Periodic_Thread<RSU> _periodic_thread;
+    
 };
 
 /********** RSU Implementation **********/
@@ -60,8 +66,8 @@ private:
  * @param data_size Size of the data payload
  */
 inline RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period, 
-         const void* data, unsigned int data_size) 
-    : _rsu_id(rsu_id), _unit(unit), _period(period), _running(false),
+         double lat, double lon, const void* data, unsigned int data_size) 
+    : _rsu_id(rsu_id), _unit(unit), _period(period), _lat(lat), _lon(lon), _running(false),
       _periodic_thread(this, &RSU::broadcast) {
     
     db<RSU>(TRC) << "RSU::RSU() called with id=" << rsu_id << ", unit=" << unit << ", period=" << period.count() << "ms\n";
@@ -78,6 +84,13 @@ inline RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period
     // Create communicator using the network's protocol channel and RSU's address
     Address rsu_addr(_network->address(), _rsu_id);
     _comm = new Communicator(_network->channel(), rsu_addr);
+
+    _rsu_key.fill(0);
+    // Use RSU ID in the key to make it unique
+    _rsu_key[0] = (rsu_id >> 8) & 0xFF;
+    _rsu_key[1] = rsu_id & 0xFF;
+    _rsu_key[2] = 0xAA; // Marker for RSU
+    _rsu_key[3] = 0xBB;
 
     db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " initialized with address " << rsu_addr.to_string() << "\n";
 
@@ -201,19 +214,27 @@ inline void RSU::broadcast() {
 
     db<RSU>(TRC) << "RSU::broadcast() called!\n";
 
-    // Create RESPONSE message
+    // Create STATUS message
     Message* msg;
-    if (_data.empty()) {
-        // No data payload
-        msg = new Message(Message::Type::RESPONSE, address(), _unit);
-    } else {
-        // With data payload
-        msg = new Message(Message::Type::RESPONSE, address(), _unit, 
-                         Message::ZERO, _data.data(), _data.size());
-    }
+    std::vector<uint8_t> payload;
+    unsigned int offset = 0;
+    std::memcpy(payload.data() + offset, &_lat, sizeof(_lat));
+    offset += sizeof(_lat);
+    std::memcpy(payload.data() + offset, &_lon, sizeof(_lon));
+    offset += sizeof(_lon);
+    std::memcpy(payload.data() + offset, &_rsu_key, sizeof(_rsu_key));
+    offset += sizeof(_rsu_key);
 
-    db<RSU>(TRC) << "[RSU] RSU " << _rsu_id << " broadcasting RESPONSE for unit " << _unit 
-               << " with data size " << _data.size() << "\n";
+    if (!_data.empty()) {
+        std::memcpy(payload.data() + offset, &_data.data(), _data.size())
+    } 
+
+    // With data payload
+    msg = new Message(Message::Type::STATUS, address(), _unit, 
+                        Message::ZERO, payload.data(), _data.size());
+
+    db<RSU>(TRC) << "[RSU] RSU " << _rsu_id << " broadcasting STATUS for unit " << _unit 
+               << " with data size " << payload.size() << "\n";
 
     // Send broadcast message
     bool sent = _comm->send(msg);

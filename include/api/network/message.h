@@ -38,6 +38,7 @@ class Message {
             RESPONSE,
             PTP,
             JOIN,
+            STATUS,
         };
 
         typedef typename Channel::Address Origin;
