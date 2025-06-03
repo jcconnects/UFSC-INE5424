@@ -217,7 +217,11 @@ inline void RSU::broadcast() {
 
     // Create STATUS message
     Message* msg;
-    std::vector<uint8_t> payload;
+    
+    // Calculate payload size first
+    unsigned int payload_size = sizeof(_lat) + sizeof(_lon) + sizeof(_radius) + sizeof(_rsu_key) + _data.size();
+    std::vector<uint8_t> payload(payload_size);  // Properly size the vector
+    
     unsigned int offset = 0;
     std::memcpy(payload.data() + offset, &_lat, sizeof(_lat));
     offset += sizeof(_lat);
@@ -234,7 +238,7 @@ inline void RSU::broadcast() {
 
     // With data payload
     msg = new Message(Message::Type::STATUS, address(), _unit, 
-                        Message::ZERO, payload.data(), _data.size());
+                        Message::ZERO, payload.data(), payload.size());
 
     db<RSU>(TRC) << "[RSU] RSU " << _rsu_id << " broadcasting STATUS for unit " << _unit 
                << " with data size " << payload.size() << "\n";
