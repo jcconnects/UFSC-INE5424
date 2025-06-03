@@ -14,7 +14,6 @@
 #include "api/util/observer.h"
 #include "api/network/ethernet.h"
 #include "api/framework/clock.h"  // Include Clock for timestamping
-#include "api/network/beamforming.h"  // Include BeamformingInfo
 #include "api/framework/location_service.h"  // Include LocationService
 #include "api/util/geo_utils.h"  // Include GeoUtils
 
@@ -63,10 +62,10 @@ class Protocol: private NIC::Observer
                 tx_timestamp(TimestampType::min()) {}
         };
         
-        static const unsigned int MTU = NIC::MTU - sizeof(Header) - sizeof(TimestampFields) - sizeof(BeamformingInfo);
+        static const unsigned int MTU = NIC::MTU - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates);
         typedef std::uint8_t Data[MTU];
         
-        // Packet class that includes header, timestamp fields, beamforming info, and data
+        // Packet class that includes header, timestamp fields, coordinates, and data
         class Packet: public Header {
             public:
                 Packet() {}
@@ -79,8 +78,8 @@ class Protocol: private NIC::Observer
                     ); 
                 }
                 
-                BeamformingInfo* beamforming() {
-                    return reinterpret_cast<BeamformingInfo*>(
+                Coordinates* coordinates() {
+                    return reinterpret_cast<Coordinates*>(
                         reinterpret_cast<uint8_t*>(this) + sizeof(Header) + sizeof(TimestampFields)
                     );
                 }
@@ -88,7 +87,7 @@ class Protocol: private NIC::Observer
                 template<typename T>
                 T* data() { 
                     return reinterpret_cast<T*>(
-                        reinterpret_cast<uint8_t*>(this) + sizeof(Header) + sizeof(TimestampFields) + sizeof(BeamformingInfo)
+                        reinterpret_cast<uint8_t*>(this) + sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates)
                     ); 
                 }
                 
@@ -103,7 +102,7 @@ class Protocol: private NIC::Observer
                 
             private:
                 Data _data;
-                // Note: Actual timestamp fields, beamforming info, and data are accessed via pointers
+                // Note: Actual timestamp fields, coordinates, and data are accessed via pointers
                 // to maintain proper memory layout
         } __attribute__((packed));
         
@@ -141,7 +140,6 @@ class Protocol: private NIC::Observer
         ~Protocol();
         
         int send(Address from, Address to, const void* data, unsigned int size);
-        int send(Address from, Address to, const void* data, unsigned int size, const BeamformingInfo& beam_info);
         int receive(Buffer* buf, Address *from, void* data, unsigned int size);
 
         // Method to free a buffer, crucial for Communicator to prevent leaks
@@ -223,12 +221,6 @@ Protocol<NIC>::~Protocol() {
 
 template <typename NIC>
 int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int size) {
-    BeamformingInfo default_beam; // defaults to omnidirectional
-    return send(from, to, data, size, default_beam);
-}
-
-template <typename NIC>
-int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int size, const BeamformingInfo& beam_info) {
     db<Protocol>(TRC) << "Protocol<NIC>::send() called!\n";
 
     if (!_nic) {
@@ -237,7 +229,7 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     }
 
     // Allocate buffer for the entire frame -> NIC alloc adds Frame Header size (this is better for independency)
-    unsigned int packet_size = size + sizeof(Header) + sizeof(TimestampFields) + sizeof(BeamformingInfo);
+    unsigned int packet_size = size + sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates);
     Buffer* buf = _nic->alloc(to.paddr(), PROTO, packet_size);
 
     // Get pointer to where Protocol packet starts (within the Ethernet payload)
@@ -258,15 +250,15 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     clock.getSynchronizedTime(&sync_status); // We only need the status
     packet->timestamps()->is_clock_synchronized = sync_status;
 
-    // Copy beamforming info into the packet and set sender location
-    BeamformingInfo sender_beam_info = beam_info;
-    LocationService::getInstance().getCurrentCoordinates(sender_beam_info.sender_latitude, sender_beam_info.sender_longitude);
-    std::memcpy(packet->beamforming(), &sender_beam_info, sizeof(BeamformingInfo));
+    // Set sender location and communication radius
+    Coordinates coords;
+    coords.radius = _nic->radius();
+    LocationService::getCurrentCoordinates(coords.latitude, coords.longitude);
+    std::memcpy(packet->coordinates(), &coords, sizeof(Coordinates));
 
     // Send the packet via NIC, passing the packet size for timestamp offset calculation
     int result = _nic->send(buf, packet_size); // Pass packet size to NIC
-    db<Protocol>(INF) << "[Protocol] NIC::send() returned " << result 
-                        << ", clock_synchronized=" << packet->timestamps()->is_clock_synchronized << "\n";
+    db<Protocol>(INF) << "[Protocol] NIC::send() returned " << result << ", clock_synchronized=" << packet->timestamps()->is_clock_synchronized << "\n";
     
     // NIC should release buffer after use
     return result;
@@ -279,7 +271,7 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
     typename NIC::Address src_mac;
     typename NIC::Address dst_mac;
 
-    std::uint8_t temp_buffer[size + sizeof(Header) + sizeof(TimestampFields) + sizeof(BeamformingInfo)];
+    std::uint8_t temp_buffer[size + sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates)];
     
     if (!_nic) {
         db<Protocol>(TRC) << "Protocol<NIC>::receive() called after release!\n";
@@ -302,8 +294,8 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
         from->port(pkt->header()->from_port());
     }
 
-    // Payload size (accounting for BeamformingInfo)
-    int payload_size = packet_size - sizeof(Header) - sizeof(TimestampFields) - sizeof(BeamformingInfo);
+    // Payload size (accounting for Coordinates)
+    int payload_size = packet_size - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates);
 
     // Copies only useful data
     std::memcpy(data, pkt->template data<void>(), payload_size);
@@ -336,43 +328,23 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
 
     Packet* pkt = reinterpret_cast<Packet*>(buf->data()->payload);
 
-    // **NEW: Beamforming check**
-    BeamformingInfo* beam_info = pkt->beamforming();
+    // Radius-based collision domain filtering
+    Coordinates* coords = pkt->coordinates();
     
     // Get receiver location
     double rx_lat, rx_lon;
-    LocationService::getInstance().getCurrentCoordinates(rx_lat, rx_lon);
+    LocationService::getCurrentCoordinates(rx_lat, rx_lon);
     
-    // Check distance
-    double distance = GeoUtils::haversineDistance(
-        beam_info->sender_latitude, beam_info->sender_longitude,
-        rx_lat, rx_lon
-    );
+    // Check if packet is within sender's communication range
+    double distance = GeoUtils::haversineDistance(coords->latitude, coords->longitude, rx_lat, rx_lon);
     
-    if (distance > beam_info->max_range) {
-        db<Protocol>(INF) << "[Protocol] Packet dropped: out of range (" 
-                          << distance << "m > " << beam_info->max_range << "m)\n";
+    if (distance > coords->radius) {
+        db<Protocol>(INF) << "[Protocol] Packet dropped: out of range (" << distance << "m > " << coords->radius << "m)\n";
         free(buf);
         return;
     }
     
-    // Check beam angle (if not omnidirectional)
-    if (beam_info->beam_width_angle < 360.0f) {
-        float bearing = GeoUtils::bearing(
-            beam_info->sender_latitude, beam_info->sender_longitude,
-            rx_lat, rx_lon
-        );
-        
-        if (!GeoUtils::isInBeam(bearing, beam_info->beam_center_angle, beam_info->beam_width_angle)) {
-            db<Protocol>(INF) << "[Protocol] Packet dropped: outside beam (bearing=" 
-                              << bearing << ", center=" << beam_info->beam_center_angle 
-                              << ", width=" << beam_info->beam_width_angle << ")\n";
-            free(buf);
-            return;
-        }
-    }
-    
-    // **Continue with existing logic if packet passes beamforming checks**
+    // Packet is within range - continue with protocol processing
 
     // Extract timestamps and update Clock if this is a PTP-relevant message
     TimestampFields* timestamps = pkt->timestamps();

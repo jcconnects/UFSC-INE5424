@@ -23,6 +23,16 @@ add_executable(statusManager_test statusManager_test.cpp)
 target_link_libraries(statusManager_test PRIVATE project_lib pthread)
 add_test(NAME statusManager_test COMMAND statusManager_test)
 
+# Add radius collision test
+add_executable(radius_collision_test radius_collision_test.cpp)
+target_link_libraries(radius_collision_test PRIVATE project_lib pthread)
+add_test(NAME radius_collision_test COMMAND radius_collision_test)
+
+# Add location service test
+add_executable(location_service_test location_service_test.cpp)
+target_link_libraries(location_service_test PRIVATE project_lib pthread)
+add_test(NAME location_service_test COMMAND location_service_test)
+
 # Add this test to the list of all unit tests
 add_custom_target(unit_tests 
     DEPENDS 
@@ -40,4 +50,6 @@ add_custom_target(unit_tests
         component_test
         leaderKeyStorage_test
         statusManager_test
+        radius_collision_test
+        location_service_test
 ) 

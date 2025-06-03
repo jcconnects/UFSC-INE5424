@@ -42,6 +42,8 @@ all: dirs \
 	run_unit_periodic_thread_test \
 	run_unit_ethernet_test \
 	run_unit_list_test \
+	run_unit_radius_collision_test \
+	run_unit_location_service_test \
 	run_system_demo
 
 # Compile and run all tests in the correct order
