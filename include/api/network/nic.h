@@ -111,7 +111,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
 
 /*********** NIC Implementation ************/
 template <typename Engine>
-NIC<Engine>::NIC() : _running(true) {
+NIC<Engine>::NIC() : _running(true), _radius(1000.0) {  // Default 1000m transmission radius
     // Initialize buffers FIRST - before starting Engine
     db<NIC>(INF) << "[NIC] [constructor] initializing buffers and semaphores\n";
     
@@ -129,7 +129,7 @@ NIC<Engine>::NIC() : _running(true) {
     
     // NOW it's safe to start the Engine - all NIC infrastructure is ready
     Engine::start();
-    db<NIC>(INF) << "[NIC] [constructor] NIC fully initialized and Engine started\n";
+    db<NIC>(INF) << "[NIC] [constructor] NIC fully initialized and Engine started with default radius " << _radius << "m\n";
 }
 
 template <typename Engine>

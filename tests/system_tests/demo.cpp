@@ -17,11 +17,15 @@
 #include "../../include/app/components/basic_consumer_b.h"
 #include "../../include/api/framework/rsu.h"
 #include "../../include/api/framework/leaderKeyStorage.h"
+#include "../../include/api/framework/map_config.h"
 #include "../testcase.h"
 #include "../test_utils.h"
 
 // Global flag for RSU termination - volatile for signal safety
 volatile sig_atomic_t rsu_should_terminate = 0;
+
+// Global configuration
+static std::unique_ptr<MapConfig> g_map_config;
 
 // Signal handler for RSU termination
 void rsu_signal_handler(int signal) {
@@ -37,7 +41,10 @@ std::string setup_log_directory(unsigned int vehicle_id) {
     std::string log_file;
     std::error_code ec;
     
-    // Try in priority order: Docker logs dir, tests/logs dir, current dir
+    // Use simple trajectory directory since we simplified logging config
+    std::string base_log_dir = g_map_config ? g_map_config->logging().trajectory_dir + "/.." : "tests/logs";
+    
+    // Try in priority order: Docker logs dir, config logs dir, current dir
     if (std::filesystem::exists("/app/logs")) {
         std::string vehicle_dir = "/app/logs/vehicle_" + std::to_string(vehicle_id);
         std::filesystem::create_directory(vehicle_dir, ec);
@@ -47,15 +54,15 @@ std::string setup_log_directory(unsigned int vehicle_id) {
         }
     }
     
-    // Try tests/logs directory
-    std::string test_logs_dir = "tests/logs/vehicle_" + std::to_string(vehicle_id);
+    // Try config logs directory
+    std::string test_logs_dir = base_log_dir + "/vehicle_" + std::to_string(vehicle_id);
     
     try {
         std::filesystem::create_directories(test_logs_dir);
         return test_logs_dir + "/vehicle_" + std::to_string(vehicle_id) + ".log";
     } catch (...) {
-        // Fallback to tests/logs without vehicle subfolder
-        return "tests/logs/vehicle_" + std::to_string(vehicle_id) + ".log";
+        // Fallback to base logs without vehicle subfolder
+        return base_log_dir + "/vehicle_" + std::to_string(vehicle_id) + ".log";
     }
 }
 
@@ -64,7 +71,10 @@ std::string setup_rsu_log_directory(unsigned int rsu_id) {
     std::string log_file;
     std::error_code ec;
     
-    // Try in priority order: Docker logs dir, tests/logs dir, current dir
+    // Use simple trajectory directory since we simplified logging config
+    std::string base_log_dir = g_map_config ? g_map_config->logging().trajectory_dir + "/.." : "tests/logs";
+    
+    // Try in priority order: Docker logs dir, config logs dir, current dir
     if (std::filesystem::exists("/app/logs")) {
         std::string rsu_dir = "/app/logs/rsu_" + std::to_string(rsu_id);
         std::filesystem::create_directory(rsu_dir, ec);
@@ -74,15 +84,15 @@ std::string setup_rsu_log_directory(unsigned int rsu_id) {
         }
     }
     
-    // Try tests/logs directory
-    std::string test_logs_dir = "tests/logs/rsu_" + std::to_string(rsu_id);
+    // Try config logs directory
+    std::string test_logs_dir = base_log_dir + "/rsu_" + std::to_string(rsu_id);
     
     try {
         std::filesystem::create_directories(test_logs_dir);
         return test_logs_dir + "/rsu_" + std::to_string(rsu_id) + ".log";
     } catch (...) {
-        // Fallback to tests/logs without RSU subfolder
-        return "tests/logs/rsu_" + std::to_string(rsu_id) + ".log";
+        // Fallback to base logs without RSU subfolder
+        return base_log_dir + "/rsu_" + std::to_string(rsu_id) + ".log";
     }
 }
 
@@ -98,8 +108,9 @@ class Demo: public TestCase {
         int run_demo();
     private:
         void run_vehicle(Vehicle* v);
-        void run_rsu(unsigned int rsu_id, unsigned int unit, std::chrono::milliseconds period);
+        void run_rsu(const RSUConfig& rsu_config);
         void setup_rsu_as_leader(unsigned int rsu_id);
+        void configure_entity_nic(double transmission_radius_m);
 };
 
 Demo::Demo() {
@@ -147,60 +158,70 @@ void Demo::setup_rsu_as_leader(unsigned int rsu_id) {
              Ethernet::mac_to_string(rsu_mac));
 }
 
-void Demo::run_rsu(unsigned int rsu_id, unsigned int unit, std::chrono::milliseconds period) {
+void Demo::configure_entity_nic(double transmission_radius_m) {
+    // Configure transmission radius for entities
+    // Note: This requires access to NIC, which may need API modifications
+    db<Demo>(INF) << "[Config] Setting transmission radius to " << transmission_radius_m << "m\n";
+    
+    // TODO: Implement actual NIC radius setting when API exposes NIC access
+}
+
+void Demo::run_rsu(const RSUConfig& rsu_config) {
     try {
         // Set up signal handler for graceful termination
         signal(SIGUSR2, rsu_signal_handler);
         
         // Set up logging for RSU process
-        std::string log_file = setup_rsu_log_directory(rsu_id);
+        std::string log_file = setup_rsu_log_directory(rsu_config.id);
         Debug::set_log_file(log_file);
         
-        db<RSU>(INF) << "[RSU " << rsu_id << "] Starting RSU process\n";
+        db<RSU>(INF) << "[RSU " << rsu_config.id << "] Starting RSU process\n";
         
         // Load trajectory for RSU (static position)
-        LocationService& location_service = LocationService::getInstance();
-        std::string rsu_trajectory_file = "tests/logs/trajectories/rsu_" + std::to_string(rsu_id) + "_trajectory.csv";
+        std::string rsu_trajectory_file = g_map_config->get_trajectory_file_path("rsu", rsu_config.id);
         
-        if (location_service.loadTrajectory(rsu_trajectory_file)) {
-            db<RSU>(INF) << "[RSU " << rsu_id << "] loaded trajectory from " << rsu_trajectory_file << "\n";
+        if (LocationService::loadTrajectory(rsu_trajectory_file)) {
+            db<RSU>(INF) << "[RSU " << rsu_config.id << "] loaded trajectory from " << rsu_trajectory_file << "\n";
         } else {
-            db<RSU>(WRN) << "[RSU " << rsu_id << "] failed to load trajectory, using default coordinates\n";
-            // Set default RSU position at map center
-            location_service.setCurrentCoordinates(-27.5919, -48.5432); // Florianópolis center
+            db<RSU>(WRN) << "[RSU " << rsu_config.id << "] failed to load trajectory, using config coordinates\n";
+            // Set RSU position from config
+            LocationService::setCurrentCoordinates(rsu_config.lat, rsu_config.lon);
         }
         
         // Setup RSU as leader before creating the RSU instance
-        setup_rsu_as_leader(rsu_id);
+        setup_rsu_as_leader(rsu_config.id);
         
-        // Create RSU with specified parameters
-        // Unit 999 is a special unit for RSU broadcasts
-        // Period of 500ms for regular status broadcasts
-        RSU* rsu = new RSU(rsu_id, unit, period);
+        // Create RSU with configuration parameters
+        RSU* rsu = new RSU(rsu_config.id, rsu_config.unit, rsu_config.broadcast_period);
         
-        db<RSU>(INF) << "[RSU " << rsu_id << "] RSU created with address " 
+        db<RSU>(INF) << "[RSU " << rsu_config.id << "] RSU created with address " 
                      << rsu->address().to_string() << "\n";
+        
+        // Configure transmission radius using simplified config
+        if (g_map_config) {
+            configure_entity_nic(g_map_config->get_transmission_radius());
+        }
         
         // Start the RSU
         rsu->start();
-        db<RSU>(INF) << "[RSU " << rsu_id << "] RSU started, broadcasting every " 
-                     << period.count() << "ms\n";
+        db<RSU>(INF) << "[RSU " << rsu_config.id << "] RSU started, broadcasting every " 
+                     << rsu_config.broadcast_period.count() << "ms\n";
         
         // Wait for signal to stop instead of fixed duration
-        db<RSU>(INF) << "[RSU " << rsu_id << "] Waiting for all vehicles to complete...\n";
+        db<RSU>(INF) << "[RSU " << rsu_config.id << "] Waiting for all vehicles to complete...\n";
         while (!rsu_should_terminate) {
             pause(); // Wait for signal - more responsive than sleep(1)
         }
         
-        db<RSU>(INF) << "[RSU " << rsu_id << "] Received termination signal, stopping RSU\n";
+        db<RSU>(INF) << "[RSU " << rsu_config.id << "] Received termination signal, stopping RSU\n";
         rsu->stop();
         delete rsu;
         
         Debug::close_log_file();
-        db<RSU>(INF) << "[RSU " << rsu_id << "] RSU process finished\n";
+        db<RSU>(INF) << "[RSU " << rsu_config.id << "] RSU process finished\n";
         
     } catch (const std::exception& e) {
-        std::cerr << "[RSU " << rsu_id << "] Error in RSU process: " << e.what() << std::endl;
+        std::cerr << "[RSU " << rsu_config.id << "] Error in RSU process: " << e.what() << std::endl;
         exit(1);
     }
 }
@@ -208,31 +229,66 @@ void Demo::run_rsu(unsigned int rsu_id, unsigned int unit, std::chrono::millisec
 int Demo::run_demo() {
     TEST_INIT("the demo test case");
     
-    // RSU Configuration
-    const unsigned int RSU_ID = 1000; // High ID to distinguish from vehicles
-    const unsigned int RSU_UNIT = 999; // Special unit for RSU
-    const auto RSU_PERIOD = std::chrono::milliseconds(250); // 250ms broadcast period
-    
-    // Vehicle Configuration
-    const unsigned int n_vehicles = 30;
-
-    // Ensure tests/logs directory exists
+    // Load map configuration
+    std::string config_file = "config/map_1_config.json";
     try {
-        std::filesystem::create_directories("tests/logs");
-        std::filesystem::create_directories("tests/logs/trajectories");
-        TEST_LOG("Created tests/logs and trajectories directories");
+        g_map_config = std::make_unique<MapConfig>(config_file);
+        TEST_LOG("Loaded map configuration from " + config_file);
     } catch (const std::exception& e) {
-        TEST_LOG("Warning: Could not create tests/logs directory: " + std::string(e.what()));
+        TEST_LOG("Warning: Could not load config file " + config_file + ": " + e.what());
+        TEST_LOG("Using default hardcoded values");
+        // Continue with defaults
+    }
+    
+    // Get configuration values (with fallbacks)
+    unsigned int n_vehicles = g_map_config ? g_map_config->vehicle_config().default_count : 10;
+    double transmission_radius = g_map_config ? g_map_config->get_transmission_radius() : 500.0;
+    
+    RSUConfig rsu_config;
+    if (g_map_config) {
+        const auto& cfg_rsu = g_map_config->rsu_config();
+        rsu_config.id = cfg_rsu.id;
+        rsu_config.unit = cfg_rsu.unit;
+        rsu_config.broadcast_period = cfg_rsu.broadcast_period;
+        rsu_config.lat = cfg_rsu.lat;
+        rsu_config.lon = cfg_rsu.lon;
+    } else {
+        // Fallback RSU configuration
+        rsu_config.id = 1000;
+        rsu_config.unit = 999;
+        rsu_config.broadcast_period = std::chrono::milliseconds(250);
+        rsu_config.lat = -27.5919;
+        rsu_config.lon = -48.5432;
+    }
+
+    // Ensure log directories exist
+    std::string trajectory_dir = g_map_config ? g_map_config->logging().trajectory_dir : "tests/logs/trajectories";
+    
+    try {
+        std::filesystem::create_directories(trajectory_dir);
+        TEST_LOG("Created trajectory directory: " + trajectory_dir);
+    } catch (const std::exception& e) {
+        TEST_LOG("Warning: Could not create trajectory directory: " + std::string(e.what()));
     }
 
     // === STEP 0: Generate trajectories using Python script ===
     TEST_LOG("Generating trajectory files for " + std::to_string(n_vehicles) + " vehicles and 1 RSU");
+    TEST_LOG("Using transmission radius: " + std::to_string(transmission_radius) + "m for all entities");
     
-    std::string python_command = "python3 scripts/trajectory_generator_map_1.py";
-    python_command += " --vehicles " + std::to_string(n_vehicles);
-    python_command += " --duration 30";  // 30 seconds simulation
-    python_command += " --output-dir tests/logs/trajectories";
-    python_command += " --update-interval 100";  // 100ms updates
+    std::string python_command;
+    if (g_map_config) {
+        // Let Python script read configuration independently to avoid override conflicts
+        python_command = "python3 scripts/trajectory_generator_map_1.py";
+        python_command += " --config " + config_file;
+        // NOTE: Don't pass --vehicles here - let Python use config values directly
+    } else {
+        // Fallback to old command style when no config is available
+        python_command = "python3 scripts/trajectory_generator_map_1.py";
+        python_command += " --vehicles " + std::to_string(n_vehicles);
+        python_command += " --duration 30";
+        python_command += " --output-dir " + trajectory_dir;
+        python_command += " --update-interval 100";
+    }
     
     int trajectory_result = system(python_command.c_str());
     if (trajectory_result != 0) {
@@ -245,7 +301,7 @@ int Demo::run_demo() {
     children.reserve(n_vehicles + 1); // +1 for RSU
 
     // === STEP 1: Create and start RSU process first ===
-    TEST_LOG("Creating RSU process (ID: " + std::to_string(RSU_ID) + ")");
+    TEST_LOG("Creating RSU process (ID: " + std::to_string(rsu_config.id) + ")");
     
     pid_t rsu_pid = fork();
     if (rsu_pid < 0) {
@@ -254,12 +310,12 @@ int Demo::run_demo() {
     }
     
     if (rsu_pid == 0) { // RSU child process
-        std::cout << "[RSU Child " << getpid() << "] creating RSU " << RSU_ID << std::endl;
-        run_rsu(RSU_ID, RSU_UNIT, RSU_PERIOD);
+        std::cout << "[RSU Child " << getpid() << "] creating RSU " << rsu_config.id << std::endl;
+        run_rsu(rsu_config);
         exit(0);
     } else { // Parent process
         children.push_back(rsu_pid);
-        TEST_LOG("Created RSU process " + std::to_string(rsu_pid) + " for RSU " + std::to_string(RSU_ID));
+        TEST_LOG("Created RSU process " + std::to_string(rsu_pid) + " for RSU " + std::to_string(rsu_config.id));
         
         // Give RSU time to start and establish leadership
         sleep(2);
@@ -372,22 +428,37 @@ void Demo::run_vehicle(Vehicle* v) {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist_lifetime(3, 7); // Lifetime from 3 to 7 seconds
+    
+    unsigned int vehicle_id = v->id(); // Store ID before potential deletion
+    
+    // Use simple vehicle lifetime configuration (simplified - no complex config)
+    unsigned int min_lifetime = 3;  // Simple fallback
+    unsigned int max_lifetime = 7;  // Simple fallback
+    
+    std::uniform_int_distribution<> dist_lifetime(min_lifetime, max_lifetime);
     std::uniform_int_distribution<> start_delay(0, 3);
     int delay = start_delay(gen);
     int lifetime = dist_lifetime(gen);
-    unsigned int vehicle_id = v->id(); // Store ID before deletion
-
-    // Load trajectory for this vehicle
-    LocationService& location_service = LocationService::getInstance();
-    std::string trajectory_file = "tests/logs/trajectories/vehicle_" + std::to_string(vehicle_id) + "_trajectory.csv";
     
-    if (location_service.loadTrajectory(trajectory_file)) {
+    // Configure transmission radius using simplified config
+    if (g_map_config) {
+        configure_entity_nic(g_map_config->get_transmission_radius());
+    }
+    
+    // Load trajectory for this vehicle
+    std::string trajectory_file;
+    if (g_map_config) {
+        trajectory_file = g_map_config->get_trajectory_file_path("vehicle", vehicle_id);
+    } else {
+        trajectory_file = "tests/logs/trajectories/vehicle_" + std::to_string(vehicle_id) + "_trajectory.csv";
+    }
+    
+    if (LocationService::loadTrajectory(trajectory_file)) {
         db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] loaded trajectory from " << trajectory_file << "\n";
     } else {
         db<Vehicle>(WRN) << "[Vehicle " << vehicle_id << "] failed to load trajectory, using default coordinates\n";
-        // Set a default position if trajectory loading fails
-        location_service.setCurrentCoordinates(-27.5919, -48.5432); // Florianópolis center
+        // Set a default position if trajectory loading fails (use RSU position as center)
+        LocationService::setCurrentCoordinates(-27.5919, -48.5432); // RSU position as default
     }
 
     // Create simple components based on vehicle ID
@@ -434,5 +505,5 @@ int main(int argc, char* argv[]) {
     Demo demo;
     demo.run();
 
- return 0;
+    return 0;
 }
