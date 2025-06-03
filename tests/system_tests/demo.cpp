@@ -196,7 +196,7 @@ void Demo::run_rsu(const RSUConfig& rsu_config) {
         setup_rsu_as_leader(rsu_config.id);
         
         // Create RSU with configuration parameters
-        RSU* rsu = new RSU(rsu_config.id, rsu_config.unit, rsu_config.lat, rsu_config.lon, RSU_RADIUS, rsu_config.broadcast_period);
+        RSU* rsu = new RSU(rsu_config.id, rsu_config.unit, rsu_config.broadcast_period, rsu_config.lat, rsu_config.lon, RSU_RADIUS);
         
         db<RSU>(INF) << "[RSU " << rsu_config.id << "] RSU created with address " 
                      << rsu->address().to_string() << "\n";

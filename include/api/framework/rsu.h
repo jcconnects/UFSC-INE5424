@@ -40,7 +40,7 @@ private:
     Unit _unit;
     std::chrono::milliseconds _period;
     std::vector<std::uint8_t> _data;
-    MacKeyType _rsu_key
+    MacKeyType _rsu_key;
     double _lat;
     double _lon;
     double _radius;
@@ -229,7 +229,7 @@ inline void RSU::broadcast() {
     offset += sizeof(_rsu_key);
 
     if (!_data.empty()) {
-        std::memcpy(payload.data() + offset, &_data.data(), _data.size())
+        std::memcpy(payload.data() + offset, _data.data(), _data.size());
     } 
 
     // With data payload
