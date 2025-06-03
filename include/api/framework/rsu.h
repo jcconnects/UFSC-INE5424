@@ -23,7 +23,7 @@ public:
     typedef Message::Unit Unit;
 
     RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period,
-        double lat, double lon, double radius = 400, const void* data = nullptr, unsigned int data_size = 0);
+        double lat = 0.0, double lon = 0.0, double radius = 400.0, const void* data = nullptr, unsigned int data_size = 0);
     ~RSU();
     void start();
     void stop();

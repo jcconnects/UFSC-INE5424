@@ -183,6 +183,8 @@ void Demo::run_rsu(const RSUConfig& rsu_config) {
         
         // Load trajectory for RSU (static position)
         std::string rsu_trajectory_file = g_map_config->get_trajectory_file_path("rsu", rsu_config.id);
+
+        db<RSU>(INF) << "[RSU " << rsu_config.id << "] RSU trajectory loaded\n";
         
         if (LocationService::loadTrajectory(rsu_trajectory_file)) {
             db<RSU>(INF) << "[RSU " << rsu_config.id << "] loaded trajectory from " << rsu_trajectory_file << "\n";

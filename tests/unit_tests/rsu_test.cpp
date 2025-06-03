@@ -197,10 +197,13 @@ void RSUTest::testRSUInitialization() {
     const unsigned int RSU_ID = 100;
     const unsigned int UNIT = 42;
     const auto PERIOD = 1000ms;
+    const double lat = 30.0;
+    const double lon = 32.1;
+    const double radius = 300.0;
     const std::string TEST_DATA = "TEST_RSU_DATA";
     
     // Test initialization without data
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     
     assert_equal(RSU_ID, _test_rsu->address().paddr().bytes[5], 
         "RSU ID should be reflected in MAC address");
@@ -210,7 +213,7 @@ void RSUTest::testRSUInitialization() {
     
     // Test initialization with data
     _test_rsu.reset();
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, 
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius,
                                       TEST_DATA.c_str(), TEST_DATA.size());
     
     assert_equal(UNIT, _test_rsu->unit(), "Unit should match with data payload");
@@ -227,8 +230,13 @@ void RSUTest::testRSUStartStop() {
     const unsigned int RSU_ID = 101;
     const unsigned int UNIT = 43;
     const auto PERIOD = 500ms;
+    const double lat = 30.0;
+    const double lon = 32.1;
+    const double radius = 300.0;
+
+    std::cout << "starting stop() test \n";
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     
     // Test start
     assert_false(_test_rsu->running(), "Should not be running initially");
@@ -242,7 +250,7 @@ void RSUTest::testRSUStartStop() {
     // Test stop
     _test_rsu->stop();
     assert_false(_test_rsu->running(), "Should not be running after stop");
-    
+
     // Test multiple start/stop cycles
     _test_rsu->start();
     assert_true(_test_rsu->running(), "Should be running after restart");
@@ -260,8 +268,11 @@ void RSUTest::testRSURunningState() {
     const unsigned int RSU_ID = 102;
     const unsigned int UNIT = 44;
     const auto PERIOD = 200ms;
+    const double lat = 30.0;
+    const double lon = 32.1;
+    const double radius = 300.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     
     // Initial state
     assert_false(_test_rsu->running(), "Initial state should be not running");
@@ -293,9 +304,12 @@ void RSUTest::testRSUDestructor() {
     const unsigned int RSU_ID = 103;
     const unsigned int UNIT = 45;
     const auto PERIOD = 300ms;
+    const double lat = 30.0;
+    const double lon = 32.1;
+    const double radius = 300.0;
     
     {
-        RSU rsu(RSU_ID, UNIT, PERIOD);
+        RSU rsu(RSU_ID, UNIT, PERIOD, lat, lon, radius);
         rsu.start();
         assert_true(rsu.running(), "RSU should be running");
         // RSU goes out of scope and destructor is called
@@ -318,8 +332,11 @@ void RSUTest::testPeriodicBroadcasting() {
     const unsigned int RSU_ID = 104;
     const unsigned int UNIT = 46;
     const auto PERIOD = 100ms;
+    const double lat = 30.0;
+    const double lon = 32.1;
+    const double radius = 400.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     _test_rsu->start();
     
     // Wait for several broadcast cycles
@@ -344,8 +361,11 @@ void RSUTest::testBroadcastFrequency() {
     const unsigned int RSU_ID = 105;
     const unsigned int UNIT = 47;
     const auto PERIOD = 200ms;
+    const double lat = 37.2;
+    const double lon = 27.1;
+    const double radius = 400.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     _test_rsu->start();
     
     // Wait for enough time for multiple broadcasts
@@ -371,8 +391,11 @@ void RSUTest::testBroadcastContent() {
     const unsigned int RSU_ID = 106;
     const unsigned int UNIT = 48;
     const auto PERIOD = 150ms;
+    const double lat = 42.0;
+    const double lon = 21.1;
+    const double radius = 420.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     
     // Verify address and unit are correctly set
     assert_equal(UNIT, _test_rsu->unit(), "Unit should be correctly set");
@@ -397,8 +420,11 @@ void RSUTest::testBroadcastWithCustomData() {
     const unsigned int UNIT = 49;
     const auto PERIOD = 250ms;
     const std::string TEST_DATA = "CUSTOM_RSU_PAYLOAD";
+    const double lat = 42.0;
+    const double lon = 21.1;
+    const double radius = 420.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, 
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius,
                                       TEST_DATA.c_str(), TEST_DATA.size());
     _test_rsu->start();
     
@@ -417,8 +443,11 @@ void RSUTest::testNetworkStackIntegration() {
     const unsigned int RSU_ID = 108;
     const unsigned int UNIT = 50;
     const auto PERIOD = 400ms;
+    const double lat = 47.0;
+    const double lon = 21.1;
+    const double radius = 420.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     
     // Verify that network components are initialized
     // (This is implicit in successful construction)
@@ -444,9 +473,12 @@ void RSUTest::testMACAddressGeneration() {
     const unsigned int RSU_ID_2 = 110;
     const unsigned int UNIT = 51;
     const auto PERIOD = 500ms;
+    const double lat = 47.0;
+    const double lon = 21.1;
+    const double radius = 450.0;
     
-    RSU rsu1(RSU_ID_1, UNIT, PERIOD);
-    RSU rsu2(RSU_ID_2, UNIT, PERIOD);
+    RSU rsu1(RSU_ID_1, UNIT, PERIOD, lat, lon, radius);
+    RSU rsu2(RSU_ID_2, UNIT, PERIOD, lat, lon, radius);
     
     // Verify different RSUs have different MAC addresses
     auto addr1 = rsu1.address().paddr();
@@ -468,8 +500,11 @@ void RSUTest::testCommunicatorIntegration() {
     const unsigned int RSU_ID = 111;
     const unsigned int UNIT = 52;
     const auto PERIOD = 300ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 400.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     
     // Verify address configuration
     auto address = _test_rsu->address();
@@ -486,12 +521,15 @@ void RSUTest::testCommunicatorIntegration() {
 void RSUTest::testDifferentRSUIDs() {
     const unsigned int UNIT = 53;
     const auto PERIOD = 200ms;
+    const double lat = 41.0;
+    const double lon = 38.1;
+    const double radius = 500.0;
     
     std::vector<std::unique_ptr<RSU>> rsus;
     
     // Create multiple RSUs with different IDs
     for (unsigned int id = 200; id < 203; ++id) {
-        rsus.push_back(std::make_unique<RSU>(id, UNIT, PERIOD));
+        rsus.push_back(std::make_unique<RSU>(id, UNIT, PERIOD, lat, lon, radius));
         rsus.back()->start();
     }
     
@@ -522,11 +560,14 @@ void RSUTest::testDifferentRSUIDs() {
 void RSUTest::testDifferentUnits() {
     const unsigned int RSU_ID = 112;
     const auto PERIOD = 250ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
     std::vector<unsigned int> units = {100, 200, 300, 999};
     
     for (auto unit : units) {
-        RSU rsu(RSU_ID, unit, PERIOD);
+        RSU rsu(RSU_ID, unit, PERIOD, lat, lon, radius);
         assert_equal(unit, rsu.unit(), 
             "Unit " + std::to_string(unit) + " should be correctly set");
         
@@ -545,11 +586,14 @@ void RSUTest::testDifferentUnits() {
 void RSUTest::testDifferentPeriods() {
     const unsigned int RSU_ID = 113;
     const unsigned int UNIT = 54;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
     std::vector<std::chrono::milliseconds> periods = {50ms, 100ms, 500ms, 1000ms};
     
     for (auto period : periods) {
-        RSU rsu(RSU_ID, UNIT, period);
+        RSU rsu(RSU_ID, UNIT, period, lat, lon, radius);
         assert_equal(period.count(), rsu.period().count(), 
             "Period " + std::to_string(period.count()) + "ms should be correctly set");
     }
@@ -566,8 +610,11 @@ void RSUTest::testPeriodAdjustment() {
     const unsigned int UNIT = 55;
     const auto INITIAL_PERIOD = 300ms;
     const auto NEW_PERIOD = 150ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, INITIAL_PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, INITIAL_PERIOD, lat, lon, radius);
     
     assert_equal(INITIAL_PERIOD.count(), _test_rsu->period().count(), 
         "Initial period should be set correctly");
@@ -593,8 +640,11 @@ void RSUTest::testResponseMessageType() {
     const unsigned int RSU_ID = 115;
     const unsigned int UNIT = 56;
     const auto PERIOD = 200ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     _test_rsu->start();
     
     // Wait for broadcasts and check logs
@@ -615,8 +665,11 @@ void RSUTest::testMessageOrigin() {
     const unsigned int RSU_ID = 116;
     const unsigned int UNIT = 57;
     const auto PERIOD = 250ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     
     auto address = _test_rsu->address();
     assert_equal(RSU_ID, address.port(), "Message origin port should match RSU ID");
@@ -634,8 +687,11 @@ void RSUTest::testMessageUnit() {
     const unsigned int RSU_ID = 117;
     const unsigned int UNIT = 58;
     const auto PERIOD = 200ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     assert_equal(UNIT, _test_rsu->unit(), "Message unit should match configuration");
     
     _test_rsu->start();
@@ -655,8 +711,11 @@ void RSUTest::testMessageTimestamp() {
     const unsigned int RSU_ID = 118;
     const unsigned int UNIT = 59;
     const auto PERIOD = 300ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     _test_rsu->start();
     
     // Messages should be sent with current timestamps
@@ -675,9 +734,12 @@ void RSUTest::testZeroPeriod() {
     const unsigned int RSU_ID = 119;
     const unsigned int UNIT = 60;
     const auto ZERO_PERIOD = 0ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
     // Should be able to create RSU with zero period
-    RSU rsu(RSU_ID, UNIT, ZERO_PERIOD);
+    RSU rsu(RSU_ID, UNIT, ZERO_PERIOD, lat, lon, radius);
     assert_equal(ZERO_PERIOD.count(), rsu.period().count(), "Zero period should be accepted");
     
     // Starting with zero period should not crash
@@ -696,8 +758,11 @@ void RSUTest::testVeryShortPeriod() {
     const unsigned int RSU_ID = 120;
     const unsigned int UNIT = 61;
     const auto SHORT_PERIOD = 1ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, SHORT_PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, SHORT_PERIOD, lat, lon, radius);
     _test_rsu->start();
     
     // Let it run briefly with very short period
@@ -722,8 +787,11 @@ void RSUTest::testVeryLongPeriod() {
     const unsigned int RSU_ID = 121;
     const unsigned int UNIT = 62;
     const auto LONG_PERIOD = 9s; // Long period that exceeds SCHED_DEADLINE limits (falls back to regular scheduling)
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
-    RSU rsu(RSU_ID, UNIT, LONG_PERIOD);
+    RSU rsu(RSU_ID, UNIT, LONG_PERIOD, lat, lon, radius);
     // Convert both to milliseconds for comparison
     auto expected_ms = std::chrono::duration_cast<std::chrono::milliseconds>(LONG_PERIOD);
     assert_equal(expected_ms.count(), rsu.period().count(), "Long period should be accepted");
@@ -746,11 +814,14 @@ void RSUTest::testLargeDataPayload() {
     const unsigned int RSU_ID = 122;
     const unsigned int UNIT = 63;
     const auto PERIOD = 500ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
     // Create large data payload
     std::string large_data(1000, 'X'); // 1KB of 'X' characters
     
-    RSU rsu(RSU_ID, UNIT, PERIOD, large_data.c_str(), large_data.size());
+    RSU rsu(RSU_ID, UNIT, PERIOD, lat, lon, radius, large_data.c_str(), large_data.size());
     
     rsu.start();
     std::this_thread::sleep_for(200ms);
@@ -770,13 +841,16 @@ void RSUTest::testNullDataPointer() {
     const unsigned int RSU_ID = 123;
     const unsigned int UNIT = 64;
     const auto PERIOD = 300ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
     // Test with null pointer and zero size
-    RSU rsu1(RSU_ID, UNIT, PERIOD, nullptr, 0);
+    RSU rsu1(RSU_ID, UNIT, PERIOD, lat, lon, radius, nullptr, 0);
     assert_equal(UNIT, rsu1.unit(), "Should handle null data pointer");
     
     // Test with null pointer and non-zero size (should be ignored)
-    RSU rsu2(RSU_ID, UNIT, PERIOD, nullptr, 100);
+    RSU rsu2(RSU_ID, UNIT, PERIOD, lat, lon, radius, nullptr, 100);
     assert_equal(UNIT, rsu2.unit(), "Should handle null data with non-zero size");
 }
 
@@ -789,12 +863,15 @@ void RSUTest::testNullDataPointer() {
 void RSUTest::testMultipleRSUInstances() {
     const unsigned int UNIT = 65;
     const auto PERIOD = 200ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
     std::vector<std::unique_ptr<RSU>> rsus;
     
     // Create multiple RSUs
     for (unsigned int id = 300; id < 305; ++id) {
-        rsus.push_back(std::make_unique<RSU>(id, UNIT + id, PERIOD));
+        rsus.push_back(std::make_unique<RSU>(id, UNIT + id, PERIOD, lat, lon, radius));
         rsus.back()->start();
     }
     
@@ -823,8 +900,11 @@ void RSUTest::testConcurrentStartStop() {
     const unsigned int RSU_ID = 124;
     const unsigned int UNIT = 66;
     const auto PERIOD = 100ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     
     std::atomic<bool> stop_test{false};
     std::vector<std::thread> threads;
@@ -868,8 +948,11 @@ void RSUTest::testThreadSafety() {
     const unsigned int RSU_ID = 125;
     const unsigned int UNIT = 67;
     const auto PERIOD = 150ms;
+    const double lat = 41.0;
+    const double lon = 26.1;
+    const double radius = 700.0;
     
-    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD);
+    _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, lat, lon, radius);
     
     std::atomic<bool> stop_test{false};
     std::atomic<bool> error_occurred{false};
