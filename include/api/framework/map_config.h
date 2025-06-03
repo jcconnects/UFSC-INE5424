@@ -63,6 +63,7 @@ public:
 
 private:
     void parse_config_file(const std::string& file_path);
+    std::string extract_json_section(const std::string& content, const std::string& section_name) const;
     double extract_double_value(const std::string& content, const std::string& key) const;
     unsigned int extract_uint_value(const std::string& content, const std::string& key) const;
     std::string extract_string_value(const std::string& content, const std::string& key) const;
@@ -91,24 +92,31 @@ inline void MapConfig::parse_config_file(const std::string& file_path) {
     std::string content((std::istreambuf_iterator<char>(file)),
                         std::istreambuf_iterator<char>());
     
-    // Parse RSU config
-    _rsu_config.id = extract_uint_value(content, "\"id\"");
-    _rsu_config.lat = extract_double_value(content, "\"lat\"");
-    _rsu_config.lon = extract_double_value(content, "\"lon\"");
-    _rsu_config.unit = extract_uint_value(content, "\"unit\"");
-    _rsu_config.broadcast_period = std::chrono::milliseconds(extract_uint_value(content, "broadcast_period_ms"));
+    // Parse RSU config section
+    std::string rsu_section = extract_json_section(content, "rsu");
+    _rsu_config.id = extract_uint_value(rsu_section, "id");
+    _rsu_config.unit = extract_uint_value(rsu_section, "unit");
+    _rsu_config.broadcast_period = std::chrono::milliseconds(extract_uint_value(rsu_section, "broadcast_period_ms"));
     
-    // Parse vehicle config
-    _vehicle_config.default_count = extract_uint_value(content, "default_count");
-    _vehicle_config.speed_kmh = extract_double_value(content, "speed_kmh");
+    // Parse RSU position subsection
+    std::string rsu_position_section = extract_json_section(rsu_section, "position");
+    _rsu_config.lat = extract_double_value(rsu_position_section, "lat");
+    _rsu_config.lon = extract_double_value(rsu_position_section, "lon");
     
-    // Parse simulation config
-    _simulation.duration_s = extract_uint_value(content, "duration_s");
-    _simulation.update_interval_ms = extract_uint_value(content, "update_interval_ms");
-    _simulation.default_transmission_radius_m = extract_double_value(content, "default_transmission_radius_m");
+    // Parse vehicle config section
+    std::string vehicle_section = extract_json_section(content, "vehicles");
+    _vehicle_config.default_count = extract_uint_value(vehicle_section, "default_count");
+    _vehicle_config.speed_kmh = extract_double_value(vehicle_section, "speed_kmh");
     
-    // Parse logging config
-    _logging.trajectory_dir = extract_string_value(content, "trajectory_dir");
+    // Parse simulation config section
+    std::string simulation_section = extract_json_section(content, "simulation");
+    _simulation.duration_s = extract_uint_value(simulation_section, "duration_s");
+    _simulation.update_interval_ms = extract_uint_value(simulation_section, "update_interval_ms");
+    _simulation.default_transmission_radius_m = extract_double_value(simulation_section, "default_transmission_radius_m");
+    
+    // Parse logging config section
+    std::string logging_section = extract_json_section(content, "logging");
+    _logging.trajectory_dir = extract_string_value(logging_section, "trajectory_dir");
     
     // Parse waypoints and routes
     parse_waypoints(content);
@@ -196,6 +204,46 @@ inline void MapConfig::parse_routes(const std::string& content) {
         _routes.push_back(route);
         pos = obj_end + 1;
     }
+}
+
+inline std::string MapConfig::extract_json_section(const std::string& content, const std::string& section_name) const {
+    std::string search_pattern = "\"" + section_name + "\":";
+    size_t pos = content.find(search_pattern);
+    if (pos == std::string::npos) {
+        throw std::runtime_error("Section not found in config: " + section_name);
+    }
+    
+    pos += search_pattern.length();
+    
+    // Skip whitespace and find opening brace
+    while (pos < content.length() && std::isspace(content[pos])) {
+        pos++;
+    }
+    
+    if (pos >= content.length() || content[pos] != '{') {
+        throw std::runtime_error("Invalid JSON structure for section: " + section_name);
+    }
+    
+    // Find matching closing brace
+    size_t start_pos = pos;
+    int brace_count = 0;
+    while (pos < content.length()) {
+        if (content[pos] == '{') {
+            brace_count++;
+        } else if (content[pos] == '}') {
+            brace_count--;
+            if (brace_count == 0) {
+                break;
+            }
+        }
+        pos++;
+    }
+    
+    if (brace_count != 0) {
+        throw std::runtime_error("Unmatched braces in section: " + section_name);
+    }
+    
+    return content.substr(start_pos, pos - start_pos + 1);
 }
 
 inline double MapConfig::extract_double_value(const std::string& content, const std::string& key) const {
