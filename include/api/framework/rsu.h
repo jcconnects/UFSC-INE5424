@@ -23,7 +23,7 @@ public:
     typedef Message::Unit Unit;
 
     RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period,
-        double lat, double lon, const void* data = nullptr, unsigned int data_size = 0);
+        double lat, double lon, double radius = 400, const void* data = nullptr, unsigned int data_size = 0);
     ~RSU();
     void start();
     void stop();
@@ -43,6 +43,7 @@ private:
     MacKeyType _rsu_key
     double _lat;
     double _lon;
+    double _radius;
     
     // Network stack
     Network* _network;
@@ -66,8 +67,8 @@ private:
  * @param data_size Size of the data payload
  */
 inline RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period, 
-         double lat, double lon, const void* data, unsigned int data_size) 
-    : _rsu_id(rsu_id), _unit(unit), _period(period), _lat(lat), _lon(lon), _running(false),
+         double lat, double lon, double radius, const void* data, unsigned int data_size) 
+    : _rsu_id(rsu_id), _unit(unit), _period(period), _lat(lat), _lon(lon), _radius(radius), _running(false),
       _periodic_thread(this, &RSU::broadcast) {
     
     db<RSU>(TRC) << "RSU::RSU() called with id=" << rsu_id << ", unit=" << unit << ", period=" << period.count() << "ms\n";
@@ -222,6 +223,8 @@ inline void RSU::broadcast() {
     offset += sizeof(_lat);
     std::memcpy(payload.data() + offset, &_lon, sizeof(_lon));
     offset += sizeof(_lon);
+    std::memcpy(payload.data() + offset, &_radius, sizeof(_radius));
+    offset += sizeof(_radius);
     std::memcpy(payload.data() + offset, &_rsu_key, sizeof(_rsu_key));
     offset += sizeof(_rsu_key);
 
