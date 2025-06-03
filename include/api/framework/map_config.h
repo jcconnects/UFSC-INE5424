@@ -24,7 +24,6 @@ struct RSUConfig {
     unsigned int id;
     double lat;
     double lon;
-    double radius;
     unsigned int unit;
     std::chrono::milliseconds broadcast_period;
 };
