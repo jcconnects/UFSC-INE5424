@@ -80,7 +80,7 @@ inline RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period
     }
 
     // Create network stack with RSU ID for MAC address generation
-    _network = new Network(_rsu_id);
+    _network = new Network(_rsu_id, Network::EntityType::RSU);
     
     // Create communicator using the network's protocol channel and RSU's address
     Address rsu_addr(_network->address(), _rsu_id);

@@ -28,7 +28,7 @@ class Gateway {
         inline static const unsigned int MAX_MESSAGE_SIZE = Protocol::MTU - sizeof(Protocol::Header) - sizeof(Protocol::TimestampFields);
         const unsigned int PORT = 0;
 
-        Gateway(const unsigned int id);
+        Gateway(const unsigned int id, Network::EntityType entity_type = Network::EntityType::VEHICLE);
         ~Gateway();
 
         bool send(Message* message);
@@ -63,10 +63,9 @@ class Gateway {
 };
 
 /******** Gateway Implementation ********/
-inline Gateway::Gateway(const unsigned int id) : _id(id) {
-    db<Gateway>(TRC) << "Gateway::Gateway(" << id << ") called!\n";
-    
-    _network = new Network(id);
+inline Gateway::Gateway(const unsigned int id, Network::EntityType entity_type) : _id(id) {
+    db<Gateway>(TRC) << "Gateway::Gateway(" << id << ", entity_type) called!\n";
+    _network = new Network(id, entity_type);
     
     // Sets communicator
     Address addr(_network->address(), PORT);

@@ -135,7 +135,16 @@ class Protocol: private NIC::Observer
                 Physical_Address _paddr;
         };
         
-        Protocol(NIC* nic);
+        enum class EntityType { VEHICLE, RSU, UNKNOWN };
+        
+        // Forward declaration for manager
+        template<typename Protocol_T> class VehicleRSUManager;
+        
+        // Modified constructor
+        Protocol(NIC* nic, EntityType entity_type = EntityType::UNKNOWN);
+        
+        // New method to set entity manager (only for vehicles)
+        void set_vehicle_rsu_manager(VehicleRSUManager<Protocol>* manager);
 
         ~Protocol();
         
@@ -150,10 +159,16 @@ class Protocol: private NIC::Observer
 
     private:
         void update(typename NIC::Protocol_Number prot, Buffer * buf) override;
+        void handle_status_message(const Message<Protocol>& status_msg,
+                                  const Coordinates* sender_coords,
+                                  const TimestampFields* timestamps,
+                                  const typename NIC::Address& sender_mac);
 
     private:
         NIC* _nic;
         static Observed _observed;
+        EntityType _entity_type;
+        VehicleRSUManager<Protocol>* _vehicle_rsu_manager; // nullptr for RSUs
 };
 
 /******** Protocol::Address Implementation ******/
@@ -204,13 +219,15 @@ const std::string Protocol<NIC>::Address::to_string() const {
 
 /********* Protocol Implementation *********/
 template <typename NIC>
-Protocol<NIC>::Protocol(NIC* nic) : NIC::Observer(PROTO), _nic(nic) {    
+Protocol<NIC>::Protocol(NIC* nic, EntityType entity_type)
+    : NIC::Observer(PROTO), _nic(nic), _entity_type(entity_type), _vehicle_rsu_manager(nullptr) {
     if (!nic) {
         throw std::invalid_argument("NIC pointer cannot be null");
     }
-
     _nic->attach(this, PROTO);
-    db<Protocol>(INF) << "[Protocol] attached to NIC\n";
+    db<Protocol>(INF) << "[Protocol] created for "
+                      << (entity_type == EntityType::VEHICLE ? "VEHICLE" : 
+                          entity_type == EntityType::RSU ? "RSU" : "UNKNOWN") << "\n";
 }
 
 template <typename NIC>
@@ -330,49 +347,93 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
 
     // Radius-based collision domain filtering
     Coordinates* coords = pkt->coordinates();
-    
     // Get receiver location
     double rx_lat, rx_lon;
     LocationService::getCurrentCoordinates(rx_lat, rx_lon);
-    
     // Check if packet is within sender's communication range
     double distance = GeoUtils::haversineDistance(coords->latitude, coords->longitude, rx_lat, rx_lon);
-    
     if (distance > coords->radius) {
         db<Protocol>(INF) << "[Protocol] Packet dropped: out of range (" << distance << "m > " << coords->radius << "m)\n";
         free(buf);
         return;
     }
-    
-    // Packet is within range - continue with protocol processing
 
     // Extract timestamps and update Clock if this is a PTP-relevant message
     TimestampFields* timestamps = pkt->timestamps();
- 
-    // Log the synchronization status from the sender
     db<Protocol>(INF) << "[Protocol] Received packet with sender_clock_synchronized=" 
-                        << timestamps->is_clock_synchronized << "\n";
-        
-    // convert buffer (std::int64_t) _rx_time back to TimestampType
+                      << timestamps->is_clock_synchronized << "\n";
     TimestampType rx_timestamp(std::chrono::milliseconds(buf->rx()));
-    
     typename NIC::Address src_mac = buf->data()->src;
-    
-    // Create PTP data structure for Clock
     PtpRelevantData ptp_data;
-    ptp_data.sender_id = static_cast<LeaderIdType>(src_mac.bytes[5]); // Use last byte of MAC as sender ID
+    ptp_data.sender_id = static_cast<LeaderIdType>(src_mac.bytes[5]);
     ptp_data.ts_tx_at_sender = timestamps->tx_timestamp;
     ptp_data.ts_local_rx = rx_timestamp;
-    
-    // Update Clock with timing information
     auto& clock = Clock::getInstance();
     clock.activate(&ptp_data);
 
-    if (!Protocol::_observed.notify(buf)) { // Notify every listener
+    // NEW: STATUS message interception
+    int payload_size = buf->size() - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates);
+    if (payload_size > 0) {
+        const uint8_t* message_data = pkt->template data<uint8_t>();
+        if (payload_size >= 1) {
+            uint8_t raw_msg_type = message_data[0];
+            if (raw_msg_type == static_cast<uint8_t>(Message<Protocol>::Type::STATUS)) {
+                db<Protocol>(INF) << "[Protocol] Intercepted STATUS message\n";
+                Message<Protocol> status_msg = Message<Protocol>::deserialize(message_data, payload_size);
+                if (status_msg.message_type() == Message<Protocol>::Type::STATUS) {
+                    handle_status_message(status_msg, pkt->coordinates(), pkt->timestamps(), buf->data()->src);
+                }
+                free(buf);
+                return;
+            }
+        }
+    }
+
+    // For non-STATUS messages, continue normal flow
+    if (!Protocol::_observed.notify(buf)) {
         db<Protocol>(INF) << "[Protocol] data received, but no one was notified for port. Releasing buffer.\n";
         free(buf);
     }
     db<Protocol>(INF) << "[Protocol] data received, notify succeeded.\n";
+}
+
+// STATUS message handler
+
+template <typename NIC>
+void Protocol<NIC>::handle_status_message(const Message<Protocol>& status_msg,
+                                         const Coordinates* sender_coords,
+                                         const TimestampFields* timestamps,
+                                         const typename NIC::Address& sender_mac) {
+    db<Protocol>(INF) << "[Protocol] Processing STATUS message from " 
+                      << Ethernet::mac_to_string(sender_mac) << "\n";
+    // Only vehicles process STATUS messages from RSUs
+    if (_entity_type != EntityType::VEHICLE || !_vehicle_rsu_manager) {
+        db<Protocol>(INF) << "[Protocol] Ignoring STATUS message (not a vehicle or no RSU manager)\n";
+        return;
+    }
+    // Extract RSU information from STATUS message payload
+    const uint8_t* payload = status_msg.value();
+    unsigned int payload_size = status_msg.value_size();
+    if (payload_size < (sizeof(double) * 3 + sizeof(MacKeyType))) {
+        db<Protocol>(WRN) << "[Protocol] STATUS message payload too small: " << payload_size << "\n";
+        return;
+    }
+    unsigned int offset = 0;
+    double rsu_lat, rsu_lon, rsu_radius;
+    MacKeyType rsu_key;
+    std::memcpy(&rsu_lat, payload + offset, sizeof(double));
+    offset += sizeof(double);
+    std::memcpy(&rsu_lon, payload + offset, sizeof(double));
+    offset += sizeof(double);
+    std::memcpy(&rsu_radius, payload + offset, sizeof(double));
+    offset += sizeof(double);
+    std::memcpy(&rsu_key, payload + offset, sizeof(MacKeyType));
+    // Create Protocol address for the RSU
+    Address rsu_address(sender_mac, status_msg.origin().port());
+    // Forward to RSU manager for processing
+    _vehicle_rsu_manager->process_rsu_status(rsu_address, rsu_lat, rsu_lon, rsu_radius, rsu_key);
+    db<Protocol>(INF) << "[Protocol] Forwarded RSU info to manager: lat=" << rsu_lat 
+                      << ", lon=" << rsu_lon << ", radius=" << rsu_radius << "\n";
 }
 
 // Implementation for the new free method
@@ -395,5 +456,14 @@ const typename Protocol<NIC>::Address Protocol<NIC>::Address::BROADCAST =
         0 // Broadcast port
     );
 
+template <typename NIC>
+void Protocol<NIC>::set_vehicle_rsu_manager(VehicleRSUManager<Protocol>* manager) {
+    if (_entity_type == EntityType::VEHICLE) {
+        _vehicle_rsu_manager = manager;
+        db<Protocol>(INF) << "[Protocol] RSU manager attached to vehicle protocol\n";
+    } else {
+        db<Protocol>(WRN) << "[Protocol] Attempted to attach RSU manager to non-vehicle entity\n";
+    }
+}
 
 #endif // PROTOCOL_H
