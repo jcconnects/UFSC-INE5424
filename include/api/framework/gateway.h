@@ -42,6 +42,9 @@ class Gateway {
         const Address& address();
         CAN* bus() { return _can; }
         
+        // New method to access network for RSU manager setup
+        Network* network() { return _network; }
+        
         // CSV logging methods
         void setup_csv_logging(const std::string& log_dir);
         void log_message(const Message& msg, const std::string& direction);

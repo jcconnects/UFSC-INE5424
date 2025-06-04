@@ -4,6 +4,9 @@
 #include "api/network/initializer.h"
 #include "api/network/bus.h"
 
+// Forward declaration for VehicleRSUManager
+template <typename Protocol_T> class VehicleRSUManager;
+
 class Network {
     public:
         enum class EntityType { VEHICLE, RSU };
@@ -25,7 +28,7 @@ class Network {
         const NIC::Address address();
         
         // New: Set RSU manager for vehicles
-        void set_vehicle_rsu_manager(Protocol::VehicleRSUManager<Protocol>* manager);
+        void set_vehicle_rsu_manager(VehicleRSUManager<Protocol>* manager);
     private:
         unsigned int _id;
         Protocol* _protocol;
@@ -75,7 +78,7 @@ inline const Network::NIC::Address Network::address() {
     return _nic->address();
 }
 
-inline void Network::set_vehicle_rsu_manager(Protocol::VehicleRSUManager<Protocol>* manager) {
+inline void Network::set_vehicle_rsu_manager(VehicleRSUManager<Protocol>* manager) {
     if (_entity_type == EntityType::VEHICLE) {
         _protocol->set_vehicle_rsu_manager(manager);
     }

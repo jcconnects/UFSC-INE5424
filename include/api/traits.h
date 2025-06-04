@@ -35,6 +35,8 @@ class Gateway;
 class Clock;
 class LeaderKeyStorage;
 class RSU;
+template <typename Protocol_T>
+class VehicleRSUManager;
 
 // Traits definition
 template <typename T>
@@ -129,6 +131,13 @@ struct Traits<LeaderKeyStorage> : public Traits<void>
 // Traits for RSU class
 template<>
 struct Traits<RSU> : public Traits<void>
+{
+    static const bool debugged = true;
+};
+
+// Traits for VehicleRSUManager class
+template<typename Protocol_T>
+struct Traits<VehicleRSUManager<Protocol_T>> : public Traits<void>
 {
     static const bool debugged = true;
 };

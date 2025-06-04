@@ -17,6 +17,9 @@
 #include "api/framework/location_service.h"  // Include LocationService
 #include "api/util/geo_utils.h"  // Include GeoUtils
 
+// Forward declaration to avoid circular dependency
+template <typename Protocol_T> class VehicleRSUManager;
+
 // Protocol implementation that works with the real Communicator
 template <typename NIC>
 class Protocol: private NIC::Observer
@@ -136,9 +139,6 @@ class Protocol: private NIC::Observer
         };
         
         enum class EntityType { VEHICLE, RSU, UNKNOWN };
-        
-        // Forward declaration for manager
-        template<typename Protocol_T> class VehicleRSUManager;
         
         // Modified constructor
         Protocol(NIC* nic, EntityType entity_type = EntityType::UNKNOWN);
@@ -411,6 +411,7 @@ void Protocol<NIC>::handle_status_message(const Message<Protocol>& status_msg,
         db<Protocol>(INF) << "[Protocol] Ignoring STATUS message (not a vehicle or no RSU manager)\n";
         return;
     }
+    
     // Extract RSU information from STATUS message payload
     const uint8_t* payload = status_msg.value();
     unsigned int payload_size = status_msg.value_size();
@@ -418,6 +419,8 @@ void Protocol<NIC>::handle_status_message(const Message<Protocol>& status_msg,
         db<Protocol>(WRN) << "[Protocol] STATUS message payload too small: " << payload_size << "\n";
         return;
     }
+    
+    // Parse payload
     unsigned int offset = 0;
     double rsu_lat, rsu_lon, rsu_radius;
     MacKeyType rsu_key;
@@ -428,12 +431,16 @@ void Protocol<NIC>::handle_status_message(const Message<Protocol>& status_msg,
     std::memcpy(&rsu_radius, payload + offset, sizeof(double));
     offset += sizeof(double);
     std::memcpy(&rsu_key, payload + offset, sizeof(MacKeyType));
+    
     // Create Protocol address for the RSU
     Address rsu_address(sender_mac, status_msg.origin().port());
-    // Forward to RSU manager for processing
-    _vehicle_rsu_manager->process_rsu_status(rsu_address, rsu_lat, rsu_lon, rsu_radius, rsu_key);
-    db<Protocol>(INF) << "[Protocol] Forwarded RSU info to manager: lat=" << rsu_lat 
-                      << ", lon=" << rsu_lon << ", radius=" << rsu_radius << "\n";
+    
+    // Forward to RSU manager - this will be linked at compile time when VehicleRSUManager is fully defined
+    if (_vehicle_rsu_manager) {
+        _vehicle_rsu_manager->process_rsu_status(rsu_address, rsu_lat, rsu_lon, rsu_radius, rsu_key);
+        db<Protocol>(INF) << "[Protocol] Forwarded RSU info to manager: lat=" << rsu_lat 
+                          << ", lon=" << rsu_lon << ", radius=" << rsu_radius << "\n";
+    }
 }
 
 // Implementation for the new free method

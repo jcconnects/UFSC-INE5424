@@ -60,7 +60,7 @@ inline Vehicle::Vehicle(unsigned int id) : _id(id), _running(false)
 {
     _gateway = new Gateway(_id, Network::EntityType::VEHICLE);
     _rsu_manager = std::make_unique<VehicleRSUManager<Gateway::Protocol>>(_id);
-    _gateway->_network->set_vehicle_rsu_manager(_rsu_manager.get());
+    _gateway->network()->set_vehicle_rsu_manager(_rsu_manager.get());
     
     // Set up CSV logging directory
     _log_dir = CSVLogger::create_vehicle_log_dir(_id);
