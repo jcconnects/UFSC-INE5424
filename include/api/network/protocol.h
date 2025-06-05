@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cstddef> // Ensure this is included for offsetof
 #include <stdexcept> // Ensure this is included for std::invalid_argument
+#include <cstdio> // For snprintf in debug logging
 
 #include "api/traits.h"
 #include "api/util/debug.h"
@@ -16,6 +17,8 @@
 #include "api/framework/clock.h"  // Include Clock for timestamping
 #include "api/framework/location_service.h"  // Include LocationService
 #include "api/util/geo_utils.h"  // Include GeoUtils
+#include "api/network/message.h"
+#include "api/framework/leaderKeyStorage.h"
 
 // Forward declaration to avoid circular dependency
 template <typename Protocol_T> class VehicleRSUManager;
@@ -30,6 +33,7 @@ class Protocol: private NIC::Observer
         typedef typename NIC::DataBuffer Buffer;
         typedef typename NIC::Address Physical_Address;
         typedef std::uint16_t Port;
+        typedef Message<Protocol<NIC>> ProtocolMessage;
         
         // Change to use Concurrent_Observer for Communicator interactions
         typedef Conditional_Data_Observer<Buffer, Port> Observer;
@@ -65,7 +69,17 @@ class Protocol: private NIC::Observer
                 tx_timestamp(TimestampType::min()) {}
         };
         
-        static const unsigned int MTU = NIC::MTU - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates);
+        // MAC authentication field structure
+        struct AuthenticationFields {
+            MacKeyType mac;                  // Message Authentication Code for INTEREST/RESPONSE messages
+            bool has_mac;                    // Flag indicating if MAC is present and valid
+            
+            AuthenticationFields() : has_mac(false) {
+                mac.fill(0);
+            }
+        };
+        
+        static const unsigned int MTU = NIC::MTU - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates) - sizeof(AuthenticationFields);
         typedef std::uint8_t Data[MTU];
         
         // Packet class that includes header, timestamp fields, coordinates, and data
@@ -87,10 +101,16 @@ class Protocol: private NIC::Observer
                     );
                 }
                 
+                AuthenticationFields* authentication() {
+                    return reinterpret_cast<AuthenticationFields*>(
+                        reinterpret_cast<uint8_t*>(this) + sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates)
+                    );
+                }
+                
                 template<typename T>
                 T* data() { 
                     return reinterpret_cast<T*>(
-                        reinterpret_cast<uint8_t*>(this) + sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates)
+                        reinterpret_cast<uint8_t*>(this) + sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates) + sizeof(AuthenticationFields)
                     ); 
                 }
                 
@@ -159,10 +179,17 @@ class Protocol: private NIC::Observer
 
     private:
         void update(typename NIC::Protocol_Number prot, Buffer * buf) override;
-        void handle_status_message(const Message<Protocol>& status_msg,
+        void handle_status_message(const typename ProtocolMessage::Type& msg_type,
+                                  const uint8_t* message_data, unsigned int payload_size,
                                   const Coordinates* sender_coords,
                                   const TimestampFields* timestamps,
                                   const typename NIC::Address& sender_mac);
+        
+        // MAC authentication methods
+        MacKeyType calculate_mac(const void* data, unsigned int size, const MacKeyType& key);
+        bool verify_mac(const void* data, unsigned int size, const MacKeyType& received_mac);
+        bool requires_authentication(const void* data, unsigned int size);
+        bool is_authenticated_message_type(typename ProtocolMessage::Type type);
 
     private:
         NIC* _nic;
@@ -246,7 +273,7 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     }
 
     // Allocate buffer for the entire frame -> NIC alloc adds Frame Header size (this is better for independency)
-    unsigned int packet_size = size + sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates);
+    unsigned int packet_size = size + sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates) + sizeof(AuthenticationFields);
     Buffer* buf = _nic->alloc(to.paddr(), PROTO, packet_size);
 
     // Get pointer to where Protocol packet starts (within the Ethernet payload)
@@ -273,6 +300,56 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     LocationService::getCurrentCoordinates(coords.latitude, coords.longitude);
     std::memcpy(packet->coordinates(), &coords, sizeof(Coordinates));
 
+    // Initialize authentication fields
+    packet->authentication()->has_mac = false;
+    packet->authentication()->mac.fill(0);
+
+    // Calculate MAC for INTEREST and RESPONSE messages
+    if (requires_authentication(data, size)) {
+        db<Protocol>(TRC) << "[Protocol] Calculating MAC for authenticated message\n";
+        
+        // Get leader key from storage
+        MacKeyType leader_key = LeaderKeyStorage::getInstance().getGroupMacKey();
+        
+        // Debug logging: Show message data
+        db<Protocol>(INF) << "[Protocol] MAC Auth - Message size: " << size << " bytes\n";
+        const uint8_t* msg_bytes = static_cast<const uint8_t*>(data);
+        std::string msg_hex = "";
+        for (unsigned int i = 0; i < std::min(size, 32u); ++i) {  // Log first 32 bytes
+            char hex_byte[4];
+            snprintf(hex_byte, sizeof(hex_byte), "%02X ", msg_bytes[i]);
+            msg_hex += hex_byte;
+        }
+        db<Protocol>(INF) << "[Protocol] MAC Auth - Message data (first " << std::min(size, 32u) << " bytes): " << msg_hex << "\n";
+        
+        // Debug logging: Show key
+        std::string key_hex = "";
+        for (size_t i = 0; i < 16; ++i) {
+            char hex_byte[4];
+            snprintf(hex_byte, sizeof(hex_byte), "%02X ", leader_key[i]);
+            key_hex += hex_byte;
+        }
+        db<Protocol>(INF) << "[Protocol] MAC Auth - Key: " << key_hex << "\n";
+        
+        // Calculate MAC over the message payload
+        MacKeyType calculated_mac = calculate_mac(data, size, leader_key);
+        
+        // Debug logging: Show calculated MAC
+        std::string mac_hex = "";
+        for (size_t i = 0; i < 16; ++i) {
+            char hex_byte[4];
+            snprintf(hex_byte, sizeof(hex_byte), "%02X ", calculated_mac[i]);
+            mac_hex += hex_byte;
+        }
+        db<Protocol>(INF) << "[Protocol] MAC Auth - Calculated MAC: " << mac_hex << "\n";
+        
+        // Set MAC in packet
+        packet->authentication()->mac = calculated_mac;
+        packet->authentication()->has_mac = true;
+        
+        db<Protocol>(INF) << "[Protocol] Added MAC authentication to outgoing message\n";
+    }
+
     // Send the packet via NIC, passing the packet size for timestamp offset calculation
     int result = _nic->send(buf, packet_size); // Pass packet size to NIC
     db<Protocol>(INF) << "[Protocol] NIC::send() returned " << result << ", clock_synchronized=" << packet->timestamps()->is_clock_synchronized << "\n";
@@ -288,7 +365,7 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
     typename NIC::Address src_mac;
     typename NIC::Address dst_mac;
 
-    std::uint8_t temp_buffer[size + sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates)];
+    std::uint8_t temp_buffer[size + sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates) + sizeof(AuthenticationFields)];
     
     if (!_nic) {
         db<Protocol>(TRC) << "Protocol<NIC>::receive() called after release!\n";
@@ -311,8 +388,8 @@ int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int 
         from->port(pkt->header()->from_port());
     }
 
-    // Payload size (accounting for Coordinates)
-    int payload_size = packet_size - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates);
+    // Payload size (accounting for Coordinates and AuthenticationFields)
+    int payload_size = packet_size - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates) - sizeof(AuthenticationFields);
 
     // Copies only useful data
     std::memcpy(data, pkt->template data<void>(), payload_size);
@@ -371,18 +448,34 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     auto& clock = Clock::getInstance();
     clock.activate(&ptp_data);
 
-    // NEW: STATUS message interception
-    int payload_size = buf->size() - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates);
+    // Authentication verification for INTEREST and RESPONSE messages
+    int payload_size = buf->size() - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates) - sizeof(AuthenticationFields);
     if (payload_size > 0) {
         const uint8_t* message_data = pkt->template data<uint8_t>();
         if (payload_size >= 1) {
             uint8_t raw_msg_type = message_data[0];
-            if (raw_msg_type == static_cast<uint8_t>(Message<Protocol>::Type::STATUS)) {
-                db<Protocol>(INF) << "[Protocol] Intercepted STATUS message\n";
-                Message<Protocol> status_msg = Message<Protocol>::deserialize(message_data, payload_size);
-                if (status_msg.message_type() == Message<Protocol>::Type::STATUS) {
-                    handle_status_message(status_msg, pkt->coordinates(), pkt->timestamps(), buf->data()->src);
+            
+            // Check if this message type requires authentication
+            if (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::INTEREST) ||
+                raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::RESPONSE)) {
+                
+                db<Protocol>(TRC) << "[Protocol] Verifying MAC for authenticated message\n";
+                
+                // Verify MAC authentication
+                if (!verify_mac(message_data, payload_size, pkt->authentication()->mac)) {
+                    db<Protocol>(WRN) << "[Protocol] MAC verification failed - dropping packet\n";
+                    free(buf);
+                    return;
                 }
+                
+                db<Protocol>(INF) << "[Protocol] MAC verification successful\n";
+            }
+            
+            // STATUS message interception (no authentication required)
+            if (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::STATUS)) {
+                db<Protocol>(INF) << "[Protocol] Intercepted STATUS message\n";
+                auto msg_type = static_cast<typename ProtocolMessage::Type>(raw_msg_type);
+                handle_status_message(msg_type, message_data, payload_size, pkt->coordinates(), pkt->timestamps(), buf->data()->src);
                 free(buf);
                 return;
             }
@@ -400,7 +493,8 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
 // STATUS message handler
 
 template <typename NIC>
-void Protocol<NIC>::handle_status_message(const Message<Protocol>& status_msg,
+void Protocol<NIC>::handle_status_message(const typename ProtocolMessage::Type& msg_type,
+                                         const uint8_t* message_data, unsigned int payload_size,
                                          const Coordinates* sender_coords,
                                          const TimestampFields* timestamps,
                                          const typename NIC::Address& sender_mac) {
@@ -412,11 +506,18 @@ void Protocol<NIC>::handle_status_message(const Message<Protocol>& status_msg,
         return;
     }
     
+    // Deserialize the STATUS message to extract payload
+    ProtocolMessage status_msg = ProtocolMessage::deserialize(message_data, payload_size);
+    if (status_msg.message_type() != ProtocolMessage::Type::STATUS) {
+        db<Protocol>(WRN) << "[Protocol] Failed to deserialize STATUS message\n";
+        return;
+    }
+    
     // Extract RSU information from STATUS message payload
     const uint8_t* payload = status_msg.value();
-    unsigned int payload_size = status_msg.value_size();
-    if (payload_size < (sizeof(double) * 3 + sizeof(MacKeyType))) {
-        db<Protocol>(WRN) << "[Protocol] STATUS message payload too small: " << payload_size << "\n";
+    unsigned int value_size = status_msg.value_size();
+    if (value_size < (sizeof(double) * 3 + sizeof(MacKeyType))) {
+        db<Protocol>(WRN) << "[Protocol] STATUS message payload too small: " << value_size << "\n";
         return;
     }
     
@@ -449,6 +550,133 @@ void Protocol<NIC>::free(Buffer* buf) {
     if (_nic) {
         _nic->free(buf);
     }
+}
+
+// MAC Authentication Implementation
+template <typename NIC>
+MacKeyType Protocol<NIC>::calculate_mac(const void* data, unsigned int size, const MacKeyType& key) {
+    MacKeyType result;
+    const uint8_t* message_bytes = static_cast<const uint8_t*>(data);
+    
+    // Simple XOR-based MAC calculation
+    // Hash the message data first by XORing all bytes into 16-byte blocks
+    result.fill(0);
+    
+    for (unsigned int i = 0; i < size; ++i) {
+        result[i % 16] ^= message_bytes[i];
+    }
+    
+    // XOR with the key
+    for (size_t i = 0; i < 16; ++i) {
+        result[i] ^= key[i];
+    }
+    
+    return result;
+}
+
+template <typename NIC>
+bool Protocol<NIC>::verify_mac(const void* data, unsigned int size, const MacKeyType& received_mac) {
+    // Debug logging: Show received MAC
+    std::string received_mac_hex = "";
+    for (size_t i = 0; i < 16; ++i) {
+        char hex_byte[4];
+        snprintf(hex_byte, sizeof(hex_byte), "%02X ", received_mac[i]);
+        received_mac_hex += hex_byte;
+    }
+    db<Protocol>(INF) << "[Protocol] MAC Verify - Received MAC: " << received_mac_hex << "\n";
+    
+    // Debug logging: Show message data being verified
+    db<Protocol>(INF) << "[Protocol] MAC Verify - Message size: " << size << " bytes\n";
+    const uint8_t* msg_bytes = static_cast<const uint8_t*>(data);
+    std::string msg_hex = "";
+    for (unsigned int i = 0; i < std::min(size, 32u); ++i) {  // Log first 32 bytes
+        char hex_byte[4];
+        snprintf(hex_byte, sizeof(hex_byte), "%02X ", msg_bytes[i]);
+        msg_hex += hex_byte;
+    }
+    db<Protocol>(INF) << "[Protocol] MAC Verify - Message data (first " << std::min(size, 32u) << " bytes): " << msg_hex << "\n";
+    
+    // For vehicles: Check MAC against all known RSU keys
+    if (_entity_type == EntityType::VEHICLE && _vehicle_rsu_manager) {
+        auto known_rsus = _vehicle_rsu_manager->get_known_rsus();
+        db<Protocol>(INF) << "[Protocol] MAC Verify - Vehicle checking against " << known_rsus.size() << " known RSU keys\n";
+        
+        for (size_t idx = 0; idx < known_rsus.size(); ++idx) {
+            const auto& rsu = known_rsus[idx];
+            
+            // Debug logging: Show RSU key being tested
+            std::string rsu_key_hex = "";
+            for (size_t i = 0; i < 16; ++i) {
+                char hex_byte[4];
+                snprintf(hex_byte, sizeof(hex_byte), "%02X ", rsu.group_key[i]);
+                rsu_key_hex += hex_byte;
+            }
+            db<Protocol>(INF) << "[Protocol] MAC Verify - Testing RSU " << idx << " (" << rsu.address.to_string() << ") key: " << rsu_key_hex << "\n";
+            
+            MacKeyType calculated_mac = calculate_mac(data, size, rsu.group_key);
+            
+            // Debug logging: Show calculated MAC for this RSU
+            std::string calc_mac_hex = "";
+            for (size_t i = 0; i < 16; ++i) {
+                char hex_byte[4];
+                snprintf(hex_byte, sizeof(hex_byte), "%02X ", calculated_mac[i]);
+                calc_mac_hex += hex_byte;
+            }
+            db<Protocol>(INF) << "[Protocol] MAC Verify - Calculated MAC for RSU " << idx << ": " << calc_mac_hex << "\n";
+            
+            if (calculated_mac == received_mac) {
+                db<Protocol>(TRC) << "[Protocol] MAC verified with RSU " << rsu.address.to_string() << " key\n";
+                return true;
+            }
+        }
+        
+        db<Protocol>(TRC) << "[Protocol] MAC verification failed - no matching RSU key found\n";
+        return false;
+    }
+    
+    // For RSUs: Check MAC against current leader key
+    MacKeyType leader_key = LeaderKeyStorage::getInstance().getGroupMacKey();
+    
+    // Debug logging: Show leader key being used
+    std::string leader_key_hex = "";
+    for (size_t i = 0; i < 16; ++i) {
+        char hex_byte[4];
+        snprintf(hex_byte, sizeof(hex_byte), "%02X ", leader_key[i]);
+        leader_key_hex += hex_byte;
+    }
+    db<Protocol>(INF) << "[Protocol] MAC Verify - RSU checking with leader key: " << leader_key_hex << "\n";
+    
+    MacKeyType calculated_mac = calculate_mac(data, size, leader_key);
+    
+    // Debug logging: Show calculated MAC
+    std::string calc_mac_hex = "";
+    for (size_t i = 0; i < 16; ++i) {
+        char hex_byte[4];
+        snprintf(hex_byte, sizeof(hex_byte), "%02X ", calculated_mac[i]);
+        calc_mac_hex += hex_byte;
+    }
+    db<Protocol>(INF) << "[Protocol] MAC Verify - RSU calculated MAC: " << calc_mac_hex << "\n";
+    
+    bool is_valid = (calculated_mac == received_mac);
+    
+    db<Protocol>(TRC) << "[Protocol] MAC verification " << (is_valid ? "successful" : "failed") << " with leader key\n";
+    return is_valid;
+}
+
+template <typename NIC>
+bool Protocol<NIC>::requires_authentication(const void* data, unsigned int size) {
+    if (size < 1) return false;
+    
+    const uint8_t* message_bytes = static_cast<const uint8_t*>(data);
+    uint8_t msg_type = message_bytes[0];
+    
+    return is_authenticated_message_type(static_cast<typename ProtocolMessage::Type>(msg_type));
+}
+
+template <typename NIC>
+bool Protocol<NIC>::is_authenticated_message_type(typename ProtocolMessage::Type type) {
+    return (type == ProtocolMessage::Type::INTEREST || 
+            type == ProtocolMessage::Type::RESPONSE);
 }
 
 // Initialize static members

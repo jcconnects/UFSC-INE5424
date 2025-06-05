@@ -8,6 +8,7 @@
 #include <cmath>
 #include <memory>
 #include <limits>
+#include <cstdio> // For snprintf in debug logging
 
 #include "api/framework/leaderKeyStorage.h"
 #include "api/framework/clock.h"
@@ -102,6 +103,16 @@ public:
         db<VehicleRSUManager>(TRC) << "[RSUManager " << _vehicle_id 
                                    << "] Processing RSU STATUS from " << rsu_address.to_string()
                                    << " at (" << lat << ", " << lon << ") radius=" << radius << "m\n";
+        
+        // Debug logging: Show RSU key
+        std::string rsu_key_hex = "";
+        for (size_t i = 0; i < 16; ++i) {
+            char hex_byte[4];
+            snprintf(hex_byte, sizeof(hex_byte), "%02X ", group_key[i]);
+            rsu_key_hex += hex_byte;
+        }
+        db<VehicleRSUManager>(INF) << "[RSUManager " << _vehicle_id 
+                                   << "] RSU key received: " << rsu_key_hex << "\n";
         
         // Find existing RSU or create new one
         auto it = find_rsu_by_address(rsu_address);

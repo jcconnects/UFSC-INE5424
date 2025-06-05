@@ -104,6 +104,11 @@ inline RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period
     } else {
         db<RSU>(WRN) << "[RSU] RSU " << _rsu_id << " has an INVALID_LEADER_ID based on its MAC. Clock self_id not set.\n";
     }
+
+    // Set RSU key in LeaderKeyStorage so it can be used for MAC verification
+    LeaderKeyStorage::getInstance().setLeaderId(rsu_addr.paddr());
+    LeaderKeyStorage::getInstance().setGroupMacKey(_rsu_key);
+    db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " registered key in LeaderKeyStorage for MAC verification.\n";
 }
 
 /**
