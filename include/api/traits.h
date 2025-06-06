@@ -61,7 +61,7 @@ struct Traits<SocketEngine> : public Traits<void>
 template <typename Engine>
 struct Traits<NIC<Engine>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static const unsigned int SEND_BUFFERS = 512;
     static const unsigned int RECEIVE_BUFFERS = 512;
 };

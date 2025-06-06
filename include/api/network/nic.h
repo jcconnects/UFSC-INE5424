@@ -272,11 +272,9 @@ void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
     // 3. Fill RX timestamp in the buffer
     db<NIC>(TRC) << "[NIC] [handle()] filling RX timestamp in the buffer\n";
     auto& clock = Clock::getInstance();
-    db<NIC>(TRC) << "[NIC] [handle()] getting synchronized time from clock\n";
-    bool is_sync;
-    db<NIC>(TRC) << "[NIC] [handle()] getting synchronized time from clock\n";
-    buf->setRX(clock.getSynchronizedTime(&is_sync).time_since_epoch().count());
-    db<NIC>(TRC) << "[NIC] [handle()] RX timestamp filled in the buffer\n";
+    std::int64_t timestamp = clock.getLocalSystemTime().time_since_epoch().count();
+    buf->setRX(timestamp);
+    db<NIC>(TRC) << "[NIC] [handle()] RX timestamp filled in the buffer: " << timestamp << "\n";
 
     // 4. Copy frame to buffer
     db<NIC>(TRC) << "[NIC] [handle()] copying frame to buffer\n";

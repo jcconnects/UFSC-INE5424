@@ -362,7 +362,7 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     TimestampFields* timestamps = pkt->timestamps();
     db<Protocol>(INF) << "[Protocol] Received packet with sender_clock_synchronized=" 
                       << timestamps->is_clock_synchronized << "\n";
-    TimestampType rx_timestamp(std::chrono::milliseconds(buf->rx()));
+    TimestampType rx_timestamp(std::chrono::microseconds(buf->rx()));
     typename NIC::Address src_mac = buf->data()->src;
     PtpRelevantData ptp_data;
     ptp_data.sender_id = static_cast<LeaderIdType>(src_mac.bytes[5]);
