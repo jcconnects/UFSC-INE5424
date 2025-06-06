@@ -41,14 +41,14 @@ class VehicleRSUManager;
 // Traits definition
 template <typename T>
 struct Traits {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for SocketEngine class
 template<>
 struct Traits<SocketEngine> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static constexpr const char* DEFAULT_INTERFACE_NAME = "test-dummy0";
     
     static const char* INTERFACE_NAME() {
@@ -61,7 +61,7 @@ struct Traits<SocketEngine> : public Traits<void>
 template <typename Engine>
 struct Traits<NIC<Engine>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static const unsigned int SEND_BUFFERS = 512;
     static const unsigned int RECEIVE_BUFFERS = 512;
 };
@@ -70,7 +70,7 @@ struct Traits<NIC<Engine>> : public Traits<void>
 template <>
 struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 888; // Example value
 };
 
@@ -78,7 +78,7 @@ struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
 template<typename Channel>
 struct Traits<Communicator<Channel>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for message class
@@ -92,7 +92,7 @@ struct Traits<Message<Protocol>> : public Traits<void>
 template <>
 struct Traits<CAN> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 template <>
@@ -104,21 +104,21 @@ struct Traits<AgentStub> : public Traits<void>
 template <>
 struct Traits<Agent> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Gateway class
 template<>
 struct Traits<Gateway> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Clock class
 template<>
 struct Traits<Clock> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for LeaderKeyStorage class
@@ -132,14 +132,14 @@ struct Traits<LeaderKeyStorage> : public Traits<void>
 template<>
 struct Traits<RSU> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for VehicleRSUManager class
 template<typename Protocol_T>
 struct Traits<VehicleRSUManager<Protocol_T>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Debug class

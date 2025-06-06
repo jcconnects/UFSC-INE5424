@@ -266,6 +266,7 @@ Message<Channel> Message<Channel>::deserialize(const void* serialized, const uns
                     msg.value(bytes + offset, value_len);
                     offset += value_len;
                 } else {
+                    db<Message>(TRC) << "Non positive value length set: Message marked INVALID \n";
                     msg.message_type(Type::INVALID);
                 }
                 break;
@@ -301,6 +302,7 @@ void Message<Channel>::origin(const Origin addr) {
 template <typename Channel>
 void Message<Channel>::timestamp(const Microseconds timestamp) {
     if (timestamp <= ZERO) {
+        db<Message>(TRC) << "Negative timestamp set: Message marked INVALID \n";
         message_type(Type::INVALID);
         return;
     }
@@ -316,6 +318,7 @@ void Message<Channel>::unit(const Unit unit) {
 template <typename Channel>
 void Message<Channel>::period(const Microseconds period) {
     if (period <= ZERO) {
+        db<Message>(TRC) << "Negative PERIOD set: Message marked INVALID \n";
         message_type(Type::INVALID);
         return;
     }

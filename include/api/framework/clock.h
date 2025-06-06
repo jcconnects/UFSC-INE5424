@@ -88,6 +88,7 @@ private:
         _current_drift_fe(0.0),
         _leader_time_at_last_sync_event(TimestampType::min()),
         _local_time_at_last_sync_event(TimestampType::min()),
+        _last_sync_local_time(TimestampType::min()),
         _current_leader_id(INVALID_LEADER_ID),
         _leader_has_changed_flag(false),
         _self_id(INVALID_LEADER_ID) {
@@ -122,6 +123,7 @@ private:
 
     TimestampType _leader_time_at_last_sync_event; // Leader's clock value (ts_tx_at_sender + d_tx_calc) at the moment of the last local RX event used for sync
     TimestampType _local_time_at_last_sync_event;  // Local hardware clock value at that same local RX event
+    TimestampType _last_sync_local_time;
 
     LeaderIdType _current_leader_id;
     std::atomic<bool> _leader_has_changed_flag;  // Made atomic for better performance
@@ -219,6 +221,7 @@ inline void Clock::activate(const PtpRelevantData* new_msg_data) {
 
         case State::AWAITING_SECOND_MSG:
             if (isLeaderMessageTimedOut()) {
+                db<Clock>(INF) << "[Clock] Leader is timedout!\n";
                 new_state = State::UNSYNCHRONIZED;
                 doClearSyncData();
             } else if (new_msg_data && isMessageFromCurrentLeader(*new_msg_data)) {
@@ -229,6 +232,7 @@ inline void Clock::activate(const PtpRelevantData* new_msg_data) {
 
         case State::SYNCHRONIZED:
             if (isLeaderMessageTimedOut()) {
+                db<Clock>(INF) << "[Clock] Leader is timedout!\n";
                 new_state = State::UNSYNCHRONIZED;
                 doClearSyncData();
             } else if (new_msg_data && isMessageFromCurrentLeader(*new_msg_data)) {
@@ -365,6 +369,7 @@ inline DurationType Clock::getMaxLeaderSilenceInterval() const {
  * This method is NOT thread-safe and should only be used in test setup/teardown.
  */
 inline void Clock::reset() {
+    db<Clock>(INF) << "Clock::reset() called!\n";
     std::lock_guard<std::mutex> lock(_mutex);
     _currentState.store(State::UNSYNCHRONIZED, std::memory_order_release);
     _current_leader_id = INVALID_LEADER_ID;
@@ -384,6 +389,9 @@ inline void Clock::doClearSyncData() {
 }
 
 inline void Clock::doProcessFirstLeaderMsg(const PtpRelevantData& msg_data) {
+    TimestampType now = getLocalSteadyHardwareTime();
+    db<Clock>(INF) << "[Clock] Sync event [Unsynchronized] | time since last: " << (now.time_since_epoch().count() - _last_sync_local_time.time_since_epoch().count()) << "\n";
+    _last_sync_local_time = now;
     // Action for: UNSYNCHRONIZED --> AWAITING_SECOND_MSG
     _msg1_data.ts_tx_at_sender = msg_data.ts_tx_at_sender;
     _msg1_data.ts_local_rx = msg_data.ts_local_rx;
@@ -402,6 +410,9 @@ inline void Clock::doProcessFirstLeaderMsg(const PtpRelevantData& msg_data) {
 }
 
 inline void Clock::doProcessSecondLeaderMsgAndCalcDrift(const PtpRelevantData& msg_data) {
+    TimestampType now = getLocalSteadyHardwareTime();
+    db<Clock>(INF) << "[Clock] Sync event [Waiting second message] | time since last: " << (now.time_since_epoch().count() - _last_sync_local_time.time_since_epoch().count()) << "\n";
+    _last_sync_local_time = now;
     // Action for: AWAITING_SECOND_MSG --> SYNCHRONIZED
     _msg2_data.ts_tx_at_sender = msg_data.ts_tx_at_sender;
     _msg2_data.ts_local_rx = msg_data.ts_local_rx;
@@ -431,6 +442,9 @@ inline void Clock::doProcessSecondLeaderMsgAndCalcDrift(const PtpRelevantData& m
 }
 
 inline void Clock::doProcessSubsequentLeaderMsg(const PtpRelevantData& msg_data) {
+    TimestampType now = getLocalSteadyHardwareTime();
+    db<Clock>(INF) << "[Clock] Sync event [Synchronized] | time since last: " << (now.time_since_epoch().count() - _last_sync_local_time.time_since_epoch().count()) << "\n";
+    _last_sync_local_time = now;
     // Action for: SYNCHRONIZED --> SYNCHRONIZED
     _msg1_data = _msg2_data;
     doProcessSecondLeaderMsgAndCalcDrift(msg_data);
@@ -451,7 +465,7 @@ inline bool Clock::isLeaderMessageTimedOut() const {
         return false;
     }
     TimestampType local_hw_now = getLocalSteadyHardwareTime();
-    return (local_hw_now - _local_time_at_last_sync_event) > MAX_LEADER_SILENCE_INTERVAL;
+    return (local_hw_now - _last_sync_local_time) > MAX_LEADER_SILENCE_INTERVAL;
 }
 
 inline bool Clock::isMessageFromCurrentLeader(const PtpRelevantData& msg_data) const {
