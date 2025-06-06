@@ -256,7 +256,7 @@ inline void Clock::activate(const PtpRelevantData* new_msg_data) {
  */
 inline TimestampType Clock::getSynchronizedTime(bool* is_synchronized) {
     std::lock_guard<std::mutex> lock(_mutex);
-    TimestampType local_hw_now = getLocalSteadyHardwareTime();
+    TimestampType local_hw_now = getLocalSystemTime();
     State current_state_local = _currentState.load(std::memory_order_acquire);
 
     if (current_state_local == State::UNSYNCHRONIZED || current_state_local == State::AWAITING_SECOND_MSG) {
