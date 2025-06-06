@@ -70,7 +70,7 @@ struct Traits<NIC<Engine>> : public Traits<void>
 template <>
 struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 888; // Example value
 };
 

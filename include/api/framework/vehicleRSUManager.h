@@ -139,11 +139,11 @@ public:
             return;
         }
 
-        if (_known_rsus.size() == 1) {
-            db<VehicleRSUManager>(TRC) << "[RSUManager " << _vehicle_id 
-                                           << "] Only one known rsu : keeping leader\n";
-            return;
-        }
+        // if (_known_rsus.size() == 1) {
+        //     db<VehicleRSUManager>(TRC) << "[RSUManager " << _vehicle_id 
+        //                                    << "] Only one known rsu : keeping leader\n";
+        //     return;
+        // }
         
         db<VehicleRSUManager>(TRC) << "[RSUManager " << _vehicle_id 
                                    << "] Updating leader selection among " << _known_rsus.size() << " RSUs\n";
