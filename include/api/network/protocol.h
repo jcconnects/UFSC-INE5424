@@ -500,17 +500,40 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
 
     Packet* pkt = reinterpret_cast<Packet*>(buf->data()->payload);
 
-    // Radius-based collision domain filtering
+    // Radius-based collision domain filtering - FIRST CHECK
     Coordinates* coords = pkt->coordinates();
     // Get receiver location
     double rx_x, rx_y;
     LocationService::getCurrentCoordinates(rx_x, rx_y);
     // Check if packet is within sender's communication range
-                double distance = GeoUtils::euclideanDistance(coords->x, coords->y, rx_x, rx_y);
+    double distance = GeoUtils::euclideanDistance(coords->x, coords->y, rx_x, rx_y);
     if (distance > coords->radius) {
         db<Protocol>(INF) << "[Protocol] Packet dropped: out of range (" << distance << "m > " << coords->radius << "m)\n";
         free(buf);
         return;
+    }
+
+    // RSU message filtering - drop INTEREST, RESPONSE, STATUS, and KEY_RESPONSE messages for RSUs ONLY
+    int payload_size = buf->size() - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates) - sizeof(AuthenticationFields);
+    if (_entity_type == EntityType::RSU && payload_size > 0) {
+        const uint8_t* message_data = pkt->template data<uint8_t>();
+        if (payload_size >= 1) {
+            uint8_t raw_msg_type = message_data[0];
+            
+            if (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::INTEREST) ||
+                raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::RESPONSE) ||
+                raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::STATUS) ||
+                raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::KEY_RESPONSE)) {
+                
+                const char* msg_type_str = (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::INTEREST)) ? "INTEREST" :
+                                          (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::RESPONSE)) ? "RESPONSE" :
+                                          (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::STATUS)) ? "STATUS" : "KEY_RESPONSE";
+                
+                db<Protocol>(INF) << "[Protocol] RSU dropping " << msg_type_str << " message - not intended for RSUs\n";
+                free(buf);
+                return;
+            }
+        }
     }
 
     // Extract timestamps and update Clock if this is a PTP-relevant message
@@ -527,7 +550,6 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     clock.activate(&ptp_data);
 
     // Authentication verification for INTEREST and RESPONSE messages
-    int payload_size = buf->size() - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates) - sizeof(AuthenticationFields);
     if (payload_size > 0) {
         const uint8_t* message_data = pkt->template data<uint8_t>();
         if (payload_size >= 1) {
@@ -577,9 +599,9 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
                 return;
             }
             
-            // RESP message interception (for vehicles only, no authentication required)
-            if (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::RESP) && _entity_type == EntityType::VEHICLE) {
-                db<Protocol>(INF) << "[Protocol] Intercepted RESP message at vehicle\n";
+            // KEY_RESPONSE message interception (for vehicles only, no authentication required)
+            if (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::KEY_RESPONSE) && _entity_type == EntityType::VEHICLE) {
+                db<Protocol>(INF) << "[Protocol] Intercepted KEY_RESPONSE message at vehicle\n";
                 handle_resp_message(message_data, payload_size);
                 free(buf);
                 return;
@@ -973,21 +995,21 @@ void Protocol<NIC>::handle_req_message(const uint8_t* message_data, unsigned int
         // Send RESP message with the matching key to the requesting vehicle
         Address vehicle_address(sender_mac, req_msg.origin().port());
         
-        // Create RESP message with just the neighbor RSU key
-        ProtocolMessage* resp_msg = new ProtocolMessage(ProtocolMessage::Type::RESP,
+        // Create KEY_RESPONSE message with just the neighbor RSU key
+        ProtocolMessage* resp_msg = new ProtocolMessage(ProtocolMessage::Type::KEY_RESPONSE,
                                                        address(), 0, ProtocolMessage::ZERO,
                                                        &matching_key, sizeof(MacKeyType));
         
-        db<Protocol>(INF) << "[Protocol] Sending RESP message to vehicle " 
+        db<Protocol>(INF) << "[Protocol] Sending KEY_RESPONSE message to vehicle " 
                           << vehicle_address.to_string() << " with neighbor RSU " << matching_rsu_id << " key\n";
         
-        // Send unicast RESP message to the requesting vehicle
+        // Send unicast KEY_RESPONSE message to the requesting vehicle
         int result = send(address(), vehicle_address, resp_msg->data(), resp_msg->size());
         
         if (result > 0) {
-            db<Protocol>(INF) << "[Protocol] Successfully sent RESP message with RSU " << matching_rsu_id << " key\n";
+            db<Protocol>(INF) << "[Protocol] Successfully sent KEY_RESPONSE message with RSU " << matching_rsu_id << " key\n";
         } else {
-            db<Protocol>(WRN) << "[Protocol] Failed to send RESP message for RSU " << matching_rsu_id << "\n";
+            db<Protocol>(WRN) << "[Protocol] Failed to send KEY_RESPONSE message for RSU " << matching_rsu_id << "\n";
         }
         
         delete resp_msg;
@@ -996,30 +1018,30 @@ void Protocol<NIC>::handle_req_message(const uint8_t* message_data, unsigned int
     }
 }
 
-// RESP message handler implementation
+// KEY_RESPONSE message handler implementation
 template <typename NIC>
 void Protocol<NIC>::handle_resp_message(const uint8_t* message_data, unsigned int payload_size) {
-    db<Protocol>(INF) << "[Protocol] Vehicle processing RESP message\n";
+    db<Protocol>(INF) << "[Protocol] Vehicle processing KEY_RESPONSE message\n";
     
-    // Only vehicles should handle RESP messages
+    // Only vehicles should handle KEY_RESPONSE messages
     if (_entity_type != EntityType::VEHICLE || !_vehicle_rsu_manager) {
-        db<Protocol>(WRN) << "[Protocol] Non-vehicle entity or no RSU manager for RESP message - ignoring\n";
+        db<Protocol>(WRN) << "[Protocol] Non-vehicle entity or no RSU manager for KEY_RESPONSE message - ignoring\n";
         return;
     }
     
-    // Deserialize the RESP message
+    // Deserialize the KEY_RESPONSE message
     ProtocolMessage resp_msg = ProtocolMessage::deserialize(message_data, payload_size);
-    if (resp_msg.message_type() != ProtocolMessage::Type::RESP) {
-        db<Protocol>(WRN) << "[Protocol] Failed to deserialize RESP message\n";
+    if (resp_msg.message_type() != ProtocolMessage::Type::KEY_RESPONSE) {
+        db<Protocol>(WRN) << "[Protocol] Failed to deserialize KEY_RESPONSE message\n";
         return;
     }
     
-    // RESP message payload contains the neighbor RSU key
+    // KEY_RESPONSE message payload contains the neighbor RSU key
     const uint8_t* resp_payload = resp_msg.value();
     unsigned int resp_value_size = resp_msg.value_size();
     
     if (resp_value_size != sizeof(MacKeyType)) {
-        db<Protocol>(WRN) << "[Protocol] RESP message payload size mismatch: expected " 
+        db<Protocol>(WRN) << "[Protocol] KEY_RESPONSE message payload size mismatch: expected " 
                           << sizeof(MacKeyType) << ", got " << resp_value_size << "\n";
         return;
     }
@@ -1035,7 +1057,7 @@ void Protocol<NIC>::handle_resp_message(const uint8_t* message_data, unsigned in
         snprintf(hex_byte, sizeof(hex_byte), "%02X ", neighbor_key[i]);
         neighbor_key_hex += hex_byte;
     }
-    db<Protocol>(INF) << "[Protocol] RESP - Received neighbor RSU key: " << neighbor_key_hex << "\n";
+    db<Protocol>(INF) << "[Protocol] KEY_RESPONSE - Received neighbor RSU key: " << neighbor_key_hex << "\n";
     
     // Add the neighbor RSU key to our collection
     _vehicle_rsu_manager->add_neighbor_rsu_key(neighbor_key);

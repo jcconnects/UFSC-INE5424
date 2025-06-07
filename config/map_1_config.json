@@ -20,10 +20,10 @@
     "speed_kmh": 50
   },
   "waypoints": [
-    {"name": "west_entry", "x": -600, "y": 0},
-    {"name": "east_exit", "x": 600, "y": 0},
-    {"name": "north_entry", "x": 0, "y": 600},
-    {"name": "south_exit", "x": 0, "y": -600}
+    {"name": "west_entry", "x": -400, "y": 0},
+    {"name": "east_exit", "x": 400, "y": 0},
+    {"name": "north_entry", "x": 0, "y": 400},
+    {"name": "south_exit", "x": 0, "y": -400}
   ],
   "routes": [
     {"name": "west_to_east", "waypoints": ["west_entry", "east_exit"]},

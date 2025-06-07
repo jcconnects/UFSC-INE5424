@@ -264,9 +264,9 @@ inline void RSU::broadcast() {
     bool sent = _comm->send(msg);
     
     if (sent) {
-        db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " broadcast RESPONSE for unit " << _unit << "\n";
+        db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " broadcast STATUS for unit " << _unit << "\n";
     } else {
-        db<RSU>(WRN) << "[RSU] RSU " << _rsu_id << " failed to broadcast RESPONSE for unit " << _unit << "\n";
+        db<RSU>(WRN) << "[RSU] RSU " << _rsu_id << " failed to broadcast STATUS for unit " << _unit << "\n";
     }
 
     delete msg;

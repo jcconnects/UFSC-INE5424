@@ -40,7 +40,7 @@ class Message {
             JOIN,
             STATUS,
             REQ,        // Request for neighbor RSU key
-            RESP,       // Response with neighbor RSU key
+            KEY_RESPONSE,       // Response with neighbor RSU key
         };
 
         typedef typename Channel::Address Origin;
@@ -148,7 +148,7 @@ Message<Channel>::Message(Type message_type, const Origin& origin, Unit unit, Mi
             case Type::RESPONSE:
             case Type::STATUS:  // STATUS messages also use value data
             case Type::REQ:     // REQ messages contain failed message data
-            case Type::RESP:    // RESP messages contain neighbor RSU key
+            case Type::KEY_RESPONSE:    // KEY_RESPONSE messages contain neighbor RSU key
                 this->value(value_data, value_size);
                 break;
             default:
@@ -186,7 +186,7 @@ Message<Channel>::Message(const Message& other) {
         _message_type != Type::INTEREST && _message_type != Type::RESPONSE &&
         _message_type != Type::STATUS && _message_type != Type::PTP &&
         _message_type != Type::JOIN && _message_type != Type::REQ &&
-        _message_type != Type::RESP) {
+        _message_type != Type::KEY_RESPONSE) {
         db<Message<Channel>>(ERR) << "Message copy constructor detected corrupted message type: " 
                                   << static_cast<int>(_message_type) << " - marking as INVALID\n";
         _message_type = Type::INVALID;
@@ -267,7 +267,7 @@ Message<Channel> Message<Channel>::deserialize(const void* serialized, const uns
             case Type::RESPONSE: 
             case Type::STATUS:  // STATUS messages also have value data
             case Type::REQ:     // REQ messages contain failed message data
-            case Type::RESP: {  // RESP messages contain neighbor RSU key
+            case Type::KEY_RESPONSE: {  // KEY_RESPONSE messages contain neighbor RSU key
                 unsigned int value_len = size - offset;
                 if (value_len > 0) {
                     msg.value(bytes + offset, value_len);
@@ -353,7 +353,7 @@ void Message<Channel>::serialize() {
     if (_message_type == Type::INTEREST)
         append_microseconds(_period);
     else if (_message_type == Type::RESPONSE || _message_type == Type::STATUS || 
-             _message_type == Type::REQ || _message_type == Type::RESP)
+             _message_type == Type::REQ || _message_type == Type::KEY_RESPONSE)
         append_value();
         
     db<Message<Channel>>(TRC) << "Message::serialize() - type: " << static_cast<int>(_message_type) 
@@ -432,7 +432,7 @@ typename Message<Channel>::Type Message<Channel>::extract_type(const std::uint8_
         extracted_type != Type::INTEREST && extracted_type != Type::RESPONSE &&
         extracted_type != Type::STATUS && extracted_type != Type::PTP &&
         extracted_type != Type::JOIN && extracted_type != Type::REQ &&
-        extracted_type != Type::RESP) {
+        extracted_type != Type::KEY_RESPONSE) {
         db<Message<Channel>>(ERR) << "Message::extract_type() detected corrupted type value: " 
                                   << static_cast<int>(raw_type) << " - marking as INVALID\n";
         return Type::INVALID;
