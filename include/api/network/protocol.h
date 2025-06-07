@@ -8,6 +8,7 @@
 #include <cstddef> // Ensure this is included for offsetof
 #include <stdexcept> // Ensure this is included for std::invalid_argument
 #include <cstdio> // For snprintf in debug logging
+#include <algorithm> // For std::any_of
 
 #include "api/traits.h"
 #include "api/util/debug.h"
@@ -270,6 +271,36 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     if (!_nic) {
         db<Protocol>(TRC) << "Protocol<NIC>::send() called after release!\n";
         return 0;
+    }
+
+    // Check if message requires authentication and we have the necessary keys
+    if (requires_authentication(data, size)) {
+        db<Protocol>(TRC) << "[Protocol] Message requires authentication - checking key availability\n";
+        
+        bool has_auth_keys = false;
+        
+        if (_entity_type == EntityType::VEHICLE) {
+            // For vehicles: check if we have any known RSUs (leaders)
+            if (_vehicle_rsu_manager) {
+                auto known_rsus = _vehicle_rsu_manager->get_known_rsus();
+                has_auth_keys = !known_rsus.empty();
+                db<Protocol>(TRC) << "[Protocol] Vehicle has " << known_rsus.size() << " known RSUs for authentication\n";
+            } else {
+                db<Protocol>(TRC) << "[Protocol] Vehicle has no RSU manager - no authentication possible\n";
+            }
+        } else {
+            // For RSUs: check if we have a valid leader key (not all zeros)
+            MacKeyType leader_key = LeaderKeyStorage::getInstance().getGroupMacKey();
+            has_auth_keys = std::any_of(leader_key.begin(), leader_key.end(), [](uint8_t b) { return b != 0; });
+            db<Protocol>(TRC) << "[Protocol] RSU leader key is " << (has_auth_keys ? "valid" : "empty") << "\n";
+        }
+        
+        if (!has_auth_keys) {
+            db<Protocol>(WRN) << "[Protocol] Dropping authenticated message - no authentication keys available\n";
+            return 0; // Drop the message
+        }
+        
+        db<Protocol>(INF) << "[Protocol] Authentication keys available - proceeding with message send\n";
     }
 
     // Allocate buffer for the entire frame -> NIC alloc adds Frame Header size (this is better for independency)
