@@ -174,6 +174,9 @@ class Protocol: private NIC::Observer
 
         // Method to free a buffer, crucial for Communicator to prevent leaks
         void free(Buffer* buf);
+        
+        // Method to set NIC transmission radius
+        void setRadius(double radius);
 
         static void attach(Observer* obs, Address address);
         static void detach(Observer* obs, Address address);
@@ -580,6 +583,15 @@ template <typename NIC>
 void Protocol<NIC>::free(Buffer* buf) {
     if (_nic) {
         _nic->free(buf);
+    }
+}
+
+// Implementation for setRadius method
+template <typename NIC>
+void Protocol<NIC>::setRadius(double radius) {
+    if (_nic) {
+        _nic->setRadius(radius);
+        db<Protocol>(INF) << "[Protocol] NIC transmission radius set to " << radius << "m\n";
     }
 }
 

@@ -46,6 +46,9 @@ class Vehicle {
         
         // Expose RSU manager for testing/debugging
         VehicleRSUManager<Gateway::Protocol>* rsu_manager() const { return _rsu_manager.get(); }
+        
+        // Set transmission radius
+        void setTransmissionRadius(double radius_m);
     private:
         unsigned int _id;
         Gateway* _gateway;
@@ -143,6 +146,12 @@ inline const bool Vehicle::running() const {
 inline void Vehicle::setup_csv_logging() {
     // Set up CSV logging for the gateway
     _gateway->setup_csv_logging(_log_dir);
+}
+
+// Set transmission radius
+inline void Vehicle::setTransmissionRadius(double radius_m) {
+    _gateway->network()->channel()->setRadius(radius_m);
+    db<Vehicle>(INF) << "[Vehicle " << _id << "] transmission radius set to " << radius_m << "m\n";
 }
 
 #endif // VEHICLE_H

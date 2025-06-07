@@ -163,11 +163,8 @@ void Demo::setup_rsu_as_leader(unsigned int rsu_id) {
 }
 
 void Demo::configure_entity_nic(double transmission_radius_m) {
-    // Configure transmission radius for entities
-    // Note: This requires access to NIC, which may need API modifications
-    db<Demo>(INF) << "[Config] Setting transmission radius to " << transmission_radius_m << "m\n";
-    
-    // TODO: Implement actual NIC radius setting when API exposes NIC access
+    // This method is no longer needed as vehicles and RSUs now configure their own radius
+    db<Demo>(INF) << "[Config] Transmission radius " << transmission_radius_m << "m will be set by individual entities\n";
 }
 
 void Demo::run_rsu(const RSUConfig& rsu_config) {
@@ -197,16 +194,16 @@ void Demo::run_rsu(const RSUConfig& rsu_config) {
         // Setup RSU as leader before creating the RSU instance
         setup_rsu_as_leader(rsu_config.id);
         
+        // Get transmission radius from config (fallback to RSU_RADIUS if no config)
+        double transmission_radius = g_map_config ? g_map_config->get_transmission_radius() : RSU_RADIUS;
+        
         // Create RSU with configuration parameters
-        RSU* rsu = new RSU(rsu_config.id, rsu_config.unit, rsu_config.broadcast_period, rsu_config.lat, rsu_config.lon, RSU_RADIUS);
+        RSU* rsu = new RSU(rsu_config.id, rsu_config.unit, rsu_config.broadcast_period, rsu_config.lat, rsu_config.lon, transmission_radius);
         
         db<RSU>(INF) << "[RSU " << rsu_config.id << "] RSU created with address " 
                      << rsu->address().to_string() << "\n";
         
-        // Configure transmission radius using simplified config
-        if (g_map_config) {
-            configure_entity_nic(g_map_config->get_transmission_radius());
-        }
+        // RSU now configures its own transmission radius in constructor
         
         // Start the RSU
         rsu->start();
@@ -446,9 +443,9 @@ void Demo::run_vehicle(Vehicle* v) {
     int delay = start_delay(gen);
     int lifetime = dist_lifetime(gen);
     
-    // Configure transmission radius using simplified config
+    // Configure vehicle transmission radius from config
     if (g_map_config) {
-        configure_entity_nic(g_map_config->get_transmission_radius());
+        v->setTransmissionRadius(g_map_config->get_transmission_radius());
     }
     
     // Load trajectory for this vehicle
