@@ -489,21 +489,21 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
         if (payload_size >= 1) {
             uint8_t raw_msg_type = message_data[0];
             
-            // Check if this message type requires authentication
-            if (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::INTEREST) ||
-                raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::RESPONSE)) {
-                
-                db<Protocol>(TRC) << "[Protocol] Verifying MAC for authenticated message\n";
-                
-                // Verify MAC authentication
-                if (!verify_mac(message_data, payload_size, pkt->authentication()->mac)) {
-                    db<Protocol>(WRN) << "[Protocol] MAC verification failed - dropping packet\n";
-                    free(buf);
-                    return;
-                }
-                
-                db<Protocol>(INF) << "[Protocol] MAC verification successful\n";
+                    // Check if this message type requires authentication
+        auto msg_type = static_cast<typename ProtocolMessage::Type>(raw_msg_type);
+        if (is_authenticated_message_type(msg_type)) {
+            
+            db<Protocol>(TRC) << "[Protocol] Verifying MAC for authenticated message\n";
+            
+            // Verify MAC authentication
+            if (!verify_mac(message_data, payload_size, pkt->authentication()->mac)) {
+                db<Protocol>(WRN) << "[Protocol] MAC verification failed - dropping packet\n";
+                free(buf);
+                return;
             }
+            
+            db<Protocol>(INF) << "[Protocol] MAC verification successful\n";
+        }
             
             // STATUS message interception (no authentication required)
             if (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::STATUS)) {
@@ -718,8 +718,10 @@ bool Protocol<NIC>::requires_authentication(const void* data, unsigned int size)
 
 template <typename NIC>
 bool Protocol<NIC>::is_authenticated_message_type(typename ProtocolMessage::Type type) {
-    return (type == ProtocolMessage::Type::INTEREST || 
-            type == ProtocolMessage::Type::RESPONSE);
+    //return (type == ProtocolMessage::Type::INTEREST || 
+    //        type == ProtocolMessage::Type::RESPONSE);
+
+    return (type == ProtocolMessage::Type::RESPONSE);
 }
 
 // Initialize static members

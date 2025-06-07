@@ -434,9 +434,10 @@ void Demo::run_vehicle(Vehicle* v) {
     
     unsigned int vehicle_id = v->id(); // Store ID before potential deletion
     
-    // Use simple vehicle lifetime configuration (simplified - no complex config)
-    unsigned int min_lifetime = 3;  // Simple fallback
-    unsigned int max_lifetime = 7;  // Simple fallback
+    // Use simulation duration from config, with fallback values
+    unsigned int sim_duration = g_map_config ? g_map_config->simulation().duration_s : 30;
+    unsigned int min_lifetime = std::max(3u, sim_duration / 3);  // At least 3s, or 1/3 of sim duration
+    unsigned int max_lifetime = std::max(7u, sim_duration);      // At least 7s, or full sim duration
     
     std::uniform_int_distribution<> dist_lifetime(min_lifetime, max_lifetime);
     std::uniform_int_distribution<> start_delay(0, 3);

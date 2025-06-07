@@ -4,7 +4,7 @@
     "description": "Simple map with one RSU and vehicles crossing its domain"
   },
   "simulation": {
-    "duration_s": 30,
+    "duration_s": 100,
     "update_interval_ms": 100,
     "default_transmission_radius_m": 500
   },
@@ -12,10 +12,10 @@
     "id": 1000,
     "position": {"lat": -27.5919, "lon": -48.5432},
     "unit": 999,
-    "broadcast_period_ms": 250
+    "broadcast_period_ms": 1000
   },
   "vehicles": {
-    "default_count": 5,
+    "default_count": 10,
     "speed_kmh": 50
   },
   "waypoints": [
