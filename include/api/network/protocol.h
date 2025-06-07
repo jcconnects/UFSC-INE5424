@@ -182,6 +182,9 @@ class Protocol: private NIC::Observer
         // Neighbor RSU management (for RSUs only)
         void add_neighbor_rsu(unsigned int rsu_id, const MacKeyType& key, const Address& address);
         void clear_neighbor_rsus();
+        
+        // Get Protocol's own address
+        Address address() const;
 
         static void attach(Observer* obs, Address address);
         static void detach(Observer* obs, Address address);
@@ -202,9 +205,13 @@ class Protocol: private NIC::Observer
         void send_req_message_to_leader(const void* failed_message_data, unsigned int failed_message_size,
                                        const MacKeyType& failed_mac);
         
-        // MAC authentication methods
-        MacKeyType calculate_mac(const void* data, unsigned int size, const MacKeyType& key);
-        bool verify_mac(const void* data, unsigned int size, const MacKeyType& received_mac);
+        // MAC authentication methods - Hybrid approach (message + packet fields)
+        MacKeyType calculate_mac(const void* message_data, unsigned int message_size,
+                                const Header* header, const TimestampFields* timestamps,
+                                const Coordinates* coordinates, const MacKeyType& key);
+        bool verify_mac(const void* message_data, unsigned int message_size,
+                       const Header* header, const TimestampFields* timestamps,
+                       const Coordinates* coordinates, const MacKeyType& received_mac);
         bool requires_authentication(const void* data, unsigned int size);
         bool is_authenticated_message_type(typename ProtocolMessage::Type type);
 
@@ -352,6 +359,9 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     bool sync_status;
     clock.getSynchronizedTime(&sync_status); // We only need the status
     packet->timestamps()->is_clock_synchronized = sync_status;
+    
+    // TX timestamp will be set by NIC during transmission - not used in MAC calculation
+    packet->timestamps()->tx_timestamp = TimestampType::min(); // Will be overwritten by NIC
 
     // Set sender location and communication radius
     Coordinates coords;
@@ -365,13 +375,21 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
 
     // Calculate MAC for INTEREST and RESPONSE messages
     if (requires_authentication(data, size)) {
-        db<Protocol>(TRC) << "[Protocol] Calculating MAC for authenticated message\n";
+        db<Protocol>(TRC) << "[Protocol] Calculating Hybrid MAC for authenticated message (message + packet fields)\n";
         
         // Get leader key from storage
         MacKeyType leader_key = LeaderKeyStorage::getInstance().getGroupMacKey();
         
+        // Debug logging: Show packet fields being authenticated
+        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Header: from_port=" << packet->header()->from_port() 
+                          << ", to_port=" << packet->header()->to_port() << ", size=" << packet->header()->size() << "\n";
+        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Timestamps: sync=" << packet->timestamps()->is_clock_synchronized 
+                          << " (tx_timestamp excluded from MAC calculation)\n";
+        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Coordinates: lat=" << packet->coordinates()->latitude 
+                          << ", lon=" << packet->coordinates()->longitude << ", radius=" << packet->coordinates()->radius << "\n";
+        
         // Debug logging: Show message data
-        db<Protocol>(INF) << "[Protocol] MAC Auth - Message size: " << size << " bytes\n";
+        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Message payload size: " << size << " bytes\n";
         const uint8_t* msg_bytes = static_cast<const uint8_t*>(data);
         std::string msg_hex = "";
         for (unsigned int i = 0; i < std::min(size, 32u); ++i) {  // Log first 32 bytes
@@ -379,7 +397,7 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
             snprintf(hex_byte, sizeof(hex_byte), "%02X ", msg_bytes[i]);
             msg_hex += hex_byte;
         }
-        db<Protocol>(INF) << "[Protocol] MAC Auth - Message data (first " << std::min(size, 32u) << " bytes): " << msg_hex << "\n";
+        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Message data (first " << std::min(size, 32u) << " bytes): " << msg_hex << "\n";
         
         // Debug logging: Show key
         std::string key_hex = "";
@@ -388,25 +406,26 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
             snprintf(hex_byte, sizeof(hex_byte), "%02X ", leader_key[i]);
             key_hex += hex_byte;
         }
-        db<Protocol>(INF) << "[Protocol] MAC Auth - Key: " << key_hex << "\n";
+        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Key: " << key_hex << "\n";
         
-        // Calculate MAC over the message payload
-        MacKeyType calculated_mac = calculate_mac(data, size, leader_key);
+        // Calculate MAC over the message payload + packet fields (hybrid approach)
+        MacKeyType calculated_mac = calculate_mac(data, size, packet->header(), 
+                                                 packet->timestamps(), packet->coordinates(), leader_key);
         
-        // Debug logging: Show calculated MAC
+        // Debug logging: Show calculated MAC (note: detailed MAC calculation logs are in calculate_mac method)
         std::string mac_hex = "";
         for (size_t i = 0; i < 16; ++i) {
             char hex_byte[4];
             snprintf(hex_byte, sizeof(hex_byte), "%02X ", calculated_mac[i]);
             mac_hex += hex_byte;
         }
-        db<Protocol>(INF) << "[Protocol] MAC Auth - Calculated MAC: " << mac_hex << "\n";
+        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Final calculated MAC: " << mac_hex << "\n";
         
         // Set MAC in packet
         packet->authentication()->mac = calculated_mac;
         packet->authentication()->has_mac = true;
         
-        db<Protocol>(INF) << "[Protocol] Added MAC authentication to outgoing message\n";
+        db<Protocol>(INF) << "[Protocol] Added Hybrid MAC authentication to outgoing message (packet fields + payload)\n";
     }
 
     // Send the packet via NIC, passing the packet size for timestamp offset calculation
@@ -518,11 +537,13 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
         auto msg_type = static_cast<typename ProtocolMessage::Type>(raw_msg_type);
         if (is_authenticated_message_type(msg_type)) {
             
-            db<Protocol>(TRC) << "[Protocol] Verifying MAC for authenticated message\n";
+            db<Protocol>(TRC) << "[Protocol] Verifying Hybrid MAC for authenticated message (packet fields + payload)\n";
             
-            // Verify MAC authentication
-            if (!verify_mac(message_data, payload_size, pkt->authentication()->mac)) {
-                db<Protocol>(WRN) << "[Protocol] MAC verification failed\n";
+            // Verify MAC authentication (hybrid approach: message + packet fields)
+            // Note: TX timestamp is excluded from MAC calculation for architectural cleanliness
+            if (!verify_mac(message_data, payload_size, pkt->header(), 
+                           pkt->timestamps(), pkt->coordinates(), pkt->authentication()->mac)) {
+                db<Protocol>(WRN) << "[Protocol] Hybrid MAC verification failed - packet may be tampered\n";
                 
                 // For vehicles: Send REQ message to leader RSU instead of just dropping
                 if (_entity_type == EntityType::VEHICLE && _vehicle_rsu_manager) {
@@ -536,7 +557,7 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
                 return;
             }
             
-            db<Protocol>(INF) << "[Protocol] MAC verification successful\n";
+            db<Protocol>(INF) << "[Protocol] Hybrid MAC verification successful - packet integrity confirmed\n";
         }
             
             // STATUS message interception (no authentication required)
@@ -645,18 +666,73 @@ void Protocol<NIC>::setRadius(double radius) {
     }
 }
 
-// MAC Authentication Implementation
+// MAC Authentication Implementation - Hybrid Approach
 template <typename NIC>
-MacKeyType Protocol<NIC>::calculate_mac(const void* data, unsigned int size, const MacKeyType& key) {
+MacKeyType Protocol<NIC>::calculate_mac(const void* message_data, unsigned int message_size,
+                                        const Header* header, const TimestampFields* timestamps,
+                                        const Coordinates* coordinates, const MacKeyType& key) {
     MacKeyType result;
-    const uint8_t* message_bytes = static_cast<const uint8_t*>(data);
-    
-    // Simple XOR-based MAC calculation
-    // Hash the message data first by XORing all bytes into 16-byte blocks
     result.fill(0);
     
-    for (unsigned int i = 0; i < size; ++i) {
-        result[i % 16] ^= message_bytes[i];
+    // Create a buffer containing all authenticated fields in deterministic order
+    std::vector<uint8_t> auth_data;
+    unsigned int total_size = 0;
+    
+    // 1. Add Header fields (from_port, to_port - excluding size to avoid circular dependency)
+    unsigned int header_auth_size = sizeof(Port) * 2; // from_port + to_port
+    total_size += header_auth_size;
+    
+    // 2. Add TimestampFields (only sync status, exclude tx_timestamp for architectural cleanliness)
+    unsigned int timestamp_auth_size = sizeof(bool); // Only is_clock_synchronized
+    total_size += timestamp_auth_size;
+    
+    // 3. Add Coordinates (full structure for location integrity)
+    unsigned int coords_auth_size = sizeof(Coordinates);
+    total_size += coords_auth_size;
+    
+    // 4. Add message payload
+    total_size += message_size;
+    
+    // Allocate buffer for all authenticated data
+    auth_data.resize(total_size);
+    unsigned int offset = 0;
+    
+    // Serialize Header fields
+    Port from_port = header->from_port();
+    Port to_port = header->to_port();
+    std::memcpy(auth_data.data() + offset, &from_port, sizeof(Port));
+    offset += sizeof(Port);
+    std::memcpy(auth_data.data() + offset, &to_port, sizeof(Port));
+    offset += sizeof(Port);
+    
+    // Serialize TimestampFields (only sync status, exclude tx_timestamp)
+    bool sync_status = timestamps->is_clock_synchronized;
+    std::memcpy(auth_data.data() + offset, &sync_status, sizeof(bool));
+    offset += sizeof(bool);
+    // Note: tx_timestamp is intentionally excluded from MAC calculation
+    
+    // Serialize Coordinates
+    std::memcpy(auth_data.data() + offset, coordinates, sizeof(Coordinates));
+    offset += sizeof(Coordinates);
+    
+    // Serialize message payload
+    std::memcpy(auth_data.data() + offset, message_data, message_size);
+    
+    // Debug logging: Show what's being authenticated
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC - Authenticating " << total_size << " bytes total:\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC - Header: from_port=" << from_port 
+                      << ", to_port=" << to_port << " (" << header_auth_size << " bytes)\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC - Timestamps: sync=" << sync_status 
+                      << " (" << timestamp_auth_size << " bytes, tx_timestamp excluded)\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC - Coordinates: lat=" << coordinates->latitude 
+                      << ", lon=" << coordinates->longitude << ", radius=" << coordinates->radius 
+                      << " (" << coords_auth_size << " bytes)\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC - Message payload: " << message_size << " bytes\n";
+    
+    // XOR-based MAC calculation on combined authenticated data
+    const uint8_t* combined_data = auth_data.data();
+    for (unsigned int i = 0; i < total_size; ++i) {
+        result[i % 16] ^= combined_data[i];
     }
     
     // XOR with the key
@@ -664,11 +740,22 @@ MacKeyType Protocol<NIC>::calculate_mac(const void* data, unsigned int size, con
         result[i] ^= key[i];
     }
     
+    // Debug logging: Show computed MAC
+    std::string computed_mac_hex = "";
+    for (size_t i = 0; i < 16; ++i) {
+        char hex_byte[4];
+        snprintf(hex_byte, sizeof(hex_byte), "%02X ", result[i]);
+        computed_mac_hex += hex_byte;
+    }
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC - Computed MAC: " << computed_mac_hex << "\n";
+    
     return result;
 }
 
 template <typename NIC>
-bool Protocol<NIC>::verify_mac(const void* data, unsigned int size, const MacKeyType& received_mac) {
+bool Protocol<NIC>::verify_mac(const void* message_data, unsigned int message_size,
+                              const Header* header, const TimestampFields* timestamps,
+                              const Coordinates* coordinates, const MacKeyType& received_mac) {
     // Debug logging: Show received MAC
     std::string received_mac_hex = "";
     for (size_t i = 0; i < 16; ++i) {
@@ -676,25 +763,33 @@ bool Protocol<NIC>::verify_mac(const void* data, unsigned int size, const MacKey
         snprintf(hex_byte, sizeof(hex_byte), "%02X ", received_mac[i]);
         received_mac_hex += hex_byte;
     }
-    db<Protocol>(INF) << "[Protocol] MAC Verify - Received MAC: " << received_mac_hex << "\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Received MAC: " << received_mac_hex << "\n";
+    
+    // Debug logging: Show packet fields being verified
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Header: from_port=" << header->from_port() 
+                      << ", to_port=" << header->to_port() << ", size=" << header->size() << "\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Timestamps: sync=" << timestamps->is_clock_synchronized 
+                      << " (tx_timestamp excluded from MAC calculation)\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Coordinates: lat=" << coordinates->latitude 
+                      << ", lon=" << coordinates->longitude << ", radius=" << coordinates->radius << "\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Message payload size: " << message_size << " bytes\n";
     
     // Debug logging: Show message data being verified
-    db<Protocol>(INF) << "[Protocol] MAC Verify - Message size: " << size << " bytes\n";
-    const uint8_t* msg_bytes = static_cast<const uint8_t*>(data);
+    const uint8_t* msg_bytes = static_cast<const uint8_t*>(message_data);
     std::string msg_hex = "";
-    for (unsigned int i = 0; i < std::min(size, 32u); ++i) {  // Log first 32 bytes
+    for (unsigned int i = 0; i < std::min(message_size, 32u); ++i) {  // Log first 32 bytes
         char hex_byte[4];
         snprintf(hex_byte, sizeof(hex_byte), "%02X ", msg_bytes[i]);
         msg_hex += hex_byte;
     }
-    db<Protocol>(INF) << "[Protocol] MAC Verify - Message data (first " << std::min(size, 32u) << " bytes): " << msg_hex << "\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Message data (first " << std::min(message_size, 32u) << " bytes): " << msg_hex << "\n";
     
     // For vehicles: Check MAC against all known RSU keys AND neighbor RSU keys
     if (_entity_type == EntityType::VEHICLE && _vehicle_rsu_manager) {
         auto known_rsus = _vehicle_rsu_manager->get_known_rsus();
         auto neighbor_keys = _vehicle_rsu_manager->get_neighbor_rsu_keys();
         
-        db<Protocol>(INF) << "[Protocol] MAC Verify - Vehicle checking against " << known_rsus.size() 
+        db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Vehicle checking against " << known_rsus.size() 
                           << " known RSU keys and " << neighbor_keys.size() << " neighbor RSU keys\n";
         
         // First check known RSUs
@@ -708,12 +803,21 @@ bool Protocol<NIC>::verify_mac(const void* data, unsigned int size, const MacKey
                 snprintf(hex_byte, sizeof(hex_byte), "%02X ", rsu.group_key[i]);
                 rsu_key_hex += hex_byte;
             }
-            db<Protocol>(INF) << "[Protocol] MAC Verify - Testing known RSU " << idx << " (" << rsu.address.to_string() << ") key: " << rsu_key_hex << "\n";
+            db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Testing known RSU " << idx << " (" << rsu.address.to_string() << ") key: " << rsu_key_hex << "\n";
             
-            MacKeyType calculated_mac = calculate_mac(data, size, rsu.group_key);
+            MacKeyType calculated_mac = calculate_mac(message_data, message_size, header, timestamps, coordinates, rsu.group_key);
+            
+            // Debug logging: Show calculated MAC for this key
+            std::string calc_mac_hex = "";
+            for (size_t i = 0; i < 16; ++i) {
+                char hex_byte[4];
+                snprintf(hex_byte, sizeof(hex_byte), "%02X ", calculated_mac[i]);
+                calc_mac_hex += hex_byte;
+            }
+            db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Known RSU " << idx << " calculated MAC: " << calc_mac_hex << "\n";
             
             if (calculated_mac == received_mac) {
-                db<Protocol>(TRC) << "[Protocol] MAC verified with known RSU " << rsu.address.to_string() << " key\n";
+                db<Protocol>(TRC) << "[Protocol] Hybrid MAC verified with known RSU " << rsu.address.to_string() << " key\n";
                 return true;
             }
         }
@@ -729,17 +833,26 @@ bool Protocol<NIC>::verify_mac(const void* data, unsigned int size, const MacKey
                 snprintf(hex_byte, sizeof(hex_byte), "%02X ", neighbor_key[i]);
                 neighbor_key_hex += hex_byte;
             }
-            db<Protocol>(INF) << "[Protocol] MAC Verify - Testing neighbor RSU " << idx << " key: " << neighbor_key_hex << "\n";
+            db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Testing neighbor RSU " << idx << " key: " << neighbor_key_hex << "\n";
             
-            MacKeyType calculated_mac = calculate_mac(data, size, neighbor_key);
+            MacKeyType calculated_mac = calculate_mac(message_data, message_size, header, timestamps, coordinates, neighbor_key);
+            
+            // Debug logging: Show calculated MAC for this neighbor key
+            std::string calc_mac_hex = "";
+            for (size_t i = 0; i < 16; ++i) {
+                char hex_byte[4];
+                snprintf(hex_byte, sizeof(hex_byte), "%02X ", calculated_mac[i]);
+                calc_mac_hex += hex_byte;
+            }
+            db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Neighbor RSU " << idx << " calculated MAC: " << calc_mac_hex << "\n";
             
             if (calculated_mac == received_mac) {
-                db<Protocol>(TRC) << "[Protocol] MAC verified with neighbor RSU key " << idx << "\n";
+                db<Protocol>(TRC) << "[Protocol] Hybrid MAC verified with neighbor RSU key " << idx << "\n";
                 return true;
             }
         }
         
-        db<Protocol>(TRC) << "[Protocol] MAC verification failed - no matching RSU or neighbor key found\n";
+        db<Protocol>(TRC) << "[Protocol] Hybrid MAC verification failed - no matching RSU or neighbor key found\n";
         return false;
     }
     
@@ -753,9 +866,9 @@ bool Protocol<NIC>::verify_mac(const void* data, unsigned int size, const MacKey
         snprintf(hex_byte, sizeof(hex_byte), "%02X ", leader_key[i]);
         leader_key_hex += hex_byte;
     }
-    db<Protocol>(INF) << "[Protocol] MAC Verify - RSU checking with leader key: " << leader_key_hex << "\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - RSU checking with leader key: " << leader_key_hex << "\n";
     
-    MacKeyType calculated_mac = calculate_mac(data, size, leader_key);
+    MacKeyType calculated_mac = calculate_mac(message_data, message_size, header, timestamps, coordinates, leader_key);
     
     // Debug logging: Show calculated MAC
     std::string calc_mac_hex = "";
@@ -764,11 +877,11 @@ bool Protocol<NIC>::verify_mac(const void* data, unsigned int size, const MacKey
         snprintf(hex_byte, sizeof(hex_byte), "%02X ", calculated_mac[i]);
         calc_mac_hex += hex_byte;
     }
-    db<Protocol>(INF) << "[Protocol] MAC Verify - RSU calculated MAC: " << calc_mac_hex << "\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - RSU calculated MAC: " << calc_mac_hex << "\n";
     
     bool is_valid = (calculated_mac == received_mac);
     
-    db<Protocol>(TRC) << "[Protocol] MAC verification " << (is_valid ? "successful" : "failed") << " with leader key\n";
+    db<Protocol>(TRC) << "[Protocol] Hybrid MAC verification " << (is_valid ? "successful" : "failed") << " with leader key\n";
     return is_valid;
 }
 
@@ -866,15 +979,15 @@ void Protocol<NIC>::handle_req_message(const uint8_t* message_data, unsigned int
                                                        &matching_key, sizeof(MacKeyType));
         
         db<Protocol>(INF) << "[Protocol] Sending RESP message to vehicle " 
-                          << vehicle_address.to_string() << " with neighbor RSU key\n";
+                          << vehicle_address.to_string() << " with neighbor RSU " << matching_rsu_id << " key\n";
         
         // Send unicast RESP message to the requesting vehicle
         int result = send(address(), vehicle_address, resp_msg->data(), resp_msg->size());
         
         if (result > 0) {
-            db<Protocol>(INF) << "[Protocol] Successfully sent RESP message\n";
+            db<Protocol>(INF) << "[Protocol] Successfully sent RESP message with RSU " << matching_rsu_id << " key\n";
         } else {
-            db<Protocol>(WRN) << "[Protocol] Failed to send RESP message\n";
+            db<Protocol>(WRN) << "[Protocol] Failed to send RESP message for RSU " << matching_rsu_id << "\n";
         }
         
         delete resp_msg;
@@ -1030,6 +1143,17 @@ void Protocol<NIC>::clear_neighbor_rsus() {
     std::lock_guard<std::mutex> lock(_neighbor_rsus_mutex);
     _neighbor_rsus.clear();
     db<Protocol>(INF) << "[Protocol] Cleared all neighbor RSUs from protocol\n";
+}
+
+template <typename NIC>
+typename Protocol<NIC>::Address Protocol<NIC>::address() const {
+    if (!_nic) {
+        return Address(); // Return null address if no NIC
+    }
+    
+    // Use NIC's physical address and a default port based on entity type
+    Port protocol_port = (_entity_type == EntityType::RSU) ? 9999 : 8888;
+    return Address(_nic->address(), protocol_port);
 }
 
 #endif // PROTOCOL_H
