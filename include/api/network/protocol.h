@@ -9,6 +9,7 @@
 #include <stdexcept> // Ensure this is included for std::invalid_argument
 #include <cstdio> // For snprintf in debug logging
 #include <algorithm> // For std::any_of
+#include <mutex> // For std::mutex and std::lock_guard
 
 #include "api/traits.h"
 #include "api/util/debug.h"
@@ -177,6 +178,10 @@ class Protocol: private NIC::Observer
         
         // Method to set NIC transmission radius
         void setRadius(double radius);
+        
+        // Neighbor RSU management (for RSUs only)
+        void add_neighbor_rsu(unsigned int rsu_id, const MacKeyType& key, const Address& address);
+        void clear_neighbor_rsus();
 
         static void attach(Observer* obs, Address address);
         static void detach(Observer* obs, Address address);
@@ -189,6 +194,14 @@ class Protocol: private NIC::Observer
                                   const TimestampFields* timestamps,
                                   const typename NIC::Address& sender_mac);
         
+        void handle_req_message(const uint8_t* message_data, unsigned int payload_size,
+                               const typename NIC::Address& sender_mac);
+        
+        void handle_resp_message(const uint8_t* message_data, unsigned int payload_size);
+        
+        void send_req_message_to_leader(const void* failed_message_data, unsigned int failed_message_size,
+                                       const MacKeyType& failed_mac);
+        
         // MAC authentication methods
         MacKeyType calculate_mac(const void* data, unsigned int size, const MacKeyType& key);
         bool verify_mac(const void* data, unsigned int size, const MacKeyType& received_mac);
@@ -196,6 +209,18 @@ class Protocol: private NIC::Observer
         bool is_authenticated_message_type(typename ProtocolMessage::Type type);
 
     private:
+        // Neighbor RSU information for RSUs (used when handling REQ messages)
+        struct NeighborRSUInfo {
+            unsigned int rsu_id;
+            MacKeyType key;
+            Address address;
+            
+            NeighborRSUInfo(unsigned int id, const MacKeyType& k, const Address& addr) 
+                : rsu_id(id), key(k), address(addr) {}
+        };
+        std::vector<NeighborRSUInfo> _neighbor_rsus; // Only used by RSUs
+        std::mutex _neighbor_rsus_mutex;             // Thread safety for neighbor RSUs
+        
         NIC* _nic;
         static Observed _observed;
         EntityType _entity_type;
@@ -497,7 +522,16 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
             
             // Verify MAC authentication
             if (!verify_mac(message_data, payload_size, pkt->authentication()->mac)) {
-                db<Protocol>(WRN) << "[Protocol] MAC verification failed - dropping packet\n";
+                db<Protocol>(WRN) << "[Protocol] MAC verification failed\n";
+                
+                // For vehicles: Send REQ message to leader RSU instead of just dropping
+                if (_entity_type == EntityType::VEHICLE && _vehicle_rsu_manager) {
+                    db<Protocol>(INF) << "[Protocol] Sending REQ message to leader RSU for failed authentication\n";
+                    send_req_message_to_leader(message_data, payload_size, pkt->authentication()->mac);
+                } else {
+                    db<Protocol>(INF) << "[Protocol] RSU dropping message with failed MAC\n";
+                }
+                
                 free(buf);
                 return;
             }
@@ -510,6 +544,22 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
                 db<Protocol>(INF) << "[Protocol] Intercepted STATUS message\n";
                 auto msg_type = static_cast<typename ProtocolMessage::Type>(raw_msg_type);
                 handle_status_message(msg_type, message_data, payload_size, pkt->coordinates(), pkt->timestamps(), buf->data()->src);
+                free(buf);
+                return;
+            }
+            
+            // REQ message interception (for RSUs only, no authentication required)
+            if (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::REQ) && _entity_type == EntityType::RSU) {
+                db<Protocol>(INF) << "[Protocol] Intercepted REQ message at RSU\n";
+                handle_req_message(message_data, payload_size, buf->data()->src);
+                free(buf);
+                return;
+            }
+            
+            // RESP message interception (for vehicles only, no authentication required)
+            if (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::RESP) && _entity_type == EntityType::VEHICLE) {
+                db<Protocol>(INF) << "[Protocol] Intercepted RESP message at vehicle\n";
+                handle_resp_message(message_data, payload_size);
                 free(buf);
                 return;
             }
@@ -639,11 +689,15 @@ bool Protocol<NIC>::verify_mac(const void* data, unsigned int size, const MacKey
     }
     db<Protocol>(INF) << "[Protocol] MAC Verify - Message data (first " << std::min(size, 32u) << " bytes): " << msg_hex << "\n";
     
-    // For vehicles: Check MAC against all known RSU keys
+    // For vehicles: Check MAC against all known RSU keys AND neighbor RSU keys
     if (_entity_type == EntityType::VEHICLE && _vehicle_rsu_manager) {
         auto known_rsus = _vehicle_rsu_manager->get_known_rsus();
-        db<Protocol>(INF) << "[Protocol] MAC Verify - Vehicle checking against " << known_rsus.size() << " known RSU keys\n";
+        auto neighbor_keys = _vehicle_rsu_manager->get_neighbor_rsu_keys();
         
+        db<Protocol>(INF) << "[Protocol] MAC Verify - Vehicle checking against " << known_rsus.size() 
+                          << " known RSU keys and " << neighbor_keys.size() << " neighbor RSU keys\n";
+        
+        // First check known RSUs
         for (size_t idx = 0; idx < known_rsus.size(); ++idx) {
             const auto& rsu = known_rsus[idx];
             
@@ -654,26 +708,38 @@ bool Protocol<NIC>::verify_mac(const void* data, unsigned int size, const MacKey
                 snprintf(hex_byte, sizeof(hex_byte), "%02X ", rsu.group_key[i]);
                 rsu_key_hex += hex_byte;
             }
-            db<Protocol>(INF) << "[Protocol] MAC Verify - Testing RSU " << idx << " (" << rsu.address.to_string() << ") key: " << rsu_key_hex << "\n";
+            db<Protocol>(INF) << "[Protocol] MAC Verify - Testing known RSU " << idx << " (" << rsu.address.to_string() << ") key: " << rsu_key_hex << "\n";
             
             MacKeyType calculated_mac = calculate_mac(data, size, rsu.group_key);
             
-            // Debug logging: Show calculated MAC for this RSU
-            std::string calc_mac_hex = "";
-            for (size_t i = 0; i < 16; ++i) {
-                char hex_byte[4];
-                snprintf(hex_byte, sizeof(hex_byte), "%02X ", calculated_mac[i]);
-                calc_mac_hex += hex_byte;
-            }
-            db<Protocol>(INF) << "[Protocol] MAC Verify - Calculated MAC for RSU " << idx << ": " << calc_mac_hex << "\n";
-            
             if (calculated_mac == received_mac) {
-                db<Protocol>(TRC) << "[Protocol] MAC verified with RSU " << rsu.address.to_string() << " key\n";
+                db<Protocol>(TRC) << "[Protocol] MAC verified with known RSU " << rsu.address.to_string() << " key\n";
                 return true;
             }
         }
         
-        db<Protocol>(TRC) << "[Protocol] MAC verification failed - no matching RSU key found\n";
+        // Then check neighbor RSU keys
+        for (size_t idx = 0; idx < neighbor_keys.size(); ++idx) {
+            const auto& neighbor_key = neighbor_keys[idx];
+            
+            // Debug logging: Show neighbor key being tested
+            std::string neighbor_key_hex = "";
+            for (size_t i = 0; i < 16; ++i) {
+                char hex_byte[4];
+                snprintf(hex_byte, sizeof(hex_byte), "%02X ", neighbor_key[i]);
+                neighbor_key_hex += hex_byte;
+            }
+            db<Protocol>(INF) << "[Protocol] MAC Verify - Testing neighbor RSU " << idx << " key: " << neighbor_key_hex << "\n";
+            
+            MacKeyType calculated_mac = calculate_mac(data, size, neighbor_key);
+            
+            if (calculated_mac == received_mac) {
+                db<Protocol>(TRC) << "[Protocol] MAC verified with neighbor RSU key " << idx << "\n";
+                return true;
+            }
+        }
+        
+        db<Protocol>(TRC) << "[Protocol] MAC verification failed - no matching RSU or neighbor key found\n";
         return false;
     }
     
@@ -724,6 +790,193 @@ bool Protocol<NIC>::is_authenticated_message_type(typename ProtocolMessage::Type
     return (type == ProtocolMessage::Type::RESPONSE);
 }
 
+// REQ message handler implementation
+template <typename NIC>
+void Protocol<NIC>::handle_req_message(const uint8_t* message_data, unsigned int payload_size,
+                                       const typename NIC::Address& sender_mac) {
+    db<Protocol>(INF) << "[Protocol] RSU processing REQ message from " 
+                      << Ethernet::mac_to_string(sender_mac) << "\n";
+    
+    // Only RSUs should handle REQ messages
+    if (_entity_type != EntityType::RSU) {
+        db<Protocol>(WRN) << "[Protocol] Non-RSU entity received REQ message - ignoring\n";
+        return;
+    }
+    
+    // Get pointer to RSU instance - we need to access it to search neighbor RSUs
+    // For now, we'll use a simple approach: extract the failed MAC from the REQ message
+    // and search our neighbor RSUs for a match
+    
+    // Deserialize the REQ message
+    ProtocolMessage req_msg = ProtocolMessage::deserialize(message_data, payload_size);
+    if (req_msg.message_type() != ProtocolMessage::Type::REQ) {
+        db<Protocol>(WRN) << "[Protocol] Failed to deserialize REQ message\n";
+        return;
+    }
+    
+    // REQ message payload contains: original_message_data + failed_mac
+    const uint8_t* req_payload = req_msg.value();
+    unsigned int req_value_size = req_msg.value_size();
+    
+    if (req_value_size < sizeof(MacKeyType)) {
+        db<Protocol>(WRN) << "[Protocol] REQ message payload too small\n";
+        return;
+    }
+    
+    // Extract the failed MAC (last 16 bytes of payload)
+    MacKeyType failed_mac;
+    unsigned int original_msg_size = req_value_size - sizeof(MacKeyType);
+    std::memcpy(&failed_mac, req_payload + original_msg_size, sizeof(MacKeyType));
+    
+    // Debug logging: Show failed MAC
+    std::string failed_mac_hex = "";
+    for (size_t i = 0; i < 16; ++i) {
+        char hex_byte[4];
+        snprintf(hex_byte, sizeof(hex_byte), "%02X ", failed_mac[i]);
+        failed_mac_hex += hex_byte;
+    }
+    db<Protocol>(INF) << "[Protocol] REQ - Searching for MAC: " << failed_mac_hex << "\n";
+    
+    // Search for matching neighbor RSU key in our Protocol's neighbor list
+    // This list is populated by the RSU during initialization
+    bool found_match = false;
+    MacKeyType matching_key;
+    unsigned int matching_rsu_id = 0;
+    
+    {
+        std::lock_guard<std::mutex> lock(_neighbor_rsus_mutex);
+        for (const auto& neighbor : _neighbor_rsus) {
+            if (neighbor.key == failed_mac) {
+                matching_key = neighbor.key;
+                matching_rsu_id = neighbor.rsu_id;
+                found_match = true;
+                db<Protocol>(INF) << "[Protocol] Found matching neighbor RSU " << neighbor.rsu_id << " for failed MAC\n";
+                break;
+            }
+        }
+    }
+    
+    if (found_match) {
+        // Send RESP message with the matching key to the requesting vehicle
+        Address vehicle_address(sender_mac, req_msg.origin().port());
+        
+        // Create RESP message with just the neighbor RSU key
+        ProtocolMessage* resp_msg = new ProtocolMessage(ProtocolMessage::Type::RESP,
+                                                       address(), 0, ProtocolMessage::ZERO,
+                                                       &matching_key, sizeof(MacKeyType));
+        
+        db<Protocol>(INF) << "[Protocol] Sending RESP message to vehicle " 
+                          << vehicle_address.to_string() << " with neighbor RSU key\n";
+        
+        // Send unicast RESP message to the requesting vehicle
+        int result = send(address(), vehicle_address, resp_msg->data(), resp_msg->size());
+        
+        if (result > 0) {
+            db<Protocol>(INF) << "[Protocol] Successfully sent RESP message\n";
+        } else {
+            db<Protocol>(WRN) << "[Protocol] Failed to send RESP message\n";
+        }
+        
+        delete resp_msg;
+    } else {
+        db<Protocol>(INF) << "[Protocol] No matching neighbor RSU found for failed MAC\n";
+    }
+}
+
+// RESP message handler implementation
+template <typename NIC>
+void Protocol<NIC>::handle_resp_message(const uint8_t* message_data, unsigned int payload_size) {
+    db<Protocol>(INF) << "[Protocol] Vehicle processing RESP message\n";
+    
+    // Only vehicles should handle RESP messages
+    if (_entity_type != EntityType::VEHICLE || !_vehicle_rsu_manager) {
+        db<Protocol>(WRN) << "[Protocol] Non-vehicle entity or no RSU manager for RESP message - ignoring\n";
+        return;
+    }
+    
+    // Deserialize the RESP message
+    ProtocolMessage resp_msg = ProtocolMessage::deserialize(message_data, payload_size);
+    if (resp_msg.message_type() != ProtocolMessage::Type::RESP) {
+        db<Protocol>(WRN) << "[Protocol] Failed to deserialize RESP message\n";
+        return;
+    }
+    
+    // RESP message payload contains the neighbor RSU key
+    const uint8_t* resp_payload = resp_msg.value();
+    unsigned int resp_value_size = resp_msg.value_size();
+    
+    if (resp_value_size != sizeof(MacKeyType)) {
+        db<Protocol>(WRN) << "[Protocol] RESP message payload size mismatch: expected " 
+                          << sizeof(MacKeyType) << ", got " << resp_value_size << "\n";
+        return;
+    }
+    
+    // Extract the neighbor RSU key
+    MacKeyType neighbor_key;
+    std::memcpy(&neighbor_key, resp_payload, sizeof(MacKeyType));
+    
+    // Debug logging: Show received neighbor key
+    std::string neighbor_key_hex = "";
+    for (size_t i = 0; i < 16; ++i) {
+        char hex_byte[4];
+        snprintf(hex_byte, sizeof(hex_byte), "%02X ", neighbor_key[i]);
+        neighbor_key_hex += hex_byte;
+    }
+    db<Protocol>(INF) << "[Protocol] RESP - Received neighbor RSU key: " << neighbor_key_hex << "\n";
+    
+    // Add the neighbor RSU key to our collection
+    _vehicle_rsu_manager->add_neighbor_rsu_key(neighbor_key);
+    
+    db<Protocol>(INF) << "[Protocol] Successfully added neighbor RSU key to vehicle storage\n";
+}
+
+// REQ message sending implementation
+template <typename NIC>
+void Protocol<NIC>::send_req_message_to_leader(const void* failed_message_data, unsigned int failed_message_size,
+                                              const MacKeyType& failed_mac) {
+    db<Protocol>(INF) << "[Protocol] Preparing REQ message for leader RSU\n";
+    
+    // Only vehicles should send REQ messages
+    if (_entity_type != EntityType::VEHICLE || !_vehicle_rsu_manager) {
+        db<Protocol>(WRN) << "[Protocol] Non-vehicle entity or no RSU manager - cannot send REQ\n";
+        return;
+    }
+    
+    // Get current leader
+    auto current_leader = _vehicle_rsu_manager->get_current_leader();
+    if (!current_leader) {
+        db<Protocol>(WRN) << "[Protocol] No current leader RSU - cannot send REQ message\n";
+        return;
+    }
+    
+    db<Protocol>(INF) << "[Protocol] Sending REQ to leader RSU: " << current_leader->address.to_string() << "\n";
+    
+    // Create REQ message payload: original_message_data + failed_mac
+    unsigned int req_payload_size = failed_message_size + sizeof(MacKeyType);
+    std::vector<uint8_t> req_payload(req_payload_size);
+    
+    // Copy original message data
+    std::memcpy(req_payload.data(), failed_message_data, failed_message_size);
+    // Append failed MAC
+    std::memcpy(req_payload.data() + failed_message_size, &failed_mac, sizeof(MacKeyType));
+    
+    // Create REQ message
+    ProtocolMessage* req_msg = new ProtocolMessage(ProtocolMessage::Type::REQ,
+                                                  address(), 0, ProtocolMessage::ZERO,
+                                                  req_payload.data(), req_payload_size);
+    
+    // Send unicast REQ message to leader RSU
+    int result = send(address(), current_leader->address, req_msg->data(), req_msg->size());
+    
+    if (result > 0) {
+        db<Protocol>(INF) << "[Protocol] Successfully sent REQ message to leader\n";
+    } else {
+        db<Protocol>(WRN) << "[Protocol] Failed to send REQ message to leader\n";
+    }
+    
+    delete req_msg;
+}
+
 // Initialize static members
 template <typename NIC>
 typename Protocol<NIC>::Observed Protocol<NIC>::_observed;
@@ -744,6 +997,39 @@ void Protocol<NIC>::set_vehicle_rsu_manager(VehicleRSUManager<Protocol>* manager
     } else {
         db<Protocol>(WRN) << "[Protocol] Attempted to attach RSU manager to non-vehicle entity\n";
     }
+}
+
+// Neighbor RSU management implementation
+template <typename NIC>
+void Protocol<NIC>::add_neighbor_rsu(unsigned int rsu_id, const MacKeyType& key, const Address& address) {
+    if (_entity_type != EntityType::RSU) {
+        db<Protocol>(WRN) << "[Protocol] Attempted to add neighbor RSU to non-RSU entity\n";
+        return;
+    }
+    
+    std::lock_guard<std::mutex> lock(_neighbor_rsus_mutex);
+    
+    // Check if already exists
+    for (const auto& neighbor : _neighbor_rsus) {
+        if (neighbor.rsu_id == rsu_id) {
+            db<Protocol>(INF) << "[Protocol] Neighbor RSU " << rsu_id << " already known\n";
+            return;
+        }
+    }
+    
+    _neighbor_rsus.emplace_back(rsu_id, key, address);
+    db<Protocol>(INF) << "[Protocol] Added neighbor RSU " << rsu_id << " to protocol (total: " << _neighbor_rsus.size() << ")\n";
+}
+
+template <typename NIC>
+void Protocol<NIC>::clear_neighbor_rsus() {
+    if (_entity_type != EntityType::RSU) {
+        return;
+    }
+    
+    std::lock_guard<std::mutex> lock(_neighbor_rsus_mutex);
+    _neighbor_rsus.clear();
+    db<Protocol>(INF) << "[Protocol] Cleared all neighbor RSUs from protocol\n";
 }
 
 #endif // PROTOCOL_H

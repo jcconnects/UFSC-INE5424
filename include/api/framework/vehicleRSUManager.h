@@ -57,6 +57,10 @@ private:
     std::chrono::seconds _rsu_timeout;          // RSU timeout period
     unsigned int _vehicle_id;                   // For logging
     
+    // Neighbor RSU keys (just keys, not full info)
+    std::vector<MacKeyType> _neighbor_rsu_keys;
+    mutable std::mutex _neighbor_keys_mutex;    // Thread safety for neighbor keys
+    
     // Periodic cleanup thread
     std::unique_ptr<Periodic_Thread<VehicleRSUManager>> _cleanup_thread;
     std::atomic<bool> _running;
@@ -113,6 +117,9 @@ public:
         }
         db<VehicleRSUManager>(INF) << "[RSUManager " << _vehicle_id 
                                    << "] RSU key received: " << rsu_key_hex << "\n";
+        
+        // Check if this key exists in neighbor keys and remove it (we now have full info)
+        remove_neighbor_rsu_key(group_key);
         
         // Find existing RSU or create new one
         auto it = find_rsu_by_address(rsu_address);
@@ -285,6 +292,41 @@ public:
     std::vector<RSUInfo> get_known_rsus() {
         std::lock_guard<std::mutex> lock(_rsu_list_mutex);
         return _known_rsus; // Copy for thread safety
+    }
+    
+    // Add neighbor RSU key
+    void add_neighbor_rsu_key(const MacKeyType& key) {
+        std::lock_guard<std::mutex> lock(_neighbor_keys_mutex);
+        // Check if key already exists
+        for (const auto& existing_key : _neighbor_rsu_keys) {
+            if (existing_key == key) {
+                db<VehicleRSUManager>(INF) << "[RSUManager " << _vehicle_id 
+                                           << "] Neighbor RSU key already exists\n";
+                return;
+            }
+        }
+        _neighbor_rsu_keys.push_back(key);
+        db<VehicleRSUManager>(INF) << "[RSUManager " << _vehicle_id 
+                                   << "] Added neighbor RSU key (total: " << _neighbor_rsu_keys.size() << ")\n";
+    }
+    
+    // Get all neighbor RSU keys (for MAC verification)
+    std::vector<MacKeyType> get_neighbor_rsu_keys() {
+        std::lock_guard<std::mutex> lock(_neighbor_keys_mutex);
+        return _neighbor_rsu_keys; // Copy for thread safety
+    }
+    
+    // Remove neighbor RSU key (when we get full RSU info via STATUS)
+    bool remove_neighbor_rsu_key(const MacKeyType& key) {
+        std::lock_guard<std::mutex> lock(_neighbor_keys_mutex);
+        auto it = std::find(_neighbor_rsu_keys.begin(), _neighbor_rsu_keys.end(), key);
+        if (it != _neighbor_rsu_keys.end()) {
+            _neighbor_rsu_keys.erase(it);
+            db<VehicleRSUManager>(INF) << "[RSUManager " << _vehicle_id 
+                                       << "] Removed neighbor RSU key (remaining: " << _neighbor_rsu_keys.size() << ")\n";
+            return true;
+        }
+        return false;
     }
     
 private:
