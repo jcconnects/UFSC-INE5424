@@ -31,8 +31,8 @@ class INSComponent : public Agent {
         unsigned int _counter; // Message _counter
         std::random_device _rd;
         std::mt19937 _gen;
-        std::uniform_real_distribution<> _lat_dist;
-        std::uniform_real_distribution<> _lon_dist;
+            std::uniform_real_distribution<> _x_dist;
+    std::uniform_real_distribution<> _y_dist;
         std::uniform_real_distribution<> _alt_dist;
         std::uniform_real_distribution<> _vel_dist;
         std::uniform_real_distribution<> _accel_dist;
@@ -45,8 +45,8 @@ INSComponent::INSComponent(CAN* can, Message::Origin addr, const std::string& na
     _counter(0),
     _gen(_rd()),
     // Define realistic ranges for dummy data
-    _lat_dist(-PI_INS/2.0, PI_INS/2.0), // Latitude in radians (-90 to +90 deg)
-    _lon_dist(-PI_INS, PI_INS),          // Longitude in radians (-180 to +180 deg)
+            _x_dist(0.0, 1000.0),               // X coordinate in meters (0 to 1000m)
+        _y_dist(0.0, 1000.0),               // Y coordinate in meters (0 to 1000m)
     _alt_dist(0.0, 500.0),       // Altitude meters
     _vel_dist(0.0, 30.0),        // Velocity m/s
     _accel_dist(-2.0 * G_TO_MS2_INS, 2.0 * G_TO_MS2_INS), // Acceleration m/s^2 (+/- 2g)
@@ -60,8 +60,8 @@ inline Agent::Value INSComponent::get(Agent::Unit unit) {
     auto time_us_system = std::chrono::duration_cast<std::chrono::microseconds>(now_system.time_since_epoch()).count();
 
     // Generate dummy INS data
-    double lat = _lat_dist(_gen);
-    double lon = _lon_dist(_gen);
+            double x = _x_dist(_gen);
+        double y = _y_dist(_gen);
     double alt = _alt_dist(_gen);
     double vel = _vel_dist(_gen);
     double accel_x = _accel_dist(_gen);
@@ -75,7 +75,7 @@ inline Agent::Value INSComponent::get(Agent::Unit unit) {
     std::stringstream payload_ss;
     payload_ss << std::fixed << std::setprecision(8) // High precision for GPS/IMU
             << "INSData: {"
-            << "Lat: " << lat << ", Lon: " << lon << ", Alt: " << alt
+                            << "X: " << x << ", Y: " << y << ", Alt: " << alt
             << ", Vel: " << std::setprecision(3) << vel // Lower precision for others
             << ", Accel: [" << accel_x << ", " << accel_y << ", " << accel_z << "]"
             << ", Gyro: [" << std::setprecision(5) << gyro_x << ", " << gyro_y << ", " << gyro_z << "]"

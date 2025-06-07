@@ -11,7 +11,7 @@ The system implements a simple and efficient **radius-based collision domain** f
 1. **LocationService**: Manages vehicle/RSU positioning with trajectory support
 2. **NIC**: Provides communication radius configuration
 3. **Protocol**: Implements range-based packet filtering
-4. **GeoUtils**: Provides geographic distance calculations
+4. **GeoUtils**: Provides Cartesian distance calculations
 
 ### Packet Structure
 
@@ -20,9 +20,9 @@ The system implements a simple and efficient **radius-based collision domain** f
 ```
 
 Where `Coordinates` contains:
-- `latitude`: Sender's latitude
-- `longitude`: Sender's longitude  
-- `radius`: Sender's communication radius
+- `x`: Sender's X coordinate (meters)
+- `y`: Sender's Y coordinate (meters)  
+- `radius`: Sender's communication radius (meters)
 
 ## How It Works
 
@@ -32,7 +32,7 @@ Where `Coordinates` contains:
 // Set sender location and communication radius
 Coordinates coords;
 coords.radius = _nic->radius();
-LocationService::getCurrentCoordinates(coords.latitude, coords.longitude);
+LocationService::getCurrentCoordinates(coords.x, coords.y);
 std::memcpy(packet->coordinates(), &coords, sizeof(Coordinates));
 ```
 
@@ -40,11 +40,11 @@ std::memcpy(packet->coordinates(), &coords, sizeof(Coordinates));
 
 ```cpp
 // Get receiver location
-double rx_lat, rx_lon;
-LocationService::getCurrentCoordinates(rx_lat, rx_lon);
+double rx_x, rx_y;
+LocationService::getCurrentCoordinates(rx_x, rx_y);
 
 // Check if packet is within sender's communication range
-double distance = GeoUtils::haversineDistance(coords->latitude, coords->longitude, rx_lat, rx_lon);
+double distance = GeoUtils::euclideanDistance(coords->x, coords->y, rx_x, rx_y);
 
 if (distance > coords->radius) {
     // Packet dropped: out of range
@@ -72,7 +72,7 @@ This models realistic radio communication where the sender's transmission power 
 - No directional angle computations
 
 ### ✅ **Realism**
-- Geographic distance using Haversine formula
+- Cartesian distance using Euclidean formula
 - Realistic omnidirectional radio transmission modeling
 - Trajectory-based dynamic positioning
 
@@ -80,6 +80,14 @@ This models realistic radio communication where the sender's transmission power 
 - Configurable radius per NIC
 - Support for different vehicle types (different ranges)
 - Easy integration with existing code
+
+## Coordinate System
+
+The system uses a **Cartesian 2D coordinate system**:
+- **Origin**: (0, 0) represents the center of the simulation area
+- **Units**: Meters
+- **Range**: Typically 0-1000m for both X and Y axes
+- **Distance**: Calculated using Euclidean distance formula
 
 ## Usage Examples
 
@@ -101,7 +109,7 @@ LocationService::loadTrajectory("tests/logs/trajectories/vehicle_1_trajectory.cs
 
 ```cpp
 // Set static position for RSU
-LocationService::setCurrentCoordinates(-27.5954, -48.5482);
+LocationService::setCurrentCoordinates(500.0, 500.0);  // Center of 1000x1000m grid
 ```
 
 ## Testing
@@ -109,7 +117,7 @@ LocationService::setCurrentCoordinates(-27.5954, -48.5482);
 ### Unit Tests
 
 ```bash
-# Test geographic calculations
+# Test Cartesian distance calculations
 ./radius_collision_test
 
 # Test trajectory loading and positioning
@@ -141,7 +149,8 @@ python3 scripts/trajectory_generator_map_1.py
 
 - **Default transmission radius**: 1000m (configurable per NIC)
 - **Trajectory update interval**: 100ms
-- **Geographic precision**: ~1m (Haversine formula)
+- **Coordinate precision**: ~1m (Euclidean formula)
+- **Simulation area**: 1000x1000m grid (0-1000m for both axes)
 
 ### Typical Transmission Ranges
 
@@ -172,4 +181,4 @@ The radius-based approach provides a solid foundation that can be extended:
 
 ## Conclusion
 
-The radius-based collision domain provides an optimal balance of **simplicity**, **performance**, and **realism** for vehicular communication simulation. It models realistic omnidirectional radio transmission where receivers must be within the sender's transmission range to successfully receive packets. This eliminates the complexity of beamforming while maintaining realistic geographic constraints and excellent performance characteristics. 
+The radius-based collision domain provides an optimal balance of **simplicity**, **performance**, and **realism** for vehicular communication simulation. It models realistic omnidirectional radio transmission where receivers must be within the sender's transmission range to successfully receive packets. This eliminates the complexity of beamforming while maintaining realistic distance constraints and excellent performance characteristics using a simple Cartesian coordinate system. 

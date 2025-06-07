@@ -5,20 +5,27 @@
 
 class GeoUtils {
 public:
-    static constexpr double EARTH_RADIUS_M = 6371000.0;
-    
-    static double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
-        double dlat = toRadians(lat2 - lat1);
-        double dlon = toRadians(lon2 - lon1);
-        double a = sin(dlat/2) * sin(dlat/2) + 
-                   cos(toRadians(lat1)) * cos(toRadians(lat2)) * 
-                   sin(dlon/2) * sin(dlon/2);
-        return 2 * EARTH_RADIUS_M * asin(sqrt(a));
+    // Simple Euclidean distance calculation for Cartesian coordinates
+    static double cartesianDistance(double x1, double y1, double x2, double y2) {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        return sqrt(dx * dx + dy * dy);
     }
-
-private:
-    static double toRadians(double degrees) { return degrees * M_PI / 180.0; }
-    static double toDegrees(double radians) { return radians * 180.0 / M_PI; }
+    
+    // Alias for cartesianDistance
+    static double euclideanDistance(double x1, double y1, double x2, double y2) {
+        return cartesianDistance(x1, y1, x2, y2);
+    }
+    
+    // Legacy method name for backward compatibility
+    static double haversineDistance(double x1, double y1, double x2, double y2) {
+        return cartesianDistance(x1, y1, x2, y2);
+    }
+    
+    // Check if point is within circular area
+    static bool isWithinRadius(double x1, double y1, double x2, double y2, double radius) {
+        return cartesianDistance(x1, y1, x2, y2) <= radius;
+    }
 };
 
 #endif // GEO_UTILS_H 

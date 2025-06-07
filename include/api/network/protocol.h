@@ -366,7 +366,7 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
     // Set sender location and communication radius
     Coordinates coords;
     coords.radius = _nic->radius();
-    LocationService::getCurrentCoordinates(coords.latitude, coords.longitude);
+    LocationService::getCurrentCoordinates(coords.x, coords.y);
     std::memcpy(packet->coordinates(), &coords, sizeof(Coordinates));
 
     // Initialize authentication fields
@@ -385,8 +385,8 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
                           << ", to_port=" << packet->header()->to_port() << ", size=" << packet->header()->size() << "\n";
         db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Timestamps: sync=" << packet->timestamps()->is_clock_synchronized 
                           << " (tx_timestamp excluded from MAC calculation)\n";
-        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Coordinates: lat=" << packet->coordinates()->latitude 
-                          << ", lon=" << packet->coordinates()->longitude << ", radius=" << packet->coordinates()->radius << "\n";
+                db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Coordinates: x=" << packet->coordinates()->x
+                                  << ", y=" << packet->coordinates()->y << ", radius=" << packet->coordinates()->radius << "\n";
         
         // Debug logging: Show message data
         db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Message payload size: " << size << " bytes\n";
@@ -503,10 +503,10 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     // Radius-based collision domain filtering
     Coordinates* coords = pkt->coordinates();
     // Get receiver location
-    double rx_lat, rx_lon;
-    LocationService::getCurrentCoordinates(rx_lat, rx_lon);
+    double rx_x, rx_y;
+    LocationService::getCurrentCoordinates(rx_x, rx_y);
     // Check if packet is within sender's communication range
-    double distance = GeoUtils::haversineDistance(coords->latitude, coords->longitude, rx_lat, rx_lon);
+                double distance = GeoUtils::euclideanDistance(coords->x, coords->y, rx_x, rx_y);
     if (distance > coords->radius) {
         db<Protocol>(INF) << "[Protocol] Packet dropped: out of range (" << distance << "m > " << coords->radius << "m)\n";
         free(buf);
@@ -628,11 +628,11 @@ void Protocol<NIC>::handle_status_message(const typename ProtocolMessage::Type& 
     
     // Parse payload
     unsigned int offset = 0;
-    double rsu_lat, rsu_lon, rsu_radius;
+    double rsu_x, rsu_y, rsu_radius;
     MacKeyType rsu_key;
-    std::memcpy(&rsu_lat, payload + offset, sizeof(double));
+    std::memcpy(&rsu_x, payload + offset, sizeof(double));
     offset += sizeof(double);
-    std::memcpy(&rsu_lon, payload + offset, sizeof(double));
+    std::memcpy(&rsu_y, payload + offset, sizeof(double));
     offset += sizeof(double);
     std::memcpy(&rsu_radius, payload + offset, sizeof(double));
     offset += sizeof(double);
@@ -643,9 +643,9 @@ void Protocol<NIC>::handle_status_message(const typename ProtocolMessage::Type& 
     
     // Forward to RSU manager - this will be linked at compile time when VehicleRSUManager is fully defined
     if (_vehicle_rsu_manager) {
-        _vehicle_rsu_manager->process_rsu_status(rsu_address, rsu_lat, rsu_lon, rsu_radius, rsu_key);
-        db<Protocol>(INF) << "[Protocol] Forwarded RSU info to manager: lat=" << rsu_lat 
-                          << ", lon=" << rsu_lon << ", radius=" << rsu_radius << "\n";
+        _vehicle_rsu_manager->process_rsu_status(rsu_address, rsu_x, rsu_y, rsu_radius, rsu_key);
+        db<Protocol>(INF) << "[Protocol] Forwarded RSU info to manager: x=" << rsu_x 
+                          << ", y=" << rsu_y << ", radius=" << rsu_radius << "\n";
     }
 }
 
@@ -724,8 +724,8 @@ MacKeyType Protocol<NIC>::calculate_mac(const void* message_data, unsigned int m
                       << ", to_port=" << to_port << " (" << header_auth_size << " bytes)\n";
     db<Protocol>(INF) << "[Protocol] Hybrid MAC - Timestamps: sync=" << sync_status 
                       << " (" << timestamp_auth_size << " bytes, tx_timestamp excluded)\n";
-    db<Protocol>(INF) << "[Protocol] Hybrid MAC - Coordinates: lat=" << coordinates->latitude 
-                      << ", lon=" << coordinates->longitude << ", radius=" << coordinates->radius 
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC - Coordinates: x=" << coordinates->x 
+                      << ", y=" << coordinates->y << ", radius=" << coordinates->radius 
                       << " (" << coords_auth_size << " bytes)\n";
     db<Protocol>(INF) << "[Protocol] Hybrid MAC - Message payload: " << message_size << " bytes\n";
     
@@ -770,8 +770,8 @@ bool Protocol<NIC>::verify_mac(const void* message_data, unsigned int message_si
                       << ", to_port=" << header->to_port() << ", size=" << header->size() << "\n";
     db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Timestamps: sync=" << timestamps->is_clock_synchronized 
                       << " (tx_timestamp excluded from MAC calculation)\n";
-    db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Coordinates: lat=" << coordinates->latitude 
-                      << ", lon=" << coordinates->longitude << ", radius=" << coordinates->radius << "\n";
+    db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Coordinates: x=" << coordinates->x 
+                      << ", y=" << coordinates->y << ", radius=" << coordinates->radius << "\n";
     db<Protocol>(INF) << "[Protocol] Hybrid MAC Verify - Message payload size: " << message_size << " bytes\n";
     
     // Debug logging: Show message data being verified

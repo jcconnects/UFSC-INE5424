@@ -13,17 +13,17 @@
 #include <algorithm>
 
 struct Coordinates {
-    double latitude;
-    double longitude;
+    double x;
+    double y;
     double radius;
 };
 
 struct TrajectoryPoint {
     std::chrono::milliseconds timestamp;
-    double latitude;
-    double longitude;
+    double x;
+    double y;
     
-    TrajectoryPoint(long long ts_ms, double lat, double lon) : timestamp(ts_ms), latitude(lat), longitude(lon) {}
+    TrajectoryPoint(long long ts_ms, double x_coord, double y_coord) : timestamp(ts_ms), x(x_coord), y(y_coord) {}
 };
 
 class LocationService {
@@ -33,13 +33,13 @@ class LocationService {
         static bool loadTrajectory(const std::string& csv_filename);
         
         // Get coordinates at specific timestamp (reads from trajectory if loaded)
-        static void getCoordinates(double& lat, double& lon, std::chrono::milliseconds timestamp = std::chrono::milliseconds::zero());
+        static void getCoordinates(double& x, double& y, std::chrono::milliseconds timestamp = std::chrono::milliseconds::zero());
         
         // Backward compatibility: get coordinates at current system time
-        static void getCurrentCoordinates(double& lat, double& lon);
+        static void getCurrentCoordinates(double& x, double& y);
         
         // Set manual coordinates (used when no trajectory is loaded)
-        static void setCurrentCoordinates(double lat, double lon);
+        static void setCurrentCoordinates(double x, double y);
         
         // Check if trajectory is loaded
         static bool hasTrajectory();
@@ -51,19 +51,19 @@ class LocationService {
         
         static bool loadTrajectoryFromCSV(const std::string& filename);
         
-        static void getCoordinatesAtTime(std::chrono::milliseconds timestamp, double& lat, double& lon);
+        static void getCoordinatesAtTime(std::chrono::milliseconds timestamp, double& x, double& y);
 
     private:
         static std::vector<TrajectoryPoint> _trajectory;
-        static double _manual_latitude, _manual_longitude;
+        static double _manual_x, _manual_y;
         static std::mutex _mutex;
         static std::chrono::milliseconds _start_time;
 };
 
 std::mutex LocationService::_mutex;
 std::vector<TrajectoryPoint> LocationService::_trajectory;
-double LocationService::_manual_latitude = 0;
-double LocationService::_manual_longitude = 0;
+double LocationService::_manual_x = 0;
+double LocationService::_manual_y = 0;
 std::chrono::milliseconds LocationService::_start_time = std::chrono::milliseconds::zero();
 
 bool LocationService::loadTrajectory(const std::string& csv_filename) {
@@ -75,28 +75,28 @@ bool LocationService::loadTrajectory(const std::string& csv_filename) {
     return false;
 }
 
-void LocationService::getCoordinates(double& lat, double& lon, std::chrono::milliseconds timestamp) {
+void LocationService::getCoordinates(double& x, double& y, std::chrono::milliseconds timestamp) {
     std::lock_guard<std::mutex> lock(_mutex);
             
     if (_trajectory.empty() || timestamp == std::chrono::milliseconds::zero()) {
         // Use manual coordinates if no trajectory or no timestamp provided
-        lat = _manual_latitude;
-        lon = _manual_longitude;
+        x = _manual_x;
+        y = _manual_y;
         return;
     }
     
-    getCoordinatesAtTime(timestamp, lat, lon);
+    getCoordinatesAtTime(timestamp, x, y);
 }
 
-void LocationService::getCurrentCoordinates(double& lat, double& lon) {
+void LocationService::getCurrentCoordinates(double& x, double& y) {
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-    getCoordinates(lat, lon, now - _start_time);
+    getCoordinates(x, y, now - _start_time);
 }
 
-void LocationService::setCurrentCoordinates(double lat, double lon) {
+void LocationService::setCurrentCoordinates(double x, double y) {
     std::lock_guard<std::mutex> lock(_mutex);
-    _manual_latitude = lat;
-    _manual_longitude = lon;
+    _manual_x = x;
+    _manual_y = y;
 }
 
 bool LocationService::hasTrajectory() {
@@ -143,10 +143,10 @@ bool LocationService::loadTrajectoryFromCSV(const std::string& filename) {
         if (values.size() >= 3) {
             try {
                 long long timestamp_ms = std::stoll(values[0]);
-                double latitude = std::stod(values[1]);
-                double longitude = std::stod(values[2]);
+                double x_coord = std::stod(values[1]);
+                double y_coord = std::stod(values[2]);
                 
-                _trajectory.emplace_back(timestamp_ms, latitude, longitude);
+                _trajectory.emplace_back(timestamp_ms, x_coord, y_coord);
             } catch (const std::exception&) {
                 // Skip malformed lines
                 continue;
@@ -163,10 +163,10 @@ bool LocationService::loadTrajectoryFromCSV(const std::string& filename) {
     return !_trajectory.empty();
 }
 
-void LocationService::getCoordinatesAtTime(std::chrono::milliseconds timestamp, double& lat, double& lon)  {
+void LocationService::getCoordinatesAtTime(std::chrono::milliseconds timestamp, double& x, double& y) {
     if (_trajectory.empty()) {
-        lat = _manual_latitude;
-        lon = _manual_longitude;
+        x = _manual_x;
+        y = _manual_y;
         return;
     }
     
@@ -178,12 +178,12 @@ void LocationService::getCoordinatesAtTime(std::chrono::milliseconds timestamp, 
     
     if (it == _trajectory.begin()) {
         // Timestamp is before trajectory start - use first point
-        lat = _trajectory.front().latitude;
-        lon = _trajectory.front().longitude;
+        x = _trajectory.front().x;
+        y = _trajectory.front().y;
     } else if (it == _trajectory.end()) {
         // Timestamp is after trajectory end - use last point
-        lat = _trajectory.back().latitude;
-        lon = _trajectory.back().longitude;
+        x = _trajectory.back().x;
+        y = _trajectory.back().y;
     } else {
         // Interpolate between two points for smoother movement
         auto curr = it;
@@ -194,13 +194,13 @@ void LocationService::getCoordinatesAtTime(std::chrono::milliseconds timestamp, 
         
         if (dt_total.count() == 0) {
             // Same timestamp, use current point
-            lat = curr->latitude;
-            lon = curr->longitude;
+            x = curr->x;
+            y = curr->y;
         } else {
             // Linear interpolation
             double ratio = static_cast<double>(dt_elapsed.count()) / dt_total.count();
-            lat = prev->latitude + ratio * (curr->latitude - prev->latitude);
-            lon = prev->longitude + ratio * (curr->longitude - prev->longitude);
+            x = prev->x + ratio * (curr->x - prev->x);
+            y = prev->y + ratio * (curr->y - prev->y);
         }
     }
 }

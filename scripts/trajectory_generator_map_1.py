@@ -78,16 +78,16 @@ class SimpleTrajectoryGenerator:
         start_wp = route_waypoints[0]
         end_wp = route_waypoints[-1]
         
-        start_lat, start_lon = start_wp['lat'], start_wp['lon']
-        end_lat, end_lon = end_wp['lat'], end_wp['lon']
+        start_x, start_y = start_wp['x'], start_wp['y']
+        end_x, end_y = end_wp['x'], end_wp['y']
         
         # Calculate total distance and time needed
-        total_distance = self._haversine_distance(start_lat, start_lon, end_lat, end_lon)
+        total_distance = self._cartesian_distance(start_x, start_y, end_x, end_y)
         total_time_needed_ms = (total_distance / self.vehicle_speed_ms) * 1000
         
         # Calculate movement per timestamp
-        lat_diff = end_lat - start_lat
-        lon_diff = end_lon - start_lon
+        x_diff = end_x - start_x
+        y_diff = end_y - start_y
         
         # Generate trajectory points
         for timestamp in self.timestamps:
@@ -96,16 +96,16 @@ class SimpleTrajectoryGenerator:
             else:
                 progress = 1.0  # Instant movement for very short distances
             
-            current_lat = start_lat + (lat_diff * progress)
-            current_lon = start_lon + (lon_diff * progress)
+            current_x = start_x + (x_diff * progress)
+            current_y = start_y + (y_diff * progress)
             
-            trajectory.append((timestamp, current_lat, current_lon))
+            trajectory.append((timestamp, current_x, current_y))
             
             # Stop generating points once destination is reached
             if progress >= 1.0:
                 # Fill remaining timestamps with end position
                 while len(trajectory) < len(self.timestamps):
-                    trajectory.append((self.timestamps[len(trajectory)], end_lat, end_lon))
+                    trajectory.append((self.timestamps[len(trajectory)], end_x, end_y))
                 break
                 
         return trajectory
@@ -116,7 +116,7 @@ class SimpleTrajectoryGenerator:
         rsu_config = self.config.rsu
         
         for timestamp in self.timestamps:
-            trajectory.append((timestamp, rsu_config['position']['lat'], rsu_config['position']['lon']))
+            trajectory.append((timestamp, rsu_config['position']['x'], rsu_config['position']['y']))
             
         return trajectory
     
@@ -128,29 +128,19 @@ class SimpleTrajectoryGenerator:
         with open(filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             # Write header
-            writer.writerow(['timestamp_ms', 'latitude', 'longitude'])
+            writer.writerow(['timestamp_ms', 'x', 'y'])
             # Write trajectory data
-            for timestamp, lat, lon in trajectory:
-                writer.writerow([timestamp, f"{lat:.8f}", f"{lon:.8f}"])
+            for timestamp, x, y in trajectory:
+                writer.writerow([timestamp, f"{x:.2f}", f"{y:.2f}"])
         
         print(f"Generated {entity_type} {entity_id} trajectory: {filename} ({len(trajectory)} points)")
     
     @staticmethod
-    def _haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-        """Calculate distance between two points using Haversine formula."""
-        R = 6371000  # Earth radius in meters
-        
-        lat1_rad = math.radians(lat1)
-        lat2_rad = math.radians(lat2)
-        dlat = math.radians(lat2 - lat1)
-        dlon = math.radians(lon2 - lon1)
-        
-        a = (math.sin(dlat/2) * math.sin(dlat/2) + 
-             math.cos(lat1_rad) * math.cos(lat2_rad) * 
-             math.sin(dlon/2) * math.sin(dlon/2))
-        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-        
-        return R * c
+    def _cartesian_distance(x1: float, y1: float, x2: float, y2: float) -> float:
+        """Calculate distance between two points using simple Euclidean formula."""
+        dx = x2 - x1
+        dy = y2 - y1
+        return math.sqrt(dx * dx + dy * dy)
 
 def main():
     parser = argparse.ArgumentParser(description='Generate simple trajectory files for Map 1')
@@ -211,7 +201,7 @@ def main():
     # Print summary statistics
     print(f"\nMap 1 Summary:")
     print(f"  Description: {config.config['map_info']['description']}")
-    print(f"  RSU Position: ({config.rsu['position']['lat']:.6f}, {config.rsu['position']['lon']:.6f})")
+    print(f"  RSU Position: ({config.rsu['position']['x']:.1f}, {config.rsu['position']['y']:.1f})")
     print(f"  RSU ID: {config.rsu['id']}")
     print(f"  Vehicle Speed: {config.vehicles['speed_kmh']} km/h")
     print(f"  Transmission Radius: {config.simulation['default_transmission_radius_m']}m (all entities)")

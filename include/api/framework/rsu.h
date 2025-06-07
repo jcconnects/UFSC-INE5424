@@ -23,7 +23,7 @@ public:
     typedef Message::Unit Unit;
 
     RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period,
-        double lat = 0.0, double lon = 0.0, double radius = 400.0, const void* data = nullptr, unsigned int data_size = 0);
+        double x = 0.0, double y = 0.0, double radius = 400.0, const void* data = nullptr, unsigned int data_size = 0);
     ~RSU();
     void start();
     void stop();
@@ -44,8 +44,8 @@ private:
     std::chrono::milliseconds _period;
     std::vector<std::uint8_t> _data;
     MacKeyType _rsu_key;
-    double _lat;
-    double _lon;
+    double _x;
+    double _y;
     double _radius;
     
     // Note: Neighbor RSU information is now stored directly in Protocol's structure
@@ -73,8 +73,8 @@ private:
  * @param data_size Size of the data payload
  */
 inline RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period, 
-         double lat, double lon, double radius, const void* data, unsigned int data_size) 
-    : _rsu_id(rsu_id), _unit(unit), _period(period), _lat(lat), _lon(lon), _radius(radius), _running(false),
+         double x, double y, double radius, const void* data, unsigned int data_size) 
+    : _rsu_id(rsu_id), _unit(unit), _period(period), _x(x), _y(y), _radius(radius), _running(false),
       _periodic_thread(this, &RSU::broadcast) {
     
     db<RSU>(TRC) << "RSU::RSU() called with id=" << rsu_id << ", unit=" << unit << ", period=" << period.count() << "ms\n";
@@ -236,14 +236,14 @@ inline void RSU::broadcast() {
     Message* msg;
     
     // Calculate payload size first
-    unsigned int payload_size = sizeof(_lat) + sizeof(_lon) + sizeof(_radius) + sizeof(_rsu_key) + _data.size();
+    unsigned int payload_size = sizeof(_x) + sizeof(_y) + sizeof(_radius) + sizeof(_rsu_key) + _data.size();
     std::vector<uint8_t> payload(payload_size);  // Properly size the vector
     
     unsigned int offset = 0;
-    std::memcpy(payload.data() + offset, &_lat, sizeof(_lat));
-    offset += sizeof(_lat);
-    std::memcpy(payload.data() + offset, &_lon, sizeof(_lon));
-    offset += sizeof(_lon);
+    std::memcpy(payload.data() + offset, &_x, sizeof(_x));
+    offset += sizeof(_x);
+    std::memcpy(payload.data() + offset, &_y, sizeof(_y));
+    offset += sizeof(_y);
     std::memcpy(payload.data() + offset, &_radius, sizeof(_radius));
     offset += sizeof(_radius);
     std::memcpy(payload.data() + offset, &_rsu_key, sizeof(_rsu_key));

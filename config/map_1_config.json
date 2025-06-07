@@ -4,13 +4,14 @@
     "description": "Simple map with one RSU and vehicles crossing its domain"
   },
   "simulation": {
-    "duration_s": 100,
+    "duration_s": 10,
     "update_interval_ms": 100,
-    "default_transmission_radius_m": 500
+    "default_transmission_radius_m": 500,
+    "trajectory_generator_script": "scripts/trajectory_generator_map_1.py"
   },
   "rsu": {
     "id": 1000,
-    "position": {"lat": -27.5919, "lon": -48.5432},
+    "position": {"x": 0, "y": 0},
     "unit": 999,
     "broadcast_period_ms": 1000
   },
@@ -19,10 +20,10 @@
     "speed_kmh": 50
   },
   "waypoints": [
-    {"name": "west_entry", "lat": -27.5919, "lon": -48.5482},
-    {"name": "east_exit", "lat": -27.5919, "lon": -48.5382},
-    {"name": "north_entry", "lat": -27.5869, "lon": -48.5432},
-    {"name": "south_exit", "lat": -27.5969, "lon": -48.5432}
+    {"name": "west_entry", "x": -600, "y": 0},
+    {"name": "east_exit", "x": 600, "y": 0},
+    {"name": "north_entry", "x": 0, "y": 600},
+    {"name": "south_exit", "x": 0, "y": -600}
   ],
   "routes": [
     {"name": "west_to_east", "waypoints": ["west_entry", "east_exit"]},

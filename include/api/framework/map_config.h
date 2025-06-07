@@ -11,8 +11,8 @@
 
 struct Waypoint {
     std::string name;
-    double lat;
-    double lon;
+    double x;
+    double y;
 };
 
 struct Route {
@@ -22,8 +22,8 @@ struct Route {
 
 struct RSUConfig {
     unsigned int id;
-    double lat;
-    double lon;
+    double x;
+    double y;
     unsigned int unit;
     std::chrono::milliseconds broadcast_period;
 };
@@ -37,6 +37,7 @@ struct SimulationConfig {
     unsigned int duration_s;
     unsigned int update_interval_ms;
     double default_transmission_radius_m;
+    std::string trajectory_generator_script;
 };
 
 struct LoggingConfig {
@@ -50,7 +51,18 @@ public:
     // Accessors
     const std::vector<Waypoint>& waypoints() const { return _waypoints; }
     const std::vector<Route>& routes() const { return _routes; }
-    const RSUConfig& rsu_config() const { return _rsu_config; }
+    const RSUConfig& rsu_config() const { 
+        if (_rsu_configs.empty()) {
+            return _single_rsu_config;
+        }
+        return _rsu_configs[0]; 
+    }
+    std::vector<RSUConfig> get_all_rsu_configs() const { 
+        if (_rsu_configs.empty()) {
+            return std::vector<RSUConfig>{_single_rsu_config};
+        }
+        return _rsu_configs; 
+    }
     const VehicleConfig& vehicle_config() const { return _vehicle_config; }
     const SimulationConfig& simulation() const { return _simulation; }
     const LoggingConfig& logging() const { return _logging; }
@@ -60,6 +72,7 @@ public:
     Route get_route(const std::string& name) const;
     std::string get_trajectory_file_path(const std::string& entity_type, unsigned int entity_id) const;
     double get_transmission_radius() const { return _simulation.default_transmission_radius_m; }
+    std::string get_trajectory_generator_script() const { return _simulation.trajectory_generator_script; }
 
 private:
     void parse_config_file(const std::string& file_path);
@@ -69,13 +82,16 @@ private:
     std::string extract_string_value(const std::string& content, const std::string& key) const;
     void parse_waypoints(const std::string& content);
     void parse_routes(const std::string& content);
+    void parse_single_rsu(const std::string& content);
+    void parse_multiple_rsus(const std::string& content);
     
     std::vector<Waypoint> _waypoints;
     std::vector<Route> _routes;
-    RSUConfig _rsu_config;
-    VehicleConfig _vehicle_config;
-    SimulationConfig _simulation;
-    LoggingConfig _logging;
+    RSUConfig _single_rsu_config{};  // For single RSU configs (map_1) - zero-initialized
+    std::vector<RSUConfig> _rsu_configs;  // For multiple RSU configs (map_2rsu)
+    VehicleConfig _vehicle_config{};
+    SimulationConfig _simulation{};
+    LoggingConfig _logging{};
 };
 
 // Implementation
@@ -92,16 +108,21 @@ inline void MapConfig::parse_config_file(const std::string& file_path) {
     std::string content((std::istreambuf_iterator<char>(file)),
                         std::istreambuf_iterator<char>());
     
-    // Parse RSU config section
-    std::string rsu_section = extract_json_section(content, "rsu");
-    _rsu_config.id = extract_uint_value(rsu_section, "id");
-    _rsu_config.unit = extract_uint_value(rsu_section, "unit");
-    _rsu_config.broadcast_period = std::chrono::milliseconds(extract_uint_value(rsu_section, "broadcast_period_ms"));
-    
-    // Parse RSU position subsection
-    std::string rsu_position_section = extract_json_section(rsu_section, "position");
-    _rsu_config.lat = extract_double_value(rsu_position_section, "lat");
-    _rsu_config.lon = extract_double_value(rsu_position_section, "lon");
+    // Try to parse RSU configurations - first try multiple RSUs, then single RSU
+    if (content.find("\"rsus\":") != std::string::npos) {
+        // Multiple RSUs configuration (array)
+        parse_multiple_rsus(content);
+    } else if (content.find("\"rsu\":") != std::string::npos) {
+        // Single RSU configuration (object)
+        try {
+            std::string rsu_section = extract_json_section(content, "rsu");
+            parse_single_rsu(rsu_section);
+        } catch (const std::exception& e) {
+            throw std::runtime_error("Error parsing single RSU section: " + std::string(e.what()));
+        }
+    } else {
+        throw std::runtime_error("Neither 'rsu' nor 'rsus' section found in config file");
+    }
     
     // Parse vehicle config section
     std::string vehicle_section = extract_json_section(content, "vehicles");
@@ -113,6 +134,13 @@ inline void MapConfig::parse_config_file(const std::string& file_path) {
     _simulation.duration_s = extract_uint_value(simulation_section, "duration_s");
     _simulation.update_interval_ms = extract_uint_value(simulation_section, "update_interval_ms");
     _simulation.default_transmission_radius_m = extract_double_value(simulation_section, "default_transmission_radius_m");
+    
+    // trajectory_generator_script is optional, provide default if not found
+    try {
+        _simulation.trajectory_generator_script = extract_string_value(simulation_section, "trajectory_generator_script");
+    } catch (const std::exception&) {
+        _simulation.trajectory_generator_script = "scripts/trajectory_generator_map_1.py"; // Default fallback
+    }
     
     // Parse logging config section
     std::string logging_section = extract_json_section(content, "logging");
@@ -146,8 +174,8 @@ inline void MapConfig::parse_waypoints(const std::string& content) {
         
         Waypoint wp;
         wp.name = extract_string_value(waypoint_obj, "name");
-        wp.lat = extract_double_value(waypoint_obj, "lat");
-        wp.lon = extract_double_value(waypoint_obj, "lon");
+        wp.x = extract_double_value(waypoint_obj, "x");
+        wp.y = extract_double_value(waypoint_obj, "y");
         
         _waypoints.push_back(wp);
         pos = obj_end + 1;
@@ -202,6 +230,71 @@ inline void MapConfig::parse_routes(const std::string& content) {
         }
         
         _routes.push_back(route);
+        pos = obj_end + 1;
+    }
+}
+
+inline void MapConfig::parse_single_rsu(const std::string& rsu_section) {
+    _single_rsu_config.id = extract_uint_value(rsu_section, "id");
+    _single_rsu_config.unit = extract_uint_value(rsu_section, "unit");
+    _single_rsu_config.broadcast_period = std::chrono::milliseconds(extract_uint_value(rsu_section, "broadcast_period_ms"));
+    
+    // Parse RSU position subsection
+    std::string rsu_position_section = extract_json_section(rsu_section, "position");
+    _single_rsu_config.x = extract_double_value(rsu_position_section, "x");
+    _single_rsu_config.y = extract_double_value(rsu_position_section, "y");
+}
+
+inline void MapConfig::parse_multiple_rsus(const std::string& content) {
+    // Simple parser for rsus array
+    size_t rsus_start = content.find("\"rsus\":");
+    if (rsus_start == std::string::npos) return;
+    
+    size_t array_start = content.find("[", rsus_start);
+    size_t array_end = content.find("]", array_start);
+    
+    if (array_start == std::string::npos || array_end == std::string::npos) return;
+    
+    std::string rsus_section = content.substr(array_start + 1, array_end - array_start - 1);
+    
+    // Parse each RSU object
+    size_t pos = 0;
+    while (pos < rsus_section.length()) {
+        size_t obj_start = rsus_section.find("{", pos);
+        if (obj_start == std::string::npos) break;
+        
+        // Find matching closing brace using proper brace counting
+        size_t obj_end = obj_start;
+        int brace_count = 0;
+        while (obj_end < rsus_section.length()) {
+            if (rsus_section[obj_end] == '{') {
+                brace_count++;
+            } else if (rsus_section[obj_end] == '}') {
+                brace_count--;
+                if (brace_count == 0) {
+                    break;
+                }
+            }
+            obj_end++;
+        }
+        
+        if (brace_count != 0 || obj_end >= rsus_section.length()) {
+            break; // Malformed JSON
+        }
+        
+        std::string rsu_obj = rsus_section.substr(obj_start, obj_end - obj_start + 1);
+        
+        RSUConfig rsu_config;
+        rsu_config.id = extract_uint_value(rsu_obj, "id");
+        rsu_config.unit = extract_uint_value(rsu_obj, "unit");
+        rsu_config.broadcast_period = std::chrono::milliseconds(extract_uint_value(rsu_obj, "broadcast_period_ms"));
+        
+        // Parse RSU position subsection
+        std::string rsu_position_section = extract_json_section(rsu_obj, "position");
+        rsu_config.x = extract_double_value(rsu_position_section, "x");
+        rsu_config.y = extract_double_value(rsu_position_section, "y");
+        
+        _rsu_configs.push_back(rsu_config);
         pos = obj_end + 1;
     }
 }
