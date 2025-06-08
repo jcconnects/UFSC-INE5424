@@ -234,8 +234,8 @@ int Demo::run_demo() {
     
     // Load map configuration - try to find any available config file (THE FIRST ONE IS THE CHOSEN ONE!)
     std::vector<std::string> config_candidates = {
-        "config/map_1_config.json",
-        "config/map_2rsu_config.json"
+        "config/map_2rsu_config.json",
+        "config/map_1_config.json"
     };
     
     std::string config_file;

@@ -4,7 +4,7 @@
     "description": "Two RSUs with non-overlapping domains for testing REQ-RESP key discovery"
   },
   "simulation": {
-    "duration_s": 60,
+    "duration_s": 30,
     "update_interval_ms": 100,
     "default_transmission_radius_m": 500,
     "trajectory_generator_script": "scripts/trajectory_generator_map_2rsu.py"
@@ -25,7 +25,7 @@
   ],
   "vehicles": {
     "default_count": 3,
-    "speed_kmh": 30,
+    "speed_kmh": 210,
     "configs": [
       {
         "id": 1,
