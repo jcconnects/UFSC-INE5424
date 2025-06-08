@@ -8,6 +8,7 @@
 #include <cmath>
 #include <memory>
 #include <limits>
+#include <cstdio> // For snprintf in debug logging
 
 #include "api/framework/leaderKeyStorage.h"
 #include "api/framework/clock.h"
@@ -33,18 +34,18 @@ class VehicleRSUManager {
 public:
     struct RSUInfo {
         typename Protocol_T::Address address;        // RSU network address
-        double latitude;                             // RSU position
-        double longitude;
+        double x;                                    // RSU position
+        double y;
         double radius;                               // RSU coverage radius (for info only)
         MacKeyType group_key;                        // RSU authentication key
         std::chrono::steady_clock::time_point last_seen; // Last STATUS message time
         double distance_to_vehicle;                  // Calculated distance (updated dynamically)
         
-        RSUInfo() : latitude(0), longitude(0), radius(0), distance_to_vehicle(std::numeric_limits<double>::max()) {}
+        RSUInfo() : x(0), y(0), radius(0), distance_to_vehicle(std::numeric_limits<double>::max()) {}
         
-        RSUInfo(const typename Protocol_T::Address& addr, double lat, double lon, 
+        RSUInfo(const typename Protocol_T::Address& addr, double x_coord, double y_coord, 
                 double r, const MacKeyType& key)
-            : address(addr), latitude(lat), longitude(lon), radius(r), group_key(key),
+            : address(addr), x(x_coord), y(y_coord), radius(r), group_key(key),
               last_seen(std::chrono::steady_clock::now()), 
               distance_to_vehicle(std::numeric_limits<double>::max()) {}
     };
@@ -55,6 +56,10 @@ private:
     RSUInfo* _current_leader;                   // Current closest RSU
     std::chrono::seconds _rsu_timeout;          // RSU timeout period
     unsigned int _vehicle_id;                   // For logging
+    
+    // Neighbor RSU keys (just keys, not full info)
+    std::vector<MacKeyType> _neighbor_rsu_keys;
+    mutable std::mutex _neighbor_keys_mutex;    // Thread safety for neighbor keys
     
     // Periodic cleanup thread
     std::unique_ptr<Periodic_Thread<VehicleRSUManager>> _cleanup_thread;
@@ -93,7 +98,7 @@ public:
     
     // Process incoming RSU STATUS message
     void process_rsu_status(const typename Protocol_T::Address& rsu_address,
-                           double lat, double lon, double radius, 
+                           double x, double y, double radius, 
                            const MacKeyType& group_key) {
         if (!_running.load(std::memory_order_acquire)) return;
         
@@ -101,14 +106,27 @@ public:
         
         db<VehicleRSUManager>(TRC) << "[RSUManager " << _vehicle_id 
                                    << "] Processing RSU STATUS from " << rsu_address.to_string()
-                                   << " at (" << lat << ", " << lon << ") radius=" << radius << "m\n";
+                                   << " at (" << x << ", " << y << ") radius=" << radius << "m\n";
+        
+        // Debug logging: Show RSU key
+        std::string rsu_key_hex = "";
+        for (size_t i = 0; i < 16; ++i) {
+            char hex_byte[4];
+            snprintf(hex_byte, sizeof(hex_byte), "%02X ", group_key[i]);
+            rsu_key_hex += hex_byte;
+        }
+        db<VehicleRSUManager>(INF) << "[RSUManager " << _vehicle_id 
+                                   << "] RSU key received: " << rsu_key_hex << "\n";
+        
+        // Check if this key exists in neighbor keys and remove it (we now have full info)
+        remove_neighbor_rsu_key(group_key);
         
         // Find existing RSU or create new one
         auto it = find_rsu_by_address(rsu_address);
         if (it != _known_rsus.end()) {
             // Update existing RSU
-            it->latitude = lat;
-            it->longitude = lon;
+            it->x = x;
+            it->y = y;
             it->radius = radius;
             it->group_key = group_key;
             it->last_seen = std::chrono::steady_clock::now();
@@ -116,10 +134,10 @@ public:
                                        << "] Updated RSU " << rsu_address.to_string() << "\n";
         } else {
             // Add new RSU
-            _known_rsus.emplace_back(rsu_address, lat, lon, radius, group_key);
+            _known_rsus.emplace_back(rsu_address, x, y, radius, group_key);
             db<VehicleRSUManager>(INF) << "[RSUManager " << _vehicle_id 
                                        << "] Discovered new RSU " << rsu_address.to_string() 
-                                       << " at (" << lat << ", " << lon << ")\n";
+                                       << " at (" << x << ", " << y << ")\n";
         }
         // Trigger leader selection update
         update_leader_selection();
@@ -209,16 +227,16 @@ public:
     // Calculate distances from vehicle to all RSUs
     void update_distances() {
         // Get current vehicle position
-        double vehicle_lat, vehicle_lon;
-        LocationService::getCurrentCoordinates(vehicle_lat, vehicle_lon);
+        double vehicle_x, vehicle_y;
+        LocationService::getCurrentCoordinates(vehicle_x, vehicle_y);
         
         db<VehicleRSUManager>(TRC) << "[RSUManager " << _vehicle_id 
-                                   << "] Vehicle position: (" << vehicle_lat << ", " << vehicle_lon << ")\n";
+                                   << "] Vehicle position: (" << vehicle_x << ", " << vehicle_y << ")\n";
         
         // Calculate distance to each RSU
         for (auto& rsu : _known_rsus) {
-            rsu.distance_to_vehicle = GeoUtils::haversineDistance(
-                vehicle_lat, vehicle_lon, rsu.latitude, rsu.longitude);
+            rsu.distance_to_vehicle = GeoUtils::euclideanDistance(
+                vehicle_x, vehicle_y, rsu.x, rsu.y);
         }
     }
     
@@ -280,6 +298,41 @@ public:
     std::vector<RSUInfo> get_known_rsus() {
         std::lock_guard<std::mutex> lock(_rsu_list_mutex);
         return _known_rsus; // Copy for thread safety
+    }
+    
+    // Add neighbor RSU key
+    void add_neighbor_rsu_key(const MacKeyType& key) {
+        std::lock_guard<std::mutex> lock(_neighbor_keys_mutex);
+        // Check if key already exists
+        for (const auto& existing_key : _neighbor_rsu_keys) {
+            if (existing_key == key) {
+                db<VehicleRSUManager>(INF) << "[RSUManager " << _vehicle_id 
+                                           << "] Neighbor RSU key already exists\n";
+                return;
+            }
+        }
+        _neighbor_rsu_keys.push_back(key);
+        db<VehicleRSUManager>(INF) << "[RSUManager " << _vehicle_id 
+                                   << "] Added neighbor RSU key (total: " << _neighbor_rsu_keys.size() << ")\n";
+    }
+    
+    // Get all neighbor RSU keys (for MAC verification)
+    std::vector<MacKeyType> get_neighbor_rsu_keys() {
+        std::lock_guard<std::mutex> lock(_neighbor_keys_mutex);
+        return _neighbor_rsu_keys; // Copy for thread safety
+    }
+    
+    // Remove neighbor RSU key (when we get full RSU info via STATUS)
+    bool remove_neighbor_rsu_key(const MacKeyType& key) {
+        std::lock_guard<std::mutex> lock(_neighbor_keys_mutex);
+        auto it = std::find(_neighbor_rsu_keys.begin(), _neighbor_rsu_keys.end(), key);
+        if (it != _neighbor_rsu_keys.end()) {
+            _neighbor_rsu_keys.erase(it);
+            db<VehicleRSUManager>(INF) << "[RSUManager " << _vehicle_id 
+                                       << "] Removed neighbor RSU key (remaining: " << _neighbor_rsu_keys.size() << ")\n";
+            return true;
+        }
+        return false;
     }
     
 private:

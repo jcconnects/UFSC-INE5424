@@ -23,7 +23,7 @@ public:
     typedef Message::Unit Unit;
 
     RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period,
-        double lat = 0.0, double lon = 0.0, double radius = 400.0, const void* data = nullptr, unsigned int data_size = 0);
+        double x = 0.0, double y = 0.0, double radius = 400.0, const void* data = nullptr, unsigned int data_size = 0);
     ~RSU();
     void start();
     void stop();
@@ -33,6 +33,9 @@ public:
     std::chrono::milliseconds period() const;
     void adjust_period(std::chrono::milliseconds new_period);
     void broadcast();
+    
+    // Neighbor RSU management (directly in Protocol)
+    void initialize_neighbor_rsus(); // Initialize neighbor RSUs directly in Protocol
 
 private:
     // RSU configuration
@@ -41,9 +44,12 @@ private:
     std::chrono::milliseconds _period;
     std::vector<std::uint8_t> _data;
     MacKeyType _rsu_key;
-    double _lat;
-    double _lon;
+    double _x;
+    double _y;
     double _radius;
+    
+    // Note: Neighbor RSU information is now stored directly in Protocol's structure
+    // No need for RSU-level duplicate storage
     
     // Network stack
     Network* _network;
@@ -67,8 +73,8 @@ private:
  * @param data_size Size of the data payload
  */
 inline RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period, 
-         double lat, double lon, double radius, const void* data, unsigned int data_size) 
-    : _rsu_id(rsu_id), _unit(unit), _period(period), _lat(lat), _lon(lon), _radius(radius), _running(false),
+         double x, double y, double radius, const void* data, unsigned int data_size) 
+    : _rsu_id(rsu_id), _unit(unit), _period(period), _x(x), _y(y), _radius(radius), _running(false),
       _periodic_thread(this, &RSU::broadcast) {
     
     db<RSU>(TRC) << "RSU::RSU() called with id=" << rsu_id << ", unit=" << unit << ", period=" << period.count() << "ms\n";
@@ -81,6 +87,9 @@ inline RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period
 
     // Create network stack with RSU ID for MAC address generation
     _network = new Network(_rsu_id, Network::EntityType::RSU);
+    
+    // Set NIC radius to match RSU's configured radius for consistent collision domain filtering
+    _network->channel()->setRadius(_radius);
     
     // Create communicator using the network's protocol channel and RSU's address
     Address rsu_addr(_network->address(), _rsu_id);
@@ -104,6 +113,14 @@ inline RSU::RSU(unsigned int rsu_id, Unit unit, std::chrono::milliseconds period
     } else {
         db<RSU>(WRN) << "[RSU] RSU " << _rsu_id << " has an INVALID_LEADER_ID based on its MAC. Clock self_id not set.\n";
     }
+
+    // Set RSU key in LeaderKeyStorage so it can be used for MAC verification
+    LeaderKeyStorage::getInstance().setLeaderId(rsu_addr.paddr());
+    LeaderKeyStorage::getInstance().setGroupMacKey(_rsu_key);
+    db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " registered key in LeaderKeyStorage for MAC verification.\n";
+    
+    // Initialize neighbor RSUs
+    initialize_neighbor_rsus();
 }
 
 /**
@@ -219,14 +236,14 @@ inline void RSU::broadcast() {
     Message* msg;
     
     // Calculate payload size first
-    unsigned int payload_size = sizeof(_lat) + sizeof(_lon) + sizeof(_radius) + sizeof(_rsu_key) + _data.size();
+    unsigned int payload_size = sizeof(_x) + sizeof(_y) + sizeof(_radius) + sizeof(_rsu_key) + _data.size();
     std::vector<uint8_t> payload(payload_size);  // Properly size the vector
     
     unsigned int offset = 0;
-    std::memcpy(payload.data() + offset, &_lat, sizeof(_lat));
-    offset += sizeof(_lat);
-    std::memcpy(payload.data() + offset, &_lon, sizeof(_lon));
-    offset += sizeof(_lon);
+    std::memcpy(payload.data() + offset, &_x, sizeof(_x));
+    offset += sizeof(_x);
+    std::memcpy(payload.data() + offset, &_y, sizeof(_y));
+    offset += sizeof(_y);
     std::memcpy(payload.data() + offset, &_radius, sizeof(_radius));
     offset += sizeof(_radius);
     std::memcpy(payload.data() + offset, &_rsu_key, sizeof(_rsu_key));
@@ -247,12 +264,62 @@ inline void RSU::broadcast() {
     bool sent = _comm->send(msg);
     
     if (sent) {
-        db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " broadcast RESPONSE for unit " << _unit << "\n";
+        db<RSU>(INF) << "[RSU] RSU " << _rsu_id << " broadcast STATUS for unit " << _unit << "\n";
     } else {
-        db<RSU>(WRN) << "[RSU] RSU " << _rsu_id << " failed to broadcast RESPONSE for unit " << _unit << "\n";
+        db<RSU>(WRN) << "[RSU] RSU " << _rsu_id << " failed to broadcast STATUS for unit " << _unit << "\n";
     }
 
     delete msg;
+}
+
+
+
+/**
+ * @brief Initialize neighbor RSUs directly in Protocol structure
+ * In a real system, this would be loaded from configuration
+ */
+inline void RSU::initialize_neighbor_rsus() {
+    if (!_network || !_network->channel()) {
+        db<RSU>(WRN) << "[RSU] Cannot initialize protocol neighbors - no network or protocol\n";
+        return;
+    }
+    
+    db<RSU>(INF) << "[RSU] Initializing neighbor RSUs directly in Protocol for RSU " << _rsu_id << "\n";
+    
+    // Clear existing neighbors in protocol first
+    _network->channel()->clear_neighbor_rsus();
+    
+    // For demo purposes, let's assume we know about other RSUs
+    // In practice, this would be loaded from configuration or discovered
+    
+    // Example: If this is RSU 1000, add RSU 1001, 1002, etc.
+    for (unsigned int neighbor_id = 1000; neighbor_id < 1010; ++neighbor_id) {
+        if (neighbor_id == _rsu_id) continue; // Skip self
+        
+        // Create neighbor RSU key (similar to how we create our own key)
+        MacKeyType neighbor_key;
+        neighbor_key.fill(0);
+        neighbor_key[0] = (neighbor_id >> 8) & 0xFF;
+        neighbor_key[1] = neighbor_id & 0xFF;
+        neighbor_key[2] = 0xAA; // Marker for RSU
+        neighbor_key[3] = 0xBB;
+        
+        // Create neighbor RSU address
+        Ethernet::Address neighbor_mac;
+        neighbor_mac.bytes[0] = 0x02; // Locally administered
+        neighbor_mac.bytes[1] = 0x00;
+        neighbor_mac.bytes[2] = 0x00;
+        neighbor_mac.bytes[3] = 0x00;
+        neighbor_mac.bytes[4] = (neighbor_id >> 8) & 0xFF;
+        neighbor_mac.bytes[5] = neighbor_id & 0xFF;
+        
+        Address neighbor_address(neighbor_mac, neighbor_id);
+        
+        // Add directly to Protocol structure
+        _network->channel()->add_neighbor_rsu(neighbor_id, neighbor_key, neighbor_address);
+    }
+    
+    db<RSU>(INF) << "[RSU] Successfully initialized neighbor RSUs directly in Protocol\n";
 }
 
 #endif // RSU_H 

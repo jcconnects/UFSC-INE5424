@@ -6,6 +6,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <cstdio>
 #include "api/network/ethernet.h"
 #include "api/util/debug.h"
 #include "api/traits.h"
@@ -92,7 +93,23 @@ inline Ethernet::Address LeaderKeyStorage::getLeaderId() const {
 inline void LeaderKeyStorage::setGroupMacKey(const MacKeyType& key) {
     std::lock_guard<std::mutex> lock(_mutex);
     if (_current_group_mac_key != key) {
+        // Debug logging: Show old and new keys
+        std::string old_key_hex = "";
+        for (size_t i = 0; i < 16; ++i) {
+            char hex_byte[4];
+            snprintf(hex_byte, sizeof(hex_byte), "%02X ", _current_group_mac_key[i]);
+            old_key_hex += hex_byte;
+        }
+        std::string new_key_hex = "";
+        for (size_t i = 0; i < 16; ++i) {
+            char hex_byte[4];
+            snprintf(hex_byte, sizeof(hex_byte), "%02X ", key[i]);
+            new_key_hex += hex_byte;
+        }
+        
         db<LeaderKeyStorage>(INF) << "LeaderKeyStorage: Group MAC key updated\n";
+        db<LeaderKeyStorage>(INF) << "LeaderKeyStorage: Old key: " << old_key_hex << "\n";
+        db<LeaderKeyStorage>(INF) << "LeaderKeyStorage: New key: " << new_key_hex << "\n";
         _current_group_mac_key = key;
         _last_update_time.store(std::chrono::steady_clock::now(), std::memory_order_release);
     }
@@ -106,6 +123,16 @@ inline void LeaderKeyStorage::setGroupMacKey(const MacKeyType& key) {
  */
 inline MacKeyType LeaderKeyStorage::getGroupMacKey() const {
     std::lock_guard<std::mutex> lock(_mutex);
+    
+    // Debug logging: Show the key being retrieved
+    std::string key_hex = "";
+    for (size_t i = 0; i < 16; ++i) {
+        char hex_byte[4];
+        snprintf(hex_byte, sizeof(hex_byte), "%02X ", _current_group_mac_key[i]);
+        key_hex += hex_byte;
+    }
+    db<LeaderKeyStorage>(TRC) << "LeaderKeyStorage: Retrieved key: " << key_hex << "\n";
+    
     return _current_group_mac_key;
 }
 
