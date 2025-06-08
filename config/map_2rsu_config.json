@@ -18,7 +18,7 @@
     },
     {
       "id": 1001,
-      "position": {"x": -1200, "y": 0},
+      "position": {"x": -501, "y": 0},
       "unit": 998,
       "broadcast_period_ms": 1000
     }
@@ -42,7 +42,7 @@
       {
         "id": 3,
         "type": "mobile",
-        "start_position": {"x": -1150, "y": 50},
+        "start_position": {"x": -700, "y": 50},
         "end_position": {"x": -50, "y": 50},
         "description": "Vehicle 3 - drives from RSU2 domain to RSU1 domain"
       }
@@ -50,10 +50,10 @@
   },
   "waypoints": [
     {"name": "rsu1_center", "x": 0, "y": 0},
-    {"name": "rsu2_center", "x": -1200, "y": 0},
+    {"name": "rsu2_center", "x": -501, "y": 0},
     {"name": "vehicle1_pos", "x": -50, "y": 50},
     {"name": "vehicle2_pos", "x": 50, "y": -50},
-    {"name": "vehicle3_start", "x": -1150, "y": 50},
+    {"name": "vehicle3_start", "x": -700, "y": 50},
     {"name": "vehicle3_end", "x": -50, "y": 50}
   ],
   "routes": [
