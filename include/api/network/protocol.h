@@ -960,17 +960,27 @@ void Protocol<NIC>::handle_req_message(const uint8_t* message_data, unsigned int
     
     // Extract the failed MAC (last 16 bytes of payload)
     MacKeyType failed_mac;
-    unsigned int original_msg_size = req_value_size - sizeof(MacKeyType);
-    std::memcpy(&failed_mac, req_payload + original_msg_size, sizeof(MacKeyType));
+    unsigned int original_msg_size = req_msg.value_size() - sizeof(MacKeyType) - 16;
+    // std::memcpy(failed_mac.data(), req_payload + original_msg_size, sizeof(MacKeyType));
+    std::memcpy(failed_mac.data(), req_payload + original_msg_size, sizeof(MacKeyType));
     
-    // Debug logging: Show failed MAC
-    std::string failed_mac_hex = "";
-    for (size_t i = 0; i < 16; ++i) {
-        char hex_byte[4];
-        snprintf(hex_byte, sizeof(hex_byte), "%02X ", failed_mac[i]);
-        failed_mac_hex += hex_byte;
-    }
-    db<Protocol>(INF) << "[Protocol] REQ - Searching for MAC: " << failed_mac_hex << "\n";
+    // // Debug logging: Show failed MAC
+    // std::string failed_mac_hex = "";
+    // for (size_t i = 0; i < 16; ++i) {
+    //     char hex_byte[4];
+    //     snprintf(hex_byte, sizeof(hex_byte), "%02X ", failed_mac[i]);
+    //     failed_mac_hex += hex_byte;
+    // }
+    // db<Protocol>(INF) << "[Protocol] REQ - Searching for MAC: " << failed_mac_hex << "\n";
+
+    // std::string incoming_msg = "";
+    // const std::uint8_t* msg_data = req_msg.value();
+    // for (size_t i = 0; i < req_msg.value_size(); ++i) {
+    //     char hex_byte[4];
+    //     snprintf(hex_byte, sizeof(hex_byte), "%02X ", msg_data[i]);
+    //     incoming_msg += hex_byte;
+    // }
+    // db<Protocol>(INF) << "[Protocol] REQ - Incoming message: " << incoming_msg << "\n";
     
     // Search for matching neighbor RSU key in our Protocol's neighbor list
     // This list is populated by the RSU during initialization
@@ -981,6 +991,7 @@ void Protocol<NIC>::handle_req_message(const uint8_t* message_data, unsigned int
     {
         std::lock_guard<std::mutex> lock(_neighbor_rsus_mutex);
         for (const auto& neighbor : _neighbor_rsus) {
+
             if (neighbor.key == failed_mac) {
                 matching_key = neighbor.key;
                 matching_rsu_id = neighbor.rsu_id;
@@ -1102,7 +1113,7 @@ void Protocol<NIC>::send_req_message_to_leader(const void* failed_message_data, 
     
     // Send unicast REQ message to leader RSU
     int result = send(address(), current_leader->address, req_msg->data(), req_msg->size());
-    
+
     if (result > 0) {
         db<Protocol>(INF) << "[Protocol] Successfully sent REQ message to leader\n";
     } else {
@@ -1153,6 +1164,7 @@ void Protocol<NIC>::add_neighbor_rsu(unsigned int rsu_id, const MacKeyType& key,
     }
     
     _neighbor_rsus.emplace_back(rsu_id, key, address);
+
     db<Protocol>(INF) << "[Protocol] Added neighbor RSU " << rsu_id << " to protocol (total: " << _neighbor_rsus.size() << ")\n";
 }
 
