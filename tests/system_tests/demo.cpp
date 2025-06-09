@@ -19,7 +19,6 @@
 #include "../../include/api/framework/leaderKeyStorage.h"
 #include "../../include/api/framework/map_config.h"
 #include "../testcase.h"
-#include "../test_utils.h"
 
 #ifndef RSU_RADIUS
 #define RSU_RADIUS 400.0
@@ -109,8 +108,11 @@ class Demo: public TestCase {
         void tearDown() override;
 
         /* TESTS */
-        int run_demo();
+        void testMap1Configuration();
+        void testMap2RsuConfiguration();
+        void testGenericDemo();
     private:
+        int run_demo_with_config(const std::string& config_file);
         void run_vehicle(Vehicle* v, unsigned int vehicle_id);
         void run_rsu(const RSUConfig& rsu_config);
         void setup_rsu_as_leader(unsigned int rsu_id);
@@ -118,9 +120,9 @@ class Demo: public TestCase {
 };
 
 Demo::Demo() {
-    TEST_INIT("system_demo");
-    TEST_LOG("Application started!");
-    DEFINE_TEST(run_demo);
+    DEFINE_TEST(testMap1Configuration);
+    DEFINE_TEST(testMap2RsuConfiguration);
+    DEFINE_TEST(testGenericDemo);
 }
 
 void Demo::setUp() {
@@ -129,12 +131,9 @@ void Demo::setUp() {
 
 void Demo::tearDown() {
     // Tear down code if needed
-    TEST_INIT("test teardown");
-    TEST_LOG("Demo test case completed.");
 }
 
 void Demo::setup_rsu_as_leader(unsigned int rsu_id) {
-    TEST_INIT("Setting up RSU as leader");
     // Create a high-age unique key for the RSU to ensure it becomes leader
     MacKeyType rsu_key;
     rsu_key.fill(0);
@@ -158,8 +157,8 @@ void Demo::setup_rsu_as_leader(unsigned int rsu_id) {
     storage.setLeaderId(rsu_mac);
     storage.setGroupMacKey(rsu_key);
     
-    TEST_LOG("RSU " + std::to_string(rsu_id) + " set as leader with MAC: " + 
-             Ethernet::mac_to_string(rsu_mac));
+    db<Demo>(INF) << "RSU " << rsu_id << " set as leader with MAC: " 
+                  << Ethernet::mac_to_string(rsu_mac) << "\n";
 }
 
 void Demo::configure_entity_nic(double transmission_radius_m) {
@@ -229,9 +228,31 @@ void Demo::run_rsu(const RSUConfig& rsu_config) {
     }
 }
 
-int Demo::run_demo() {
-    TEST_INIT("the generic demo test case");
+void Demo::testMap1Configuration() {
+    std::string config_file = "config/map_1_config.json";
     
+    if (!std::filesystem::exists(config_file)) {
+        // Skip test if config file doesn't exist
+        return;
+    }
+    
+    int result = run_demo_with_config(config_file);
+    assert_equal(0, result, "Map 1 configuration demo should complete successfully");
+}
+
+void Demo::testMap2RsuConfiguration() {
+    std::string config_file = "config/map_2rsu_config.json";
+    
+    if (!std::filesystem::exists(config_file)) {
+        // Skip test if config file doesn't exist
+        return;
+    }
+    
+    int result = run_demo_with_config(config_file);
+    assert_equal(0, result, "Map 2 RSU configuration demo should complete successfully");
+}
+
+void Demo::testGenericDemo() {
     // Load map configuration - try to find any available config file (THE FIRST ONE IS THE CHOSEN ONE!)
     std::vector<std::string> config_candidates = {
         "config/map_1_config.json",
@@ -246,19 +267,18 @@ int Demo::run_demo() {
         }
     }
     
-    if (config_file.empty()) {
-        TEST_LOG("Error: No configuration file found. Tried:");
-        for (const auto& candidate : config_candidates) {
-            TEST_LOG("  - " + candidate);
-        }
-        return -1;
-    }
+    assert_false(config_file.empty(), "At least one configuration file should be available");
     
+    int result = run_demo_with_config(config_file);
+    assert_equal(0, result, "Generic demo should complete successfully");
+}
+
+int Demo::run_demo_with_config(const std::string& config_file) {
     try {
         g_map_config = std::make_unique<MapConfig>(config_file);
-        TEST_LOG("Loaded map configuration from " + config_file);
+        db<Demo>(INF) << "Loaded map configuration from " << config_file << "\n";
     } catch (const std::exception& e) {
-        TEST_LOG("Error: Could not load config file " + config_file + ": " + e.what());
+        db<Demo>(ERR) << "Error: Could not load config file " << config_file << ": " << e.what() << "\n";
         return -1;
     }
     
@@ -273,17 +293,17 @@ int Demo::run_demo() {
         rsu_configs = g_map_config->get_all_rsu_configs();
         
         if (rsu_configs.empty()) {
-            TEST_LOG("Error: No RSU configurations found in config file");
+            db<Demo>(ERR) << "Error: No RSU configurations found in config file\n";
             return -1;
         }
         
         if (n_vehicles == 0) {
-            TEST_LOG("Error: Vehicle count is zero in config file");
+            db<Demo>(ERR) << "Error: Vehicle count is zero in config file\n";
             return -1;
         }
         
     } catch (const std::exception& e) {
-        TEST_LOG("Error accessing configuration values: " + std::string(e.what()));
+        db<Demo>(ERR) << "Error accessing configuration values: " << e.what() << "\n";
         return -1;
     }
 
@@ -292,52 +312,53 @@ int Demo::run_demo() {
     try {
         trajectory_dir = g_map_config->logging().trajectory_dir;
     } catch (const std::exception& e) {
-        TEST_LOG("Error accessing trajectory directory config: " + std::string(e.what()));
+        db<Demo>(WRN) << "Error accessing trajectory directory config: " << e.what() << "\n";
         trajectory_dir = "tests/logs/trajectories"; // fallback
     }
     
     try {
         std::filesystem::create_directories(trajectory_dir);
-        TEST_LOG("Created trajectory directory: " + trajectory_dir);
+        db<Demo>(INF) << "Created trajectory directory: " << trajectory_dir << "\n";
     } catch (const std::exception& e) {
-        TEST_LOG("Warning: Could not create trajectory directory: " + std::string(e.what()));
+        db<Demo>(WRN) << "Warning: Could not create trajectory directory: " << e.what() << "\n";
     }
 
     // === STEP 0: Generate trajectories using Python script ===
-    TEST_LOG("Generating trajectory files for " + std::to_string(n_vehicles) + " vehicles and " + std::to_string(rsu_configs.size()) + " RSUs");
-    TEST_LOG("Using transmission radius: " + std::to_string(transmission_radius) + "m for all entities");
+    db<Demo>(INF) << "Generating trajectory files for " << n_vehicles << " vehicles and " 
+                  << rsu_configs.size() << " RSUs\n";
+    db<Demo>(INF) << "Using transmission radius: " << transmission_radius << "m for all entities\n";
     
     // Use the trajectory generator script specified in the config
     std::string script_path;
     try {
         script_path = g_map_config->get_trajectory_generator_script();
     } catch (const std::exception& e) {
-        TEST_LOG("Error accessing trajectory generator script config: " + std::string(e.what()));
+        db<Demo>(WRN) << "Error accessing trajectory generator script config: " << e.what() << "\n";
         script_path = "scripts/trajectory_generator_map_1.py"; // fallback
     }
     
     std::string python_command = "python3 " + script_path;
     python_command += " --config " + config_file;
     
-    TEST_LOG("Using trajectory generator: " + script_path);
+    db<Demo>(INF) << "Using trajectory generator: " << script_path << "\n";
     
     int trajectory_result = system(python_command.c_str());
     if (trajectory_result != 0) {
-        TEST_LOG("Warning: Trajectory generation failed or not available, using manual coordinates");
+        db<Demo>(WRN) << "Warning: Trajectory generation failed or not available, using manual coordinates\n";
     } else {
-        TEST_LOG("Trajectory generation completed successfully");
+        db<Demo>(INF) << "Trajectory generation completed successfully\n";
     }
 
     std::vector<pid_t> children;
     children.reserve(n_vehicles + rsu_configs.size());
 
     // === STEP 1: Create and start RSU processes first ===
-    TEST_LOG("Creating " + std::to_string(rsu_configs.size()) + " RSU processes");
+    db<Demo>(INF) << "Creating " << rsu_configs.size() << " RSU processes\n";
     
     for (const auto& rsu_config : rsu_configs) {
         pid_t rsu_pid = fork();
         if (rsu_pid < 0) {
-            TEST_LOG("[ERROR] failed to fork RSU process for ID " + std::to_string(rsu_config.id));
+            db<Demo>(ERR) << "[ERROR] failed to fork RSU process for ID " << rsu_config.id << "\n";
             return -1;
         }
         
@@ -347,17 +368,17 @@ int Demo::run_demo() {
             exit(0);
         } else { // Parent process
             children.push_back(rsu_pid);
-            TEST_LOG("Created RSU process " + std::to_string(rsu_pid) + " for RSU " + std::to_string(rsu_config.id));
+            db<Demo>(INF) << "Created RSU process " << rsu_pid << " for RSU " << rsu_config.id << "\n";
             
             // Give RSU time to start and establish leadership
             sleep(2);
         }
     }
     
-    TEST_LOG("All RSUs started, proceeding with vehicle creation");
+    db<Demo>(INF) << "All RSUs started, proceeding with vehicle creation\n";
 
     // === STEP 2: Create vehicle processes ===
-    TEST_LOG("Creating " + std::to_string(n_vehicles) + " vehicle processes");
+    db<Demo>(INF) << "Creating " << n_vehicles << " vehicle processes\n";
     
     for (unsigned int id = 1; id <= n_vehicles; ++id) {
         // Sleep for 500ms between vehicle creations to stagger startup
@@ -366,8 +387,8 @@ int Demo::run_demo() {
         pid_t pid = fork();
 
         if (pid < 0) {
-            TEST_LOG("[ERROR] failed to fork vehicle process for ID " + std::to_string(id));
-            TEST_LOG("Application terminated.");
+            db<Demo>(ERR) << "[ERROR] failed to fork vehicle process for ID " << id << "\n";
+            db<Demo>(ERR) << "Application terminated.\n";
             return -1;
         }
 
@@ -391,12 +412,12 @@ int Demo::run_demo() {
             }
         } else { // Parent process
             children.push_back(pid);
-            TEST_LOG("Created vehicle child process " + std::to_string(pid) + " for vehicle " + std::to_string(id));
+            db<Demo>(INF) << "Created vehicle child process " << pid << " for vehicle " << id << "\n";
         }
     }
 
     // === STEP 3: Wait for all vehicle processes to complete first ===
-    TEST_LOG("Waiting for all " + std::to_string(n_vehicles) + " vehicle processes to complete");
+    db<Demo>(INF) << "Waiting for all " << n_vehicles << " vehicle processes to complete\n";
     
     bool successful = true;
     int completed_vehicles = 0;
@@ -406,59 +427,59 @@ int Demo::run_demo() {
         pid_t child_pid = children[i];
         int status;
         if (waitpid(child_pid, &status, 0) == -1) {
-            TEST_LOG("[ERROR] failed to wait for vehicle child " + std::to_string(child_pid));
+            db<Demo>(ERR) << "[ERROR] failed to wait for vehicle child " << child_pid << "\n";
             successful = false;
         } else if (WIFEXITED(status)) {
             int exit_status = WEXITSTATUS(status);
             completed_vehicles++;
-            TEST_LOG("[Parent] Vehicle child " + std::to_string(child_pid) + " exited with status " + std::to_string(exit_status));
+            db<Demo>(INF) << "[Parent] Vehicle child " << child_pid << " exited with status " << exit_status << "\n";
             if (exit_status != 0) successful = false;
         } else if (WIFSIGNALED(status)) {
-            TEST_LOG("[Parent] Vehicle child " + std::to_string(child_pid) + " terminated by signal " + std::to_string(WTERMSIG(status)));
+            db<Demo>(WRN) << "[Parent] Vehicle child " << child_pid << " terminated by signal " << WTERMSIG(status) << "\n";
             successful = false;
         } else {
-            TEST_LOG("[Parent] Vehicle child " + std::to_string(child_pid) + " terminated abnormally");
+            db<Demo>(WRN) << "[Parent] Vehicle child " << child_pid << " terminated abnormally\n";
             successful = false;
         }
     }
 
-    TEST_LOG("All vehicles completed: " + std::to_string(completed_vehicles) + "/" + std::to_string(n_vehicles) + " vehicles finished");
+    db<Demo>(INF) << "All vehicles completed: " << completed_vehicles << "/" << n_vehicles << " vehicles finished\n";
     
     // === STEP 4: Signal all RSUs to terminate ===
-    TEST_LOG("Signaling all RSUs to terminate");
+    db<Demo>(INF) << "Signaling all RSUs to terminate\n";
     for (size_t i = 0; i < rsu_configs.size(); ++i) {
         pid_t rsu_pid = children[i];
         if (kill(rsu_pid, SIGUSR2) == -1) {
-            TEST_LOG("[ERROR] Failed to signal RSU process " + std::to_string(rsu_pid) + ": " + std::string(strerror(errno)));
+            db<Demo>(ERR) << "[ERROR] Failed to signal RSU process " << rsu_pid << ": " << strerror(errno) << "\n";
             successful = false;
         } else {
-            TEST_LOG("Successfully signaled RSU " + std::to_string(rsu_configs[i].id) + " to terminate");
+            db<Demo>(INF) << "Successfully signaled RSU " << rsu_configs[i].id << " to terminate\n";
         }
     }
     
     // === STEP 5: Wait for all RSUs to complete ===
-    TEST_LOG("Waiting for all RSU processes to complete");
+    db<Demo>(INF) << "Waiting for all RSU processes to complete\n";
     for (size_t i = 0; i < rsu_configs.size(); ++i) {
         pid_t rsu_pid = children[i];
         int status;
         if (waitpid(rsu_pid, &status, 0) == -1) {
-            TEST_LOG("[ERROR] failed to wait for RSU process " + std::to_string(rsu_pid) + ": " + std::string(strerror(errno)));
+            db<Demo>(ERR) << "[ERROR] failed to wait for RSU process " << rsu_pid << ": " << strerror(errno) << "\n";
             successful = false;
         } else if (WIFEXITED(status)) {
             int exit_status = WEXITSTATUS(status);
-            TEST_LOG("[Parent] RSU process " + std::to_string(rsu_pid) + " exited with status " + std::to_string(exit_status));
+            db<Demo>(INF) << "[Parent] RSU process " << rsu_pid << " exited with status " << exit_status << "\n";
             if (exit_status != 0) successful = false;
         } else if (WIFSIGNALED(status)) {
-            TEST_LOG("[Parent] RSU process " + std::to_string(rsu_pid) + " terminated by signal " + std::to_string(WTERMSIG(status)));
+            db<Demo>(WRN) << "[Parent] RSU process " << rsu_pid << " terminated by signal " << WTERMSIG(status) << "\n";
             successful = false;
         } else {
-            TEST_LOG("[Parent] RSU process " + std::to_string(rsu_pid) + " terminated abnormally");
+            db<Demo>(WRN) << "[Parent] RSU process " << rsu_pid << " terminated abnormally\n";
             successful = false;
         }
     }
 
-    TEST_LOG("Demo completed: " + std::to_string(completed_vehicles) + " vehicles and " + std::to_string(rsu_configs.size()) + " RSUs finished");
-    TEST_LOG(successful ? "Generic demo completed successfully!" : "Generic demo terminated with errors!");
+    db<Demo>(INF) << "Demo completed: " << completed_vehicles << " vehicles and " << rsu_configs.size() << " RSUs finished\n";
+    db<Demo>(INF) << (successful ? "Demo completed successfully!" : "Demo terminated with errors!") << "\n";
     
     return successful ? 0 : -1;
 }
@@ -560,6 +581,5 @@ void Demo::run_vehicle(Vehicle* v, unsigned int vehicle_id) {
 int main(int argc, char* argv[]) {
     Demo demo;
     demo.run();
-
     return 0;
 }
