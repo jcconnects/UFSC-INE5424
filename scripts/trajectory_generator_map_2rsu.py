@@ -4,10 +4,11 @@ Trajectory Generator for 2-RSU REQ-RESP Test Map
 Generates specific trajectories for testing REQ-RESP key discovery functionality.
 
 Scenario:
-- RSU1 and RSU2 with non-overlapping collision domains (1000m apart, 500m radius each)
-- Vehicle 1: Stationary near RSU1 
-- Vehicle 2: Stationary near RSU1
-- Vehicle 3: Mobile - drives from RSU2 domain to RSU1 domain
+- RSU0 (ID 1000) on LEFT at (-501, 0) and RSU1 (ID 1001) on RIGHT at (501, 0) 
+- Non-overlapping collision domains (1002m apart, 500m radius each)
+- Vehicle 1: Stationary near RSU0 (left side)
+- Vehicle 2: Stationary near RSU0 (left side) 
+- Vehicle 3: Mobile - drives from far right (past RSU1) to far left (past RSU0)
 
 Usage:
     python3 trajectory_generator_map_2rsu.py [--config <config_file>] [--duration <seconds>] [--output-dir <path>]
@@ -164,22 +165,42 @@ class Map2RSUTrajectoryGenerator:
     def calculate_distance_between_rsus(self):
         """Calculate and display distance between RSUs for verification."""
         if len(self.config.rsus) >= 2:
-            rsu1 = self.config.rsus[0]
-            rsu2 = self.config.rsus[1]
-            distance = self._cartesian_distance(
-                rsu1['position']['x'], rsu1['position']['y'],
-                rsu2['position']['x'], rsu2['position']['y']
-            )
-            radius = self.config.simulation['default_transmission_radius_m']
-            overlap = max(0, 2 * radius - distance)
+            rsu0 = None
+            rsu1 = None
             
-            print(f"RSU Distance Analysis:")
-            print(f"  RSU1 ({rsu1['id']}) position: ({rsu1['position']['x']:.1f}, {rsu1['position']['y']:.1f})")
-            print(f"  RSU2 ({rsu2['id']}) position: ({rsu2['position']['x']:.1f}, {rsu2['position']['y']:.1f})")
-            print(f"  Distance between RSUs: {distance:.1f}m")
-            print(f"  Transmission radius: {radius}m each")
-            print(f"  Combined coverage: {2 * radius}m")
-            print(f"  Domain overlap: {overlap:.1f}m {'(NO OVERLAP - GOOD)' if overlap == 0 else '(OVERLAP - RECONSIDER POSITIONS)'}")
+            for rsu in self.config.rsus:
+                if rsu['id'] == 1000:
+                    rsu0 = rsu
+                elif rsu['id'] == 1001:
+                    rsu1 = rsu
+            
+            if rsu0 and rsu1:
+                distance = self._cartesian_distance(
+                    rsu0['position']['x'], rsu0['position']['y'],
+                    rsu1['position']['x'], rsu1['position']['y']
+                )
+                radius = self.config.simulation['default_transmission_radius_m']
+                overlap = max(0, 2 * radius - distance)
+                
+                print(f"RSU Distance Analysis:")
+                print(f"  RSU0 (ID {rsu0['id']}) LEFT position: ({rsu0['position']['x']:.1f}, {rsu0['position']['y']:.1f})")
+                print(f"  RSU1 (ID {rsu1['id']}) RIGHT position: ({rsu1['position']['x']:.1f}, {rsu1['position']['y']:.1f})")
+                print(f"  Distance between RSUs: {distance:.1f}m")
+                print(f"  Transmission radius: {radius}m each")
+                print(f"  Combined coverage: {2 * radius}m")
+                print(f"  Domain overlap: {overlap:.1f}m {'(NO OVERLAP - PERFECT FOR REQ-RESP TEST)' if overlap == 0 else '(OVERLAP - RECONSIDER POSITIONS)'}")
+                
+                # Calculate Vehicle 3's journey
+                vehicle3_distance = 2400  # 1200 to -1200
+                vehicle3_time_needed = vehicle3_distance / self.vehicle_speed_ms
+                print(f"\nVehicle 3 Journey Analysis:")
+                print(f"  Start: (1200, 0) - Far right, past RSU1")
+                print(f"  End: (-1200, 0) - Far left, past RSU0") 
+                print(f"  Total distance: {vehicle3_distance}m")
+                print(f"  Speed: {self.vehicle_speed_kmh} km/h ({self.vehicle_speed_ms:.1f} m/s)")
+                print(f"  Time needed: {vehicle3_time_needed:.1f}s")
+                print(f"  Simulation duration: {self.duration_ms/1000:.1f}s")
+                print(f"  {'✓ Vehicle 3 will complete journey' if vehicle3_time_needed <= self.duration_ms/1000 else '✗ Vehicle 3 will NOT complete journey - increase duration or speed'}")
     
     @staticmethod
     def _cartesian_distance(x1: float, y1: float, x2: float, y2: float) -> float:
@@ -217,7 +238,7 @@ def main():
     
     print(f"Generating trajectories for 2-RSU REQ-RESP test scenario:")
     print(f"  Config file: {args.config}")
-    print(f"  RSUs: {len(config.rsus)}")
+    print(f"  RSUs: {len(config.rsus)} (RSU0 LEFT, RSU1 RIGHT)")
     print(f"  Vehicles: {n_vehicles}")
     print(f"  Duration: {duration} seconds" + (" (from config)" if args.duration is None else " (from command line)"))
     print(f"  Update interval: {update_interval} ms" + (" (from config)" if args.update_interval is None else " (from command line)"))
@@ -227,7 +248,7 @@ def main():
     
     generator = Map2RSUTrajectoryGenerator(config, duration, update_interval)
     
-    # Verify RSU positioning
+    # Verify RSU positioning and vehicle journey
     generator.calculate_distance_between_rsus()
     print()
     

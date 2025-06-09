@@ -203,7 +203,8 @@ class Protocol: private NIC::Observer
         void handle_resp_message(const uint8_t* message_data, unsigned int payload_size);
         
         void send_req_message_to_leader(const void* failed_message_data, unsigned int failed_message_size,
-                                       const MacKeyType& failed_mac);
+                                       const MacKeyType& failed_mac, const Header* failed_header,
+                                       const TimestampFields* failed_timestamps, const Coordinates* failed_coordinates);
         
         // MAC authentication methods - Hybrid approach (message + packet fields)
         MacKeyType calculate_mac(const void* message_data, unsigned int message_size,
@@ -308,9 +309,26 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
         return 0;
     }
 
+    // DEBUG: Show what message we're trying to send
+    if (size > 0) {
+        const uint8_t* msg_bytes = static_cast<const uint8_t*>(data);
+        uint8_t msg_type = msg_bytes[0];
+        const char* type_name = "UNKNOWN";
+        switch (static_cast<typename ProtocolMessage::Type>(msg_type)) {
+            case ProtocolMessage::Type::RESPONSE: type_name = "RESPONSE"; break;
+            case ProtocolMessage::Type::INTEREST: type_name = "INTEREST"; break;
+            case ProtocolMessage::Type::STATUS: type_name = "STATUS"; break;
+            case ProtocolMessage::Type::REQ: type_name = "REQ"; break;
+            case ProtocolMessage::Type::KEY_RESPONSE: type_name = "KEY_RESPONSE"; break;
+            default: type_name = "OTHER"; break;
+        }
+        db<Protocol>(INF) << "[Protocol] SEND - Message type: " << static_cast<int>(msg_type) 
+                          << " (" << type_name << "), size: " << size << " bytes\n";
+    }
+
     // Check if message requires authentication and we have the necessary keys
     if (requires_authentication(data, size)) {
-        db<Protocol>(TRC) << "[Protocol] Message requires authentication - checking key availability\n";
+        db<Protocol>(INF) << "[Protocol] SEND - Message requires authentication - checking key availability\n";
         
         bool has_auth_keys = false;
         
@@ -319,23 +337,45 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
             if (_vehicle_rsu_manager) {
                 auto known_rsus = _vehicle_rsu_manager->get_known_rsus();
                 has_auth_keys = !known_rsus.empty();
-                db<Protocol>(TRC) << "[Protocol] Vehicle has " << known_rsus.size() << " known RSUs for authentication\n";
+                db<Protocol>(INF) << "[Protocol] SEND - Vehicle has " << known_rsus.size() << " known RSUs for authentication\n";
+                
+                // DEBUG: Show which RSUs are known and their keys
+                for (size_t i = 0; i < known_rsus.size(); ++i) {
+                    std::string rsu_key_hex = "";
+                    for (size_t j = 0; j < 16; ++j) {
+                        char hex_byte[4];
+                        snprintf(hex_byte, sizeof(hex_byte), "%02X ", known_rsus[i].group_key[j]);
+                        rsu_key_hex += hex_byte;
+                    }
+                    db<Protocol>(INF) << "[Protocol] SEND - Known RSU " << i << " (" << known_rsus[i].address.to_string() 
+                                      << ") key: " << rsu_key_hex << "\n";
+                }
             } else {
-                db<Protocol>(TRC) << "[Protocol] Vehicle has no RSU manager - no authentication possible\n";
+                db<Protocol>(WRN) << "[Protocol] SEND - Vehicle has no RSU manager - no authentication possible\n";
             }
         } else {
             // For RSUs: check if we have a valid leader key (not all zeros)
             MacKeyType leader_key = LeaderKeyStorage::getInstance().getGroupMacKey();
             has_auth_keys = std::any_of(leader_key.begin(), leader_key.end(), [](uint8_t b) { return b != 0; });
-            db<Protocol>(TRC) << "[Protocol] RSU leader key is " << (has_auth_keys ? "valid" : "empty") << "\n";
+            
+            std::string leader_key_hex = "";
+            for (size_t i = 0; i < 16; ++i) {
+                char hex_byte[4];
+                snprintf(hex_byte, sizeof(hex_byte), "%02X ", leader_key[i]);
+                leader_key_hex += hex_byte;
+            }
+            db<Protocol>(INF) << "[Protocol] SEND - RSU leader key: " << leader_key_hex 
+                              << " (valid: " << (has_auth_keys ? "YES" : "NO") << ")\n";
         }
         
         if (!has_auth_keys) {
-            db<Protocol>(WRN) << "[Protocol] Dropping authenticated message - no authentication keys available\n";
+            db<Protocol>(WRN) << "[Protocol] SEND - DROPPING authenticated message - no authentication keys available\n";
             return 0; // Drop the message
         }
         
-        db<Protocol>(INF) << "[Protocol] Authentication keys available - proceeding with message send\n";
+        db<Protocol>(INF) << "[Protocol] SEND - Authentication keys available - proceeding with message send\n";
+    } else {
+        db<Protocol>(INF) << "[Protocol] SEND - Message does NOT require authentication\n";
     }
 
     // Allocate buffer for the entire frame -> NIC alloc adds Frame Header size (this is better for independency)
@@ -375,62 +415,51 @@ int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int
 
     // Calculate MAC for INTEREST and RESPONSE messages
     if (requires_authentication(data, size)) {
-        db<Protocol>(TRC) << "[Protocol] Calculating Hybrid MAC for authenticated message (message + packet fields)\n";
+        db<Protocol>(INF) << "[Protocol] SEND - Calculating Hybrid MAC for authenticated message\n";
         
         // Get leader key from storage
         MacKeyType leader_key = LeaderKeyStorage::getInstance().getGroupMacKey();
         
-        // Debug logging: Show packet fields being authenticated
-        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Header: from_port=" << packet->header()->from_port() 
+        // DEBUG: Show packet fields being authenticated
+        db<Protocol>(INF) << "[Protocol] SEND - MAC Auth Header: from_port=" << packet->header()->from_port() 
                           << ", to_port=" << packet->header()->to_port() << ", size=" << packet->header()->size() << "\n";
-        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Timestamps: sync=" << packet->timestamps()->is_clock_synchronized 
-                          << " (tx_timestamp excluded from MAC calculation)\n";
-                db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Coordinates: x=" << packet->coordinates()->x
-                                  << ", y=" << packet->coordinates()->y << ", radius=" << packet->coordinates()->radius << "\n";
+        db<Protocol>(INF) << "[Protocol] SEND - MAC Auth Coordinates: x=" << packet->coordinates()->x
+                          << ", y=" << packet->coordinates()->y << ", radius=" << packet->coordinates()->radius << "\n";
         
-        // Debug logging: Show message data
-        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Message payload size: " << size << " bytes\n";
-        const uint8_t* msg_bytes = static_cast<const uint8_t*>(data);
-        std::string msg_hex = "";
-        for (unsigned int i = 0; i < std::min(size, 32u); ++i) {  // Log first 32 bytes
-            char hex_byte[4];
-            snprintf(hex_byte, sizeof(hex_byte), "%02X ", msg_bytes[i]);
-            msg_hex += hex_byte;
-        }
-        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Message data (first " << std::min(size, 32u) << " bytes): " << msg_hex << "\n";
-        
-        // Debug logging: Show key
+        // DEBUG: Show key being used
         std::string key_hex = "";
         for (size_t i = 0; i < 16; ++i) {
             char hex_byte[4];
             snprintf(hex_byte, sizeof(hex_byte), "%02X ", leader_key[i]);
             key_hex += hex_byte;
         }
-        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Key: " << key_hex << "\n";
+        db<Protocol>(INF) << "[Protocol] SEND - MAC Auth Key: " << key_hex << "\n";
         
         // Calculate MAC over the message payload + packet fields (hybrid approach)
         MacKeyType calculated_mac = calculate_mac(data, size, packet->header(), 
                                                  packet->timestamps(), packet->coordinates(), leader_key);
         
-        // Debug logging: Show calculated MAC (note: detailed MAC calculation logs are in calculate_mac method)
+        // DEBUG: Show calculated MAC
         std::string mac_hex = "";
         for (size_t i = 0; i < 16; ++i) {
             char hex_byte[4];
             snprintf(hex_byte, sizeof(hex_byte), "%02X ", calculated_mac[i]);
             mac_hex += hex_byte;
         }
-        db<Protocol>(INF) << "[Protocol] Hybrid MAC Auth - Final calculated MAC: " << mac_hex << "\n";
+        db<Protocol>(INF) << "[Protocol] SEND - Final calculated MAC: " << mac_hex << "\n";
         
         // Set MAC in packet
         packet->authentication()->mac = calculated_mac;
         packet->authentication()->has_mac = true;
         
-        db<Protocol>(INF) << "[Protocol] Added Hybrid MAC authentication to outgoing message (packet fields + payload)\n";
+        db<Protocol>(INF) << "[Protocol] SEND - Added MAC authentication to outgoing packet\n";
+    } else {
+        db<Protocol>(INF) << "[Protocol] SEND - No authentication required - MAC left as zeros\n";
     }
 
     // Send the packet via NIC, passing the packet size for timestamp offset calculation
     int result = _nic->send(buf, packet_size); // Pass packet size to NIC
-    db<Protocol>(INF) << "[Protocol] NIC::send() returned " << result << ", clock_synchronized=" << packet->timestamps()->is_clock_synchronized << "\n";
+    db<Protocol>(INF) << "[Protocol] SEND - NIC::send() returned " << result << ", clock_synchronized=" << packet->timestamps()->is_clock_synchronized << "\n";
     
     // NIC should release buffer after use
     return result;
@@ -570,7 +599,8 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
                 // For vehicles: Send REQ message to leader RSU instead of just dropping
                 if (_entity_type == EntityType::VEHICLE && _vehicle_rsu_manager) {
                     db<Protocol>(INF) << "[Protocol] Sending REQ message to leader RSU for failed authentication\n";
-                    send_req_message_to_leader(message_data, payload_size, pkt->authentication()->mac);
+                    send_req_message_to_leader(message_data, payload_size, pkt->authentication()->mac,
+                                               pkt->header(), pkt->timestamps(), pkt->coordinates());
                 } else {
                     db<Protocol>(INF) << "[Protocol] RSU dropping message with failed MAC\n";
                 }
@@ -931,101 +961,160 @@ void Protocol<NIC>::handle_req_message(const uint8_t* message_data, unsigned int
                                        const typename NIC::Address& sender_mac) {
     db<Protocol>(INF) << "[Protocol] RSU processing REQ message from " 
                       << Ethernet::mac_to_string(sender_mac) << "\n";
-    
-    // Only RSUs should handle REQ messages
+
     if (_entity_type != EntityType::RSU) {
         db<Protocol>(WRN) << "[Protocol] Non-RSU entity received REQ message - ignoring\n";
         return;
     }
-    
-    // Get pointer to RSU instance - we need to access it to search neighbor RSUs
-    // For now, we'll use a simple approach: extract the failed MAC from the REQ message
-    // and search our neighbor RSUs for a match
-    
-    // Deserialize the REQ message
+
     ProtocolMessage req_msg = ProtocolMessage::deserialize(message_data, payload_size);
     if (req_msg.message_type() != ProtocolMessage::Type::REQ) {
         db<Protocol>(WRN) << "[Protocol] Failed to deserialize REQ message\n";
         return;
     }
-    
-    // REQ message payload contains: original_message_data + failed_mac
+
     const uint8_t* req_payload = req_msg.value();
     unsigned int req_value_size = req_msg.value_size();
     
-    if (req_value_size < sizeof(MacKeyType)) {
-        db<Protocol>(WRN) << "[Protocol] REQ message payload too small\n";
+    // Expected payload size check
+    unsigned int min_payload_size = sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates) + sizeof(MacKeyType);
+    if (req_value_size < min_payload_size) {
+        db<Protocol>(WRN) << "[Protocol] REQ message payload too small: " << req_value_size << ", expected at least " << min_payload_size << "\n";
         return;
     }
-    
-    // Extract the failed MAC (last 16 bytes of payload)
-    MacKeyType failed_mac;
-    unsigned int original_msg_size = req_msg.value_size() - sizeof(MacKeyType) - 16;
-    // std::memcpy(failed_mac.data(), req_payload + original_msg_size, sizeof(MacKeyType));
-    std::memcpy(failed_mac.data(), req_payload + original_msg_size, sizeof(MacKeyType));
-    
-    // // Debug logging: Show failed MAC
-    // std::string failed_mac_hex = "";
-    // for (size_t i = 0; i < 16; ++i) {
-    //     char hex_byte[4];
-    //     snprintf(hex_byte, sizeof(hex_byte), "%02X ", failed_mac[i]);
-    //     failed_mac_hex += hex_byte;
-    // }
-    // db<Protocol>(INF) << "[Protocol] REQ - Searching for MAC: " << failed_mac_hex << "\n";
 
-    // std::string incoming_msg = "";
-    // const std::uint8_t* msg_data = req_msg.value();
-    // for (size_t i = 0; i < req_msg.value_size(); ++i) {
-    //     char hex_byte[4];
-    //     snprintf(hex_byte, sizeof(hex_byte), "%02X ", msg_data[i]);
-    //     incoming_msg += hex_byte;
-    // }
-    // db<Protocol>(INF) << "[Protocol] REQ - Incoming message: " << incoming_msg << "\n";
+    // Deserialize the REQ payload: [Header][Timestamps][Coordinates][OriginalMsg][FailedMAC]
+    Header failed_header;
+    TimestampFields failed_timestamps;
+    Coordinates failed_coordinates;
+    MacKeyType failed_mac;
+    unsigned int offset = 0;
+
+    std::memcpy(&failed_header, req_payload + offset, sizeof(Header));
+    offset += sizeof(Header);
+
+    std::memcpy(&failed_timestamps, req_payload + offset, sizeof(TimestampFields));
+    offset += sizeof(TimestampFields);
+
+    std::memcpy(&failed_coordinates, req_payload + offset, sizeof(Coordinates));
+    offset += sizeof(Coordinates);
+
+    const uint8_t* original_msg_data = req_payload + offset;
     
-    // Search for matching neighbor RSU key in our Protocol's neighbor list
-    // This list is populated by the RSU during initialization
+    // BUG FIX: Use the size from the deserialized header of the failed message.
+    // This is more reliable than calculating from the REQ payload's total size,
+    // which can be prone to errors from padding/sizeof inconsistencies across modules.
+    unsigned int original_msg_size = failed_header.size();
+    
+    // Defensive check: ensure the reported size doesn't exceed the actual payload buffer
+    if ((offset + original_msg_size + sizeof(MacKeyType)) > req_value_size) {
+        db<Protocol>(WRN) << "[Protocol] REQ payload validation failed: original message size (" << original_msg_size
+                          << ") from header is too large for the received REQ payload size (" << req_value_size << "). Dropping.\n";
+        return;
+    }
+
+    offset += original_msg_size;
+    std::memcpy(&failed_mac, req_payload + offset, sizeof(MacKeyType));
+
+    // DEBUG: Show the failed MAC we're trying to match
+    std::string failed_mac_hex = "";
+    for (size_t i = 0; i < 16; ++i) {
+        char hex_byte[4];
+        snprintf(hex_byte, sizeof(hex_byte), "%02X ", failed_mac[i]);
+        failed_mac_hex += hex_byte;
+    }
+    db<Protocol>(INF) << "[Protocol] REQ - Failed MAC to match: " << failed_mac_hex << "\n";
+    
+    // DEBUG: Show original message data details
+    db<Protocol>(INF) << "[Protocol] REQ - Original message size: " << original_msg_size << " bytes\n";
+    db<Protocol>(INF) << "[Protocol] REQ - Original header: from_port=" << failed_header.from_port() 
+                      << ", to_port=" << failed_header.to_port() << ", size=" << failed_header.size() << "\n";
+    db<Protocol>(INF) << "[Protocol] REQ - Original coordinates: x=" << failed_coordinates.x 
+                      << ", y=" << failed_coordinates.y << ", radius=" << failed_coordinates.radius << "\n";
+
     bool found_match = false;
     MacKeyType matching_key;
     unsigned int matching_rsu_id = 0;
-    
+
     {
         std::lock_guard<std::mutex> lock(_neighbor_rsus_mutex);
+        db<Protocol>(INF) << "[Protocol] REQ - Searching through " << _neighbor_rsus.size() << " neighbor RSUs for a matching key.\n";
         for (const auto& neighbor : _neighbor_rsus) {
+            // DEBUG: Show each neighbor RSU key before testing
+            std::string neighbor_key_hex = "";
+            for (size_t i = 0; i < 16; ++i) {
+                char hex_byte[4];
+                snprintf(hex_byte, sizeof(hex_byte), "%02X ", neighbor.key[i]);
+                neighbor_key_hex += hex_byte;
+            }
+            db<Protocol>(INF) << "[Protocol] REQ - Testing neighbor RSU " << neighbor.rsu_id << " key: " << neighbor_key_hex << "\n";
+            
+            MacKeyType calculated_mac = calculate_mac(original_msg_data, original_msg_size, 
+                                                     &failed_header, &failed_timestamps, 
+                                                     &failed_coordinates, neighbor.key);
 
-            if (neighbor.key == failed_mac) {
+            // DEBUG: Show the calculated MAC for this neighbor
+            std::string calc_mac_hex = "";
+            for (size_t i = 0; i < 16; ++i) {
+                char hex_byte[4];
+                snprintf(hex_byte, sizeof(hex_byte), "%02X ", calculated_mac[i]);
+                calc_mac_hex += hex_byte;
+            }
+            db<Protocol>(INF) << "[Protocol] REQ - Neighbor RSU " << neighbor.rsu_id << " calculated MAC: " << calc_mac_hex << "\n";
+
+            if (calculated_mac == failed_mac) {
                 matching_key = neighbor.key;
                 matching_rsu_id = neighbor.rsu_id;
                 found_match = true;
-                db<Protocol>(INF) << "[Protocol] Found matching neighbor RSU " << neighbor.rsu_id << " for failed MAC\n";
+                db<Protocol>(INF) << "[Protocol] REQ - Found matching key from neighbor RSU " << neighbor.rsu_id << ".\n";
                 break;
+            } else {
+                db<Protocol>(INF) << "[Protocol] REQ - No match for neighbor RSU " << neighbor.rsu_id << "\n";
             }
         }
     }
-    
+
     if (found_match) {
-        // Send RESP message with the matching key to the requesting vehicle
         Address vehicle_address(sender_mac, req_msg.origin().port());
-        
-        // Create KEY_RESPONSE message with just the neighbor RSU key
         ProtocolMessage* resp_msg = new ProtocolMessage(ProtocolMessage::Type::KEY_RESPONSE,
                                                        address(), 0, ProtocolMessage::ZERO,
                                                        &matching_key, sizeof(MacKeyType));
+
+        db<Protocol>(INF) << "[Protocol] Sending KEY_RESPONSE to vehicle " 
+                          << vehicle_address.to_string() << " with key from RSU " << matching_rsu_id << ".\n";
         
-        db<Protocol>(INF) << "[Protocol] Sending KEY_RESPONSE message to vehicle " 
-                          << vehicle_address.to_string() << " with neighbor RSU " << matching_rsu_id << " key\n";
-        
-        // Send unicast KEY_RESPONSE message to the requesting vehicle
         int result = send(address(), vehicle_address, resp_msg->data(), resp_msg->size());
-        
+
         if (result > 0) {
-            db<Protocol>(INF) << "[Protocol] Successfully sent KEY_RESPONSE message with RSU " << matching_rsu_id << " key\n";
+            db<Protocol>(INF) << "[Protocol] Successfully sent KEY_RESPONSE message.\n";
         } else {
-            db<Protocol>(WRN) << "[Protocol] Failed to send KEY_RESPONSE message for RSU " << matching_rsu_id << "\n";
+            db<Protocol>(WRN) << "[Protocol] Failed to send KEY_RESPONSE message for RSU " << matching_rsu_id << ".\n";
         }
-        
+
         delete resp_msg;
     } else {
-        db<Protocol>(INF) << "[Protocol] No matching neighbor RSU found for failed MAC\n";
+        db<Protocol>(INF) << "[Protocol] REQ - No matching neighbor RSU key found for the failed message.\n";
+        
+        // DEBUG: Let's also check our own key to see if it would match
+        MacKeyType leader_key = LeaderKeyStorage::getInstance().getGroupMacKey();
+        std::string leader_key_hex = "";
+        for (size_t i = 0; i < 16; ++i) {
+            char hex_byte[4];
+            snprintf(hex_byte, sizeof(hex_byte), "%02X ", leader_key[i]);
+            leader_key_hex += hex_byte;
+        }
+        db<Protocol>(INF) << "[Protocol] REQ - For comparison, our own leader key: " << leader_key_hex << "\n";
+        
+        MacKeyType self_calculated_mac = calculate_mac(original_msg_data, original_msg_size, 
+                                                      &failed_header, &failed_timestamps, 
+                                                      &failed_coordinates, leader_key);
+        std::string self_calc_mac_hex = "";
+        for (size_t i = 0; i < 16; ++i) {
+            char hex_byte[4];
+            snprintf(hex_byte, sizeof(hex_byte), "%02X ", self_calculated_mac[i]);
+            self_calc_mac_hex += hex_byte;
+        }
+        db<Protocol>(INF) << "[Protocol] REQ - Our own key would produce MAC: " << self_calc_mac_hex << "\n";
     }
 }
 
@@ -1079,7 +1168,8 @@ void Protocol<NIC>::handle_resp_message(const uint8_t* message_data, unsigned in
 // REQ message sending implementation
 template <typename NIC>
 void Protocol<NIC>::send_req_message_to_leader(const void* failed_message_data, unsigned int failed_message_size,
-                                              const MacKeyType& failed_mac) {
+                                               const MacKeyType& failed_mac, const Header* failed_header,
+                                               const TimestampFields* failed_timestamps, const Coordinates* failed_coordinates) {
     db<Protocol>(INF) << "[Protocol] Preparing REQ message for leader RSU\n";
     
     // Only vehicles should send REQ messages
@@ -1097,14 +1187,29 @@ void Protocol<NIC>::send_req_message_to_leader(const void* failed_message_data, 
     
     db<Protocol>(INF) << "[Protocol] Sending REQ to leader RSU: " << current_leader->address.to_string() << "\n";
     
-    // Create REQ message payload: original_message_data + failed_mac
-    unsigned int req_payload_size = failed_message_size + sizeof(MacKeyType);
+    // Create REQ message payload: failed_header + failed_timestamps + failed_coordinates + failed_message_data + failed_mac
+    unsigned int req_payload_size = sizeof(Header) + sizeof(TimestampFields) + sizeof(Coordinates) + failed_message_size + sizeof(MacKeyType);
     std::vector<uint8_t> req_payload(req_payload_size);
-    
+    unsigned int offset = 0;
+
+    // Copy original header
+    std::memcpy(req_payload.data() + offset, failed_header, sizeof(Header));
+    offset += sizeof(Header);
+
+    // Copy original timestamps
+    std::memcpy(req_payload.data() + offset, failed_timestamps, sizeof(TimestampFields));
+    offset += sizeof(TimestampFields);
+
+    // Copy original coordinates
+    std::memcpy(req_payload.data() + offset, failed_coordinates, sizeof(Coordinates));
+    offset += sizeof(Coordinates);
+
     // Copy original message data
-    std::memcpy(req_payload.data(), failed_message_data, failed_message_size);
+    std::memcpy(req_payload.data() + offset, failed_message_data, failed_message_size);
+    offset += failed_message_size;
+    
     // Append failed MAC
-    std::memcpy(req_payload.data() + failed_message_size, &failed_mac, sizeof(MacKeyType));
+    std::memcpy(req_payload.data() + offset, &failed_mac, sizeof(MacKeyType));
     
     // Create REQ message
     ProtocolMessage* req_msg = new ProtocolMessage(ProtocolMessage::Type::REQ,

@@ -61,7 +61,7 @@ struct Traits<SocketEngine> : public Traits<void>
 template <typename Engine>
 struct Traits<NIC<Engine>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static const unsigned int SEND_BUFFERS = 512;
     static const unsigned int RECEIVE_BUFFERS = 512;
 };
@@ -85,7 +85,7 @@ struct Traits<Communicator<Channel>> : public Traits<void>
 template <typename Protocol>
 struct Traits<Message<Protocol>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static constexpr unsigned int MAC_SIZE = 16;
 };
 
@@ -118,7 +118,7 @@ struct Traits<Gateway> : public Traits<void>
 template<>
 struct Traits<Clock> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for LeaderKeyStorage class
