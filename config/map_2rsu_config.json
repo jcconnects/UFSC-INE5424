@@ -14,13 +14,13 @@
       "id": 1000,
       "position": {"x": -501, "y": 0},
       "unit": 999,
-      "broadcast_period_ms": 1000
+      "broadcast_period_ms": 250
     },
     {
       "id": 1001,
       "position": {"x": 501, "y": 0},
       "unit": 998,
-      "broadcast_period_ms": 1000
+      "broadcast_period_ms": 250
     }
   ],
   "vehicles": {
