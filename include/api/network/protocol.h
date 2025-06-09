@@ -677,6 +677,15 @@ void Protocol<NIC>::handle_status_message(const typename ProtocolMessage::Type& 
         db<Protocol>(WRN) << "[Protocol] STATUS message payload too small: " << value_size << "\n";
         return;
     }
+
+    // Debug: print out the HEX for the payload
+    std::string payload_hex = "";
+    for (size_t i = 0; i < value_size; ++i) {
+        char hex_byte[4];
+        snprintf(hex_byte, sizeof(hex_byte), "%02X ", message_data[i]);
+        payload_hex += hex_byte;
+    }
+    db<Protocol>(INF) << "[Protocol] STATUS message payload: " << payload_hex << "\n";
     
     // Parse payload
     unsigned int offset = 0;
@@ -967,7 +976,7 @@ void Protocol<NIC>::handle_req_message(const uint8_t* message_data, unsigned int
         return;
     }
 
-    ProtocolMessage req_msg = ProtocolMessage::deserialize(message_data, payload_size);
+    ProtocolMessage req_msg = ProtocolMessage::deserialize(message_data, payload_size - sizeof(MacKeyType));
     if (req_msg.message_type() != ProtocolMessage::Type::REQ) {
         db<Protocol>(WRN) << "[Protocol] Failed to deserialize REQ message\n";
         return;
@@ -1025,7 +1034,7 @@ void Protocol<NIC>::handle_req_message(const uint8_t* message_data, unsigned int
     db<Protocol>(INF) << "[Protocol] received message: " << msg_hex << "\n";
 
     offset += original_msg_size;
-    unsigned int failed_mac_offset = req_msg.value_size() - sizeof(MacKeyType) - 16;
+    unsigned int failed_mac_offset = req_msg.value_size() - sizeof(MacKeyType);
     std::memcpy(failed_mac.data(), req_payload + failed_mac_offset, sizeof(MacKeyType));
 
     // DEBUG: Show the failed MAC we're trying to match
@@ -1142,7 +1151,7 @@ void Protocol<NIC>::handle_resp_message(const uint8_t* message_data, unsigned in
     }
     
     // Deserialize the KEY_RESPONSE message
-    ProtocolMessage resp_msg = ProtocolMessage::deserialize(message_data, payload_size);
+    ProtocolMessage resp_msg = ProtocolMessage::deserialize(message_data, payload_size - sizeof(MacKeyType));
     if (resp_msg.message_type() != ProtocolMessage::Type::KEY_RESPONSE) {
         db<Protocol>(WRN) << "[Protocol] Failed to deserialize KEY_RESPONSE message\n";
         return;
@@ -1152,7 +1161,7 @@ void Protocol<NIC>::handle_resp_message(const uint8_t* message_data, unsigned in
     const uint8_t* resp_payload = resp_msg.value();
     unsigned int resp_value_size = resp_msg.value_size();
     
-    if (resp_value_size - 16 != sizeof(MacKeyType)) {
+    if (resp_value_size != sizeof(MacKeyType)) {
         db<Protocol>(WRN) << "[Protocol] KEY_RESPONSE message payload size mismatch: expected " 
                           << sizeof(MacKeyType) << ", got " << resp_value_size << "\n";
         return;
