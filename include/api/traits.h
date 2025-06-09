@@ -132,7 +132,7 @@ struct Traits<LeaderKeyStorage> : public Traits<void>
 template<>
 struct Traits<RSU> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for VehicleRSUManager class

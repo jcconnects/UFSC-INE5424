@@ -172,8 +172,8 @@ inline void Gateway::handle(Message* message) {
     if (msg_type != Message::Type::INTEREST && 
         msg_type != Message::Type::RESPONSE && 
         msg_type != Message::Type::STATUS &&
-        msg_type != Message::Type::PTP &&
-        msg_type != Message::Type::JOIN) {
+        msg_type != Message::Type::REQ &&
+        msg_type != Message::Type::KEY_RESPONSE) {
         db<Gateway>(ERR) << "[Gateway " << _id << "] received corrupted message with invalid type " 
                          << static_cast<int>(msg_type) << " from origin " << message->origin().to_string() 
                          << ", unit=" << message->unit() << ", period=" << message->period().count() 
@@ -310,11 +310,11 @@ inline void Gateway::log_message(const Message& msg, const std::string& directio
         case Message::Type::STATUS:
             msg_type_str = "STATUS";
             break;
-        case Message::Type::PTP:
-            msg_type_str = "PTP";
+        case Message::Type::REQ:
+            msg_type_str = "REQ";
             break;
-        case Message::Type::JOIN:
-            msg_type_str = "JOIN";
+        case Message::Type::KEY_RESPONSE:
+            msg_type_str = "KEY_RESPONSE";
             break;
         case Message::Type::UNKNOWN:
             msg_type_str = "UNKNOWN";

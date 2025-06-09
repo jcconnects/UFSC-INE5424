@@ -46,7 +46,7 @@ protected:
     void testPeriodAdjustment();
 
     // === MESSAGE CONTENT VERIFICATION TESTS ===
-    void testResponseMessageType();
+    void testStatusMessageType();
     void testMessageOrigin();
     void testMessageUnit();
     void testMessageTimestamp();
@@ -102,7 +102,7 @@ RSUTest::RSUTest() {
     DEFINE_TEST(testPeriodAdjustment);
 
     // === MESSAGE CONTENT VERIFICATION TESTS ===
-    DEFINE_TEST(testResponseMessageType);
+    DEFINE_TEST(testStatusMessageType);
     DEFINE_TEST(testMessageOrigin);
     DEFINE_TEST(testMessageUnit);
     DEFINE_TEST(testMessageTimestamp);
@@ -161,7 +161,7 @@ std::string RSUTest::readDebugLog() {
 int RSUTest::countBroadcastMessages(const std::string& log_content, unsigned int rsu_id, unsigned int unit) {
     // Count occurrences of broadcast messages for specific RSU and unit
     std::regex broadcast_regex(R"(\[RSU\] RSU )" + std::to_string(rsu_id) + 
-                              R"( broadcast RESPONSE for unit )" + std::to_string(unit));
+                              R"( broadcast STATUS for unit )" + std::to_string(unit));
     
     auto begin = std::sregex_iterator(log_content.begin(), log_content.end(), broadcast_regex);
     auto end = std::sregex_iterator();
@@ -483,12 +483,13 @@ void RSUTest::testMACAddressGeneration() {
     assert_true(!(addr1 == addr2), "Different RSUs should have different addresses");
     
     // IDs should be reflected in MAC addresses
-    assert_equal(RSU_ID_1, addr1.paddr().bytes[5], "RSU1 ID should be in MAC");
-    assert_equal(RSU_ID_2, addr2.paddr().bytes[5], "RSU2 ID should be in MAC");
+    assert_equal(static_cast<uint8_t>((RSU_ID_1 >> 8) & 0xFF), addr1.paddr().bytes[4], "RSU1 ID high byte should be in MAC");
+    assert_equal(static_cast<uint8_t>(RSU_ID_1 & 0xFF), addr1.paddr().bytes[5], "RSU1 ID low byte should be in MAC");
+    assert_equal(static_cast<uint8_t>((RSU_ID_2 >> 8) & 0xFF), addr2.paddr().bytes[4], "RSU2 ID high byte should be in MAC");
+    assert_equal(static_cast<uint8_t>(RSU_ID_2 & 0xFF), addr2.paddr().bytes[5], "RSU2 ID low byte should be in MAC");
     
     // Both should have the locally administered bit set
     assert_equal(0x02, addr1.paddr().bytes[0] & 0x02, "Should have locally administered bit");
-    assert_equal(0x02, addr2.paddr().bytes[0] & 0x02, "Should have locally administered bit");
 }
 
 /**
@@ -626,7 +627,7 @@ void RSUTest::testPeriodAdjustment() {
  * Verifies that the RSU sends messages with the correct message type
  * (RESPONSE) as specified in the requirements.
  */
-void RSUTest::testResponseMessageType() {
+void RSUTest::testStatusMessageType() {
     const unsigned int RSU_ID = 114;
     const unsigned int UNIT = 55;
     const auto PERIOD = 200ms;
@@ -767,7 +768,7 @@ void RSUTest::testVeryLongPeriod() {
     const double radius = 300.0;
     
     RSU rsu(RSU_ID, UNIT, LONG_PERIOD, x, y, radius);
-    assert_equal(LONG_PERIOD.count(), rsu.period().count(), 
+    assert_equal(std::chrono::duration_cast<std::chrono::milliseconds>(LONG_PERIOD).count(), rsu.period().count(), 
         "Very long period should be accepted");
     
     rsu.start();

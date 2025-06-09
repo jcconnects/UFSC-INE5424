@@ -148,17 +148,17 @@ starting stop() test
 [ RUN      ] testRSUDestructor
 [     OK   ] testRSUDestructor
 [ RUN      ] testPeriodicBroadcasting
-[  FAILED  ] testPeriodicBroadcasting: Assertion failed: expected true - Should have multiple broadcasts: expected >= 2, got 0
+[     OK   ] testPeriodicBroadcasting
 [ RUN      ] testBroadcastFrequency
-[  FAILED  ] testBroadcastFrequency: Assertion failed: expected true - Broadcast frequency should be approximately correct: expected 3-7, got 0
+[     OK   ] testBroadcastFrequency
 [ RUN      ] testBroadcastContent
-[  FAILED  ] testBroadcastContent: Assertion failed: expected true - Should receive expected broadcasts within timeout
+[     OK   ] testBroadcastContent
 [ RUN      ] testBroadcastWithCustomData
-[  FAILED  ] testBroadcastWithCustomData: Assertion failed: expected true - Should receive broadcasts with custom data
+[     OK   ] testBroadcastWithCustomData
 [ RUN      ] testNetworkStackIntegration
 [     OK   ] testNetworkStackIntegration
 [ RUN      ] testMACAddressGeneration
-[  FAILED  ] testMACAddressGeneration: Assertion failed: expected [500] but got [ô] - RSU1 ID should be in MAC
+[     OK   ] testMACAddressGeneration
 [ RUN      ] testCommunicatorIntegration
 [     OK   ] testCommunicatorIntegration
 [ RUN      ] testDifferentRSUIDs
@@ -169,8 +169,8 @@ starting stop() test
 [     OK   ] testDifferentPeriods
 [ RUN      ] testPeriodAdjustment
 [     OK   ] testPeriodAdjustment
-[ RUN      ] testResponseMessageType
-[  FAILED  ] testResponseMessageType: Assertion failed: expected true - Should have STATUS message broadcasts
+[ RUN      ] testStatusMessageType
+[     OK   ] testStatusMessageType
 [ RUN      ] testMessageOrigin
 [     OK   ] testMessageOrigin
 [ RUN      ] testMessageUnit
@@ -182,7 +182,7 @@ starting stop() test
 [ RUN      ] testVeryShortPeriod
 [     OK   ] testVeryShortPeriod
 [ RUN      ] testVeryLongPeriod
-[  FAILED  ] testVeryLongPeriod: Assertion failed: expected [9] but got [9000] - Very long period should be accepted
+[     OK   ] testVeryLongPeriod
 [ RUN      ] testLargeDataPayload
 [     OK   ] testLargeDataPayload
 [ RUN      ] testNullDataPointer
