@@ -28,7 +28,7 @@ class Gateway {
         inline static const unsigned int MAX_MESSAGE_SIZE = Protocol::MTU - sizeof(Protocol::Header) - sizeof(Protocol::TimestampFields);
         const unsigned int PORT = 0;
 
-        Gateway(const unsigned int id);
+        Gateway(const unsigned int id, Network::EntityType entity_type = Network::EntityType::VEHICLE);
         ~Gateway();
 
         bool send(Message* message);
@@ -41,6 +41,9 @@ class Gateway {
         
         const Address& address();
         CAN* bus() { return _can; }
+        
+        // New method to access network for RSU manager setup
+        Network* network() { return _network; }
         
         // CSV logging methods
         void setup_csv_logging(const std::string& log_dir);
@@ -63,10 +66,9 @@ class Gateway {
 };
 
 /******** Gateway Implementation ********/
-inline Gateway::Gateway(const unsigned int id) : _id(id) {
-    db<Gateway>(TRC) << "Gateway::Gateway(" << id << ") called!\n";
-    
-    _network = new Network(id);
+inline Gateway::Gateway(const unsigned int id, Network::EntityType entity_type) : _id(id) {
+    db<Gateway>(TRC) << "Gateway::Gateway(" << id << ", entity_type) called!\n";
+    _network = new Network(id, entity_type);
     
     // Sets communicator
     Address addr(_network->address(), PORT);
@@ -165,6 +167,20 @@ inline void Gateway::handle(Message* message) {
         return;
     }
     
+    // Validate message type to detect corruption
+    auto msg_type = message->message_type();
+    if (msg_type != Message::Type::INTEREST && 
+        msg_type != Message::Type::RESPONSE && 
+        msg_type != Message::Type::STATUS &&
+        msg_type != Message::Type::PTP &&
+        msg_type != Message::Type::JOIN) {
+        db<Gateway>(ERR) << "[Gateway " << _id << "] received corrupted message with invalid type " 
+                         << static_cast<int>(msg_type) << " from origin " << message->origin().to_string() 
+                         << ", unit=" << message->unit() << ", period=" << message->period().count() 
+                         << ", value_size=" << message->value_size() << " - DROPPING MESSAGE\n";
+        return;
+    }
+    
     db<Gateway>(INF) << "[Gateway " << _id << "] handling external message of type " << static_cast<int>(message->message_type()) 
                      << " for unit " << message->unit() << " from origin " << message->origin().to_string() << "\n";
     
@@ -180,6 +196,10 @@ inline void Gateway::handle(Message* message) {
             break;
         case Message::Type::RESPONSE:
             db<Gateway>(INF) << "[Gateway " << _id << "] forwarding RESPONSE to CAN bus with modified origin\n";
+            _can->send(&modified_message);
+            break;
+        case Message::Type::STATUS:
+            db<Gateway>(INF) << "[Gateway " << _id << "] forwarding STATUS to CAN bus with modified origin\n";
             _can->send(&modified_message);
             break;
         default:
@@ -270,8 +290,7 @@ inline void Gateway::setup_csv_logging(const std::string& log_dir) {
 inline void Gateway::log_message(const Message& msg, const std::string& direction) {
     if (!_csv_logger || !_csv_logger->is_open()) return;
     
-    auto now = std::chrono::system_clock::now();
-    auto timestamp_us = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    auto timestamp_us = Message::getSynchronizedTimestamp().count();
     
     // Calculate latency for received messages
     auto latency_us = 0L;
@@ -279,9 +298,38 @@ inline void Gateway::log_message(const Message& msg, const std::string& directio
         latency_us = timestamp_us - msg.timestamp().count();
     }
     
+    // Properly map message types instead of assuming unknown types are STATUS
+    std::string msg_type_str;
+    switch (msg.message_type()) {
+        case Message::Type::INTEREST:
+            msg_type_str = "INTEREST";
+            break;
+        case Message::Type::RESPONSE:
+            msg_type_str = "RESPONSE";
+            break;
+        case Message::Type::STATUS:
+            msg_type_str = "STATUS";
+            break;
+        case Message::Type::PTP:
+            msg_type_str = "PTP";
+            break;
+        case Message::Type::JOIN:
+            msg_type_str = "JOIN";
+            break;
+        case Message::Type::UNKNOWN:
+            msg_type_str = "UNKNOWN";
+            break;
+        case Message::Type::INVALID:
+            msg_type_str = "INVALID";
+            break;
+        default:
+            msg_type_str = "CORRUPTED_TYPE_" + std::to_string(static_cast<int>(msg.message_type()));
+            break;
+    }
+    
     std::ostringstream csv_line;
     csv_line << timestamp_us << ","
-             << (msg.message_type() == Message::Type::INTEREST ? "INTEREST" : "RESPONSE") << ","
+             << msg_type_str << ","
              << direction << ","
              << (direction == "SEND" ? address().to_string() : msg.origin().to_string()) << ","
              << (direction == "SEND" ? "NETWORK" : address().to_string()) << ","

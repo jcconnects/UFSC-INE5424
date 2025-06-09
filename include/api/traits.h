@@ -35,11 +35,13 @@ class Gateway;
 class Clock;
 class LeaderKeyStorage;
 class RSU;
+template <typename Protocol_T>
+class VehicleRSUManager;
 
 // Traits definition
 template <typename T>
 struct Traits {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for SocketEngine class
@@ -59,7 +61,7 @@ struct Traits<SocketEngine> : public Traits<void>
 template <typename Engine>
 struct Traits<NIC<Engine>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static const unsigned int SEND_BUFFERS = 512;
     static const unsigned int RECEIVE_BUFFERS = 512;
 };
@@ -76,21 +78,21 @@ struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
 template<typename Channel>
 struct Traits<Communicator<Channel>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for message class
 template <typename Protocol>
 struct Traits<Message<Protocol>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static constexpr unsigned int MAC_SIZE = 16;
 };
 
 template <>
 struct Traits<CAN> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 template <>
@@ -102,14 +104,14 @@ struct Traits<AgentStub> : public Traits<void>
 template <>
 struct Traits<Agent> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Gateway class
 template<>
 struct Traits<Gateway> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Clock class
@@ -130,7 +132,14 @@ struct Traits<LeaderKeyStorage> : public Traits<void>
 template<>
 struct Traits<RSU> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
+};
+
+// Traits for VehicleRSUManager class
+template<typename Protocol_T>
+struct Traits<VehicleRSUManager<Protocol_T>> : public Traits<void>
+{
+    static const bool debugged = false;
 };
 
 // Traits for Debug class

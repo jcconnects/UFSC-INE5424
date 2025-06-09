@@ -38,6 +38,9 @@ class Message {
             RESPONSE,
             PTP,
             JOIN,
+            STATUS,
+            REQ,        // Request for neighbor RSU key
+            KEY_RESPONSE,       // Response with neighbor RSU key
         };
 
         typedef typename Channel::Address Origin;
@@ -143,6 +146,9 @@ Message<Channel>::Message(Type message_type, const Origin& origin, Unit unit, Mi
                 this->period(period);
                 break;
             case Type::RESPONSE:
+            case Type::STATUS:  // STATUS messages also use value data
+            case Type::REQ:     // REQ messages contain failed message data
+            case Type::KEY_RESPONSE:    // KEY_RESPONSE messages contain neighbor RSU key
                 this->value(value_data, value_size);
                 break;
             default:
@@ -153,19 +159,38 @@ Message<Channel>::Message(Type message_type, const Origin& origin, Unit unit, Mi
 
 template <typename Channel>
 Message<Channel>::Message(const Message& other) {
-    value(other.value(), other.value_size());
+    // Copy all basic fields first
     _message_type = other.message_type();
     _origin = other.origin();
     _timestamp = other.timestamp();
     _period = other.period();
     _unit = other.unit();
+    
+    // Copy value data if present
+    if (other.value_size() > 0) {
+        value(other.value(), other.value_size());
+    }
+    
+    // Clear and regenerate serialized data to ensure consistency
+    _serialized_data.clear();
+    
     db<Message<Channel>>(TRC) << "Message::Message(const Message&) called with type: " 
         << static_cast<int>(_message_type) 
         << ", origin: " << _origin.to_string() 
         << ", unit: " << _unit 
         << ", period: " << _period.count() 
         << ", value_size: " << _value.size() << "\n";
-    // TODO:: serialized data
+        
+    // Validate the copied message to detect corruption
+    if (_message_type != Type::UNKNOWN && _message_type != Type::INVALID &&
+        _message_type != Type::INTEREST && _message_type != Type::RESPONSE &&
+        _message_type != Type::STATUS && _message_type != Type::PTP &&
+        _message_type != Type::JOIN && _message_type != Type::REQ &&
+        _message_type != Type::KEY_RESPONSE) {
+        db<Message<Channel>>(ERR) << "Message copy constructor detected corrupted message type: " 
+                                  << static_cast<int>(_message_type) << " - marking as INVALID\n";
+        _message_type = Type::INVALID;
+    }
 }
 
 template <typename Channel>
@@ -239,12 +264,16 @@ Message<Channel> Message<Channel>::deserialize(const void* serialized, const uns
                 msg.period(extract_microseconds(bytes, offset, size));
                 break;
             }
-            case Type::RESPONSE: {
+            case Type::RESPONSE: 
+            case Type::STATUS:  // STATUS messages also have value data
+            case Type::REQ:     // REQ messages contain failed message data
+            case Type::KEY_RESPONSE: {  // KEY_RESPONSE messages contain neighbor RSU key
                 unsigned int value_len = size - offset;
                 if (value_len > 0) {
                     msg.value(bytes + offset, value_len);
                     offset += value_len;
                 } else {
+                    db<Message>(TRC) << "Non positive value length set: Message marked INVALID \n";
                     msg.message_type(Type::INVALID);
                 }
                 break;
@@ -280,6 +309,7 @@ void Message<Channel>::origin(const Origin addr) {
 template <typename Channel>
 void Message<Channel>::timestamp(const Microseconds timestamp) {
     if (timestamp <= ZERO) {
+        db<Message>(TRC) << "Negative timestamp set: Message marked INVALID \n";
         message_type(Type::INVALID);
         return;
     }
@@ -295,6 +325,7 @@ void Message<Channel>::unit(const Unit unit) {
 template <typename Channel>
 void Message<Channel>::period(const Microseconds period) {
     if (period <= ZERO) {
+        db<Message>(TRC) << "Negative PERIOD set: Message marked INVALID \n";
         message_type(Type::INVALID);
         return;
     }
@@ -324,7 +355,8 @@ void Message<Channel>::serialize() {
 
     if (_message_type == Type::INTEREST)
         append_microseconds(_period);
-    else if (_message_type == Type::RESPONSE)
+    else if (_message_type == Type::RESPONSE || _message_type == Type::STATUS || 
+             _message_type == Type::REQ || _message_type == Type::KEY_RESPONSE)
         append_value();
         
     db<Message<Channel>>(TRC) << "Message::serialize() - type: " << static_cast<int>(_message_type) 
@@ -396,7 +428,20 @@ typename Message<Channel>::Type Message<Channel>::extract_type(const std::uint8_
         return Type::UNKNOWN;
 
     std::uint8_t raw_type = data[offset++];
-    return static_cast<Type>(raw_type);
+    Type extracted_type = static_cast<Type>(raw_type);
+    
+    // Validate the extracted type to detect corruption
+    if (extracted_type != Type::UNKNOWN && extracted_type != Type::INVALID &&
+        extracted_type != Type::INTEREST && extracted_type != Type::RESPONSE &&
+        extracted_type != Type::STATUS && extracted_type != Type::PTP &&
+        extracted_type != Type::JOIN && extracted_type != Type::REQ &&
+        extracted_type != Type::KEY_RESPONSE) {
+        db<Message<Channel>>(ERR) << "Message::extract_type() detected corrupted type value: " 
+                                  << static_cast<int>(raw_type) << " - marking as INVALID\n";
+        return Type::INVALID;
+    }
+    
+    return extracted_type;
 }
 
 template <typename Channel>

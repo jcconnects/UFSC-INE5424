@@ -83,6 +83,8 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
 
         void stop();
         
+        double radius();
+        void setRadius(double radius);
         // Attach/detach observers
         // void attach(Observer* obs, Protocol_Number prot); // inherited
         // void detach(Observer* obs, Protocol_Number prot); // inherited
@@ -102,13 +104,14 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         std::atomic<bool> _running;
         sem_t _buffer_sem;
         sem_t _binary_sem;
+        double _radius;
 
         bool running() { return _running.load(std::memory_order_acquire); }
 };
 
 /*********** NIC Implementation ************/
 template <typename Engine>
-NIC<Engine>::NIC() : _running(true) {
+NIC<Engine>::NIC() : _running(true), _radius(1000.0) {  // Default 1000m transmission radius
     // Initialize buffers FIRST - before starting Engine
     db<NIC>(INF) << "[NIC] [constructor] initializing buffers and semaphores\n";
     
@@ -126,7 +129,7 @@ NIC<Engine>::NIC() : _running(true) {
     
     // NOW it's safe to start the Engine - all NIC infrastructure is ready
     Engine::start();
-    db<NIC>(INF) << "[NIC] [constructor] NIC fully initialized and Engine started\n";
+    db<NIC>(INF) << "[NIC] [constructor] NIC fully initialized and Engine started with default radius " << _radius << "m\n";
 }
 
 template <typename Engine>
@@ -269,11 +272,9 @@ void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
     // 3. Fill RX timestamp in the buffer
     db<NIC>(TRC) << "[NIC] [handle()] filling RX timestamp in the buffer\n";
     auto& clock = Clock::getInstance();
-    db<NIC>(TRC) << "[NIC] [handle()] getting synchronized time from clock\n";
-    bool is_sync;
-    db<NIC>(TRC) << "[NIC] [handle()] getting synchronized time from clock\n";
-    buf->setRX(clock.getSynchronizedTime(&is_sync).time_since_epoch().count());
-    db<NIC>(TRC) << "[NIC] [handle()] RX timestamp filled in the buffer\n";
+    std::int64_t timestamp = clock.getLocalSystemTime().time_since_epoch().count();
+    buf->setRX(timestamp);
+    db<NIC>(TRC) << "[NIC] [handle()] RX timestamp filled in the buffer: " << timestamp << "\n";
 
     // 4. Copy frame to buffer
     db<NIC>(TRC) << "[NIC] [handle()] copying frame to buffer\n";
@@ -408,6 +409,16 @@ void NIC<Engine>::fillTxTimestamp(DataBuffer* buf, unsigned int packet_size) {
         db<NIC>(WRN) << "[NIC] Packet too small for TX timestamp. Size: " << packet_size 
                       << ", required: " << (tx_timestamp_offset + sizeof(TimestampType)) << "\n";
     }
+}
+
+template <typename Engine>
+double NIC<Engine>::radius() {
+    return _radius;
+}
+
+template <typename Engine>
+void NIC<Engine>::setRadius(double radius) {
+    _radius = radius;
 }
 
 #endif // NIC_H

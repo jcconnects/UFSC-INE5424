@@ -88,48 +88,45 @@ SYSTEM_TEST_BINS := $(SYSTEM_TEST_SRCS:$(SYSTEM_TESTDIR)/%.cpp=$(BINDIR)/system_
 # Interface name for testing
 TEST_IFACE_NAME := test-dummy0
 
-# =============================================================================
-# Build Targets
-# =============================================================================
+# Default target: compile and run all tests
+.PHONY: all
+all: dirs \
+	run_unit_buffer_test \
+	run_unit_protocol_structure_test \
+	run_unit_can_test \
+	run_unit_clock_test \
+	run_unit_rsu_test \
+	run_unit_periodic_thread_test \
+	run_unit_ethernet_test \
+	run_unit_list_test \
+	run_unit_radius_collision_test \
+	run_unit_location_service_test \
+	run_system_demo
 
-.PHONY: all clean help test docs config debug-vars format install-deps
-.PHONY: compile_tests compile_quiet compile_strict compile_verbose platform-check
-.PHONY: unit_tests integration_tests system_tests thread_analysis coverage
-.PHONY: docs-open clean-docs distclean docker-build docker-run
-.DEFAULT_GOAL := all
+# Compile and run all tests in the correct order
+.PHONY: test
+test: dirs unit_tests system_tests
 
-# Help target
-help: ## Show this help message
-	@echo "Available targets:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
-	@echo ""
-	@echo "Build types: debug (default), release, profile, strict"
-	@echo "Usage: make [target] BUILD_TYPE=[debug|release|profile|strict]"
-	@echo ""
-	@echo "Quick Start:"
-	@echo "  make                 # Compile and run all tests"
-	@echo "  make compile_tests   # Only compile tests"
-	@echo "  make unit_tests      # Run only unit tests"
+# Compile all tests
+.PHONY: compile_tests
+compile_tests: dirs $(UNIT_TEST_BINS) $(INTEGRATION_TEST_BINS) $(SYSTEM_TEST_BINS)
 
-# Default target
-all: compile_tests test ## Build and run everything (compile tests + run full test suite)
+# Create necessary directories
+dirs:
+	mkdir -p $(BINDIR)/unit_tests
+	mkdir -p $(BINDIR)/integration_tests
+	mkdir -p $(BINDIR)/system_tests
+	mkdir -p $(TESTDIR)/logs
 
-# Note: No library build needed for header-only design
-# $(LIBRARY): $(LIB_OBJS) | $(LIBDIR)
-# 	@echo "Creating static library: $@"
-# 	@ar rcs $@ $^
+# Test targets
+.PHONY: unit_tests
+unit_tests: dirs $(UNIT_TEST_BINS) run_unit_tests
 
-# Note: No object file compilation needed for header-only design  
-# $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
-# 	@echo "Compiling: $<"
-# 	@mkdir -p $(dir $@)
-# 	@$(CXX) $(CXXFLAGS) -c $< -o $@
+.PHONY: integration_tests
+integration_tests: dirs $(INTEGRATION_TEST_BINS) run_integration_tests
 
-# =============================================================================
-# Test Compilation and Execution
-# =============================================================================
-
-compile_tests: dirs $(UNIT_TEST_BINS) $(INTEGRATION_TEST_BINS) $(SYSTEM_TEST_BINS) ## Compile all tests
+.PHONY: system_tests
+system_tests: dirs $(SYSTEM_TEST_BINS) run_system_tests
 
 # Test binary compilation rules (header-only - no library objects needed)
 $(BINDIR)/unit_tests/%: $(UNIT_TESTDIR)/%.cpp | $(BINDIR)/unit_tests

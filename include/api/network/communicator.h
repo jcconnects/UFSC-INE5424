@@ -6,10 +6,10 @@
 #include <atomic>
 #include <string>
 
-#include "../traits.h"
-#include "message.h"
-#include "../util/observer.h"
-#include "../util/debug.h"
+#include "api/traits.h"
+#include "api/network/message.h"
+#include "api/util/observer.h"
+#include "api/util/debug.h"
 
 template <typename Channel>
 class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data, typename Channel::Observer::Observing_Condition>
@@ -30,7 +30,6 @@ class Communicator: public Concurrent_Observer<typename Channel::Observer::Obser
         // Communication methods
         bool send(const Message_T* message);
         bool receive(Message_T* message);
-
 
         // Address getter
         const Address& address() const;

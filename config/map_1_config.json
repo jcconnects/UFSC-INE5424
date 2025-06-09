@@ -1,0 +1,37 @@
+{
+  "map_info": {
+    "name": "Map 1 - Simple Cross",
+    "description": "Simple map with one RSU and vehicles crossing its domain"
+  },
+  "simulation": {
+    "duration_s": 10,
+    "update_interval_ms": 100,
+    "default_transmission_radius_m": 500,
+    "trajectory_generator_script": "scripts/trajectory_generator_map_1.py"
+  },
+  "rsu": {
+    "id": 1000,
+    "position": {"x": 0, "y": 0},
+    "unit": 999,
+    "broadcast_period_ms": 1000
+  },
+  "vehicles": {
+    "default_count": 10,
+    "speed_kmh": 50
+  },
+  "waypoints": [
+    {"name": "west_entry", "x": -400, "y": 0},
+    {"name": "east_exit", "x": 400, "y": 0},
+    {"name": "north_entry", "x": 0, "y": 400},
+    {"name": "south_exit", "x": 0, "y": -400}
+  ],
+  "routes": [
+    {"name": "west_to_east", "waypoints": ["west_entry", "east_exit"]},
+    {"name": "east_to_west", "waypoints": ["east_exit", "west_entry"]},
+    {"name": "north_to_south", "waypoints": ["north_entry", "south_exit"]},
+    {"name": "south_to_north", "waypoints": ["south_exit", "north_entry"]}
+  ],
+  "logging": {
+    "trajectory_dir": "tests/logs/trajectories"
+  }
+} 

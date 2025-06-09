@@ -1,0 +1,82 @@
+{
+  "map_info": {
+    "name": "Map 2RSU - REQ-RESP Test",
+    "description": "Two RSUs with non-overlapping domains for testing REQ-RESP key discovery"
+  },
+  "simulation": {
+    "duration_s": 80,
+    "update_interval_ms": 100,
+    "default_transmission_radius_m": 500,
+    "trajectory_generator_script": "scripts/trajectory_generator_map_2rsu.py"
+  },
+  "rsus": [
+    {
+      "id": 1000,
+      "position": {"x": -501, "y": 0},
+      "unit": 999,
+      "broadcast_period_ms": 1000
+    },
+    {
+      "id": 1001,
+      "position": {"x": 501, "y": 0},
+      "unit": 998,
+      "broadcast_period_ms": 1000
+    }
+  ],
+  "vehicles": {
+    "default_count": 3,
+    "speed_kmh": 60,
+    "configs": [
+      {
+        "id": 1,
+        "type": "stationary",
+        "position": {"x": -50, "y": 50},
+        "description": "Vehicle 1 - stationary near RSU0 (left side)"
+      },
+      {
+        "id": 2,
+        "type": "stationary", 
+        "position": {"x": -50, "y": -50},
+        "description": "Vehicle 2 - stationary near RSU0 (left side)"
+      },
+      {
+        "id": 3,
+        "type": "mobile",
+        "start_position": {"x": 1200, "y": 0},
+        "end_position": {"x": -1200, "y": 0},
+        "description": "Vehicle 3 - drives from far right (past RSU1) to far left (past RSU0)"
+      }
+    ]
+  },
+  "waypoints": [
+    {"name": "rsu0_center", "x": -50, "y": 0},
+    {"name": "rsu1_center", "x": 50, "y": 0},
+    {"name": "vehicle1_pos", "x": -50, "y": 50},
+    {"name": "vehicle2_pos", "x": -50, "y": -50},
+    {"name": "vehicle3_start", "x": 1200, "y": 0},
+    {"name": "vehicle3_end", "x": -1200, "y": 0}
+  ],
+  "routes": [
+    {
+      "name": "vehicle3_migration", 
+      "waypoints": ["vehicle3_start", "vehicle3_end"],
+      "description": "Vehicle 3 path from far right (RSU1 domain) to far left (past RSU0 domain)"
+    }
+  ],
+  "logging": {
+    "trajectory_dir": "tests/logs/trajectories_2rsu"
+  },
+  "test_scenario": {
+    "name": "REQ-RESP Key Discovery",
+    "description": "Vehicle 3 discovers RSU0 key through RSU1 when moving from right to left",
+    "expected_behavior": [
+      "Vehicles 1&2 stay near RSU0 (left) and exchange INTEREST/RESPONSE messages using RSU0 key",
+      "Vehicle 3 starts far right near RSU1, receives RSU1 STATUS messages", 
+      "Vehicle 3 moves left towards RSU0 domain",
+      "Vehicle 3 receives unauthenticated messages from Vehicles 1&2 (different RSU domain)",
+      "Vehicle 3 sends REQ to RSU1 for unknown RSU0 key",
+      "RSU1 sends KEY_RESPONSE with RSU0 key to Vehicle 3",
+      "Vehicle 3 can now authenticate messages from Vehicles 1&2 in RSU0 domain"
+    ]
+  }
+}

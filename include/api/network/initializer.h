@@ -42,6 +42,7 @@ class Initializer {
          * @return The created Protocol, associated with the network interface passed as a parameter
          */
         static Protocol_T* create_protocol(NIC_T* nic);
+        static Protocol_T* create_protocol(NIC_T* nic, Protocol_T::EntityType entity_type);
 };
 
 /********** Initializer Implementation ***********/
@@ -54,8 +55,14 @@ inline Initializer::Protocol_T* Initializer::create_protocol(NIC_T* nic) {
     if (!nic) {
         throw std::invalid_argument("NIC cannot be null");
     }
+    return create_protocol(nic, Protocol_T::EntityType::UNKNOWN);
+}
 
-    return new Protocol_T(nic);
+inline Initializer::Protocol_T* Initializer::create_protocol(NIC_T* nic, Protocol_T::EntityType entity_type) {
+    if (!nic) {
+        throw std::invalid_argument("NIC cannot be null");
+    }
+    return new Protocol_T(nic, entity_type);
 }
 
 #endif // INITIALIZER_H
