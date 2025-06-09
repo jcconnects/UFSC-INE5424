@@ -467,6 +467,7 @@ void RSUTest::testNetworkStackIntegration() {
 void RSUTest::testMACAddressGeneration() {
     const unsigned int RSU_ID_1 = 500;
     const unsigned int RSU_ID_2 = 501;
+    const unsigned int UNIT = 51;
     const auto PERIOD = 1000ms;
     const double x = 470.0;
     const double y = 211.0;
@@ -530,6 +531,7 @@ void RSUTest::testDifferentRSUIDs() {
     const double x = 410.0;
     const double y = 381.0;
     const double radius = 300.0;
+    const unsigned int UNIT = 53;
     
     // Test with multiple RSU IDs
     std::vector<std::unique_ptr<RSU>> rsus;
@@ -577,6 +579,7 @@ void RSUTest::testDifferentPeriods() {
     const double x = 410.0;
     const double y = 261.0;
     const double radius = 700.0;
+    const unsigned int UNIT = 54;
     
     for (auto period : {100ms, 200ms, 500ms, 1000ms, 2000ms}) {
         RSU rsu(RSU_ID, UNIT, period, x, y, radius);
@@ -598,6 +601,7 @@ void RSUTest::testPeriodAdjustment() {
     const double x = 410.0;
     const double y = 261.0;
     const double radius = 300.0;
+    const unsigned int UNIT = 113;
     
     _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, INITIAL_PERIOD, x, y, radius);
     
@@ -837,6 +841,7 @@ void RSUTest::testMultipleRSUInstances() {
     const double x = 410.0;
     const double y = 261.0;
     const double radius = 300.0;
+    const unsigned int UNIT = 200;
     
     // Test multiple RSU instances running concurrently
     std::vector<std::unique_ptr<RSU>> rsus;

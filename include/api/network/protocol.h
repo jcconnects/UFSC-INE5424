@@ -21,9 +21,7 @@
 #include "api/util/geo_utils.h"  // Include GeoUtils
 #include "api/network/message.h"
 #include "api/framework/leaderKeyStorage.h"
-
-// Forward declaration to avoid circular dependency
-template <typename Protocol_T> class VehicleRSUManager;
+#include "api/framework/vehicleRSUManager.h" // Full definition for VehicleRSUManager
 
 // Protocol implementation that works with the real Communicator
 template <typename NIC>
@@ -166,7 +164,7 @@ class Protocol: private NIC::Observer
         Protocol(NIC* nic, EntityType entity_type = EntityType::UNKNOWN);
         
         // New method to set entity manager (only for vehicles)
-        void set_vehicle_rsu_manager(VehicleRSUManager<Protocol>* manager);
+        void set_vehicle_rsu_manager(VehicleRSUManager<Protocol<NIC>>* manager);
 
         ~Protocol();
         
@@ -232,7 +230,7 @@ class Protocol: private NIC::Observer
         NIC* _nic;
         static Observed _observed;
         EntityType _entity_type;
-        VehicleRSUManager<Protocol>* _vehicle_rsu_manager; // nullptr for RSUs
+        VehicleRSUManager<Protocol<NIC>>* _vehicle_rsu_manager; // nullptr for RSUs
 };
 
 /******** Protocol::Address Implementation ******/
@@ -1262,7 +1260,7 @@ const typename Protocol<NIC>::Address Protocol<NIC>::Address::BROADCAST =
     );
 
 template <typename NIC>
-void Protocol<NIC>::set_vehicle_rsu_manager(VehicleRSUManager<Protocol>* manager) {
+void Protocol<NIC>::set_vehicle_rsu_manager(VehicleRSUManager<Protocol<NIC>>* manager) {
     if (_entity_type == EntityType::VEHICLE) {
         _vehicle_rsu_manager = manager;
         db<Protocol>(INF) << "[Protocol] RSU manager attached to vehicle protocol\n";

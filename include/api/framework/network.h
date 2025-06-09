@@ -3,9 +3,7 @@
 
 #include "api/network/initializer.h"
 #include "api/network/bus.h"
-
-// Forward declaration for VehicleRSUManager
-template <typename Protocol_T> class VehicleRSUManager;
+#include "api/framework/vehicleRSUManager.h"
 
 class Network {
     public:
