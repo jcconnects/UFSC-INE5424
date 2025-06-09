@@ -4,7 +4,7 @@
     "description": "Two RSUs with non-overlapping domains for testing REQ-RESP key discovery"
   },
   "simulation": {
-    "duration_s": 80,
+    "duration_s": 40,
     "update_interval_ms": 100,
     "default_transmission_radius_m": 500,
     "trajectory_generator_script": "scripts/trajectory_generator_map_2rsu.py"
@@ -25,7 +25,7 @@
   ],
   "vehicles": {
     "default_count": 3,
-    "speed_kmh": 60,
+    "speed_kmh": 100,
     "configs": [
       {
         "id": 1,
@@ -42,9 +42,9 @@
       {
         "id": 3,
         "type": "mobile",
-        "start_position": {"x": 1200, "y": 0},
+        "start_position": {"x": 500, "y": 0},
         "end_position": {"x": -1200, "y": 0},
-        "description": "Vehicle 3 - drives from far right (past RSU1) to far left (past RSU0)"
+        "description": "Vehicle 3 - drives from near RSU1 to far left (past RSU0)"
       }
     ]
   },
@@ -53,14 +53,14 @@
     {"name": "rsu1_center", "x": 50, "y": 0},
     {"name": "vehicle1_pos", "x": -50, "y": 50},
     {"name": "vehicle2_pos", "x": -50, "y": -50},
-    {"name": "vehicle3_start", "x": 1200, "y": 0},
+    {"name": "vehicle3_start", "x": 500, "y": 0},
     {"name": "vehicle3_end", "x": -1200, "y": 0}
   ],
   "routes": [
     {
       "name": "vehicle3_migration", 
       "waypoints": ["vehicle3_start", "vehicle3_end"],
-      "description": "Vehicle 3 path from far right (RSU1 domain) to far left (past RSU0 domain)"
+      "description": "Vehicle 3 path from near RSU1 to far left (past RSU0 domain)"
     }
   ],
   "logging": {
@@ -71,7 +71,7 @@
     "description": "Vehicle 3 discovers RSU0 key through RSU1 when moving from right to left",
     "expected_behavior": [
       "Vehicles 1&2 stay near RSU0 (left) and exchange INTEREST/RESPONSE messages using RSU0 key",
-      "Vehicle 3 starts far right near RSU1, receives RSU1 STATUS messages", 
+      "Vehicle 3 starts near RSU1, receives RSU1 STATUS messages", 
       "Vehicle 3 moves left towards RSU0 domain",
       "Vehicle 3 receives unauthenticated messages from Vehicles 1&2 (different RSU domain)",
       "Vehicle 3 sends REQ to RSU1 for unknown RSU0 key",

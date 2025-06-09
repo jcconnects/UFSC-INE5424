@@ -21,7 +21,7 @@ class Ethernet {
         static const Ethernet::Address BROADCAST;
         
         // Protocol Type
-        typedef unsigned int Protocol;
+        typedef std::uint16_t Protocol;
         
         static constexpr unsigned int HEADER_SIZE = sizeof(Address)*2 + sizeof(Protocol);
 

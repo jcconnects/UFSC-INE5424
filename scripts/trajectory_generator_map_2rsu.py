@@ -191,10 +191,10 @@ class Map2RSUTrajectoryGenerator:
                 print(f"  Domain overlap: {overlap:.1f}m {'(NO OVERLAP - PERFECT FOR REQ-RESP TEST)' if overlap == 0 else '(OVERLAP - RECONSIDER POSITIONS)'}")
                 
                 # Calculate Vehicle 3's journey
-                vehicle3_distance = 2400  # 1200 to -1200
+                vehicle3_distance = 1700  # 500 to -1200
                 vehicle3_time_needed = vehicle3_distance / self.vehicle_speed_ms
                 print(f"\nVehicle 3 Journey Analysis:")
-                print(f"  Start: (1200, 0) - Far right, past RSU1")
+                print(f"  Start: (500, 0) - Far right, past RSU1")
                 print(f"  End: (-1200, 0) - Far left, past RSU0") 
                 print(f"  Total distance: {vehicle3_distance}m")
                 print(f"  Speed: {self.vehicle_speed_kmh} km/h ({self.vehicle_speed_ms:.1f} m/s)")

@@ -541,7 +541,7 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
     }
 
     // RSU message filtering - drop INTEREST, RESPONSE, STATUS, and KEY_RESPONSE messages for RSUs ONLY
-    int payload_size = buf->size() - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates) - sizeof(AuthenticationFields);
+    int payload_size = buf->size() - Ethernet::HEADER_SIZE - sizeof(Header) - sizeof(TimestampFields) - sizeof(Coordinates) - sizeof(AuthenticationFields);
     if (_entity_type == EntityType::RSU && payload_size > 0) {
         const uint8_t* message_data = pkt->template data<uint8_t>();
         if (payload_size >= 1) {
@@ -974,7 +974,7 @@ void Protocol<NIC>::handle_req_message(const uint8_t* message_data, unsigned int
         return;
     }
 
-    ProtocolMessage req_msg = ProtocolMessage::deserialize(message_data, payload_size - sizeof(MacKeyType));
+    ProtocolMessage req_msg = ProtocolMessage::deserialize(message_data, payload_size);
     if (req_msg.message_type() != ProtocolMessage::Type::REQ) {
         db<Protocol>(WRN) << "[Protocol] Failed to deserialize REQ message\n";
         return;
@@ -1032,8 +1032,7 @@ void Protocol<NIC>::handle_req_message(const uint8_t* message_data, unsigned int
     db<Protocol>(INF) << "[Protocol] received message: " << msg_hex << "\n";
 
     offset += original_msg_size;
-    unsigned int failed_mac_offset = req_msg.value_size() - sizeof(MacKeyType);
-    std::memcpy(failed_mac.data(), req_payload + failed_mac_offset, sizeof(MacKeyType));
+    std::memcpy(failed_mac.data(), req_payload + offset, sizeof(MacKeyType));
 
     // DEBUG: Show the failed MAC we're trying to match
     std::string failed_mac_hex = "";
@@ -1149,7 +1148,7 @@ void Protocol<NIC>::handle_resp_message(const uint8_t* message_data, unsigned in
     }
     
     // Deserialize the KEY_RESPONSE message
-    ProtocolMessage resp_msg = ProtocolMessage::deserialize(message_data, payload_size - sizeof(MacKeyType));
+    ProtocolMessage resp_msg = ProtocolMessage::deserialize(message_data, payload_size);
     if (resp_msg.message_type() != ProtocolMessage::Type::KEY_RESPONSE) {
         db<Protocol>(WRN) << "[Protocol] Failed to deserialize KEY_RESPONSE message\n";
         return;
