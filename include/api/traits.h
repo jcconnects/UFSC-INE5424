@@ -104,7 +104,7 @@ struct Traits<AgentStub> : public Traits<void>
 template <>
 struct Traits<Agent> : public Traits<void>
 {
-    static const bool debugged = false;
+    static const bool debugged = true;
 };
 
 // Traits for Gateway class

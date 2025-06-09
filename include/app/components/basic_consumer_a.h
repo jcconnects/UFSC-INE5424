@@ -16,6 +16,7 @@ class BasicConsumerA : public Agent {
 
         Agent::Value get(Agent::Unit unit) override;
         void handle_response(Message* msg) override;
+        void start_consuming(Microseconds period = Microseconds(1000000));
 
     private:
         float _last_received_value;
@@ -40,6 +41,15 @@ inline void BasicConsumerA::handle_response(Message* msg) {
                             << " received RESPONSE message with value: " << _last_received_value 
                             << " and value size: " << msg->value_size() << "\n";
     
+}
+
+/**
+ * @brief Start consuming data with the specified period
+ * 
+ * @param period The desired response period from producers (default: 1 second)
+ */
+inline void BasicConsumerA::start_consuming(Microseconds period) {
+    start_periodic_interest(static_cast<std::uint32_t>(DataTypes::UNIT_A), period);
 }
 
 #endif // BASIC_CONSUMER_A_H 

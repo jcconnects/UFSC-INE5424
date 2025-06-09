@@ -47,6 +47,11 @@ class Agent {
         void set_csv_logger(const std::string& log_dir);
         void log_message(const Message& msg, const std::string& direction);
         
+        int start_periodic_interest(Unit unit, Microseconds period);
+        void stop_periodic_interest();
+        void send_interest(Unit unit);
+        void update_interest_period(Microseconds new_period);
+        
     private:
         void handle_interest(Unit unit, Microseconds period);
         void reply(Unit unit);
@@ -61,10 +66,15 @@ class Agent {
         std::atomic<bool> _running;
         Condition _c;
         std::unique_ptr<CSVLogger> _csv_logger;
+        
+        Thread* _interest_thread;              // Periodic thread for sending INTEREST
+        Microseconds _requested_period;        // Period requested by this consumer
+        std::atomic<bool> _interest_active;    // Control interest sending
+        std::atomic<bool> _is_consumer;        // Track if this agent is a consumer
 };
 
 /****** Agent Implementation *****/
-inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address) : _address(address), _name(name), _periodic_thread(nullptr) {
+inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address) : _address(address), _name(name), _periodic_thread(nullptr), _interest_thread(nullptr), _requested_period(Microseconds::zero()), _interest_active(false), _is_consumer(type == Type::RESPONSE) {
     db<Agent>(INF) << "[Agent] " << _name << " created with address: " << _address.to_string() << "\n";
     if (!bus)
         throw std::invalid_argument("Gateway cannot be null");
@@ -75,11 +85,13 @@ inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Add
     _can_observer = new Observer(c);
     _can->attach(_can_observer, c);
 
-    // Only send initial INTEREST if this agent is a consumer (observing RESPONSE messages)
-    // Producers (observing INTEREST messages) should not send INTEREST
-    if (type == Type::RESPONSE) {
-        Microseconds period(1000000);
-        send(unit, period); // Send initial INTEREST
+    // Phase 1.2: Consumer initialization - No automatic INTEREST sending
+    if (_is_consumer) {
+        // Don't send initial INTEREST here anymore
+        // Application will call start_periodic_interest() when ready
+        db<Agent>(INF) << "[Agent] " << _name << " initialized as consumer, waiting for application to start periodic interest\n";
+    } else {
+        db<Agent>(INF) << "[Agent] " << _name << " initialized as producer, ready to handle INTEREST messages\n";
     }
 
     _running = true;
@@ -93,6 +105,10 @@ inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Add
 inline Agent::~Agent() {
     // First, stop the running flag to prevent new operations
     _running.store(false, std::memory_order_release);
+    
+    if (_interest_thread) {
+        stop_periodic_interest();
+    }
     
     // Stop periodic thread first if it exists - CRITICAL: Do this before anything else
     if (_periodic_thread) {
@@ -258,6 +274,86 @@ inline void Agent::log_message(const Message& msg, const std::string& direction)
              << latency_us;
     
     _csv_logger->log(csv_line.str());
+}
+
+/**
+ * @brief Start sending periodic INTEREST messages for the specified unit and period
+ * 
+ * @param unit The data type unit to request
+ * @param period The desired response period from producers
+ * @return int Success/failure status
+ */
+inline int Agent::start_periodic_interest(Unit unit, Microseconds period) {
+    if (!_is_consumer) {
+        db<Agent>(WRN) << "[Agent] " << _name << " is not a consumer, cannot start periodic interest\n";
+        return -1;
+    }
+    
+    if (_interest_active.load()) {
+        db<Agent>(INF) << "[Agent] " << _name << " updating interest period from " 
+                       << _requested_period.count() << " to " << period.count() << " microseconds\n";
+        update_interest_period(period);
+        return 0;
+    }
+    
+    _requested_period = period;
+    _interest_active.store(true, std::memory_order_release);
+    
+    if (!_interest_thread) {
+        _interest_thread = new Thread(this, &Agent::send_interest, unit);
+        _interest_thread->start(period.count());
+        db<Agent>(INF) << "[Agent] " << _name << " started periodic INTEREST for unit: " 
+                       << unit << " with period: " << period.count() << " microseconds\n";
+    }
+    
+    return 0;
+}
+
+/**
+ * @brief Stop sending periodic INTEREST messages
+ */
+inline void Agent::stop_periodic_interest() {
+    if (_interest_active.load()) {
+        _interest_active.store(false, std::memory_order_release);
+        
+        if (_interest_thread) {
+            _interest_thread->join();
+            delete _interest_thread;
+            _interest_thread = nullptr;
+        }
+        
+        db<Agent>(INF) << "[Agent] " << _name << " stopped periodic INTEREST\n";
+    }
+}
+
+/**
+ * @brief Send a single INTEREST message (called by periodic thread)
+ * 
+ * @param unit The data type unit
+ */
+inline void Agent::send_interest(Unit unit) {
+    if (!_interest_active.load() || !running()) {
+        return;
+    }
+    
+    db<Agent>(TRC) << "[Agent] " << _name << " sending periodic INTEREST for unit: " 
+                   << unit << " with period: " << _requested_period.count() << " microseconds\n";
+    
+    Message msg(Message::Type::INTEREST, _address, unit, _requested_period);
+    log_message(msg, "SEND");
+    _can->send(&msg);
+}
+
+/**
+ * @brief Update the period for periodic interest sending
+ * 
+ * @param new_period The new period to use
+ */
+inline void Agent::update_interest_period(Microseconds new_period) {
+    _requested_period = new_period;
+    if (_interest_thread) {
+        _interest_thread->adjust_period(new_period.count());
+    }
 }
 
 #endif // AGENT_H
