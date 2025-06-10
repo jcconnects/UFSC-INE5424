@@ -90,18 +90,7 @@ TEST_IFACE_NAME := test-dummy0
 
 # Default target: compile and run all tests
 .PHONY: all
-all: dirs \
-	run_unit_buffer_test \
-	run_unit_protocol_structure_test \
-	run_unit_can_test \
-	run_unit_clock_test \
-	run_unit_rsu_test \
-	run_unit_periodic_thread_test \
-	run_unit_ethernet_test \
-	run_unit_list_test \
-	run_unit_radius_collision_test \
-	run_unit_location_service_test \
-	run_system_demo
+all: compile_tests unit_tests integration_tests system_tests
 
 # Compile and run all tests in the correct order
 .PHONY: test
@@ -117,16 +106,6 @@ dirs:
 	mkdir -p $(BINDIR)/integration_tests
 	mkdir -p $(BINDIR)/system_tests
 	mkdir -p $(TESTDIR)/logs
-
-# Test targets
-.PHONY: unit_tests
-unit_tests: dirs $(UNIT_TEST_BINS) run_unit_tests
-
-.PHONY: integration_tests
-integration_tests: dirs $(INTEGRATION_TEST_BINS) run_integration_tests
-
-.PHONY: system_tests
-system_tests: dirs $(SYSTEM_TEST_BINS) run_system_tests
 
 # Test binary compilation rules (header-only - no library objects needed)
 $(BINDIR)/unit_tests/%: $(UNIT_TESTDIR)/%.cpp | $(BINDIR)/unit_tests

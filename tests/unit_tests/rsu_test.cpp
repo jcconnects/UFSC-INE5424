@@ -233,8 +233,6 @@ void RSUTest::testRSUStartStop() {
     const double x = 300.0;
     const double y = 321.0;
     const double radius = 300.0;
-
-    std::cout << "starting stop() test \n";
     
     _test_rsu = std::make_unique<RSU>(RSU_ID, UNIT, PERIOD, x, y, radius);
     

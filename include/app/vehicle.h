@@ -49,6 +49,13 @@ class Vehicle {
         
         // Set transmission radius
         void setTransmissionRadius(double radius_m);
+        
+        /**
+         * @brief Get the number of components in this vehicle
+         * 
+         * @return The number of components currently attached to this vehicle
+         */
+        size_t component_count() const;
     private:
         unsigned int _id;
         Gateway* _gateway;
@@ -152,6 +159,15 @@ inline void Vehicle::setup_csv_logging() {
 inline void Vehicle::setTransmissionRadius(double radius_m) {
     _gateway->network()->channel()->setRadius(radius_m);
     db<Vehicle>(INF) << "[Vehicle " << _id << "] transmission radius set to " << radius_m << "m\n";
+}
+
+/**
+ * @brief Get the number of components in this vehicle
+ * 
+ * @return The number of components currently attached to this vehicle
+ */
+inline size_t Vehicle::component_count() const {
+    return _components.size();
 }
 
 #endif // VEHICLE_H
