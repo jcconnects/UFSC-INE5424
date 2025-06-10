@@ -19,7 +19,6 @@ using namespace std::chrono_literals;
 
 // Forward declarations
 class AgentTest;
-
 class AgentTest : public TestCase {
 protected:
     void setUp() override;

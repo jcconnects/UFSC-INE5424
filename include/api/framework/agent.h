@@ -71,6 +71,7 @@ class Agent {
     private:
         void handle_interest(Unit unit, Microseconds period);
         void reply(Unit unit);
+        bool should_process_response();
     
     private:
         Address _address;
@@ -233,6 +234,9 @@ inline int Agent::send(Unit unit, Microseconds period) {
     if (period == Microseconds::zero())
         return 0;
     
+    // Store the INTEREST period for RESPONSE filtering
+    _interest_period = period;
+    
     Message msg(Message::Type::INTEREST, _address, unit, period);
     
     // Log sent message to CSV
@@ -273,10 +277,17 @@ inline void* Agent::run(void* arg) {
         db<Agent>(INF) << "[Agent] " << agent->name() << " received message of type: " << static_cast<int>(msg->message_type()) 
                        << " for unit: " << msg->unit() << " with size: " << msg->value_size() << "\n";
 
-        if (msg->message_type() == Message::Type::RESPONSE) 
-            agent->handle_response(msg);
-        else if (msg->message_type() == Message::Type::INTEREST) 
+        if (msg->message_type() == Message::Type::RESPONSE) {
+            // Filter RESPONSE messages based on INTEREST period
+            if (agent->should_process_response()) {
+                db<Agent>(INF) << "[Agent] " << agent->name() << " processing RESPONSE message (period filter passed)\n";
+                agent->handle_response(msg);
+            } else {
+                db<Agent>(INF) << "[Agent] " << agent->name() << " discarding RESPONSE message (period filter failed)\n";
+            }
+        } else if (msg->message_type() == Message::Type::INTEREST) {
             agent->handle_interest(msg->unit(), msg->period());
+        }
 
         delete msg; // Clean up the message object after processing
     }
@@ -455,4 +466,27 @@ inline void Agent::update_interest_period(Microseconds new_period) {
     }
 }
 
-#endif // AGENT_HPP
+/*
+ * @brief Check if a RESPONSE message should be processed based on the INTEREST period
+ * @return true if enough time has passed since the last processed RESPONSE, false otherwise
+ */
+inline bool Agent::should_process_response() {
+    // If no INTEREST period is set, process all messages
+    if (_interest_period == Microseconds::zero()) {
+        return true;
+    }
+    
+    auto current_timestamp = Message::getSynchronizedTimestamp().count();
+    auto last_timestamp = _last_response_timestamp.load(std::memory_order_acquire);
+    
+    // If this is the first RESPONSE or enough time has passed
+    if (last_timestamp == 0 || (current_timestamp - last_timestamp) >= _interest_period.count()) {
+        // Update the last response timestamp atomically
+        _last_response_timestamp.store(current_timestamp, std::memory_order_release);
+        return true;
+    }
+    
+    return false;
+}
+
+#endif // AGENT_H
