@@ -547,6 +547,22 @@ void Demo::run_vehicle(Vehicle* v, unsigned int vehicle_id) {
     
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] configured with all basic components (Producer-A, Producer-B, Consumer-A, Consumer-B)\n";
 
+    // Start consumers with periodic interest
+    auto consumerA = v->get_component<BasicConsumerA>("ConsumerA");
+    auto consumerB = v->get_component<BasicConsumerB>("ConsumerB");
+    
+    if (consumerA) {
+        // Start ConsumerA with 500ms period
+        consumerA->start_consuming(Agent::Microseconds(500000));
+        db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] ConsumerA started with 500ms period\n";
+    }
+    
+    if (consumerB) {
+        // Start ConsumerB with 750ms period 
+        consumerB->start_consuming(Agent::Microseconds(750000));
+        db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] ConsumerB started with 750ms period\n";
+    }
+
     // Use randomized behavior for vehicle lifetime
     unsigned int min_lifetime = std::max(5u, sim_duration / 3);  // At least 5s, or 1/3 of sim duration
     unsigned int max_lifetime = std::max(10u, sim_duration);     // At least 10s, or full sim duration

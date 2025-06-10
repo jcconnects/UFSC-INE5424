@@ -41,6 +41,9 @@ class Vehicle {
         template <typename ComponentType>
         void create_component(const std::string& name);
         
+        template <typename ComponentType>
+        ComponentType* get_component(const std::string& name);
+        
         // CSV logging setup
         void setup_csv_logging();
         
@@ -132,6 +135,16 @@ inline void Vehicle::create_component(const std::string& name) {
     component->set_csv_logger(_log_dir);
     
     _components.push_back(std::move(component));   
+}
+
+template <typename ComponentType>
+inline ComponentType* Vehicle::get_component(const std::string& name) {
+    for (auto& component : _components) {
+        if (component->name() == name) {
+            return static_cast<ComponentType*>(component.get());
+        }
+    }
+    return nullptr;
 }
 
 inline const unsigned int Vehicle::id() const {
