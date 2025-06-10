@@ -70,7 +70,7 @@ struct Traits<NIC<Engine>> : public Traits<void>
 template <>
 struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 888; // Example value
 };
 
@@ -146,10 +146,10 @@ struct Traits<VehicleRSUManager<Protocol_T>> : public Traits<void>
 template<>
 struct Traits<Debug> : public Traits<void>
 {
-    static const bool error = true;
-    static const bool warning = true;
+    static const bool error = false;
+    static const bool warning = false;
     static const bool info = true;
-    static const bool trace = true;
+    static const bool trace = false;
 };
 
 #endif // TRAITS_H

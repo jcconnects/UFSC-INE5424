@@ -51,10 +51,10 @@ namespace TestInitializer {
      * @return Number of components
      */
     size_t get_component_count(Vehicle* vehicle) {
-        // Since Vehicle doesn't expose components publicly in current implementation,
-        // we'll track this differently or return a fixed value for tests
-        // For now, return 0 as we can't access the private _components member
-        return 0;
+        if (vehicle == nullptr) {
+            return 0;
+        }
+        return vehicle->component_count();
     }
 }
 
