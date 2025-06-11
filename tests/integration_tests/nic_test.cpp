@@ -764,8 +764,8 @@ void NICTest::testNullBufferSendHandling() {
         
         // Verify we can access statistics without crashing
         auto stats = getStats(nic);
-        // Just verify we can read the statistics
-        assert_true(stats.tx_drops >= 0, "tx_drops should be non-negative");
+        // Just verify we can read the statistics (tx_drops is unsigned, so always >= 0)
+        (void)stats; // Suppress unused variable warning
         
     } catch (const std::exception& e) {
         // Clean up on exception
