@@ -90,18 +90,7 @@ TEST_IFACE_NAME := test-dummy0
 
 # Default target: compile and run all tests
 .PHONY: all
-all: dirs \
-	run_unit_buffer_test \
-	run_unit_protocol_structure_test \
-	run_unit_can_test \
-	run_unit_clock_test \
-	run_unit_rsu_test \
-	run_unit_periodic_thread_test \
-	run_unit_ethernet_test \
-	run_unit_list_test \
-	run_unit_radius_collision_test \
-	run_unit_location_service_test \
-	run_system_demo
+all: compile_tests unit_tests integration_tests system_tests
 
 # Compile and run all tests in the correct order
 .PHONY: test

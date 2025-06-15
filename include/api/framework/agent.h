@@ -1,5 +1,5 @@
-#ifndef AGENT_H
-#define AGENT_H
+#ifndef AGENT_HPP
+#define AGENT_HPP
 
 #include <string>
 #include <sstream>
@@ -14,8 +14,22 @@
 #include "../util/debug.h"
 #include "../util/csv_logger.h"
 #include "../traits.h"
+#include "component_types.hpp"
+#include "component_functions.hpp"
 
-
+/**
+ * @brief EPOS-inspired Agent implementation using composition over inheritance
+ * 
+ * This Agent class eliminates the "pure virtual method called" race condition
+ * by using function pointers instead of virtual methods. Following EPOS SmartData
+ * principles, components are pure data + function pairs rather than inheritance-based.
+ * 
+ * Key improvements:
+ * - No virtual methods = no vtable race conditions
+ * - Function-based composition instead of inheritance
+ * - Type-safe component data management
+ * - Same public API as original Agent for compatibility
+ */
 class Agent {
     public:
         typedef CAN::Message Message;
@@ -28,15 +42,17 @@ class Agent {
         typedef CAN::Observer Observer;
 
     
-        Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address = {});
-        virtual ~Agent();
+        Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address,
+              DataProducer producer, ResponseHandler handler, 
+              std::unique_ptr<ComponentData> data);
+        ~Agent();
 
-        virtual Value get(Unit type) = 0;
+        // Non-virtual interface - eliminates race condition
+        Value get(Unit unit);
+        void handle_response(Message* msg);
 
         int send(Unit unit, Microseconds period); // Send will always be INTEREST (this is exposed to application)
         int receive(Message* msg);
-        
-        virtual void handle_response(Message* msg) { /* Default implementation - do nothing */}
         
         static void* run(void* arg); // Run will always receive INTEREST messages, and set periodic thread
         bool running();
@@ -71,13 +87,58 @@ class Agent {
         Microseconds _requested_period;        // Period requested by this consumer
         std::atomic<bool> _interest_active;    // Control interest sending
         std::atomic<bool> _is_consumer;        // Track if this agent is a consumer
+        
+        // EPOS-inspired composition members
+        std::unique_ptr<ComponentData> _component_data;
+        DataProducer _data_producer;
+        ResponseHandler _response_handler;
 };
 
 /****** Agent Implementation *****/
-inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address) : _address(address), _name(name), _periodic_thread(nullptr), _interest_thread(nullptr), _requested_period(Microseconds::zero()), _interest_active(false), _is_consumer(type == Type::RESPONSE) {
+
+/**
+ * @brief Constructor for EPOS-inspired Agent using composition
+ * 
+ * Creates an Agent that uses function pointers instead of virtual methods,
+ * eliminating the vtable race condition during destruction.
+ * 
+ * @param bus CAN bus for communication
+ * @param name Agent name for identification
+ * @param unit Data unit this agent handles
+ * @param type Agent type (INTEREST for producers, RESPONSE for consumers)
+ * @param address Network address
+ * @param producer Function pointer for data production (can be nullptr for consumers)
+ * @param handler Function pointer for response handling (can be nullptr for producers)
+ * @param data Component-specific data structure
+ */
+inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address,
+                    DataProducer producer, ResponseHandler handler, 
+                    std::unique_ptr<ComponentData> data) 
+    : _address(address), _name(name), _periodic_thread(nullptr), _interest_thread(nullptr), 
+      _requested_period(Microseconds::zero()), _interest_active(false), 
+      _is_consumer(type == Type::RESPONSE), _component_data(std::move(data)),
+      _data_producer(producer), _response_handler(handler) {
+    
     db<Agent>(INF) << "[Agent] " << _name << " created with address: " << _address.to_string() << "\n";
     if (!bus)
         throw std::invalid_argument("Gateway cannot be null");
+    
+    // Validate agent role and function pointer consistency
+    if (_is_consumer) {
+        if (!handler) {
+            throw std::invalid_argument("Consumer agents must have a response handler");
+        }
+        if (producer) {
+            throw std::invalid_argument("Consumer agents should not have a data producer");
+        }
+    } else {
+        if (!producer) {
+            throw std::invalid_argument("Producer agents must have a data producer");
+        }
+        if (handler) {
+            throw std::invalid_argument("Producer agents should not have a response handler");
+        }
+    }
     
     _can = bus;
     Condition c(unit, type);
@@ -102,6 +163,12 @@ inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Add
     }
 }
 
+/**
+ * @brief Destructor with proper cleanup order
+ * 
+ * Ensures threads are properly joined before object destruction,
+ * eliminating the race condition that occurred with virtual methods.
+ */
 inline Agent::~Agent() {
     // First, stop the running flag to prevent new operations
     _running.store(false, std::memory_order_release);
@@ -137,6 +204,40 @@ inline Agent::~Agent() {
     db<Agent>(INF) << "[Agent] " << _name << " destroyed successfully\n";
 }
 
+/**
+ * @brief Get data using function pointer instead of virtual method
+ * 
+ * This is the key method that eliminates the race condition. Instead of
+ * calling a virtual method that could crash during destruction, we call
+ * a function pointer that was set during construction.
+ * 
+ * @param unit The data unit being requested
+ * @return Value containing the generated data
+ */
+inline Agent::Value Agent::get(Unit unit) {
+    // Only producers should generate data
+    if (_is_consumer || !_data_producer || !_component_data) {
+        return Value(); // Return empty vector if not a producer
+    }
+    return _data_producer(unit, _component_data.get());
+}
+
+/**
+ * @brief Handle response using function pointer instead of virtual method
+ * 
+ * Similar to get(), this uses a function pointer to avoid virtual method
+ * calls that could cause race conditions during destruction.
+ * 
+ * @param msg Pointer to the received message
+ */
+inline void Agent::handle_response(Message* msg) {
+    // Only consumers should handle responses
+    if (!_is_consumer || !_response_handler || !_component_data) {
+        return; // Silently ignore if not a consumer
+    }
+    _response_handler(msg, _component_data.get());
+}
+
 inline int Agent::send(Unit unit, Microseconds period) {
     db<Agent>(INF) << "[Agent] " << _name << " sending INTEREST for unit: " << unit << " with period: " << period.count() << " microseconds\n";
     if (period == Microseconds::zero())
@@ -164,7 +265,6 @@ inline int Agent::receive(Message* msg) {
 
     return msg->size();
 }
-
 
 inline void* Agent::run(void* arg) {
     Agent* agent = reinterpret_cast<Agent*>(arg);
@@ -217,7 +317,13 @@ inline void Agent::handle_interest(Unit unit, Microseconds period) {
     }
 }
 
-
+/**
+ * @brief Reply method that calls function pointer instead of virtual method
+ * 
+ * This is the critical method where the race condition used to occur.
+ * Instead of calling the virtual get() method, we now call the function
+ * pointer directly, eliminating the vtable dependency.
+ */
 inline void Agent::reply(Unit unit) {
     // Safety check: don't reply if agent is being destroyed
     if (!running()) {
@@ -231,11 +337,13 @@ inline void Agent::reply(Unit unit) {
     
     db<Agent>(INF) << "[Agent] " << _name << " sending RESPONSE for unit: " << unit << "\n";
     
-    // Final safety check before calling virtual method
+    // Final safety check before calling function pointer
     if (!running()) {
         return;
     }
     
+    // CRITICAL: Call function pointer instead of virtual method
+    // This eliminates the race condition that caused "pure virtual method called"
     Value value = get(unit);
     Message msg(Message::Type::RESPONSE, _address, unit, Microseconds::zero(), value.data(), value.size());
 
@@ -356,4 +464,4 @@ inline void Agent::update_interest_period(Microseconds new_period) {
     }
 }
 
-#endif // AGENT_H
+#endif // AGENT_HPP
