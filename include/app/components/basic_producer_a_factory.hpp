@@ -3,8 +3,8 @@
 
 #include <memory>
 #include <stdexcept>
-#include "../../api/framework/agent_v2.hpp"
-#include "../../api/framework/component_functions.hpp"
+#include "api/framework/agent.h"
+#include "api/framework/component_functions.hpp"
 #include "unit_a_data.hpp"
 #include "unit_a_functions.hpp"
 #include "../datatypes.h"

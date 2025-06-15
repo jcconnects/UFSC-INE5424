@@ -14,8 +14,18 @@
 #include "api/network/ethernet.h"
 #include "api/framework/vehicleRSUManager.h"
 
-// Forward declarations
-class ECUComponent;
+// Include all component factory headers for Phase 4.3
+#include "components/camera_factory.hpp"
+#include "components/lidar_factory.hpp"
+#include "components/ecu_factory.hpp"
+#include "components/ins_factory.hpp"
+
+// Component type identifiers for template specialization
+// These replace the old inheritance-based component classes
+struct ECUComponent {};
+struct CameraComponent {};
+struct LidarComponent {};
+struct INSComponent {};
 
 // Vehicle class definition
 class Vehicle {
@@ -122,19 +132,89 @@ inline void Vehicle::stop() {
     db<Vehicle>(INF) << "[Vehicle " << _id << "] stopped.\n";
 }
 
+/**
+ * @brief Generic template with compile-time error for unsupported types
+ * 
+ * This template provides a compile-time error message for unsupported component types.
+ * Only the specialized templates below should be used for actual component creation.
+ * Following EPOS principles of compile-time type safety.
+ */
 template <typename ComponentType>
 inline void Vehicle::create_component(const std::string& name) {
-    // CRITICAL FIX: Create unique address for each agent instead of using gateway address
-    // This prevents the gateway from filtering out agent messages as "self-originated"
+    static_assert(sizeof(ComponentType) == 0, 
+        "Unsupported component type. Supported types: ECUComponent, CameraComponent, LidarComponent, INSComponent");
+}
+
+/**
+ * @brief Template specialization for ECU component creation
+ * 
+ * Creates an ECU component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<ECUComponent>(const std::string& name) {
     static unsigned int component_counter = 1;
     Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
     
-    auto component = std::make_unique<ComponentType>(_gateway->bus(), component_addr, name);
-    
-    // Set up CSV logging for the component
+    auto component = create_ecu_component(_gateway->bus(), component_addr, name);
     component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for Camera component creation
+ * 
+ * Creates a Camera component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<CameraComponent>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
     
-    _components.push_back(std::move(component));   
+    auto component = create_camera_component(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for Lidar component creation
+ * 
+ * Creates a Lidar component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<LidarComponent>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_lidar_component(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for INS component creation
+ * 
+ * Creates an INS component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<INSComponent>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_ins_component(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
 }
 
 template <typename ComponentType>

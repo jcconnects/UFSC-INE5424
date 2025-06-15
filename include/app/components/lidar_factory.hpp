@@ -3,8 +3,7 @@
 
 #include <memory>
 #include <stdexcept>
-#include "../../api/framework/agent_v2.hpp"
-#include "../../api/framework/component_functions.hpp"
+#include "../../api/framework/agent.h"
 #include "lidar_data.hpp"
 #include "lidar_functions.hpp"
 #include "../datatypes.h"
