@@ -127,6 +127,17 @@ void Periodic_Thread<Owner>::join() {
 template <typename Owner>
 void Periodic_Thread<Owner>::start(std::int64_t period) {
     if (!running()) {
+        // Install the global signal handler for thread interruption (only once)
+        static std::atomic<bool> signal_handler_installed{false};
+        if (!signal_handler_installed.exchange(true)) {
+            struct sigaction sa;
+            std::memset(&sa, 0, sizeof(sa));
+            sa.sa_handler = component_signal_handler;
+            sigemptyset(&sa.sa_mask);
+            sa.sa_flags = 0;
+            sigaction(SIGUSR1, &sa, nullptr);
+        }
+        
         _period.store(period, std::memory_order_release);
         _running.store(true, std::memory_order_release);
         // Fix: pthread_create returns error code, not thread ID
@@ -151,14 +162,6 @@ std::int64_t Periodic_Thread<Owner>::period() const {
 template <typename Owner>
 void* Periodic_Thread<Owner>::run(void* arg) {
     Periodic_Thread* thread = static_cast<Periodic_Thread*>(arg);
-
-    // Install the signal handler for thread interruption
-    struct sigaction sa;
-    std::memset(&sa, 0, sizeof(sa));
-    sa.sa_handler = component_signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    sigaction(SIGUSR1, &sa, nullptr);
 
     // SCHED_DEADLINE limits (conservative estimates for portability)
     static constexpr uint64_t MAX_DEADLINE_PERIOD_US = 1000000ULL;    // 1 second in microseconds
