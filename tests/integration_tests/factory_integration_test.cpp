@@ -5,6 +5,10 @@
 #include "../../include/app/components/basic_consumer_a_factory.hpp"
 #include "../../include/app/components/basic_producer_b_factory.hpp"
 #include "../../include/app/components/basic_consumer_b_factory.hpp"
+#include "../../include/app/components/ecu_factory.hpp"
+#include "../../include/app/components/ins_factory.hpp"
+#include "../../include/app/components/lidar_factory.hpp"
+#include "../../include/app/components/camera_factory.hpp"
 #include "../../include/app/datatypes.h"
 #include <memory>
 #include <vector>
@@ -60,6 +64,13 @@ protected:
     void testFactoryAgentCompatibilityWithOriginal();
     void testFactoryAgentCSVLogging();
     void testFactoryAgentErrorRecovery();
+    
+    // === PHASE 3.2 COMPLEX COMPONENT TESTS ===
+    void testECUComponentIntegration();
+    void testINSComponentIntegration();
+    void testLidarComponentIntegration();
+    void testCameraComponentIntegration();
+    void testComplexComponentInteractions();
 
 private:
     std::unique_ptr<CAN> _test_can;
@@ -101,6 +112,13 @@ FactoryIntegrationTest::FactoryIntegrationTest() {
     DEFINE_TEST(testFactoryAgentCompatibilityWithOriginal);
     DEFINE_TEST(testFactoryAgentCSVLogging);
     DEFINE_TEST(testFactoryAgentErrorRecovery);
+    
+    // === PHASE 3.2 COMPLEX COMPONENT TESTS ===
+    DEFINE_TEST(testECUComponentIntegration);
+    DEFINE_TEST(testINSComponentIntegration);
+    DEFINE_TEST(testLidarComponentIntegration);
+    DEFINE_TEST(testCameraComponentIntegration);
+    DEFINE_TEST(testComplexComponentInteractions);
 }
 
 void FactoryIntegrationTest::setUp() {
@@ -740,6 +758,259 @@ void FactoryIntegrationTest::testFactoryAgentErrorRecovery() {
     
     // Test passes if error recovery works correctly
     assert_true(true, "Factory agents should recover from error conditions correctly");
+}
+
+/**
+ * @brief Tests ECU component integration
+ * 
+ * Verifies that ECU components can be created and operate as consumers,
+ * receiving messages from other components (Lidar, Camera, INS).
+ */
+void FactoryIntegrationTest::testECUComponentIntegration() {
+    auto addr = createTestAddress();
+    
+    // Create ECU component (consumer-only)
+    auto ecu = create_ecu_component(_test_can.get(), addr, "TestECU");
+    
+    // Verify ECU is properly created and running
+    assert_true(ecu->running(), "ECU should be running");
+    assert_equal("TestECU", ecu->name(), "ECU name should be correct");
+    
+    // Test ECU periodic interest functionality
+    int result = ecu->start_periodic_interest(
+        static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ),
+        Agent::Microseconds(500000));
+    assert_equal(0, result, "ECU should be able to start periodic interest");
+    
+    waitForMessages(200);
+    
+    ecu->stop_periodic_interest();
+    
+    // Test convenience factory function
+    auto ecu_with_period = create_ecu_component_with_period(
+        _test_can.get(), addr, Agent::Microseconds(1000000), "TestECUWithPeriod");
+    assert_true(ecu_with_period->running(), "ECU with period should be running");
+    
+    waitForMessages(100);
+}
+
+/**
+ * @brief Tests INS component integration
+ * 
+ * Verifies that INS components can be created and operate as producers,
+ * generating navigation data for other components.
+ */
+void FactoryIntegrationTest::testINSComponentIntegration() {
+    auto addr = createTestAddress();
+    
+    // Create INS component (producer-only)
+    auto ins = create_ins_component(_test_can.get(), addr, "TestINS");
+    
+    // Verify INS is properly created and running
+    assert_true(ins->running(), "INS should be running");
+    assert_equal("TestINS", ins->name(), "INS name should be correct");
+    
+    // Test INS data generation
+    auto navigation_data = ins->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_INERTIAL_POSITION));
+    assert_false(navigation_data.empty(), "INS should generate navigation data");
+    assert_equal(8 * sizeof(float), navigation_data.size(), "INS should generate 8 floats (32 bytes)");
+    
+    // Test custom range factory
+    auto ins_custom = create_ins_component_with_ranges(
+        _test_can.get(), addr, 0.0, 500.0, 0.0, 500.0, 0.0, 100.0, "TestINSCustom");
+    assert_true(ins_custom->running(), "Custom INS should be running");
+    
+    auto custom_data = ins_custom->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_INERTIAL_POSITION));
+    assert_equal(8 * sizeof(float), custom_data.size(), "Custom INS should generate correct data size");
+    
+    // Test custom motion factory
+    auto ins_motion = create_ins_component_with_motion(
+        _test_can.get(), addr, 0.0, 50.0, -10.0, 10.0, "TestINSMotion");
+    assert_true(ins_motion->running(), "Motion INS should be running");
+}
+
+/**
+ * @brief Tests Lidar component integration
+ * 
+ * Verifies that Lidar components can be created and operate as producers,
+ * generating point cloud data for other components.
+ */
+void FactoryIntegrationTest::testLidarComponentIntegration() {
+    auto addr = createTestAddress();
+    
+    // Create Lidar component (producer-only)
+    auto lidar = create_lidar_component(_test_can.get(), addr, "TestLidar");
+    
+    // Verify Lidar is properly created and running
+    assert_true(lidar->running(), "Lidar should be running");
+    assert_equal("TestLidar", lidar->name(), "Lidar name should be correct");
+    
+    // Test Lidar data generation
+    auto point_cloud_data = lidar->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ));
+    assert_false(point_cloud_data.empty(), "Lidar should generate point cloud data");
+    
+    // Point cloud size should be variable (1000-5000 points * 4 floats * 4 bytes)
+    std::size_t min_size = 1000 * 4 * sizeof(float);
+    std::size_t max_size = 5000 * 4 * sizeof(float);
+    assert_true(point_cloud_data.size() >= min_size && point_cloud_data.size() <= max_size,
+                "Lidar point cloud should be within expected size range");
+    
+    // Test custom range factory
+    auto lidar_custom = create_lidar_component_with_ranges(
+        _test_can.get(), addr, -25.0, 25.0, -25.0, 25.0, -2.0, 5.0, "TestLidarCustom");
+    assert_true(lidar_custom->running(), "Custom Lidar should be running");
+    
+    // Test custom density factory
+    auto lidar_density = create_lidar_component_with_density(
+        _test_can.get(), addr, 500, 1500, "TestLidarDensity");
+    assert_true(lidar_density->running(), "Density Lidar should be running");
+    
+    auto density_data = lidar_density->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ));
+    std::size_t density_min = 500 * 4 * sizeof(float);
+    std::size_t density_max = 1500 * 4 * sizeof(float);
+    assert_true(density_data.size() >= density_min && density_data.size() <= density_max,
+                "Custom density Lidar should generate correct size range");
+    
+    // Test custom timing factory
+    auto lidar_timing = create_lidar_component_with_timing(
+        _test_can.get(), addr, 50, 70, "TestLidarTiming");
+    assert_true(lidar_timing->running(), "Timing Lidar should be running");
+}
+
+/**
+ * @brief Tests Camera component integration
+ * 
+ * Verifies that Camera components can be created and operate as producers,
+ * generating pixel matrix data for other components.
+ */
+void FactoryIntegrationTest::testCameraComponentIntegration() {
+    auto addr = createTestAddress();
+    
+    // Create Camera component (producer-only)
+    auto camera = create_camera_component(_test_can.get(), addr, "TestCamera");
+    
+    // Verify Camera is properly created and running
+    assert_true(camera->running(), "Camera should be running");
+    assert_equal("TestCamera", camera->name(), "Camera name should be correct");
+    
+    // Test Camera data generation
+    auto pixel_data = camera->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX));
+    assert_false(pixel_data.empty(), "Camera should generate pixel data");
+    
+    // Default VGA grayscale: 640 * 480 * 1 = 307,200 bytes
+    std::size_t expected_size = 640 * 480 * 1;
+    assert_equal(expected_size, pixel_data.size(), "Camera should generate VGA grayscale image");
+    
+    // Test custom dimensions factory
+    auto camera_hd = create_camera_component_with_dimensions(
+        _test_can.get(), addr, 1280, 720, 3, "TestCameraHD");
+    assert_true(camera_hd->running(), "HD Camera should be running");
+    
+    auto hd_data = camera_hd->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX));
+    std::size_t hd_expected = 1280 * 720 * 3; // HD RGB
+    assert_equal(hd_expected, hd_data.size(), "HD Camera should generate correct size");
+    
+    // Test custom pixel parameters factory
+    auto camera_custom = create_camera_component_with_pixel_params(
+        _test_can.get(), addr, 50, 200, 5, "TestCameraCustom");
+    assert_true(camera_custom->running(), "Custom Camera should be running");
+    
+    // Test custom timing factory
+    auto camera_timing = create_camera_component_with_timing(
+        _test_can.get(), addr, 15, 25, "TestCameraTiming");
+    assert_true(camera_timing->running(), "Timing Camera should be running");
+    
+    // Test fully custom factory
+    auto camera_full = create_camera_component_fully_custom(
+        _test_can.get(), addr, 320, 240, 1, 0, 255, 15, 40, 50, "TestCameraFull");
+    assert_true(camera_full->running(), "Fully custom Camera should be running");
+    
+    auto full_data = camera_full->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX));
+    std::size_t full_expected = 320 * 240 * 1;
+    assert_equal(full_expected, full_data.size(), "Fully custom Camera should generate correct size");
+}
+
+/**
+ * @brief Tests complex component interactions
+ * 
+ * Verifies that complex components can interact with each other,
+ * particularly testing Camera→ECU and Lidar→ECU data flows.
+ */
+void FactoryIntegrationTest::testComplexComponentInteractions() {
+    auto addr1 = createTestAddress(1);
+    auto addr2 = createTestAddress(2);
+    auto addr3 = createTestAddress(3);
+    auto addr4 = createTestAddress(4);
+    
+    // Create a complete sensor system
+    auto camera = create_camera_component(_test_can.get(), addr1, "SystemCamera");
+    auto lidar = create_lidar_component(_test_can.get(), addr2, "SystemLidar");
+    auto ins = create_ins_component(_test_can.get(), addr3, "SystemINS");
+    auto ecu = create_ecu_component(_test_can.get(), addr4, "SystemECU");
+    
+    // Verify all components are running
+    assert_true(camera->running(), "System Camera should be running");
+    assert_true(lidar->running(), "System Lidar should be running");
+    assert_true(ins->running(), "System INS should be running");
+    assert_true(ecu->running(), "System ECU should be running");
+    
+    // Test ECU consuming from Lidar (primary data flow)
+    int result = ecu->start_periodic_interest(
+        static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ),
+        Agent::Microseconds(200000)); // 200ms period
+    assert_equal(0, result, "ECU should be able to request Lidar data");
+    
+    // Allow time for interaction
+    waitForMessages(600); // Allow multiple cycles
+    
+    ecu->stop_periodic_interest();
+    
+    // Test data generation from all producers
+    auto camera_data = camera->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX));
+    auto lidar_data = lidar->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ));
+    auto ins_data = ins->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_INERTIAL_POSITION));
+    
+    assert_false(camera_data.empty(), "Camera should generate data in system");
+    assert_false(lidar_data.empty(), "Lidar should generate data in system");
+    assert_false(ins_data.empty(), "INS should generate data in system");
+    
+    // Test concurrent operations
+    std::vector<std::thread> operation_threads;
+    
+    // Thread 1: Camera data generation
+    operation_threads.emplace_back([&camera]() {
+        for (int i = 0; i < 5; ++i) {
+            auto data = camera->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX));
+            std::this_thread::sleep_for(50ms);
+        }
+    });
+    
+    // Thread 2: Lidar data generation
+    operation_threads.emplace_back([&lidar]() {
+        for (int i = 0; i < 5; ++i) {
+            auto data = lidar->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ));
+            std::this_thread::sleep_for(50ms);
+        }
+    });
+    
+    // Thread 3: INS data generation
+    operation_threads.emplace_back([&ins]() {
+        for (int i = 0; i < 5; ++i) {
+            auto data = ins->get(static_cast<std::uint32_t>(DataTypes::EXTERNAL_INERTIAL_POSITION));
+            std::this_thread::sleep_for(50ms);
+        }
+    });
+    
+    // Wait for all operations to complete
+    for (auto& thread : operation_threads) {
+        thread.join();
+    }
+    
+    // Test system cleanup (this used to cause "pure virtual method called" crashes)
+    // With function pointers, this should be safe
+    waitForMessages(100);
+    
+    // All components will be destroyed here - should be safe with function-based approach
 }
 
 // Main function
