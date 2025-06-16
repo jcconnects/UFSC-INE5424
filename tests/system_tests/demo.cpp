@@ -11,13 +11,10 @@
 
 #include "../../include/app/vehicle.h"
 #include "../../include/api/util/debug.h"
-#include "../../include/app/components/basic_producer_a.h"
-#include "../../include/app/components/basic_consumer_a.h"
-#include "../../include/app/components/basic_producer_b.h"
-#include "../../include/app/components/basic_consumer_b.h"
 #include "../../include/api/framework/rsu.h"
 #include "../../include/api/framework/leaderKeyStorage.h"
 #include "../../include/api/framework/map_config.h"
+#include "../../include/app/datatypes.h"
 #include "../testcase.h"
 
 #ifndef RSU_RADIUS
@@ -548,18 +545,18 @@ void Demo::run_vehicle(Vehicle* v, unsigned int vehicle_id) {
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] configured with all basic components (Producer-A, Producer-B, Consumer-A, Consumer-B)\n";
 
     // Start consumers with periodic interest
-    auto consumerA = v->get_component<BasicConsumerA>("ConsumerA");
-    auto consumerB = v->get_component<BasicConsumerB>("ConsumerB");
+    auto consumerA = v->get_component<Agent>("ConsumerA");
+    auto consumerB = v->get_component<Agent>("ConsumerB");
     
     if (consumerA) {
-        // Start ConsumerA with 500ms period
-        consumerA->start_consuming(Agent::Microseconds(500000));
+        // Start ConsumerA with 500ms period using Agent's periodic interest method
+        consumerA->start_periodic_interest(static_cast<std::uint32_t>(DataTypes::UNIT_A), Agent::Microseconds(500000));
         db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] ConsumerA started with 500ms period\n";
     }
     
     if (consumerB) {
-        // Start ConsumerB with 750ms period 
-        consumerB->start_consuming(Agent::Microseconds(750000));
+        // Start ConsumerB with 750ms period using Agent's periodic interest method
+        consumerB->start_periodic_interest(static_cast<std::uint32_t>(DataTypes::UNIT_B), Agent::Microseconds(750000));
         db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] ConsumerB started with 750ms period\n";
     }
 

@@ -19,6 +19,10 @@
 #include "components/lidar_factory.hpp"
 #include "components/ecu_factory.hpp"
 #include "components/ins_factory.hpp"
+#include "components/basic_producer_a_factory.hpp"
+#include "components/basic_producer_b_factory.hpp"
+#include "components/basic_consumer_a_factory.hpp"
+#include "components/basic_consumer_b_factory.hpp"
 
 // Component type identifiers for template specialization
 // These replace the old inheritance-based component classes
@@ -26,6 +30,10 @@ struct ECUComponent {};
 struct CameraComponent {};
 struct LidarComponent {};
 struct INSComponent {};
+struct BasicProducerA {};
+struct BasicProducerB {};
+struct BasicConsumerA {};
+struct BasicConsumerB {};
 
 // Vehicle class definition
 class Vehicle {
@@ -142,7 +150,7 @@ inline void Vehicle::stop() {
 template <typename ComponentType>
 inline void Vehicle::create_component(const std::string& name) {
     static_assert(sizeof(ComponentType) == 0, 
-        "Unsupported component type. Supported types: ECUComponent, CameraComponent, LidarComponent, INSComponent");
+        "Unsupported component type. Supported types: ECUComponent, CameraComponent, LidarComponent, INSComponent, BasicProducerA, BasicProducerB, BasicConsumerA, BasicConsumerB");
 }
 
 /**
@@ -217,11 +225,102 @@ inline void Vehicle::create_component<INSComponent>(const std::string& name) {
     _components.push_back(std::move(component));
 }
 
+/**
+ * @brief Template specialization for BasicProducerA component creation
+ * 
+ * Creates a BasicProducerA component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<BasicProducerA>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_basic_producer_a(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for BasicProducerB component creation
+ * 
+ * Creates a BasicProducerB component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<BasicProducerB>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_basic_producer_b(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for BasicConsumerA component creation
+ * 
+ * Creates a BasicConsumerA component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<BasicConsumerA>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_basic_consumer_a(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for BasicConsumerB component creation
+ * 
+ * Creates a BasicConsumerB component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<BasicConsumerB>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_basic_consumer_b(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
 template <typename ComponentType>
 inline ComponentType* Vehicle::get_component(const std::string& name) {
     for (auto& component : _components) {
         if (component->name() == name) {
             return static_cast<ComponentType*>(component.get());
+        }
+    }
+    return nullptr;
+}
+
+/**
+ * @brief Template specialization for Agent component retrieval
+ * 
+ * Returns the Agent pointer directly without casting, since all components
+ * are stored as Agent instances in the factory-based approach.
+ * 
+ * @param name Component name for identification
+ * @return Pointer to Agent component or nullptr if not found
+ */
+template<>
+inline Agent* Vehicle::get_component<Agent>(const std::string& name) {
+    for (auto& component : _components) {
+        if (component->name() == name) {
+            return component.get();
         }
     }
     return nullptr;
