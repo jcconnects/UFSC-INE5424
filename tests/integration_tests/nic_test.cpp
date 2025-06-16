@@ -764,8 +764,8 @@ void NICTest::testNullBufferSendHandling() {
         
         // Verify we can access statistics without crashing
         auto stats = getStats(nic);
-        // Just verify we can read the statistics
-        assert_true(stats.tx_drops >= 0, "tx_drops should be non-negative");
+        // Just verify we can read the statistics and they are reasonable
+        assert_true(stats.tx_drops < 1000000, "tx_drops should be reasonable");
         
     } catch (const std::exception& e) {
         // Clean up on exception
