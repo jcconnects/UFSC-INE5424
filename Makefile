@@ -107,16 +107,6 @@ dirs:
 	mkdir -p $(BINDIR)/system_tests
 	mkdir -p $(TESTDIR)/logs
 
-# Test targets
-.PHONY: unit_tests
-unit_tests: dirs $(UNIT_TEST_BINS) run_unit_tests
-
-.PHONY: integration_tests
-integration_tests: dirs $(INTEGRATION_TEST_BINS) run_integration_tests
-
-.PHONY: system_tests
-system_tests: dirs $(SYSTEM_TEST_BINS) run_system_tests
-
 # Test binary compilation rules (header-only - no library objects needed)
 $(BINDIR)/unit_tests/%: $(UNIT_TESTDIR)/%.cpp | $(BINDIR)/unit_tests
 	@echo "Compiling unit test: $@"
