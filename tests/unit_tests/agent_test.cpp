@@ -1047,7 +1047,7 @@ void AgentTest::testAgentMessageTimingCompatibility() {
     
     // Should be approximately 350ms (allowing for some variance)
     assert_true(duration.count() >= 300 && duration.count() <= 400,
-                "Timing should be compatible with original Agent");
+                "Timing should be compatible with original Agent" + std::to_string(duration.count()));
 }
 
 /**

@@ -304,6 +304,7 @@ inline void Agent::handle_interest(Unit unit, Microseconds period) {
     } else {
         // Ajusta o período com MDC entre o atual e o novo
         _periodic_thread->adjust_period(period.count());
+        db<Agent>(INF) << "[Agent] " << _name << " adjusted periodic thread period to: " << _periodic_thread->period() << " microseconds\n";
     }
 }
 
