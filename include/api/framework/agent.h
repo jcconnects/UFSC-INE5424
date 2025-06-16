@@ -129,6 +129,13 @@ inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Add
     _can_observer = new Observer(c);
     _can->attach(_can_observer, c);
 
+    if (_is_consumer && !handler) {
+        throw std::invalid_argument("Consumer agents must have a response handler");
+    }
+    if (!_is_consumer && !producer) {
+        throw std::invalid_argument("Producer agents must have a data producer");
+    }
+
     // Phase 1.2: Consumer initialization - No automatic INTEREST sending
     if (_is_consumer) {
         // Don't send initial INTEREST here anymore

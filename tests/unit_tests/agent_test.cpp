@@ -246,7 +246,7 @@ void AgentTest::testAgentDestructorCleanup() {
  * underlies the periodic interest system.
  */
 void AgentTest::testAgentBasicSendReceive() {
-    auto consumer = create_test_consumer(_test_can.get(), {}, "TestConsumer");
+    auto consumer = create_test_producer(_test_can.get(), {}, "TestConsumer");
     
     // Test sending an INTEREST message
     int result = consumer->send(static_cast<std::uint32_t>(DataTypes::UNIT_A), 
