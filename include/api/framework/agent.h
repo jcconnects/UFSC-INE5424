@@ -123,23 +123,6 @@ inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Add
     if (!bus)
         throw std::invalid_argument("Gateway cannot be null");
     
-    // Validate agent role and function pointer consistency
-    if (_is_consumer) {
-        if (!handler) {
-            throw std::invalid_argument("Consumer agents must have a response handler");
-        }
-        if (producer) {
-            throw std::invalid_argument("Consumer agents should not have a data producer");
-        }
-    } else {
-        if (!producer) {
-            throw std::invalid_argument("Producer agents must have a data producer");
-        }
-        if (handler) {
-            throw std::invalid_argument("Producer agents should not have a response handler");
-        }
-    }
-    
     _can = bus;
     Condition c(unit, type);
     _c = c;

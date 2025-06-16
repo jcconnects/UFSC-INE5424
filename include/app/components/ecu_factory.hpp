@@ -34,9 +34,9 @@ inline std::unique_ptr<Agent> create_ecu_component(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "ECUComponent" : name;
     
     // Create component data for ECU consumer
     auto data = std::make_unique<ECUData>();
@@ -45,7 +45,7 @@ inline std::unique_ptr<Agent> create_ecu_component(
     // ECU is configured as consumer for EXTERNAL_POINT_CLOUD_XYZ (matching original)
     return std::make_unique<Agent>(
         can,                                                           // CAN bus
-        name,                                                          // Agent name
+        agentName,                                                     // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), // Data unit (matching original)
         Agent::Type::RESPONSE,                                         // Consumer observes RESPONSE
         addr,                                                          // Network address

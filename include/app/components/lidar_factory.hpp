@@ -34,9 +34,9 @@ inline std::unique_ptr<Agent> create_lidar_component(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "LidarComponent" : name;
     
     // Create component data for Lidar producer
     auto data = std::make_unique<LidarData>();
@@ -45,7 +45,7 @@ inline std::unique_ptr<Agent> create_lidar_component(
     // Lidar is configured as producer for EXTERNAL_POINT_CLOUD_XYZ (matching original)
     return std::make_unique<Agent>(
         can,                                                           // CAN bus
-        name,                                                          // Agent name
+        agentName,                                                     // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), // Data unit (matching original)
         Agent::Type::INTEREST,                                         // Producer observes INTEREST
         addr,                                                          // Network address
@@ -86,9 +86,10 @@ inline std::unique_ptr<Agent> create_lidar_component_with_ranges(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "LidarComponent" : name;
+
     if (x_min >= x_max || y_min >= y_max || z_min >= z_max) {
         throw std::invalid_argument("Invalid range parameters: min must be less than max");
     }
@@ -100,7 +101,7 @@ inline std::unique_ptr<Agent> create_lidar_component_with_ranges(
     // Create Agent using function-based composition
     return std::make_unique<Agent>(
         can,                                                           // CAN bus
-        name,                                                          // Agent name
+        agentName,                                                     // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), // Data unit
         Agent::Type::INTEREST,                                         // Producer observes INTEREST
         addr,                                                          // Network address
@@ -135,9 +136,10 @@ inline std::unique_ptr<Agent> create_lidar_component_with_density(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "LidarComponent" : name;
+
     if (min_points <= 0 || max_points <= min_points) {
         throw std::invalid_argument("Invalid density parameters: must have min_points > 0 and max_points > min_points");
     }
@@ -149,7 +151,7 @@ inline std::unique_ptr<Agent> create_lidar_component_with_density(
     // Create Agent using function-based composition
     return std::make_unique<Agent>(
         can,                                                           // CAN bus
-        name,                                                          // Agent name
+        agentName,                                                     // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), // Data unit
         Agent::Type::INTEREST,                                         // Producer observes INTEREST
         addr,                                                          // Network address
@@ -184,9 +186,10 @@ inline std::unique_ptr<Agent> create_lidar_component_with_timing(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+    
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "LidarComponent" : name;
+
     if (min_delay_ms <= 0 || max_delay_ms <= min_delay_ms) {
         throw std::invalid_argument("Invalid timing parameters: must have min_delay_ms > 0 and max_delay_ms > min_delay_ms");
     }
@@ -198,7 +201,7 @@ inline std::unique_ptr<Agent> create_lidar_component_with_timing(
     // Create Agent using function-based composition
     return std::make_unique<Agent>(
         can,                                                           // CAN bus
-        name,                                                          // Agent name
+        agentName,                                                     // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_POINT_CLOUD_XYZ), // Data unit
         Agent::Type::INTEREST,                                         // Producer observes INTEREST
         addr,                                                          // Network address

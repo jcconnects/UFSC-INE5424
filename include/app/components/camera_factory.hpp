@@ -35,10 +35,10 @@ inline std::unique_ptr<Agent> create_camera_component(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
-    
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "CameraComponent" : name;
+
     // Create component data for Camera producer
     auto data = std::make_unique<CameraData>();
     
@@ -46,7 +46,7 @@ inline std::unique_ptr<Agent> create_camera_component(
     // Camera is configured as producer for EXTERNAL_PIXEL_MATRIX (initially simplified)
     return std::make_unique<Agent>(
         can,                                                           // CAN bus
-        name,                                                          // Agent name
+        agentName,                                                     // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX),  // Data unit (simplified)
         Agent::Type::INTEREST,                                         // Producer observes INTEREST
         addr,                                                          // Network address
@@ -82,9 +82,10 @@ inline std::unique_ptr<Agent> create_camera_component_with_dimensions(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "CameraComponent" : name;
+
     if (width <= 0 || height <= 0 || bytes_per_pixel <= 0) {
         throw std::invalid_argument("Invalid image dimensions: width, height, and bytes_per_pixel must be positive");
     }
@@ -99,7 +100,7 @@ inline std::unique_ptr<Agent> create_camera_component_with_dimensions(
     // Create Agent using function-based composition
     return std::make_unique<Agent>(
         can,                                                           // CAN bus
-        name,                                                          // Agent name
+        agentName,                                                     // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX),  // Data unit
         Agent::Type::INTEREST,                                         // Producer observes INTEREST
         addr,                                                          // Network address
@@ -135,9 +136,10 @@ inline std::unique_ptr<Agent> create_camera_component_with_pixel_params(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "CameraComponent" : name;
+
     if (min_pixel < 0 || max_pixel > 255 || min_pixel >= max_pixel) {
         throw std::invalid_argument("Invalid pixel range: must have 0 <= min_pixel < max_pixel <= 255");
     }
@@ -152,7 +154,7 @@ inline std::unique_ptr<Agent> create_camera_component_with_pixel_params(
     // Create Agent using function-based composition
     return std::make_unique<Agent>(
         can,                                                           // CAN bus
-        name,                                                          // Agent name
+        agentName,                                                     // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX),  // Data unit
         Agent::Type::INTEREST,                                         // Producer observes INTEREST
         addr,                                                          // Network address
@@ -187,9 +189,10 @@ inline std::unique_ptr<Agent> create_camera_component_with_timing(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "CameraComponent" : name;
+
     if (min_delay_ms <= 0 || max_delay_ms <= min_delay_ms) {
         throw std::invalid_argument("Invalid timing parameters: must have min_delay_ms > 0 and max_delay_ms > min_delay_ms");
     }
@@ -201,7 +204,7 @@ inline std::unique_ptr<Agent> create_camera_component_with_timing(
     // Create Agent using function-based composition
     return std::make_unique<Agent>(
         can,                                                           // CAN bus
-        name,                                                          // Agent name
+        agentName,                                                     // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX),  // Data unit
         Agent::Type::INTEREST,                                         // Producer observes INTEREST
         addr,                                                          // Network address
@@ -243,9 +246,10 @@ inline std::unique_ptr<Agent> create_camera_component_fully_custom(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "CameraComponent" : name;
+
     if (width <= 0 || height <= 0 || bytes_per_pixel <= 0 || bytes_per_pixel > 4) {
         throw std::invalid_argument("Invalid image dimensions");
     }
@@ -265,7 +269,7 @@ inline std::unique_ptr<Agent> create_camera_component_fully_custom(
     // Create Agent using function-based composition
     return std::make_unique<Agent>(
         can,                                                           // CAN bus
-        name,                                                          // Agent name
+        agentName,                                                     // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_PIXEL_MATRIX),  // Data unit
         Agent::Type::INTEREST,                                         // Producer observes INTEREST
         addr,                                                          // Network address

@@ -34,9 +34,9 @@ inline std::unique_ptr<Agent> create_basic_consumer_b(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "BasicConsumerB" : name;
     
     // Create component data for consumer
     auto data = std::make_unique<UnitBData>();
@@ -44,7 +44,7 @@ inline std::unique_ptr<Agent> create_basic_consumer_b(
     // Create Agent using function-based composition
     return std::make_unique<Agent>(
         can,                                                    // CAN bus
-        name,                                                   // Agent name
+        agentName,                                              // Agent name
         static_cast<std::uint32_t>(DataTypes::UNIT_B),        // Data unit
         Agent::Type::RESPONSE,                                 // Consumer observes RESPONSE
         addr,                                                  // Network address

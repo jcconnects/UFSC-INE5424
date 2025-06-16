@@ -34,9 +34,9 @@ inline std::unique_ptr<Agent> create_ins_component(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "INSComponent" : name;
     
     // Create component data for INS producer
     auto data = std::make_unique<INSData>();
@@ -45,7 +45,7 @@ inline std::unique_ptr<Agent> create_ins_component(
     // INS is configured as producer for EXTERNAL_INERTIAL_POSITION (matching original)
     return std::make_unique<Agent>(
         can,                                                              // CAN bus
-        name,                                                             // Agent name
+        agentName,                                                        // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_INERTIAL_POSITION), // Data unit (matching original)
         Agent::Type::INTEREST,                                            // Producer observes INTEREST
         addr,                                                             // Network address
@@ -86,9 +86,10 @@ inline std::unique_ptr<Agent> create_ins_component_with_ranges(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "INSComponent" : name;
+
     if (x_min >= x_max || y_min >= y_max || alt_min >= alt_max) {
         throw std::invalid_argument("Invalid range parameters: min must be less than max");
     }
@@ -100,7 +101,7 @@ inline std::unique_ptr<Agent> create_ins_component_with_ranges(
     // Create Agent using function-based composition
     return std::make_unique<Agent>(
         can,                                                              // CAN bus
-        name,                                                             // Agent name
+        agentName,                                                        // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_INERTIAL_POSITION), // Data unit
         Agent::Type::INTEREST,                                            // Producer observes INTEREST
         addr,                                                             // Network address
@@ -137,9 +138,10 @@ inline std::unique_ptr<Agent> create_ins_component_with_motion(
     if (!can) {
         throw std::invalid_argument("CAN bus cannot be null");
     }
-    if (name.empty()) {
-        throw std::invalid_argument("Agent name cannot be empty");
-    }
+
+    // Use default name if an empty string is provided
+    const std::string& agentName = name.empty() ? "INSComponent" : name;
+
     if (vel_min >= vel_max || accel_min >= accel_max) {
         throw std::invalid_argument("Invalid motion parameters: min must be less than max");
     }
@@ -151,7 +153,7 @@ inline std::unique_ptr<Agent> create_ins_component_with_motion(
     // Create Agent using function-based composition
     return std::make_unique<Agent>(
         can,                                                              // CAN bus
-        name,                                                             // Agent name
+        agentName,                                                        // Agent name
         static_cast<std::uint32_t>(DataTypes::EXTERNAL_INERTIAL_POSITION), // Data unit
         Agent::Type::INTEREST,                                            // Producer observes INTEREST
         addr,                                                             // Network address
