@@ -14,6 +14,7 @@
 #include "../util/debug.h"
 #include "../util/csv_logger.h"
 #include "../traits.h"
+#include "../util/static_size_hashed_cache.h"
 #include "component_types.hpp"
 #include "component_functions.hpp"
 
@@ -40,7 +41,8 @@ class Agent {
         typedef Message::Microseconds Microseconds;
         typedef Periodic_Thread<Agent> Thread;
         typedef CAN::Observer Observer;
-
+        // Number of units a vehicle could produce
+        static const unsigned int _units_per_vehicle = 5;
     
         Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address,
               DataProducer producer, ResponseHandler handler, 
@@ -95,6 +97,15 @@ class Agent {
         std::unique_ptr<ComponentData> _component_data;
         DataProducer _data_producer;
         ResponseHandler _response_handler;
+
+        // Cache for storing the last value for each unit
+        struct ValueCache {
+            Unit unit;
+            Microseconds timestamp;
+            unsigned int size;
+        };
+
+        StaticSizeHashedCache<ValueCache[_units_per_vehicle]> _value_cache;
 };
 
 /****** Agent Implementation *****/
@@ -241,7 +252,46 @@ inline void Agent::handle_response(Message* msg) {
     if (!_is_consumer || !_response_handler || !_component_data) {
         return; // Silently ignore if not a consumer
     }
-    _response_handler(msg, _component_data.get());
+
+    auto origin_paddr = msg->origin().paddr();
+    uint16_t key = (static_cast<uint16_t>(origin_paddr.bytes[4]) << 8) | origin_paddr.bytes[5];
+
+    if (_value_cache.contains(key)) {
+        auto& cached_values = _value_cache.get(key);
+        bool unit_found = false;
+
+        for (unsigned int i = 0; i < _units_per_vehicle; ++i) {
+            if (cached_values[i].unit == msg->unit()) {
+                unit_found = true;
+                auto current_timestamp = Message::getSynchronizedTimestamp();
+                if ((current_timestamp.count() - cached_values[i].timestamp.count()) >= _interest_period.count()) {
+                    cached_values[i].timestamp = current_timestamp;
+                    _response_handler(msg, _component_data.get());
+                }
+                break;
+            }
+        }
+
+        if (!unit_found) {
+            for (unsigned int i = 0; i < _units_per_vehicle; ++i) {
+                if (cached_values[i].timestamp.count() == 0) { // Assuming timestamp 0 means empty
+                    cached_values[i].unit = msg->unit();
+                    cached_values[i].timestamp = Message::getSynchronizedTimestamp();
+                    cached_values[i].size = msg->value_size();
+                    _response_handler(msg, _component_data.get());
+                    break;
+                }
+            }
+        }
+    } else {
+        ValueCache new_values[_units_per_vehicle] = {}; // Zero-initialize
+        new_values[0].unit = msg->unit();
+        new_values[0].timestamp = Message::getSynchronizedTimestamp();
+        new_values[0].size = msg->value_size();
+        
+        _value_cache.put(key, new_values);
+        _response_handler(msg, _component_data.get());
+    }
 }
 
 inline int Agent::send(Unit unit, Microseconds period) {
