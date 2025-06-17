@@ -28,6 +28,7 @@ public:
    * added.
    */
   void add(long int key, V value) {
+    db<StaticSizeHashedCache>(TRC) << "[StaticSizeHashedCache] add called for key: " << key << "\n";
     size_t index = hash(key);
 
     for (size_t i = 0; i < N; ++i) {
@@ -50,6 +51,7 @@ public:
    * @return A pointer to the value if the key is found, otherwise nullptr.
    */
   V *get(long int key) {
+    db<StaticSizeHashedCache>(TRC) << "[StaticSizeHashedCache] get called for key: " << key << "\n";
     size_t index = hash(key);
 
     for (size_t i = 0; i < N; ++i) {
@@ -72,6 +74,7 @@ public:
    * @return true if the key is in the cache, false otherwise.
    */
   bool contains(long int key) const {
+    db<StaticSizeHashedCache>(TRC) << "[StaticSizeHashedCache] contains called for key: " << key << "\n";
     size_t index = hash(key);
 
     for (size_t i = 0; i < N; ++i) {

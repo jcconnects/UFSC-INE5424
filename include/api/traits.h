@@ -37,6 +37,8 @@ class LeaderKeyStorage;
 class RSU;
 template <typename Protocol_T>
 class VehicleRSUManager;
+template <typename V, size_t N>
+class StaticSizeHashedCache;
 
 // Traits definition
 template <typename T>
@@ -142,6 +144,12 @@ struct Traits<VehicleRSUManager<Protocol_T>> : public Traits<void>
     static const bool debugged = false;
 };
 
+template <typename V, unsigned int S>
+struct Traits<StaticSizeHashedCache<V, S>> : public Traits<void>
+{
+    static const bool debugged = false;
+};
+
 // Traits for Debug class
 template<>
 struct Traits<Debug> : public Traits<void>
@@ -149,7 +157,7 @@ struct Traits<Debug> : public Traits<void>
     static const bool error = false;
     static const bool warning = false;
     static const bool info = true;
-    static const bool trace = false;
+    static const bool trace = true;
 };
 
 #endif // TRAITS_H

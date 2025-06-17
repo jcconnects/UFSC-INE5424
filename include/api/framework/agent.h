@@ -105,7 +105,7 @@ class Agent {
             unsigned int size;
         };
 
-        StaticSizeHashedCache<ValueCache[_units_per_vehicle]> _value_cache;
+        StaticSizeHashedCache<ValueCache*> _value_cache;
 };
 
 /****** Agent Implementation *****/
@@ -249,16 +249,19 @@ inline Agent::Value Agent::get(Unit unit) {
  */
 inline void Agent::handle_response(Message* msg) {
     // Only consumers should handle responses
-    if (!_is_consumer || !_response_handler || !_component_data) {
+    if (!_is_consumer || !_response_handler || !_component_data || !msg) {
         return; // Silently ignore if not a consumer
     }
+    db<Agent>(INF) << "[Agent] " << _name << " handling response for unit: " << msg->unit() << "\n";
 
     auto origin_paddr = msg->origin().paddr();
     uint16_t key = (static_cast<uint16_t>(origin_paddr.bytes[4]) << 8) | origin_paddr.bytes[5];
 
     if (_value_cache.contains(key)) {
-        auto& cached_values = _value_cache.get(key);
+        auto ptr = _value_cache.get(key);
+        auto cached_values = *ptr;
         bool unit_found = false;
+        db<Agent>(INF) << "[Agent] " << _name << " found cached values for key: " << key << "\n";
 
         for (unsigned int i = 0; i < _units_per_vehicle; ++i) {
             if (cached_values[i].unit == msg->unit()) {
@@ -272,6 +275,8 @@ inline void Agent::handle_response(Message* msg) {
             }
         }
 
+        db<Agent>(INF) << "[Agent] " << _name << "Unit" << (unit_found ? "FOUND" : " NOT FOUND") << "\n";
+
         if (!unit_found) {
             for (unsigned int i = 0; i < _units_per_vehicle; ++i) {
                 if (cached_values[i].timestamp.count() == 0) { // Assuming timestamp 0 means empty
@@ -283,14 +288,17 @@ inline void Agent::handle_response(Message* msg) {
                 }
             }
         }
+        
     } else {
-        ValueCache new_values[_units_per_vehicle] = {}; // Zero-initialize
+        db<Agent>(INF) << "[Agent] " << _name << " NO CACHE FOUND FOR KEY: " << key << "\n";
+        ValueCache new_values[_units_per_vehicle]; // Zero-initialize
         new_values[0].unit = msg->unit();
         new_values[0].timestamp = Message::getSynchronizedTimestamp();
         new_values[0].size = msg->value_size();
         
-        _value_cache.put(key, new_values);
+        _value_cache.add(key, new_values);
         _response_handler(msg, _component_data.get());
+        db<Agent>(INF) << "[Agent] " << _name << " ADDED CACHE FOR KEY: " << key << "\n";
     }
 }
 
@@ -318,6 +326,7 @@ inline int Agent::send(Unit unit, Microseconds period) {
 inline int Agent::receive(Message* msg) {
     db<Agent>(INF) << "[Agent] " << _name << " waiting for messages...\n";
     (*msg) = *(_can_observer->updated());
+    db<Agent>(INF) << "[Agent] " << _name << " messages received\n";
 
     // Log received message to CSV
     log_message(*msg, "RECEIVE");
