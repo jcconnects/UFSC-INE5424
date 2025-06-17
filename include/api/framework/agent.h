@@ -86,8 +86,10 @@ class Agent {
         
         Thread* _interest_thread;              // Periodic thread for sending INTEREST
         Microseconds _requested_period;        // Period requested by this consumer
+        Microseconds _interest_period;         // Current INTEREST period for response filtering
         std::atomic<bool> _interest_active;    // Control interest sending
         std::atomic<bool> _is_consumer;        // Track if this agent is a consumer
+        std::atomic<long long> _last_response_timestamp; // Timestamp of last processed RESPONSE (µs)
         
         // EPOS-inspired composition members
         std::unique_ptr<ComponentData> _component_data;
@@ -115,16 +117,29 @@ class Agent {
 inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address,
                     DataProducer producer, ResponseHandler handler, 
                     std::unique_ptr<ComponentData> data) 
-    : _address(address), _name(name), _periodic_thread(nullptr), _interest_thread(nullptr), 
-      _requested_period(Microseconds::zero()), _interest_active(false), 
-      _is_consumer(type == Type::RESPONSE), _component_data(std::move(data)),
-      _data_producer(producer), _response_handler(handler) {
+    : _address(address),
+      _can(bus),
+      _name(name),
+      _can_observer(nullptr),
+      _thread(),
+      _periodic_thread(nullptr),
+      _running(false),
+      _c(),
+      _csv_logger(nullptr),
+      _interest_thread(nullptr),
+      _requested_period(Microseconds::zero()),
+      _interest_period(Microseconds::zero()),
+      _interest_active(false),
+      _is_consumer(type == Type::RESPONSE),
+      _last_response_timestamp(0),
+      _component_data(std::move(data)),
+      _data_producer(producer),
+      _response_handler(handler) {
     
     db<Agent>(INF) << "[Agent] " << _name << " created with address: " << _address.to_string() << "\n";
     if (!bus)
         throw std::invalid_argument("Gateway cannot be null");
     
-    _can = bus;
     Condition c(unit, type);
     _c = c;
     _can_observer = new Observer(c);
@@ -407,6 +422,7 @@ inline int Agent::start_periodic_interest(Unit unit, Microseconds period) {
     }
     
     _requested_period = period;
+    _interest_period = period; // Keep response filter in sync
     _interest_active.store(true, std::memory_order_release);
     
     if (!_interest_thread) {
@@ -461,6 +477,7 @@ inline void Agent::send_interest(Unit unit) {
  */
 inline void Agent::update_interest_period(Microseconds new_period) {
     _requested_period = new_period;
+    _interest_period = new_period; // Keep response filter in sync
     if (_interest_thread) {
         _interest_thread->adjust_period(new_period.count());
     }
