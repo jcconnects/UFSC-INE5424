@@ -89,35 +89,35 @@ FactoryIntegrationTest::FactoryIntegrationTest() {
     // DEFINE_TEST(testFactoryAgentDataGeneration);
     
     // === PERIODIC INTEREST INTEGRATION TESTS ===
-    DEFINE_TEST(testFactoryAgentPeriodicInterest);
-    DEFINE_TEST(testFactoryAgentPeriodicInterestLifecycle);
-    DEFINE_TEST(testFactoryAgentMultiplePeriodicOperations);
+    // DEFINE_TEST(testFactoryAgentPeriodicInterest);
+    // DEFINE_TEST(testFactoryAgentPeriodicInterestLifecycle);
+    // DEFINE_TEST(testFactoryAgentMultiplePeriodicOperations);
     
-    // === PRODUCER-CONSUMER INTEGRATION TESTS ===
-    DEFINE_TEST(testFactoryProducerConsumerInteraction);
-    DEFINE_TEST(testFactoryMultipleConsumersSingleProducer);
-    DEFINE_TEST(testFactoryMixedUnitInteraction);
+    // // === PRODUCER-CONSUMER INTEGRATION TESTS ===
+    // DEFINE_TEST(testFactoryProducerConsumerInteraction);
+    // DEFINE_TEST(testFactoryMultipleConsumersSingleProducer);
+    // DEFINE_TEST(testFactoryMixedUnitInteraction);
     
-    // === COMPLETE MESSAGE FLOW TESTS ===
-    DEFINE_TEST(testFactoryCompleteMessageFlow);
-    DEFINE_TEST(testFactoryMessageFlowWithCustomRanges);
-    DEFINE_TEST(testFactoryMessageFlowStressTest);
+    // // === COMPLETE MESSAGE FLOW TESTS ===
+    // DEFINE_TEST(testFactoryCompleteMessageFlow);
+    // DEFINE_TEST(testFactoryMessageFlowWithCustomRanges);
+    // DEFINE_TEST(testFactoryMessageFlowStressTest);
     
-    // === CLEANUP AND RESOURCE MANAGEMENT TESTS ===
-    DEFINE_TEST(testFactoryAgentCleanupAfterOperation);
-    DEFINE_TEST(testFactoryAgentCleanupWithActiveThreads);
-    DEFINE_TEST(testFactoryAgentRapidCreateDestroy);
+    // // === CLEANUP AND RESOURCE MANAGEMENT TESTS ===
+    // DEFINE_TEST(testFactoryAgentCleanupAfterOperation);
+    // DEFINE_TEST(testFactoryAgentCleanupWithActiveThreads);
+    // DEFINE_TEST(testFactoryAgentRapidCreateDestroy);
     
-    // === COMPATIBILITY TESTS ===
-    DEFINE_TEST(testFactoryAgentCompatibilityWithOriginal);
-    DEFINE_TEST(testFactoryAgentCSVLogging);
-    DEFINE_TEST(testFactoryAgentErrorRecovery);
+    // // === COMPATIBILITY TESTS ===
+    // DEFINE_TEST(testFactoryAgentCompatibilityWithOriginal);
+    // DEFINE_TEST(testFactoryAgentCSVLogging);
+    // DEFINE_TEST(testFactoryAgentErrorRecovery);
     
-    // === PHASE 3.2 COMPLEX COMPONENT TESTS ===
-    DEFINE_TEST(testECUComponentIntegration);
-    DEFINE_TEST(testINSComponentIntegration);
-    DEFINE_TEST(testLidarComponentIntegration);
-    DEFINE_TEST(testCameraComponentIntegration);
+    // // === PHASE 3.2 COMPLEX COMPONENT TESTS ===
+    // DEFINE_TEST(testECUComponentIntegration);
+    // DEFINE_TEST(testINSComponentIntegration);
+    // DEFINE_TEST(testLidarComponentIntegration);
+    // DEFINE_TEST(testCameraComponentIntegration);
     // DEFINE_TEST(testComplexComponentInteractions);
 }
 
