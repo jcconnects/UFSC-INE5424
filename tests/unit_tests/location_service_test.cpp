@@ -1,9 +1,10 @@
-#include "../testcase.h"
-#include "api/framework/location_service.h"
 #include <thread>
 #include <chrono>
 #include <fstream>
 #include <filesystem>
+
+#include "../testcase.h"
+#include "api/framework/location_service.h"
 
 class LocationServiceTest : public TestCase {
     public:

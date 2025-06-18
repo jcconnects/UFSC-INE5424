@@ -12,7 +12,7 @@
 
 // Assuming these paths are correct relative to your include directories
 #include "api/network/protocol.h"
-#include "api/util/periodicThread.h" // Your Periodic_Thread
+#include "api/framework/periodicThread.h" // Your Periodic_Thread
 #include "api/util/debug.h"        // Your debug logging
 #include "api/framework/leaderKeyStorage.h"
 
@@ -21,10 +21,6 @@ template <typename NIC_TYPE> class Protocol;
 
 // Define a type for the unique key of a vehicle
 using UniqueKeyValueType = std::array<uint8_t, 16>; // Example: 128-bit key
-
-// Define the port used for STATUS messages
-// This should ideally come from a central traits/configuration file.
-constexpr typename Protocol<typename Traits<Ethernet>::Engine_Type>::Port STATUS_PORT = 60000; // Example port
 
 /**
  * @brief Thread-safe manager for vehicle status and leader election
@@ -37,6 +33,9 @@ template <typename NIC_TYPE>
 class StatusManager {
 public:
     using VehicleIdType = typename Protocol<NIC_TYPE>::Address; // MAC + Port
+    // Define the port used for STATUS messages
+    // This should ideally come from a central traits/configuration file.
+    typename Protocol<NIC_TYPE>::Port STATUS_PORT = 60000;
 
     struct NeighborInfo {
         VehicleIdType id;

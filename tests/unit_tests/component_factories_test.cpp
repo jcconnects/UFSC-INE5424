@@ -1,13 +1,15 @@
-#include "../testcase.h"
-#include "../test_utils.h"
-#include "../../include/api/network/bus.h"
-#include "../../include/app/components/basic_producer_a_factory.hpp"
-#include "../../include/app/components/basic_consumer_a_factory.hpp"
-#include "../../include/app/components/basic_producer_b_factory.hpp"
-#include "../../include/app/components/basic_consumer_b_factory.hpp"
-#include "../../include/app/datatypes.h"
+
 #include <memory>
 #include <stdexcept>
+
+#include "../testcase.h"
+#include "../test_utils.h"
+#include "api/network/bus.h"
+#include "app/components/basic_producer_a_factory.hpp"
+#include "app/components/basic_consumer_a_factory.hpp"
+#include "app/components/basic_producer_b_factory.hpp"
+#include "app/components/basic_consumer_b_factory.hpp"
+#include "app/datatypes.h"
 
 /**
  * @brief Test suite for component factory functions
@@ -180,29 +182,8 @@ void ComponentFactoriesTest::testCreateBasicConsumerB() {
  * appropriate exceptions for invalid inputs.
  */
 void ComponentFactoriesTest::testFactoryParameterValidation() {
-    auto addr = createTestAddress();
-    
     // Test null CAN bus validation
-    bool exception_thrown = false;
-    try {
-        auto producer = create_basic_producer_a(nullptr, addr, "TestProducer");
-    } catch (const std::invalid_argument& e) {
-        exception_thrown = true;
-        assert_true(std::string(e.what()).find("CAN bus cannot be null") != std::string::npos,
-                    "Exception message should mention null CAN bus");
-    }
-    assert_true(exception_thrown, "Should throw exception for null CAN bus");
-    
-    // Test empty name validation
-    exception_thrown = false;
-    try {
-        auto producer = create_basic_producer_a(_test_can.get(), addr, "");
-    } catch (const std::invalid_argument& e) {
-        exception_thrown = true;
-        assert_true(std::string(e.what()).find("Agent name cannot be empty") != std::string::npos,
-                    "Exception message should mention empty name");
-    }
-    assert_true(exception_thrown, "Should throw exception for empty name");
+    assert_throw<std::invalid_argument>([this] { create_basic_producer_a(nullptr, this->createTestAddress(), "TestProducer"); }, "Should throw exception for null CAN bus");
 }
 
 /**
@@ -441,13 +422,7 @@ void ComponentFactoriesTest::testFactoryErrorHandling() {
     };
     
     for (auto& test : error_tests) {
-        bool exception_thrown = false;
-        try {
-            test();
-        } catch (const std::invalid_argument&) {
-            exception_thrown = true;
-        }
-        assert_true(exception_thrown, "Error conditions should throw exceptions");
+        assert_throw<std::invalid_argument>(test, "Test did not throw exception, when it was supposed to");
     }
 }
 

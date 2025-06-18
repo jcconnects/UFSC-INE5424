@@ -9,12 +9,12 @@
 #include <signal.h>
 #include <errno.h>
 
-#include "../../include/app/vehicle.h"
-#include "../../include/api/util/debug.h"
-#include "../../include/api/framework/rsu.h"
-#include "../../include/api/framework/leaderKeyStorage.h"
-#include "../../include/api/framework/map_config.h"
-#include "../../include/app/datatypes.h"
+#include "app/vehicle.h"
+#include "api/util/debug.h"
+#include "api/framework/rsu.h"
+#include "api/framework/leaderKeyStorage.h"
+#include "api/framework/map_config.h"
+#include "app/datatypes.h"
 #include "../testcase.h"
 
 #ifndef RSU_RADIUS

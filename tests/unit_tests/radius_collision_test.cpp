@@ -1,12 +1,14 @@
-#include "../testcase.h"
-#include "api/util/geo_utils.h"
-#include "api/framework/location_service.h"
+
 #include <chrono>
 #include <thread>
 #include <cstring>
 #include <fstream>
 #include <filesystem>
 #include <cmath>
+
+#include "../testcase.h"
+#include "api/util/geo_utils.h"
+#include "api/framework/location_service.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

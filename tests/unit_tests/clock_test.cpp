@@ -1,12 +1,13 @@
-#include "../../tests/testcase.h"
-#include "../../tests/test_utils.h"
-#include "../../include/api/framework/clock.h"
-#include "../../include/api/framework/leaderKeyStorage.h"
 #include <thread>
 #include <vector>
 #include <atomic>
 #include <chrono>
 #include <iomanip>
+
+#include "../testcase.h"
+#include "../tests/test_utils.h"
+#include "api/framework/leaderKeyStorage.h"
+#include "api/framework/clock.h"
 
 // Test constants
 const LeaderIdType TEST_LEADER_ID = 1;

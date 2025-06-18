@@ -12,13 +12,14 @@
 #include <stdexcept>
 #include <exception>
 #include <cstdint>
-#include "../../include/api/network/nic.h"
-#include "../../include/api/network/socketEngine.h"
-#include "../../include/api/network/ethernet.h"
-#include "../../include/api/network/initializer.h"
-#include "../../include/api/traits.h"
-#include "../../tests/testcase.h"
-#include "../../tests/test_utils.h"
+
+#include "api/network/nic.h"
+#include "api/network/socketEngine.h"
+#include "api/network/ethernet.h"
+#include "api/network/initializer.h"
+#include "api/traits.h"
+#include "../testcase.h"
+#include "../test_utils.h"
 
 using namespace std::chrono_literals;
 

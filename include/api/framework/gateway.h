@@ -7,13 +7,13 @@
 #include <chrono>
 #include <sstream>
 
-#include "../network/communicator.h"
-#include "../network/bus.h"
-#include "network.h"
-#include "../util/csv_logger.h"
-#include "../network/message.h"
-#include "../util/debug.h"
-#include "../traits.h"
+#include "api/traits.h"
+#include "api/network/communicator.h"
+#include "api/network/bus.h"
+#include "api/framework/network.h"
+#include "api/util/csv_logger.h"
+#include "api/network/message.h"
+#include "api/util/debug.h"
 
 class Gateway {
     public:

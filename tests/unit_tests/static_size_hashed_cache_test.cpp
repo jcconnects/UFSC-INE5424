@@ -4,7 +4,7 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "../../include/api/util/static_size_hashed_cache.h"
+#include "api/util/static_size_hashed_cache.h"
 
 // Test struct mimicking the ValueCache structure from agent.h
 struct TestValueCache {

@@ -1,7 +1,7 @@
 #ifndef COMPONENT_FUNCTIONS_HPP
 #define COMPONENT_FUNCTIONS_HPP
 
-#include "component_types.hpp"
+#include "api/framework/component_types.hpp"
 #include <vector>
 #include <cstdint>
 

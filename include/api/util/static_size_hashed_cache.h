@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <stdexcept>
 
+#include "api/util/debug.h"
+
 /**
  * @brief A hash cache with a static size, using linear probing for collision
  * resolution.

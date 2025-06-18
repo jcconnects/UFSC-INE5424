@@ -1,9 +1,10 @@
-#include "../../tests/testcase.h"
-#include "../../tests/test_utils.h"
-#include "network/ethernet.h"
 #include <iostream>
 #include <cstring>
 #include <vector>
+
+#include "../testcase.h"
+#include "../test_utils.h"
+#include "api/network/ethernet.h"
 
 // Forward declarations and class interface
 class EthernetTest;

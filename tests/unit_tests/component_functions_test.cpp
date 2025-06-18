@@ -1,11 +1,12 @@
+#include <memory>
+#include <cstring>
+#include <cmath>
+
 #include "../testcase.h"
 #include "../test_utils.h"
 #include "app/components/unit_a_data.hpp"
 #include "app/components/unit_a_functions.hpp"
 #include "app/datatypes.h"
-#include <memory>
-#include <cstring>
-#include <cmath>
 
 /**
  * @brief Test suite for UNIT_A component functions

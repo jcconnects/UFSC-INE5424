@@ -20,8 +20,8 @@
 #include <stdio.h>
 
 #include "ethernet.h"
-#include "../traits.h"
-#include "../util/debug.h"
+#include "api/traits.h"
+#include "api/util/debug.h"
 
 
 class SocketEngine{

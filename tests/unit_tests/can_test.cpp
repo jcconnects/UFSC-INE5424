@@ -4,8 +4,8 @@
 
 #include "../test_utils.h"
 #include "../testcase.h"
-#include "api/network/bus.h"
 #include "../stubs/agent_stub.h"
+#include "api/network/bus.h"
 
 // Helper function to set up a vehicle log directory
 std::string setup_log_directory() {

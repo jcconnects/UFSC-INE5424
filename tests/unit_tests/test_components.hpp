@@ -1,10 +1,11 @@
 #ifndef TEST_COMPONENTS_HPP
 #define TEST_COMPONENTS_HPP
 
-#include "../../include/api/framework/component_types.hpp"
-#include "../../include/api/framework/component_functions.hpp"
 #include <cstring>
 #include <stdexcept>
+
+#include "api/framework/component_types.hpp"
+#include "api/framework/component_functions.hpp"
 
 /**
  * @brief Simple test component data for basic functionality testing

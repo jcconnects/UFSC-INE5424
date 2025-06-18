@@ -5,6 +5,7 @@
 #include <cstring>
 #include <vector>
 #include <exception>
+
 #include "app/vehicle.h"
 #include "../testcase.h"
 #include "../test_utils.h"

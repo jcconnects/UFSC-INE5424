@@ -9,14 +9,14 @@
 #include <stdexcept>
 #include <pthread.h>
 
-#include "../network/bus.h"
-#include "periodicThread.h"
-#include "../util/debug.h"
-#include "../util/csv_logger.h"
-#include "../traits.h"
-#include "../util/static_size_hashed_cache.h"
-#include "component_types.hpp"
-#include "component_functions.hpp"
+#include "api/util/debug.h"
+#include "api/network/bus.h"
+#include "api/framework/periodicThread.h"
+#include "api/util/csv_logger.h"
+#include "api/traits.h"
+#include "api/util/static_size_hashed_cache.h"
+#include "api/framework/component_types.hpp"
+#include "api/framework/component_functions.hpp"
 
 /**
  * @brief EPOS-inspired Agent implementation using composition over inheritance

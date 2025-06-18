@@ -5,10 +5,11 @@
 #include <cstring>
 #include <vector>
 #include <exception>
-#include "../../include/app/vehicle.h"
-#include "../../include/api/network/ethernet.h"
-#include "../../tests/testcase.h"
-#include "../../tests/test_utils.h"
+
+#include "app/vehicle.h"
+#include "api/network/ethernet.h"
+#include "../testcase.h"
+#include "../test_utils.h"
 
 // Component types are defined as structs in vehicle.h
 // No need to include component headers since Vehicle uses factory functions

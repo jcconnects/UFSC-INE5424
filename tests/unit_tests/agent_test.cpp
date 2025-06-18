@@ -1,9 +1,9 @@
-#include "../../tests/testcase.h"
-#include "../../tests/test_utils.h"
-#include "../../include/api/framework/agent.h"
-#include "../../include/api/network/bus.h"
-#include "../../include/app/datatypes.h"
-#include "../../include/app/components/test_factories.hpp"
+#include "../testcase.h"
+#include "../test_utils.h"
+#include "api/framework/agent.h"
+#include "api/network/bus.h"
+#include "app/datatypes.h"
+#include "app/components/test_factories.hpp"
 #include <thread>
 #include <vector>
 #include <atomic>
@@ -1046,7 +1046,7 @@ void AgentTest::testAgentMessageTimingCompatibility() {
     
     // Should be approximately 350ms (allowing for some variance)
     assert_true(duration.count() >= 300 && duration.count() <= 400,
-                "Timing should be compatible with original Agent" + std::to_string(duration.count()));
+                "Timing should be compatible with original Agent " + std::to_string(duration.count()));
 }
 
 /**
