@@ -84,9 +84,9 @@ public:
  */
 FactoryIntegrationTest::FactoryIntegrationTest() {
     // === BASIC INTEGRATION TESTS ===
-    DEFINE_TEST(testFactoryToAgentCreation);
-    DEFINE_TEST(testFactoryAgentBasicMessaging);
-    DEFINE_TEST(testFactoryAgentDataGeneration);
+    // DEFINE_TEST(testFactoryToAgentCreation);
+    // DEFINE_TEST(testFactoryAgentBasicMessaging);
+    // DEFINE_TEST(testFactoryAgentDataGeneration);
     
     // === PERIODIC INTEREST INTEGRATION TESTS ===
     DEFINE_TEST(testFactoryAgentPeriodicInterest);

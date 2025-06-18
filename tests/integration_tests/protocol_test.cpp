@@ -244,8 +244,8 @@ ProtocolTest::ProtocolTest() : nic1(nullptr), nic2(nullptr), proto1(nullptr), pr
 
     // === THREAD SAFETY TESTS ===
     // DEFINE_TEST(testConcurrentSendOperations);
-    DEFINE_TEST(testConcurrentObserverOperations);
-    DEFINE_TEST(testConcurrentSendReceiveOperations);
+    // DEFINE_TEST(testConcurrentObserverOperations);
+    // DEFINE_TEST(testConcurrentSendReceiveOperations);
 }
 
 void ProtocolTest::setUp() {

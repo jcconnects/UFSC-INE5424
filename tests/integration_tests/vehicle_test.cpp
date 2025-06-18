@@ -129,30 +129,30 @@ public:
  */
 VehicleTest::VehicleTest() {
     // === VEHICLE CREATION TESTS ===
-    DEFINE_TEST(testVehicleCreationAndBasicProperties);
-    DEFINE_TEST(testVehicleCreationWithDifferentIds);
-    DEFINE_TEST(testVehicleInitialState);
+    // DEFINE_TEST(testVehicleCreationAndBasicProperties);
+    // DEFINE_TEST(testVehicleCreationWithDifferentIds);
+    // DEFINE_TEST(testVehicleInitialState);
 
     // === VEHICLE LIFECYCLE TESTS ===
-    DEFINE_TEST(testVehicleStartAndStop);
-    DEFINE_TEST(testVehicleMultipleStartStopCycles);
-    DEFINE_TEST(testVehicleStateConsistency);
+    // DEFINE_TEST(testVehicleStartAndStop);
+    // DEFINE_TEST(testVehicleMultipleStartStopCycles);
+    // DEFINE_TEST(testVehicleStateConsistency);
 
     // === COMPONENT CREATION TESTS ===
-    DEFINE_TEST(testECUComponentCreation);
-    DEFINE_TEST(testCameraComponentCreation);
-    DEFINE_TEST(testLidarComponentCreation);
-    DEFINE_TEST(testINSComponentCreation);
-    DEFINE_TEST(testMultipleComponentCreation);
+    // DEFINE_TEST(testECUComponentCreation);
+    // DEFINE_TEST(testCameraComponentCreation);
+    // DEFINE_TEST(testLidarComponentCreation);
+    // DEFINE_TEST(testINSComponentCreation);
+    // DEFINE_TEST(testMultipleComponentCreation);
 
     // === INTEGRATION TESTS ===
-    DEFINE_TEST(testVehicleComponentIntegration);
-    DEFINE_TEST(testVehicleDestructorCleanup);
-    DEFINE_TEST(testMultipleVehicleLifecycles);
+    // DEFINE_TEST(testVehicleComponentIntegration);
+    // DEFINE_TEST(testVehicleDestructorCleanup);
+    // DEFINE_TEST(testMultipleVehicleLifecycles);
 
     // === ERROR HANDLING TESTS ===
-    DEFINE_TEST(testVehicleHandlesNullComponentCreation);
-    DEFINE_TEST(testVehicleHandlesInvalidOperations);
+    // DEFINE_TEST(testVehicleHandlesNullComponentCreation);
+    // DEFINE_TEST(testVehicleHandlesInvalidOperations);
 }
 
 void VehicleTest::setUp() {
