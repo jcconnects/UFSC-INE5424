@@ -46,7 +46,7 @@ class Agent {
     
         Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address,
               DataProducer producer, ResponseHandler handler, 
-              std::unique_ptr<ComponentData> data);
+              std::unique_ptr<ComponentData> data, bool external = true);
         ~Agent();
 
         // Non-virtual interface - eliminates race condition
@@ -58,7 +58,9 @@ class Agent {
         
         static void* run(void* arg); // Run will always receive INTEREST messages, and set periodic thread
         bool running();
-
+        void external(const bool external);
+        // External flag for message filtering
+        const bool external() const { return _external; }
         std::string name() const { return _name; }
         
         // CSV logging methods
@@ -106,6 +108,7 @@ class Agent {
         };
 
         StaticSizeHashedCache<ValueCache*> _value_cache;
+        bool _external;
 };
 
 /****** Agent Implementation *****/
@@ -127,7 +130,7 @@ class Agent {
  */
 inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address,
                     DataProducer producer, ResponseHandler handler, 
-                    std::unique_ptr<ComponentData> data) 
+                    std::unique_ptr<ComponentData> data, bool external) 
     : _address(address),
       _can(bus),
       _name(name),
@@ -145,7 +148,8 @@ inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Add
       _last_response_timestamp(0),
       _component_data(std::move(data)),
       _data_producer(producer),
-      _response_handler(handler) {
+      _response_handler(handler),
+      _external(external) {
     
     db<Agent>(INF) << "[Agent] " << _name << " created with address: " << _address.to_string() << "\n";
     if (!bus)
@@ -525,6 +529,7 @@ inline void Agent::send_interest(Unit unit) {
                    << unit << " with period: " << _requested_period.count() << " microseconds\n";
     
     Message msg(Message::Type::INTEREST, _address, unit, _requested_period);
+    msg.external(_external);
     log_message(msg, "SEND");
     _can->send(&msg);
 }
@@ -563,6 +568,10 @@ inline bool Agent::should_process_response() {
     }
     
     return false;
+}
+
+inline void Agent::external(const bool external) {
+    _external = external;
 }
 
 #endif // AGENT_H

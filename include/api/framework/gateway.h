@@ -257,7 +257,7 @@ inline void* Gateway::internalLoop(void* arg) {
         Message msg;
         if (self->internalReceive(&msg)) {
             // CRITICAL FIX: Check if message originated from this gateway to prevent feedback loop
-            if (msg.origin() == self->_comms->address()) {
+            if (msg.origin() == self->_comms->address() || !msg.external()) {
                 db<Gateway>(INF) << "[Gateway " << self->_id << "] ignoring internal message from self (origin: " 
                                  << msg.origin().to_string() << ", self: " << self->_comms->address().to_string() << ")\n";
                 continue;
