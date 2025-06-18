@@ -307,7 +307,7 @@ inline void Agent::handle_response(Message* msg) {
 }
 
 inline int Agent::send(Unit unit, Microseconds period) {
-    db<Agent>(INF) << "[Agent] " << _name << " sending INTEREST for unit: " << unit << " with period: " << period.count() << " microseconds\n";
+    db<Agent>(INF) << "[Agent] " << _name << " sending INTEREST for unit: " << unit << " with period: " << period.count() << " microseconds" << " external: " << _external << "\n";
     if (period == Microseconds::zero())
         return 0;
     
@@ -315,6 +315,7 @@ inline int Agent::send(Unit unit, Microseconds period) {
     _interest_period = period;
     
     Message msg(Message::Type::INTEREST, _address, unit, period);
+    msg.external(_external);
     
     // Log sent message to CSV
     log_message(msg, "SEND");
@@ -526,10 +527,11 @@ inline void Agent::send_interest(Unit unit) {
     }
     
     db<Agent>(TRC) << "[Agent] " << _name << " sending periodic INTEREST for unit: " 
-                   << unit << " with period: " << _requested_period.count() << " microseconds\n";
+                   << unit << " with period: " << _requested_period.count() << " microseconds" << " external: " << _external << "\n";
     
     Message msg(Message::Type::INTEREST, _address, unit, _requested_period);
     msg.external(_external);
+
     log_message(msg, "SEND");
     _can->send(&msg);
 }

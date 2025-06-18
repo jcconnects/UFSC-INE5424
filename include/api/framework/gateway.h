@@ -231,16 +231,12 @@ inline bool Gateway::internalReceive(Message* msg) {
         db<Gateway>(WRN) << "[Gateway " << _id << "] no internal message received\n";
         return false;
     }
-
-    if (!received_msg) {
-        return false;
-    }
     
     // Copy the received message to the output parameter
     *msg = *received_msg;
     
     db<Gateway>(INF) << "[Gateway " << _id << "] received internal message of type " << static_cast<int>(msg->message_type()) 
-                     << " for unit " << msg->unit() << "\n";
+                     << " for unit " << msg->unit() << " external: " << msg->external() << "\n";
     
     // Clean up the received message
     delete received_msg;

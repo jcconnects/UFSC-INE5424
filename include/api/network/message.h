@@ -168,6 +168,7 @@ Message<Channel>::Message(const Message& other) {
     _timestamp = other.timestamp();
     _period = other.period();
     _unit = other.unit();
+    _external = other.external();
     
     // Copy value data if present
     if (other.value_size() > 0) {
@@ -353,6 +354,7 @@ void Message<Channel>::value(const void* data, const unsigned int size) {
 template <typename Channel>
 void Message<Channel>::external(const bool external) {
     _external = external;
+    db<Message<Channel>>(TRC) << "Message::external() called with external: " << _external << "\n";
 }
 
 template <typename Channel>
