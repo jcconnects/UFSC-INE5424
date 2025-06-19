@@ -31,6 +31,8 @@ class Gateway {
         Gateway(const unsigned int id, Network::EntityType entity_type = Network::EntityType::VEHICLE);
         ~Gateway();
 
+        void start();
+
         bool send(Message* message);
         bool receive(Message* msg);
         bool internalReceive(Message* msg);
@@ -66,7 +68,7 @@ class Gateway {
 };
 
 /******** Gateway Implementation ********/
-inline Gateway::Gateway(const unsigned int id, Network::EntityType entity_type) : _id(id) {
+inline Gateway::Gateway(const unsigned int id, Network::EntityType entity_type) : _id(id), _running(false) {
     db<Gateway>(TRC) << "Gateway::Gateway(" << id << ", entity_type) called!\n";
     _network = new Network(id, entity_type);
     
@@ -81,16 +83,25 @@ inline Gateway::Gateway(const unsigned int id, Network::EntityType entity_type) 
     _can->attach(_can_observer, c);
     
     db<Gateway>(INF) << "[Gateway " << _id << "] created with address: " << addr.to_string() << "\n";
+}
 
-    _running = true;
+inline void Gateway::start() {
+    db<Gateway>(TRC) << "Gateway::start() called for ID " << _id << "!\n";
+    if (_running.load()) {
+        db<Gateway>(WRN) << "[Gateway " << _id << "] start() called but already running.\n";
+        return;
+    }
+    _running.store(true, std::memory_order_release);
     pthread_create(&_receive_thread, nullptr, Gateway::mainloop, this);
     pthread_create(&_internal_thread, nullptr, Gateway::internalLoop, this);
-    
     db<Gateway>(INF) << "[Gateway " << _id << "] threads started\n";
 }
 
 inline Gateway::~Gateway() {
     db<Gateway>(TRC) << "Gateway::~Gateway() called for ID " << _id << "!\n";
+    if (!_running.load()) {
+        return;
+    }
     _running.store(false, std::memory_order_release);
 
     _comms->release();

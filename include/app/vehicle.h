@@ -131,6 +131,7 @@ inline void Vehicle::start() {
     }
 
     _running.store(true, std::memory_order_release);
+    _gateway->start();
 
     db<Vehicle>(INF) << "[Vehicle " << _id << "] started.\n";
 }

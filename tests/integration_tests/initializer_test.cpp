@@ -126,38 +126,38 @@ public:
  */
 InitializerTest::InitializerTest() {
     // === VEHICLE CREATION TESTS ===
-    // DEFINE_TEST(testBasicVehicleCreation);
-    // DEFINE_TEST(testVehicleCreationWithDifferentIDs);
-    // DEFINE_TEST(testVehicleUniqueIDAssignment);
-    // DEFINE_TEST(testVehicleInitialState);
+    DEFINE_TEST(testBasicVehicleCreation);
+    DEFINE_TEST(testVehicleCreationWithDifferentIDs);
+    DEFINE_TEST(testVehicleUniqueIDAssignment);
+    DEFINE_TEST(testVehicleInitialState);
 
     // === VEHICLE LIFECYCLE TESTS ===
-    // DEFINE_TEST(testVehicleStartStopFunctionality);
-    // DEFINE_TEST(testVehicleStateTransitions);
-    // DEFINE_TEST(testMultipleVehicleLifecycles);
+    DEFINE_TEST(testVehicleStartStopFunctionality);
+    DEFINE_TEST(testVehicleStateTransitions);
+    DEFINE_TEST(testMultipleVehicleLifecycles);
 
     // === MAC ADDRESS TESTS ===
-    // DEFINE_TEST(testVehicleMACAddressGeneration);
-    // DEFINE_TEST(testMACAddressUniqueness);
-    // DEFINE_TEST(testMACAddressFormat);
+    DEFINE_TEST(testVehicleMACAddressGeneration);
+    DEFINE_TEST(testMACAddressUniqueness);
+    DEFINE_TEST(testMACAddressFormat);
 
     // === COMPONENT CREATION TESTS ===
-    // DEFINE_TEST(testECUComponentCreation);
-    // DEFINE_TEST(testCameraComponentCreation);
-    // DEFINE_TEST(testLidarComponentCreation);
-    // DEFINE_TEST(testINSComponentCreation);
-    // DEFINE_TEST(testBatteryComponentCreation);
-    // DEFINE_TEST(testMultipleComponentCreation);
-    // DEFINE_TEST(testComponentIntegrationWithVehicle);
+    DEFINE_TEST(testECUComponentCreation);
+    DEFINE_TEST(testCameraComponentCreation);
+    DEFINE_TEST(testLidarComponentCreation);
+    DEFINE_TEST(testINSComponentCreation);
+    DEFINE_TEST(testBatteryComponentCreation);
+    DEFINE_TEST(testMultipleComponentCreation);
+    DEFINE_TEST(testComponentIntegrationWithVehicle);
 
     // === ERROR HANDLING TESTS ===
-    // DEFINE_TEST(testNullPointerHandling);
-    // DEFINE_TEST(testInvalidParameterHandling);
-    // DEFINE_TEST(testResourceCleanup);
+    DEFINE_TEST(testNullPointerHandling);
+    DEFINE_TEST(testInvalidParameterHandling);
+    DEFINE_TEST(testResourceCleanup);
 
     // === INTEGRATION TESTS ===
-    // DEFINE_TEST(testVehicleNetworkingCapabilities);
-    // DEFINE_TEST(testCompleteVehicleSystemIntegration);
+    DEFINE_TEST(testVehicleNetworkingCapabilities);
+    DEFINE_TEST(testCompleteVehicleSystemIntegration);
 }
 
 void InitializerTest::setUp() {
