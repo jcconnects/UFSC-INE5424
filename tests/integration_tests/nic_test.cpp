@@ -177,12 +177,12 @@ NICTest::NICTest() {
     DEFINE_TEST(testStatisticsInitialization);
     DEFINE_TEST(testStatisticsPacketCounters);
     DEFINE_TEST(testStatisticsByteCounters);
-    // DEFINE_TEST(testStatisticsDropCounters);
-    // DEFINE_TEST(testStatisticsErrorConditions);
+    DEFINE_TEST(testStatisticsDropCounters);
+    DEFINE_TEST(testStatisticsErrorConditions);
 
     // === ERROR HANDLING TESTS ===
-    // DEFINE_TEST(testNullBufferSendHandling);
-    // DEFINE_TEST(testInvalidParameterHandling);
+    DEFINE_TEST(testNullBufferSendHandling);
+    DEFINE_TEST(testInvalidParameterHandling);
     DEFINE_TEST(testResourceExhaustionHandling);
 
     // === THREAD SAFETY TESTS ===

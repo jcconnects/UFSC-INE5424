@@ -89,7 +89,7 @@ ComponentFactoriesTest::ComponentFactoriesTest() {
     DEFINE_TEST(testFactoryCreatedAgentMessageHandling);
     
     // === ERROR HANDLING TESTS ===
-    // DEFINE_TEST(testFactoryErrorHandling);
+    DEFINE_TEST(testFactoryErrorHandling);
     DEFINE_TEST(testFactoryExceptionSafety);
     
     // === MEMORY MANAGEMENT TESTS ===

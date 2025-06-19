@@ -96,7 +96,7 @@ public:
  */
 AgentTest::AgentTest() {
     // === BASIC AGENT FUNCTIONALITY TESTS ===
-    // DEFINE_TEST(testAgentBasicConstruction);
+    DEFINE_TEST(testAgentBasicConstruction);
     DEFINE_TEST(testAgentConstructorValidation);
     DEFINE_TEST(testAgentDestructorCleanup);
     DEFINE_TEST(testAgentBasicSendReceive);
@@ -138,7 +138,7 @@ AgentTest::AgentTest() {
     DEFINE_TEST(testAgentConcurrentOperations);
     
     // === COMPATIBILITY TESTS (NEW) ===
-    // DEFINE_TEST(testAgentMessageTimingCompatibility);
+    DEFINE_TEST(testAgentMessageTimingCompatibility);
     DEFINE_TEST(testAgentCSVLoggingCompatibility);
     DEFINE_TEST(testAgentThreadLifecycleCompatibility);
     DEFINE_TEST(testAgentErrorHandlingCompatibility);

@@ -224,28 +224,28 @@ ProtocolTest::ProtocolTest() : nic1(nullptr), nic2(nullptr), proto1(nullptr), pr
     DEFINE_TEST(testObserverAttachAndDetach);
     DEFINE_TEST(testObserverNotificationOnReceive);
     DEFINE_TEST(testMultipleObserversOnSamePort);
-    // DEFINE_TEST(testObserverDetachStopsNotifications);
+    DEFINE_TEST(testObserverDetachStopsNotifications);
 
     // === SEND AND RECEIVE TESTS ===
-    // DEFINE_TEST(testBasicSendAndReceive);
-    // DEFINE_TEST(testSendToNonExistentReceiver);
-    // DEFINE_TEST(testReceiveWithValidBuffer);
-    // DEFINE_TEST(testReceiveWithInvalidBuffer);
+    DEFINE_TEST(testBasicSendAndReceive);
+    DEFINE_TEST(testSendToNonExistentReceiver);
+    DEFINE_TEST(testReceiveWithValidBuffer);
+    DEFINE_TEST(testReceiveWithInvalidBuffer);
 
     // === LARGE DATA HANDLING TESTS ===
-    // DEFINE_TEST(testLargeDataTransmission);
-    // DEFINE_TEST(testDataIntegrityVerification);
-    // DEFINE_TEST(testMTULimitHandling);
+    DEFINE_TEST(testLargeDataTransmission);
+    DEFINE_TEST(testDataIntegrityVerification);
+    DEFINE_TEST(testMTULimitHandling);
 
     // === ERROR HANDLING TESTS ===
-    // DEFINE_TEST(testSendWithNullData);
-    // DEFINE_TEST(testSendWithZeroSize);
-    // DEFINE_TEST(testReceiveWithNullBuffer);
+    DEFINE_TEST(testSendWithNullData);
+    DEFINE_TEST(testSendWithZeroSize);
+    DEFINE_TEST(testReceiveWithNullBuffer);
 
     // === THREAD SAFETY TESTS ===
-    // DEFINE_TEST(testConcurrentSendOperations);
-    // DEFINE_TEST(testConcurrentObserverOperations);
-    // DEFINE_TEST(testConcurrentSendReceiveOperations);
+    DEFINE_TEST(testConcurrentSendOperations);
+    DEFINE_TEST(testConcurrentObserverOperations);
+    DEFINE_TEST(testConcurrentSendReceiveOperations);
 }
 
 void ProtocolTest::setUp() {
