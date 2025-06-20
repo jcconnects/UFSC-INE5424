@@ -92,9 +92,14 @@ public:
           received_count(0), 
           last_buffer(nullptr),
           last_size(0),
-          data_received(false) {}
+          data_received(false),
+          _port(port) {}
     
-    ~ProtocolObserver() override = default;
+    ~ProtocolObserver() override {
+        // Detach this observer from the protocol's static observer list
+        // to prevent dangling pointers between test cases.
+        P::detach(this, typename P::Address(Ethernet::NULL_ADDRESS, _port));
+    }
     
     /**
      * @brief Update method called when data is received
@@ -143,6 +148,7 @@ public:
     bool data_received;
     
 private:
+    typename P::Port _port;
     std::mutex mtx;
     std::condition_variable cv;
 };
