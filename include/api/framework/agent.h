@@ -191,6 +191,8 @@ inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Add
  * eliminating the race condition that occurred with virtual methods.
  */
 inline Agent::~Agent() {
+    db<Agent>(INF) << "[Agent] " << _name << " destruction started\n";
+
     // First, stop the running flag to prevent new operations
     _running.store(false, std::memory_order_release);
     
@@ -205,12 +207,11 @@ inline Agent::~Agent() {
         _periodic_thread = nullptr;
     }
     
-    // Send a dummy message to wake up the main thread if it's waiting
-    Message* dummy_msg = new Message();
-    _can_observer->update(_c, dummy_msg);
-    
-    // Wait for the main thread to finish
-    pthread_join(_thread, nullptr);
+    // Cancel the main agent thread and wait for it to exit
+    if (_thread) {
+        pthread_cancel(_thread);
+        pthread_join(_thread, nullptr);
+    }
     
     // Detach from CAN bus before deleting observer
     if (_can_observer) {
@@ -218,9 +219,6 @@ inline Agent::~Agent() {
         delete _can_observer;
         _can_observer = nullptr;
     }
-    
-    // Clean up the dummy message
-    delete dummy_msg;
     
     db<Agent>(INF) << "[Agent] " << _name << " destroyed successfully\n";
 }
