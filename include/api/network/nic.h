@@ -163,6 +163,12 @@ int NIC<Engine>::send(DataBuffer* buf, unsigned int packet_size) {
         return 0;
     }
 
+    if (!buf) {
+        db<NIC>(WRN) << "[NIC] send() called with a null buffer\n";
+        _statistics.tx_drops++;
+        return 0;
+    }
+
     // Fill TX timestamp before sending
     fillTxTimestamp(buf, packet_size);
 
@@ -186,6 +192,12 @@ int NIC<Engine>::send(DataBuffer* buf) {
 
     if (!running()) {
         db<NIC>(ERR) << "[NIC] send() called when NIC is inactive\n";
+        return -1;
+    }
+
+    if (!buf) {
+        db<NIC>(WRN) << "[NIC] send() called with a null buffer\n";
+        _statistics.tx_drops++;
         return -1;
     }
 
