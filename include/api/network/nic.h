@@ -224,6 +224,12 @@ int NIC<Engine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data
         return -1;
     }
 
+    if (!buf) {
+        db<NIC>(WRN) << "[NIC] receive() called with a null buffer\n";
+        _statistics.rx_drops++;
+        return 0;
+    }
+
     Ethernet::Frame* frame = buf->data();
     db<NIC>(INF) << "[NIC] frame extracted from buffer: {src = " << Ethernet::mac_to_string(frame->src) << ", dst = " << Ethernet::mac_to_string(frame->dst) << ", prot = " << std::to_string(frame->prot) << ", size = " << buf->size() << "}\n";
     
