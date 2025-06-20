@@ -302,6 +302,11 @@ template <typename NIC>
 int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int size) {
     db<Protocol>(TRC) << "Protocol<NIC>::send() called!\n";
 
+    if (!data || size == 0) {
+        db<Protocol>(WRN) << "[Protocol] SEND - Invalid data or size. Dropping message.\n";
+        return 0; // Or a specific error code
+    }
+
     if (!_nic) {
         db<Protocol>(TRC) << "Protocol<NIC>::send() called after release!\n";
         return 0;
