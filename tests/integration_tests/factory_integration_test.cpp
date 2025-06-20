@@ -84,9 +84,9 @@ public:
  */
 FactoryIntegrationTest::FactoryIntegrationTest() {
     // === BASIC INTEGRATION TESTS ===
-    // DEFINE_TEST(testFactoryToAgentCreation);
-    // DEFINE_TEST(testFactoryAgentBasicMessaging);
-    // DEFINE_TEST(testFactoryAgentDataGeneration);
+    DEFINE_TEST(testFactoryToAgentCreation);
+    DEFINE_TEST(testFactoryAgentBasicMessaging);
+    DEFINE_TEST(testFactoryAgentDataGeneration);
     
     // === PERIODIC INTEREST INTEGRATION TESTS ===
     DEFINE_TEST(testFactoryAgentPeriodicInterest);
@@ -118,7 +118,7 @@ FactoryIntegrationTest::FactoryIntegrationTest() {
     DEFINE_TEST(testINSComponentIntegration);
     DEFINE_TEST(testLidarComponentIntegration);
     DEFINE_TEST(testCameraComponentIntegration);
-    // DEFINE_TEST(testComplexComponentInteractions);
+    DEFINE_TEST(testComplexComponentInteractions);
 }
 
 void FactoryIntegrationTest::setUp() {
