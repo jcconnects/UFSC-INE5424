@@ -348,6 +348,11 @@ template <typename Engine>
 void NIC<Engine>::free(DataBuffer* buf) {
     db<NIC>(TRC) << "NIC<Engine>::free() called!\n";
 
+    if (buf == nullptr) {
+        db<NIC>(WRN) << "[NIC] free() called with a null buffer\n";
+        return;
+    }
+
     if (!running()) {
         db<NIC>(ERR) << "[NIC] free() called when NIC is inactive\n";
         return;
