@@ -72,7 +72,7 @@ struct Traits<NIC<Engine>> : public Traits<void>
 template <>
 struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 888; // Example value
 };
 
@@ -80,7 +80,7 @@ struct Traits<Protocol<NIC<SocketEngine>>> : public Traits<void>
 template<typename Channel>
 struct Traits<Communicator<Channel>> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for message class
@@ -94,7 +94,7 @@ struct Traits<Message<Protocol>> : public Traits<void>
 template <>
 struct Traits<CAN> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 template <>
@@ -106,14 +106,14 @@ struct Traits<AgentStub> : public Traits<void>
 template <>
 struct Traits<Agent> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Gateway class
 template<>
 struct Traits<Gateway> : public Traits<void>
 {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 // Traits for Clock class
@@ -154,10 +154,10 @@ struct Traits<StaticSizeHashedCache<V, S>> : public Traits<void>
 template<>
 struct Traits<Debug> : public Traits<void>
 {
-    static const bool error = true;
-    static const bool warning = true;
+    static const bool error = false;
+    static const bool warning = false;
     static const bool info = true;
-    static const bool trace = true;
+    static const bool trace = false;
 };
 
 #endif // TRAITS_H

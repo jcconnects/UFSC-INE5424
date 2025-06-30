@@ -74,8 +74,20 @@ class Agent {
         void stop_periodic_interest();
         void send_interest(Unit unit);
         void update_interest_period(Microseconds new_period);
+
+    protected:
+        virtual void reply(Unit unit);
+
+        bool thread_running();
+        int can_send(Message* msg);
+        Address address() const;
         
     private:
+
+        void handle_interest(Message* msg);
+        bool should_process_response();
+        void recompute_gcd();
+
         Address _address;
         CAN* _can;
         std::string _name;
@@ -119,11 +131,6 @@ class Agent {
         // key = (consumerId ⊕ unit)  – same 16-bit scheme used elsewhere
         StaticSizeHashedCache<ResponseInfo, 128> _active_interests;
 
-        void handle_interest(Message* msg);
-        void reply(Unit unit);
-        bool should_process_response();
-        // Helper to update periodic thread period based on active interests
-        void recompute_gcd();
         bool _external;
 };
 
@@ -636,6 +643,18 @@ inline void Agent::recompute_gcd() {
     if (_periodic_thread) {
         _periodic_thread->set_period(gcd_us);
     }
+}
+
+inline Agent::Address Agent::address() const {
+    return _address;
+}
+
+inline int Agent::can_send(Message* msg) {
+    return _can->send(msg);
+}
+
+inline bool Agent::thread_running() {
+    return _periodic_thread && _periodic_thread->running();
 }
 
 #endif // AGENT_H

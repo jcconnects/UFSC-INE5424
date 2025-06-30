@@ -14,6 +14,7 @@
 #include <cassert>
 #include <cstdint>
 #include <exception>
+#include "api/util/observer.h"
 
 using namespace std::chrono_literals;
 
@@ -79,6 +80,11 @@ protected:
     // === EDGE CASES AND ERROR CONDITIONS ===
     void testPeriodicInterestEdgeCases();
     void testAgentInvalidStates();
+    
+    // === FIXED-RESPONSE TESTS ===
+    void testFixedResponseCount();
+    void testFixedResponseReset();
+    void testFixedResponseGCDTwoConsumers();
 
 private:
     std::unique_ptr<CAN> _test_can;
@@ -146,6 +152,11 @@ AgentTest::AgentTest() {
     // === EDGE CASES AND ERROR CONDITIONS ===
     DEFINE_TEST(testPeriodicInterestEdgeCases);
     DEFINE_TEST(testAgentInvalidStates);
+    
+    // === FIXED-RESPONSE TESTS ===
+    DEFINE_TEST(testFixedResponseCount);
+    DEFINE_TEST(testFixedResponseReset);
+    DEFINE_TEST(testFixedResponseGCDTwoConsumers);
 }
 
 void AgentTest::setUp() {
@@ -1165,6 +1176,134 @@ void AgentTest::testAgentThreadSafetyWithFunctions() {
     
     // If we reach here without crashes, the race condition is fixed!
     assert_true(true, "Race condition test completed without crashes - function-based architecture works!");
+}
+
+void AgentTest::testFixedResponseCount() {
+    using namespace std::chrono_literals;
+
+    // Set up CAN bus and addresses (default constructed for local tests)
+    auto producer_addr = Agent::Address();
+    auto consumer_addr = Agent::Address();
+
+    // Create producer
+    auto producer = create_test_producer(_test_can.get(), producer_addr, "FixedRespProducer");
+
+    // Passive observer counting every RESPONSE
+    std::atomic<int> frame_counter{0};
+
+    class CountingObserver : public CAN::Observer {
+    public:
+        CountingObserver(Condition c, std::atomic<int>* cnt) : CAN::Observer(c), _cnt(cnt) {}
+        void update(Condition c, CAN::Message* d) override {
+            if (_cnt) _cnt->fetch_add(1, std::memory_order_relaxed);
+            delete d;
+        }
+    private:
+        std::atomic<int>* _cnt;
+    };
+
+    Condition resp_cond(static_cast<std::uint32_t>(DataTypes::UNIT_A), Agent::Type::RESPONSE);
+    auto obs = new CountingObserver(resp_cond, &frame_counter);
+    _test_can->attach(obs, resp_cond);
+
+    // Use a dummy consumer only to send the single INTEREST
+    auto dummy_consumer = create_test_consumer(_test_can.get(), consumer_addr, "DummyConsumer");
+    Agent::Microseconds period(50000); // 50ms
+    dummy_consumer->send(static_cast<std::uint32_t>(DataTypes::UNIT_A), period);
+
+    std::this_thread::sleep_for(350ms);
+
+    assert_equal(Agent::MAX_RESPONSES_PER_INTEREST, frame_counter.load(), "Producer should send exactly 5 RESPONSE frames");
+}
+
+// Verify that a repeated INTEREST resets the response counter so producer emits another 5 frames
+void AgentTest::testFixedResponseReset() {
+    using namespace std::chrono_literals;
+
+    auto producer_addr = Agent::Address();
+    auto consumer_addr = Agent::Address();
+
+    auto producer = create_test_producer(_test_can.get(), producer_addr, "FixedRespProducerRST");
+
+    std::atomic<int> frame_counter{0};
+
+    class CountingObserver2 : public CAN::Observer {
+    public:
+        CountingObserver2(Condition c, std::atomic<int>* cnt) : CAN::Observer(c), _cnt(cnt) {}
+        void update(Condition, CAN::Message* d) override {
+            if (_cnt) _cnt->fetch_add(1, std::memory_order_relaxed);
+            delete d;
+        }
+    private:
+        std::atomic<int>* _cnt;
+    };
+
+    Condition resp_cond(static_cast<std::uint32_t>(DataTypes::UNIT_A), Agent::Type::RESPONSE);
+    auto obs = new CountingObserver2(resp_cond, &frame_counter);
+    _test_can->attach(obs, resp_cond);
+
+    auto dummy_consumer = create_test_consumer(_test_can.get(), consumer_addr, "DummyConsumerRST");
+
+    Agent::Microseconds period(50000);
+    dummy_consumer->send(static_cast<std::uint32_t>(DataTypes::UNIT_A), period);
+
+    std::this_thread::sleep_for(350ms); // wait for first 5
+
+    // send second INTEREST to reset
+    dummy_consumer->send(static_cast<std::uint32_t>(DataTypes::UNIT_A), period);
+
+    std::this_thread::sleep_for(350ms); // wait for next 5
+
+    assert_equal(2 * Agent::MAX_RESPONSES_PER_INTEREST, frame_counter.load(), "Producer should send 10 responses after two INTERESTS");
+}
+
+// Verify that producer adjusts its periodic thread to GCD of multiple consumers' requested periods
+void AgentTest::testFixedResponseGCDTwoConsumers() {
+    using namespace std::chrono_literals;
+
+    auto producer_addr = Agent::Address();
+    auto consumer1_addr = Agent::Address();
+    auto consumer2_addr = Agent::Address();
+
+    auto producer = create_test_producer(_test_can.get(), producer_addr, "FixedRespProducerGCD");
+
+    std::atomic<int> frame_counter{0};
+
+    class CountingObserver3 : public CAN::Observer {
+    public:
+        CountingObserver3(Condition c, std::atomic<int>* cnt) : CAN::Observer(c), _cnt(cnt) {}
+        void update(Condition, CAN::Message* d) override {
+            if (_cnt) _cnt->fetch_add(1, std::memory_order_relaxed);
+            delete d;
+        }
+    private:
+        std::atomic<int>* _cnt;
+    };
+
+    Condition resp_cond(static_cast<std::uint32_t>(DataTypes::UNIT_A), Agent::Type::RESPONSE);
+    auto obs = new CountingObserver3(resp_cond, &frame_counter);
+    _test_can->attach(obs, resp_cond);
+
+    // Create two dummy consumers with different periods
+    auto consumer1 = create_test_consumer(_test_can.get(), consumer1_addr, "DummyConsumer1_GCD");
+    auto consumer2 = create_test_consumer(_test_can.get(), consumer2_addr, "DummyConsumer2_GCD");
+
+    Agent::Microseconds period1(100000); // 100 ms
+    Agent::Microseconds period2(150000); // 150 ms (GCD should be 50 ms)
+
+    consumer1->send(static_cast<std::uint32_t>(DataTypes::UNIT_A), period1);
+    consumer2->send(static_cast<std::uint32_t>(DataTypes::UNIT_A), period2);
+
+    // Wait until the expected number of responses is reached or timeout (safety upper bound)
+    auto start_time = std::chrono::steady_clock::now();
+    const auto timeout = 1000ms; // 1s upper bound
+    while (frame_counter.load() < Agent::MAX_RESPONSES_PER_INTEREST &&
+           std::chrono::steady_clock::now() - start_time < timeout) {
+        std::this_thread::sleep_for(10ms);
+    }
+
+    assert_equal(Agent::MAX_RESPONSES_PER_INTEREST, frame_counter.load(),
+                 "Producer should send 5 responses total governed by GCD period");
 }
 
 // Main function

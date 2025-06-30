@@ -57,7 +57,7 @@ inline void CSVAgent::reply(Unit unit) {
         // Log sent message to CSV
         log_message(msg, "SEND");
 
-        _can->send(&msg);
+        can_send(&msg);
     } 
 }
 
