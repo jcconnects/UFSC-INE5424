@@ -112,8 +112,8 @@ class Agent {
 
         // === Fixed-Response feature data ===
         struct ResponseInfo {
+            Microseconds termination_time{Microseconds::zero()};
             Microseconds period{Microseconds::zero()};
-            int responses_left{0};
         };
 
         // key = (consumerId ⊕ unit)  – same 16-bit scheme used elsewhere
@@ -409,8 +409,8 @@ inline void Agent::handle_interest(Message* msg) {
     long int key = (static_cast<long int>(consumer_id) << 16) | (msg->unit() & 0xFFFF);
 
     ResponseInfo info;
+    info.termination_time = msg->period() * MAX_RESPONSES_PER_INTEREST;
     info.period = msg->period();
-    info.responses_left = MAX_RESPONSES_PER_INTEREST;
 
     if (_active_interests.contains(key)) {
         *_active_interests.get(key) = info; // overwrite
@@ -451,10 +451,10 @@ inline void Agent::reply(Unit unit) {
     bool has_active_entry = false;
     bool counters_updated = false;
     _active_interests.for_each([&](long int key, ResponseInfo& info){
-        if ((key & 0xFFFF) == unit && info.responses_left > 0) {
+        if ((key & 0xFFFF) == unit && info.termination_time.count() > 0) {
             has_active_entry = true;
-            info.responses_left--;
-            if (info.responses_left == 0) counters_updated = true;
+            info.termination_time -= _producer_gcd;
+            if (info.termination_time.count() <= 0) counters_updated = true;
         }
     });
 
@@ -621,7 +621,7 @@ inline void Agent::external(const bool external) {
 inline void Agent::recompute_gcd() {
     long long gcd_us = 0;
     _active_interests.for_each([&](long int /*k*/, ResponseInfo& info){
-        if (info.responses_left > 0) {
+        if (info.termination_time.count() > 0) {
             long long p = info.period.count();
             gcd_us = gcd_us == 0 ? p : std::gcd(gcd_us, p);
         }
@@ -631,7 +631,7 @@ inline void Agent::recompute_gcd() {
     if (gcd_us == 0)
         return;
 
-    _producer_gcd = Microseconds(gcd_us);
+    _producer_gcd = Microseconds(gcd_us); // Does this transform long long to int64_t?
 
     if (_periodic_thread) {
         _periodic_thread->set_period(gcd_us);
