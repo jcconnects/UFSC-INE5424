@@ -547,6 +547,18 @@ void Demo::run_vehicle(Vehicle* v, unsigned int vehicle_id) {
     // Start consumers with periodic interest
     auto consumerA = v->get_component<Agent>("ConsumerA");
     auto consumerB = v->get_component<Agent>("ConsumerB");
+
+    // Create CSV producer and consumer components
+    v->create_csv_component_with_file("CSVProducer" + std::to_string(vehicle_id), "include/app/components/datasets/dataset/dynamics-vehicle_" + std::to_string(vehicle_id % 15) + ".csv");
+    v->create_component<CSVConsumerComponent>("CSVConsumer" + std::to_string(vehicle_id));
+    auto consumer_agent = v->get_component<Agent>("CSVConsumer" + std::to_string(vehicle_id));
+    if (consumer_agent) {
+        consumer_agent->start_periodic_interest(
+            static_cast<std::uint32_t>(DataTypes::CSV_VEHICLE_DATA), 
+            Agent::Microseconds(500000) // 500ms period
+        );
+        db<Vehicle>(INF) << "[CSV Consumer " << vehicle_id << "] Started periodic interest for CSV_VEHICLE_DATA\n";
+    }
     
     if (consumerA) {
         // Start ConsumerA with 500ms period using Agent's periodic interest method

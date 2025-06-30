@@ -408,8 +408,8 @@ void NIC<Engine>::fillTxTimestamp(DataBuffer* buf, unsigned int packet_size) {
     
     // Get current synchronized time from Clock
     auto& clock = Clock::getInstance();
-    bool is_sync;
-    TimestampType tx_time = clock.getSynchronizedTime(&is_sync);
+    bool is_sync = true;
+    TimestampType tx_time = clock.getLocalSystemTime();
     
     // Calculate correct offset for TX timestamp accounting for structure alignment
     // Header: 8 bytes (2×uint16_t + uint32_t)
