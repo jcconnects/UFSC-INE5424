@@ -19,9 +19,7 @@ def find_csv_files(log_directory, id=""):
     log_path = Path(log_directory)
     
     # looks for component message CSV files
-    # csv_files = list(log_path.glob("*_messages.csv"))
-
-    csv_files = list(log_path.glob(f"*gateway_{id}_messages.csv"))
+    csv_files = list(log_path.glob("*_messages.csv"))
     
     # if no specific message files, look for any CSV files
     if not csv_files:
@@ -36,16 +34,21 @@ def extract_receive_latencies(csv_file):
     try:
         with open(csv_file, 'r', newline='') as file:
             reader = csv.DictReader(file)
+
+            file_type = reader.fieldnames[0] == 'latency_us'
             
             for row in reader:
                 # filters for RECEIVE messages only
-                if row.get('direction', '').strip().upper() == 'RECEIVE':
+                
+                if not file_type and row.get('direction', '').strip().upper() == 'RECEIVE':
                     try:
                         latency_us = float(row.get('latency_us', 0))
                         if latency_us > 0:  # only positive latencies are valid
                             latencies.append(latency_us)
                     except (ValueError, TypeError):
                         continue  # skip invalid values
+                elif int(row.get('latency_us', '').strip()) > 0:
+                    latencies.append(int(row.get('latency_us', '').strip()))
                         
     except Exception as e:
         print(f"Error reading {csv_file}: {e}")
@@ -166,7 +169,7 @@ def analyze_latency_data(csv_files):
         if latency > 10000:
             counter += 1
     print(f"Number of latencies > 10ms: {counter}")
-    print(f"Percentage of latencies > 10ms: {counter / n * 100:.2f}%")
+    print(f"Percentage of latencies > 10ms: {counter}")
     
     return True
 
@@ -174,7 +177,7 @@ def main():
     """Main function"""
     
     # default log directory for vehicle 10081
-    default_log_dir = "tests/logs/vehicle_10081"
+    default_log_dir = "latencies"
     log_directories = []
     
     # checks command line argument for custom directory
