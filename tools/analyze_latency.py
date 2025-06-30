@@ -14,12 +14,14 @@ import statistics
 import sys
 from pathlib import Path
 
-def find_csv_files(log_directory):
+def find_csv_files(log_directory, id=""):
     """Find all CSV files in the specified directory."""
     log_path = Path(log_directory)
     
     # looks for component message CSV files
-    csv_files = list(log_path.glob("*_messages.csv"))
+    # csv_files = list(log_path.glob("*_messages.csv"))
+
+    csv_files = list(log_path.glob(f"*gateway_{id}_messages.csv"))
     
     # if no specific message files, look for any CSV files
     if not csv_files:
@@ -66,22 +68,8 @@ def calculate_outliers(latencies, method='2sigma'):
     
     return outliers, lower_bound, upper_bound
 
-def analyze_latency_data(log_directory):
+def analyze_latency_data(csv_files):
     """Main analysis function."""
-    
-    print(f"Analyzing latency data in: {log_directory}")
-    print("=" * 60)
-    
-    # finds CSV files
-    csv_files = find_csv_files(log_directory)
-    
-    if not csv_files:
-        print(f"No CSV files found in {log_directory}!")
-        print("Please ensure:")
-        print("  1. The vehicle test has been run")
-        print("  2. CSV logging is enabled")
-        print("  3. The log directory path is correct")
-        return False
     
     print(f"Found {len(csv_files)} CSV files:")
     for csv_file in csv_files:
@@ -172,6 +160,13 @@ def analyze_latency_data(log_directory):
     for p in percentiles:
         index = min(int(n * p / 100), n - 1)
         print(f"P{p:2d} (bottom {p:2d}%):                 {sorted_latencies[index]:.2f} μs")
+
+    counter = 0
+    for latency in sorted_latencies:
+        if latency > 10000:
+            counter += 1
+    print(f"Number of latencies > 10ms: {counter}")
+    print(f"Percentage of latencies > 10ms: {counter / n * 100:.2f}%")
     
     return True
 
@@ -180,25 +175,43 @@ def main():
     
     # default log directory for vehicle 10081
     default_log_dir = "tests/logs/vehicle_10081"
+    log_directories = []
     
     # checks command line argument for custom directory
     if len(sys.argv) > 1:
-        log_directory = sys.argv[1]
+        log_directories = sys.argv[1:]
     else:
-        log_directory = default_log_dir
+        log_directories = [default_log_dir]
     
     print(" Vehicle 10081 - Internal Communication Latency Analyzer")
     print("=" * 60)
+
+    csv_files = []
     
-    # checks if directory exists
-    if not os.path.exists(log_directory):
-        print(f" Directory not found: {log_directory}")
-        print(f"\nUsage: python {sys.argv[0]} [log_directory]")
-        print(f"Example: python {sys.argv[0]} tests/logs/vehicle_10081")
-        return 1
-    
-    # runs analysis
-    success = analyze_latency_data(log_directory)
+    for log_directory in log_directories:
+        # checks if directory exists
+        if not os.path.exists(log_directory):
+            print(f" Directory not found: {log_directory}")
+            print(f"\nUsage: python {sys.argv[0]} [log_directory]")
+            print(f"Example: python {sys.argv[0]} tests/logs/vehicle_10081")
+            return 1
+
+        print(f"Analyzing latency data in: {log_directory}")
+        print("=" * 60)
+        
+        # finds CSV files
+        csv_files += find_csv_files(log_directory, log_directory[-1])
+        
+        if not csv_files:
+            print(f"No CSV files found in {log_directory}!")
+            print("Please ensure:")
+            print("  1. The vehicle test has been run")
+            print("  2. CSV logging is enabled")
+            print("  3. The log directory path is correct")
+            return False
+        
+        # runs analysis
+    success = analyze_latency_data(csv_files)
     
     if success:
         print(f"\n ANALYSIS COMPLETE")
