@@ -8,6 +8,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <pthread.h>
+#include <numeric>
 
 #include "api/util/debug.h"
 #include "api/network/bus.h"
@@ -43,6 +44,8 @@ class Agent {
         typedef CAN::Observer Observer;
         // Number of units a vehicle could produce
         static const unsigned int _units_per_vehicle = 5;
+        // Fixed-response feature: number of responses a producer sends per INTEREST
+        static constexpr int MAX_RESPONSES_PER_INTEREST = 5;
     
         Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address,
               DataProducer producer, ResponseHandler handler, 
@@ -73,11 +76,6 @@ class Agent {
         void update_interest_period(Microseconds new_period);
         
     private:
-        void handle_interest(Unit unit, Microseconds period);
-        void reply(Unit unit);
-        bool should_process_response();
-    
-    private:
         Address _address;
         CAN* _can;
         std::string _name;
@@ -95,6 +93,9 @@ class Agent {
         std::atomic<bool> _is_consumer;        // Track if this agent is a consumer
         std::atomic<long long> _last_response_timestamp; // Timestamp of last processed RESPONSE (µs)
         
+        // Producer GCD period tracking (for fixed-response feature)
+        Microseconds _producer_gcd;
+        
         // EPOS-inspired composition members
         std::unique_ptr<ComponentData> _component_data;
         DataProducer _data_producer;
@@ -108,6 +109,21 @@ class Agent {
         };
 
         StaticSizeHashedCache<ValueCache*> _value_cache;
+
+        // === Fixed-Response feature data ===
+        struct ResponseInfo {
+            Microseconds period{Microseconds::zero()};
+            int responses_left{0};
+        };
+
+        // key = (consumerId ⊕ unit)  – same 16-bit scheme used elsewhere
+        StaticSizeHashedCache<ResponseInfo, 128> _active_interests;
+
+        void handle_interest(Message* msg);
+        void reply(Unit unit);
+        bool should_process_response();
+        // Helper to update periodic thread period based on active interests
+        void recompute_gcd();
         bool _external;
 };
 
@@ -146,6 +162,7 @@ inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Add
       _interest_active(false),
       _is_consumer(type == Type::RESPONSE),
       _last_response_timestamp(0),
+      _producer_gcd(Microseconds::zero()),
       _component_data(std::move(data)),
       _data_producer(producer),
       _response_handler(handler),
@@ -363,7 +380,7 @@ inline void* Agent::run(void* arg) {
                 db<Agent>(INF) << "[Agent] " << agent->name() << " discarding RESPONSE message (period filter failed)\n";
             }
         } else if (msg->message_type() == Message::Type::INTEREST) {
-            agent->handle_interest(msg->unit(), msg->period());
+            agent->handle_interest(msg);
         }
 
         delete msg; // Clean up the message object after processing
@@ -376,8 +393,8 @@ inline bool Agent::running() {
     return _running.load(std::memory_order_acquire);
 }
 
-inline void Agent::handle_interest(Unit unit, Microseconds period) {
-    db<Agent>(INF) << "[Agent] " << _name << " received INTEREST for unit: " << unit << " with period: " << period.count() << " microseconds\n";
+inline void Agent::handle_interest(Message* msg) {
+    db<Agent>(INF) << "[Agent] " << _name << " received INTEREST for unit: " << msg->unit() << " with period: " << msg->period().count() << " microseconds\n";
     
     // Only respond to INTEREST if this agent is a producer (observing INTEREST messages)
     // Consumers (observing RESPONSE messages) should not respond to INTEREST
@@ -386,13 +403,29 @@ inline void Agent::handle_interest(Unit unit, Microseconds period) {
         return;
     }
     
-    if (!_periodic_thread) {
-        _periodic_thread = new Thread(this, &Agent::reply, unit);
-        _periodic_thread->start(period.count()); // Actually start the thread!
+    // === Fixed-Response cache update ===
+    auto origin_paddr = msg->origin().paddr();
+    uint16_t consumer_id = (static_cast<uint16_t>(origin_paddr.bytes[4]) << 8) | origin_paddr.bytes[5];
+    long int key = (static_cast<long int>(consumer_id) << 16) | (msg->unit() & 0xFFFF);
+
+    ResponseInfo info;
+    info.period = msg->period();
+    info.responses_left = MAX_RESPONSES_PER_INTEREST;
+
+    if (_active_interests.contains(key)) {
+        *_active_interests.get(key) = info; // overwrite
     } else {
-        // Ajusta o período com MDC entre o atual e o novo
-        _periodic_thread->adjust_period(period.count());
-        db<Agent>(INF) << "[Agent] " << _name << " adjusted periodic thread period to: " << _periodic_thread->period() << " microseconds\n";
+        _active_interests.add(key, info);
+    }
+
+    // Recompute GCD and adjust thread period if needed
+    recompute_gcd();
+
+    if (!_periodic_thread) {
+        _periodic_thread = new Thread(this, &Agent::reply, msg->unit());
+        _periodic_thread->start(_producer_gcd.count());
+    } else {
+        _periodic_thread->set_period(_producer_gcd.count());
     }
 }
 
@@ -414,22 +447,34 @@ inline void Agent::reply(Unit unit) {
         return;
     }
     
-    db<Agent>(INF) << "[Agent] " << _name << " sending RESPONSE for unit: " << unit << "\n";
-    
-    // Final safety check before calling function pointer
-    if (!running()) {
+    // === Fixed-response counter handling ===
+    bool has_active_entry = false;
+    bool counters_updated = false;
+    _active_interests.for_each([&](long int key, ResponseInfo& info){
+        if ((key & 0xFFFF) == unit && info.responses_left > 0) {
+            has_active_entry = true;
+            info.responses_left--;
+            if (info.responses_left == 0) counters_updated = true;
+        }
+    });
+
+    if (!has_active_entry) {
+        // No consumer still interested; nothing to send
         return;
     }
-    
-    // CRITICAL: Call function pointer instead of virtual method
-    // This eliminates the race condition that caused "pure virtual method called"
+
+    db<Agent>(INF) << "[Agent] " << _name << " sending RESPONSE for unit: " << unit << "\n";
+
+    // Produce data and send one RESPONSE (broadcast)
     Value value = get(unit);
     Message msg(Message::Type::RESPONSE, _address, unit, Microseconds::zero(), value.data(), value.size());
 
-    // Log sent message to CSV
     log_message(msg, "SEND");
-
     _can->send(&msg);
+
+    if (counters_updated) {
+        recompute_gcd();
+    }
 }
 
 inline void Agent::set_csv_logger(const std::string& log_dir) {
@@ -543,7 +588,7 @@ inline void Agent::update_interest_period(Microseconds new_period) {
     _requested_period = new_period;
     _interest_period = new_period; // Keep response filter in sync
     if (_interest_thread) {
-        _interest_thread->adjust_period(new_period.count());
+        _interest_thread->set_period(new_period.count());
     }
 }
 
@@ -562,7 +607,6 @@ inline bool Agent::should_process_response() {
     
     // If this is the first RESPONSE or enough time has passed
     if (last_timestamp == 0 || (current_timestamp - last_timestamp) >= _interest_period.count()) {
-        // Update the last response timestamp atomically
         _last_response_timestamp.store(current_timestamp, std::memory_order_release);
         return true;
     }
@@ -572,6 +616,26 @@ inline bool Agent::should_process_response() {
 
 inline void Agent::external(const bool external) {
     _external = external;
+}
+
+inline void Agent::recompute_gcd() {
+    long long gcd_us = 0;
+    _active_interests.for_each([&](long int /*k*/, ResponseInfo& info){
+        if (info.responses_left > 0) {
+            long long p = info.period.count();
+            gcd_us = gcd_us == 0 ? p : std::gcd(gcd_us, p);
+        }
+    });
+
+    // If no active entries keep previous gcd (thread will idle)
+    if (gcd_us == 0)
+        return;
+
+    _producer_gcd = Microseconds(gcd_us);
+
+    if (_periodic_thread) {
+        _periodic_thread->set_period(gcd_us);
+    }
 }
 
 #endif // AGENT_H

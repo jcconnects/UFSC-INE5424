@@ -92,6 +92,20 @@ public:
     return false;
   }
 
+  /**
+   * @brief Iterate over all occupied entries and apply a functor.
+   * The functor receives (key, value&) as parameters.
+   * @tparam F Callable type
+   */
+  template <typename F>
+  void for_each(F&& fn) {
+    for (size_t i = 0; i < N; ++i) {
+      if (_occupied[i]) {
+        fn(_keys[i], _values[i]);
+      }
+    }
+  }
+
 private:
   /**
    * @brief Hashes a key to an index in the arrays.

@@ -80,6 +80,8 @@ class Periodic_Thread {
         void join();
 
         void adjust_period(std::int64_t period);
+        // Directly overwrite current period (no GCD)
+        void set_period(std::int64_t period);
         std::int64_t period() const;
         
         static void* run(void* arg);
@@ -152,6 +154,15 @@ void Periodic_Thread<Owner>::start(std::int64_t period) {
 template <typename Owner>
 void Periodic_Thread<Owner>::adjust_period(std::int64_t period) {
     _period.store(mdc(_period.load(std::memory_order_acquire), period), std::memory_order_release);
+}
+
+template <typename Owner>
+void Periodic_Thread<Owner>::set_period(std::int64_t period) {
+    _period.store(period, std::memory_order_release);
+    // Wake the thread so the new period takes effect promptly
+    if (running()) {
+        pthread_kill(_thread, SIGUSR1);
+    }
 }
 
 template <typename Owner>
