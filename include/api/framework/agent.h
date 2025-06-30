@@ -71,15 +71,18 @@ class Agent {
         void stop_periodic_interest();
         void send_interest(Unit unit);
         void update_interest_period(Microseconds new_period);
+
+        bool thread_running();
         
-    private:
+    protected:
         void handle_interest(Unit unit, Microseconds period);
-        void reply(Unit unit);
+        virtual void reply(Unit unit);
         bool should_process_response();
+        Address address() const { return _address; }
+        CAN* _can;
     
     private:
         Address _address;
-        CAN* _can;
         std::string _name;
         Observer* _can_observer;
         pthread_t _thread;
@@ -131,8 +134,8 @@ class Agent {
 inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Address address,
                     DataProducer producer, ResponseHandler handler, 
                     std::unique_ptr<ComponentData> data, bool external) 
-    : _address(address),
-      _can(bus),
+    : _can(bus),
+    _address(address),
       _name(name),
       _can_observer(nullptr),
       _thread(),
@@ -173,7 +176,7 @@ inline Agent::Agent(CAN* bus, const std::string& name, Unit unit, Type type, Add
         // Application will call start_periodic_interest() when ready
         db<Agent>(INF) << "[Agent] " << _name << " initialized as consumer, waiting for application to start periodic interest\n";
     } else {
-        db<Agent>(INF) << "[Agent] " << _name << " initialized as producer, ready to handle INTEREST messages\n";
+        db<Agent>(INF) << "[Agent] " << _name << " initialized as producer, ready to handle INTEREST messages of unit: " << unit << "\n";
     }
 
     _running = true;
@@ -439,9 +442,13 @@ inline void Agent::set_csv_logger(const std::string& log_dir) {
 }
 
 inline void Agent::log_message(const Message& msg, const std::string& direction) {
+    
     if (!_csv_logger || !_csv_logger->is_open()) return;
+    db<Agent>(INF) << "[Agent] " << _name << " logging message of type: " << (msg.message_type() == Message::Type::INTEREST ? "INTEREST" : "RESPONSE") << " with direction: " << direction << "\n";
     
     auto timestamp_us = Message::getSynchronizedTimestamp().count();
+
+    db<Agent>(INF) << "[Agent] " << _name << " logging message of timestamp: " << msg.timestamp().count() << "\n";
     
     // Calculate latency for received messages
     auto latency_us = 0L;
@@ -572,6 +579,10 @@ inline bool Agent::should_process_response() {
 
 inline void Agent::external(const bool external) {
     _external = external;
+}
+
+inline bool Agent::thread_running() {
+    return _periodic_thread && _periodic_thread->running();
 }
 
 #endif // AGENT_H

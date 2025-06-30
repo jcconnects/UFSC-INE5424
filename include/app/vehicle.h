@@ -2,6 +2,7 @@
 #define VEHICLE_H
 
 #include <atomic> // for std::atomic
+#include <csignal>
 #include <vector> // for std::vector
 #include <memory> // for std::unique_ptr
 #include <string> // for std::string
@@ -23,6 +24,8 @@
 #include "components/basic_producer_b_factory.hpp"
 #include "components/basic_consumer_a_factory.hpp"
 #include "components/basic_consumer_b_factory.hpp"
+#include "components/csv_component_factory.hpp"
+#include "components/csv_consumer_factory.hpp"
 
 // Component type identifiers for template specialization
 // These replace the old inheritance-based component classes
@@ -34,6 +37,8 @@ struct BasicProducerA {};
 struct BasicProducerB {};
 struct BasicConsumerA {};
 struct BasicConsumerB {};
+struct CSVComponent {};
+struct CSVConsumerComponent {};
 
 // Vehicle class definition
 class Vehicle {
@@ -61,6 +66,9 @@ class Vehicle {
         
         template <typename ComponentType>
         ComponentType* get_component(const std::string& name);
+        
+        // Special method for CSV component creation with file path
+        void create_csv_component_with_file(const std::string& name, const std::string& csv_file_path);
         
         // CSV logging setup
         void setup_csv_logging();
@@ -158,7 +166,7 @@ inline void Vehicle::stop() {
 template <typename ComponentType>
 inline void Vehicle::create_component(const std::string& name) {
     static_assert(sizeof(ComponentType) == 0, 
-        "Unsupported component type. Supported types: ECUComponent, CameraComponent, LidarComponent, INSComponent, BasicProducerA, BasicProducerB, BasicConsumerA, BasicConsumerB");
+        "Unsupported component type. Supported types: ECUComponent, CameraComponent, LidarComponent, INSComponent, BasicProducerA, BasicProducerB, BasicConsumerA, BasicConsumerB, CSVComponent, CSVConsumerComponent");
 }
 
 /**
@@ -301,6 +309,58 @@ inline void Vehicle::create_component<BasicConsumerB>(const std::string& name) {
     Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
     
     auto component = create_basic_consumer_b(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for CSV component creation
+ * 
+ * CSVComponent requires a CSV file path parameter that cannot be provided through
+ * the standard template interface. This template specialization provides a clear
+ * compile-time error directing users to the appropriate creation method.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<CSVComponent>(const std::string& name) {
+    throw std::runtime_error("CSVComponent requires a CSV file path. Use this method instead:\n"
+                             "- create_csv_component_with_file(name, csv_file_path)");
+}
+
+/**
+ * @brief Template specialization for CSV consumer component creation
+ * 
+ * Creates a CSV consumer component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<CSVConsumerComponent>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_csv_consumer(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+
+/**
+ * @brief Create CSV component with specific file path
+ * 
+ * Creates a CSV component using the provided CSV file path.
+ * This method handles the file path parameter that the template version cannot.
+ * 
+ * @param name Component name for identification
+ * @param csv_file_path Path to the CSV file to load
+ */
+inline void Vehicle::create_csv_component_with_file(const std::string& name, const std::string& csv_file_path) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_csv_component(_gateway->bus(), component_addr, csv_file_path, name);
     component->set_csv_logger(_log_dir);
     _components.push_back(std::move(component));
 }

@@ -44,9 +44,14 @@ inline std::vector<std::uint8_t> csv_producer(std::uint32_t unit, ComponentData*
         return std::vector<std::uint8_t>();
     }
     
-    // Serialize CSV record to byte vector
-    std::vector<std::uint8_t> result(sizeof(CSVComponentData::CSVRecord));
-    std::memcpy(result.data(), record, sizeof(CSVComponentData::CSVRecord));
+    // Serialize CSV record to byte vector with timestamp prepended
+    std::vector<std::uint8_t> result(sizeof(std::uint64_t) + sizeof(CSVComponentData::CSVRecord));
+    
+    // Copy timestamp to the beginning of the result vector
+    std::memcpy(result.data(), &record->timestamp, sizeof(std::uint64_t));
+    
+    // Copy the entire CSV record after the timestamp
+    std::memcpy(result.data() + sizeof(std::uint64_t), record, sizeof(CSVComponentData::CSVRecord));
     
     // Log CSV data transmission
     db<void>(INF) << "[CSVComponent] Sending CSV record #" << csv_data->get_records_sent()
