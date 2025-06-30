@@ -124,7 +124,6 @@ def analyze_latency_data(csv_files):
     
     print(f"\n LATENCY ANALYSIS RESULTS")
     print("=" * 60)
-    print(f"Total RECEIVE messages analyzed: {filtered_count:,}")
     print(f"Valid messages for analysis:     {cleaned_total:,}")
     print(f"Average latency:                 {cleaned_average:.2f} μs")
     print(f"Standard deviation:              {cleaned_std_dev:.2f} μs")
