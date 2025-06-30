@@ -4,7 +4,7 @@
     "description": "Simple map with one RSU and vehicles crossing its domain"
   },
   "simulation": {
-    "duration_s": 10,
+    "duration_s": 300,
     "update_interval_ms": 100,
     "default_transmission_radius_m": 500,
     "trajectory_generator_script": "scripts/trajectory_generator_map_1.py"
@@ -16,7 +16,7 @@
     "broadcast_period_ms": 250
   },
   "vehicles": {
-    "default_count": 10,
+    "default_count": 2,
     "speed_kmh": 50
   },
   "waypoints": [
