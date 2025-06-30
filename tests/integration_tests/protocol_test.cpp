@@ -269,13 +269,7 @@ void ProtocolTest::tearDown() {
 }
 
 void ProtocolTest::cleanupResources() {
-    // Clean up observers
-    for (auto observer : observers) {
-        delete observer;
-    }
-    observers.clear();
-    
-    // Clean up protocols
+    // === 1. Stop protocol activity before any NIC activity ends ===
     if (proto1) {
         delete proto1;
         proto1 = nullptr;
@@ -284,8 +278,8 @@ void ProtocolTest::cleanupResources() {
         delete proto2;
         proto2 = nullptr;
     }
-    
-    // Clean up NICs
+
+    // === 2. Shut down NICs (their SocketEngine threads) ===
     if (nic1) {
         delete nic1;
         nic1 = nullptr;
@@ -294,6 +288,12 @@ void ProtocolTest::cleanupResources() {
         delete nic2;
         nic2 = nullptr;
     }
+
+    // === 3. Finally, release observers (no background threads reference them) ===
+    for (auto observer : observers) {
+        delete observer;
+    }
+    observers.clear();
 }
 
 // === ADDRESS MANAGEMENT TESTS ===
