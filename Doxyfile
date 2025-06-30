@@ -1,0 +1,56 @@
+PROJECT_NAME           = "UFSC-INE5424"
+PROJECT_BRIEF          = "UFSC Operating Systems II Course Project"
+OUTPUT_DIRECTORY       = doc/doxygen
+CREATE_SUBDIRS        = NO
+ALLOW_UNICODE_NAMES   = YES
+OUTPUT_LANGUAGE       = English
+BRIEF_MEMBER_DESC     = YES
+REPEAT_BRIEF          = YES
+ABBREVIATE_BRIEF      = "The $name class" \
+                       "The $name widget" \
+                       "The $name file" \
+                       is \
+                       provides \
+                       specifies \
+                       contains \
+                       represents \
+                       a \
+                       an \
+                       the
+
+EXTRACT_ALL           = YES
+EXTRACT_PRIVATE       = YES
+EXTRACT_STATIC        = YES
+EXTRACT_LOCAL_CLASSES = YES
+
+INPUT                 = .
+FILE_PATTERNS         = *.cpp \
+                       *.h \
+                       *.hpp \
+                       *.cc \
+                       *.c
+RECURSIVE             = YES
+EXCLUDE_PATTERNS      = */build/* \
+                       */docs/*
+
+SOURCE_BROWSER        = YES
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION   = YES
+
+GENERATE_HTML         = YES
+HTML_OUTPUT           = html
+HTML_FILE_EXTENSION  = .html
+HTML_COLORSTYLE      = AUTO_LIGHT
+GENERATE_TREEVIEW    = YES
+
+GENERATE_LATEX       = NO
+
+HAVE_DOT             = NO
+CLASS_GRAPH          = YES
+COLLABORATION_GRAPH  = YES
+UML_LOOK            = YES
+TEMPLATE_RELATIONS  = YES
+INCLUDE_GRAPH      = YES
+INCLUDED_BY_GRAPH  = YES
+CALL_GRAPH         = YES
+CALLER_GRAPH       = YES

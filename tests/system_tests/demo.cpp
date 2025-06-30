@@ -331,7 +331,7 @@ int Demo::run_demo_with_config(const std::string& config_file) {
         script_path = g_map_config->get_trajectory_generator_script();
     } catch (const std::exception& e) {
         db<Demo>(WRN) << "Error accessing trajectory generator script config: " << e.what() << "\n";
-        script_path = "scripts/trajectory_generator_map_1.py"; // fallback
+        script_path = "tools/scripts/trajectory_generator_map_1.py"; // fallback
     }
     
     std::string python_command = "python3 " + script_path;
