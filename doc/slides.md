@@ -23,3 +23,7 @@
 ## P6
 
 [Edit](https://www.canva.com/design/DAGqqftq350/v7HXc3XBeg5YZ_bMJlM3nw/edit?utm_content=DAGqqftq350&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton) | [View](https://www.canva.com/design/DAGqqftq350/eUvNsJq21yqwnus7qFn_YQ/view?utm_content=DAGqqftq350&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=haa65d63cd4)
+
+## P7
+
+[Edit](https://www.canva.com/design/DAGqvU4jsKc/mVeYnm53WG73KeheHMviFQ/edit?utm_content=DAGqvU4jsKc&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton) | [View](https://www.canva.com/design/DAGqvU4jsKc/uEm_myAMnboOEeVbGtVxug/view?utm_content=DAGqvU4jsKc&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h33752bf094)
