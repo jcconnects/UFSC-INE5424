@@ -65,6 +65,7 @@ BINDIR := bin
 OBJDIR := build/obj
 LIBDIR := build/lib
 DOCDIR := doc
+DOXYFILE := config/Doxyfile
 
 # Test directories
 UNIT_TESTDIR := $(TESTDIR)/unit_tests
@@ -229,14 +230,13 @@ coverage: clean compile_tests test ## Generate code coverage report
 # =============================================================================
 
 docs: ## Generate documentation with Doxygen
-	@echo "Generating documentation with Doxygen..."
-	@mkdir -p $(DOCDIR)/doxygen
-	@doxygen
-	@echo "Documentation generated in $(DOCDIR)/doxygen/html/"
+	@echo "Generating documentation with Doxygen (config: $(DOXYFILE))..."
+	@doxygen $(DOXYFILE)
+	@echo "Documentation generated in doc/doxygen/html/"
 
 docs-open: docs ## Generate and open documentation
 	@echo "Opening documentation in browser..."
-	@open $(DOCDIR)/doxygen/html/index.html
+	@open doc/doxygen/html/index.html
 
 clean-docs: ## Clean generated documentation
 	@echo "Cleaning documentation..."
