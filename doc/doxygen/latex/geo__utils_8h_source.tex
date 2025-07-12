@@ -1,0 +1,37 @@
+\doxysection{geo\+\_\+utils.\+h}
+\hypertarget{geo__utils_8h_source}{}\label{geo__utils_8h_source}\index{include/api/util/geo\_utils.h@{include/api/util/geo\_utils.h}}
+\mbox{\hyperlink{geo__utils_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ GEO\_UTILS\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ GEO\_UTILS\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_geo_utils}{GeoUtils}}\ \{}
+\DoxyCodeLine{00007\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00008\ \ \ \ \ \textcolor{comment}{//\ Simple\ Euclidean\ distance\ calculation\ for\ Cartesian\ coordinates}}
+\DoxyCodeLine{00009\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{class_geo_utils_a3d1eed81ef984b8f2eae74000abdb5ed}{cartesianDistance}}(\textcolor{keywordtype}{double}\ x1,\ \textcolor{keywordtype}{double}\ y1,\ \textcolor{keywordtype}{double}\ x2,\ \textcolor{keywordtype}{double}\ y2)\ \{}
+\DoxyCodeLine{00010\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ dx\ =\ x2\ -\/\ x1;}
+\DoxyCodeLine{00011\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ dy\ =\ y2\ -\/\ y1;}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ sqrt(dx\ *\ dx\ +\ dy\ *\ dy);}
+\DoxyCodeLine{00013\ \ \ \ \ \}}
+\DoxyCodeLine{00014\ \ \ \ \ }
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{comment}{//\ Alias\ for\ cartesianDistance}}
+\DoxyCodeLine{00016\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{class_geo_utils_a89d28ded3fcf2e9a1f127bc208762882}{euclideanDistance}}(\textcolor{keywordtype}{double}\ x1,\ \textcolor{keywordtype}{double}\ y1,\ \textcolor{keywordtype}{double}\ x2,\ \textcolor{keywordtype}{double}\ y2)\ \{}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_geo_utils_a3d1eed81ef984b8f2eae74000abdb5ed}{cartesianDistance}}(x1,\ y1,\ x2,\ y2);}
+\DoxyCodeLine{00018\ \ \ \ \ \}}
+\DoxyCodeLine{00019\ \ \ \ \ }
+\DoxyCodeLine{00020\ \ \ \ \ \textcolor{comment}{//\ Legacy\ method\ name\ for\ backward\ compatibility}}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{class_geo_utils_ab004506e2dc45efd068bab43521ffdd5}{haversineDistance}}(\textcolor{keywordtype}{double}\ x1,\ \textcolor{keywordtype}{double}\ y1,\ \textcolor{keywordtype}{double}\ x2,\ \textcolor{keywordtype}{double}\ y2)\ \{}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_geo_utils_a3d1eed81ef984b8f2eae74000abdb5ed}{cartesianDistance}}(x1,\ y1,\ x2,\ y2);}
+\DoxyCodeLine{00023\ \ \ \ \ \}}
+\DoxyCodeLine{00024\ \ \ \ \ }
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{comment}{//\ Check\ if\ point\ is\ within\ circular\ area}}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_geo_utils_ac74e7aefd2cdf97c828a2170cfb078fb}{isWithinRadius}}(\textcolor{keywordtype}{double}\ x1,\ \textcolor{keywordtype}{double}\ y1,\ \textcolor{keywordtype}{double}\ x2,\ \textcolor{keywordtype}{double}\ y2,\ \textcolor{keywordtype}{double}\ radius)\ \{}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_geo_utils_a3d1eed81ef984b8f2eae74000abdb5ed}{cartesianDistance}}(x1,\ y1,\ x2,\ y2)\ <=\ radius;}
+\DoxyCodeLine{00028\ \ \ \ \ \}}
+\DoxyCodeLine{00029\ \};}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ GEO\_UTILS\_H\ }}
+
+\end{DoxyCode}

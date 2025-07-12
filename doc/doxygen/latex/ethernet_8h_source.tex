@@ -1,0 +1,71 @@
+\doxysection{ethernet.\+h}
+\hypertarget{ethernet_8h_source}{}\label{ethernet_8h_source}\index{include/api/network/ethernet.h@{include/api/network/ethernet.h}}
+\mbox{\hyperlink{ethernet_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ ETHERNET\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ ETHERNET\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <sstream>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <iomanip>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_ethernet_a360ed49c9cd592de54486f4f2e41f341}{Ethernet}}\ \{}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_ethernet_ab5325c9e8545b790a86765fa1dba1c87}{MTU}}\ =\ 1500;\ \textcolor{comment}{//\ Ethernet\ MTU\ =\ 1500\ Bytes}}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_ethernet_a4782274332fe011d8fd5d14284ff6a16}{MAC\_SIZE}}\ =\ 6;\ }
+\DoxyCodeLine{00014\ \ \ \ \ }
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Defining\ MAC\ address}}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_ethernet_1_1_address}{Address}}\ \{}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \ std::uint8\_t\ \mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[\mbox{\hyperlink{class_ethernet_a4782274332fe011d8fd5d14284ff6a16}{MAC\_SIZE}}];}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ \mbox{\hyperlink{class_ethernet_ad07c95e4afe8e563cc0eb4c82b1f10b8}{NULL\_ADDRESS}};}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ \mbox{\hyperlink{class_ethernet_a4d98569f734c1d3050bd1b85aeb30b51}{BROADCAST}};}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Protocol\ Type}}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ std::uint16\_t\ \mbox{\hyperlink{class_ethernet_a7192e74f89cf8ff08d4f28c397891f5c}{Protocol}};}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_ethernet_a981bc68d59187910a930f8f446e98c2d}{HEADER\_SIZE}}\ =\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_ethernet_1_1_address}{Address}})*2\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{class_ethernet_a7192e74f89cf8ff08d4f28c397891f5c}{Protocol}});}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Defining\ Ethernet\ Frame}}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_ethernet_1_1_frame}{Frame}}\ \{}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_ethernet_1_1_address}{Address}}\ \mbox{\hyperlink{struct_ethernet_1_1_frame_a5b606cb15a216606af19742e6ca45e33}{dst}};}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_ethernet_1_1_address}{Address}}\ \mbox{\hyperlink{struct_ethernet_1_1_frame_a7f373f17d7e2aba30dec20d33d46005f}{src}};}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_ethernet_a7192e74f89cf8ff08d4f28c397891f5c}{Protocol}}\ \mbox{\hyperlink{struct_ethernet_1_1_frame_af25c7c0d6f820be184952cf9ea7253f5}{prot}};}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ std::uint8\_t\ \mbox{\hyperlink{struct_ethernet_1_1_frame_ac835436549beebe9edad68c291f97f74}{payload}}[\mbox{\hyperlink{class_ethernet_ab5325c9e8545b790a86765fa1dba1c87}{MTU}}];}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \}\ \mbox{\hyperlink{class_ethernet_a0ca590091aedf078b653162f0bba9829}{\_\_attribute\_\_}}((packed));}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ std::string\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{mac\_to\_string}}(\mbox{\hyperlink{struct_ethernet_1_1_address}{Address}}\ addr)\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ std::ostringstream\ oss;}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ \mbox{\hyperlink{class_ethernet_a4782274332fe011d8fd5d14284ff6a16}{MAC\_SIZE}};\ ++i)\ \{}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ !=\ 0)\ oss\ <<\ \textcolor{stringliteral}{"{}:"{}};}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ oss\ <<\ std::uppercase\ <<\ std::hex\ <<\ std::setw(2)\ <<\ std::setfill('0')\ <<\ static\_cast<int>(addr.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[i]);}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ oss.str();}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Constructor\ /\ Destructor}}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_ethernet_a360ed49c9cd592de54486f4f2e41f341}{Ethernet}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_ethernet_ae6cf80014bd93a03e7fe0aaad338604b}{\string~Ethernet}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \};\ \textcolor{comment}{//\ all\ necessary\ definitions\ and\ formats}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_ethernet_ab5325c9e8545b790a86765fa1dba1c87}{Ethernet::MTU}};}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ \mbox{\hyperlink{class_ethernet_ad07c95e4afe8e563cc0eb4c82b1f10b8}{Ethernet::NULL\_ADDRESS}}\ =\ \{\};}
+\DoxyCodeLine{00054\ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ \mbox{\hyperlink{class_ethernet_a4d98569f734c1d3050bd1b85aeb30b51}{Ethernet::BROADCAST}}\ =\ \{\{0xff,\ 0xff,\ 0xff,\ 0xff,\ 0xff,\ 0xff\}\};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{ethernet_8h_a0aff0182a6568f8a9789aae0310566f0}{operator==}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\&\ a,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\&\ b)\ \{}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{return}\ std::memcmp(a.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}},\ b.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}},\ \mbox{\hyperlink{class_ethernet_a4782274332fe011d8fd5d14284ff6a16}{Ethernet::MAC\_SIZE}})\ ==\ 0;}
+\DoxyCodeLine{00059\ \}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{ethernet_8h_a0c746c5b64d97594d9226b8c81960692}{operator!=}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\&\ a,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\&\ b)\ \{}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordflow}{return}\ !(a\ ==\ b);}
+\DoxyCodeLine{00063\ \}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ ETHERNET\_H}}
+
+\end{DoxyCode}

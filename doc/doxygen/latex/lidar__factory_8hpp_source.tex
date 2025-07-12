@@ -1,0 +1,154 @@
+\doxysection{lidar\+\_\+factory.\+hpp}
+\hypertarget{lidar__factory_8hpp_source}{}\label{lidar__factory_8hpp_source}\index{include/app/components/lidar\_factory.hpp@{include/app/components/lidar\_factory.hpp}}
+\mbox{\hyperlink{lidar__factory_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ LIDAR\_FACTORY\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ LIDAR\_FACTORY\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{agent_8h}{../../api/framework/agent.h}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{lidar__data_8hpp}{lidar\_data.hpp}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{lidar__functions_8hpp}{lidar\_functions.hpp}}"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{datatypes_8h}{../datatypes.h}}"{}}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00028\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{lidar__factory_8hpp_a3c346f997e0aa0b0be3cae50aade7399}{create\_lidar\_component}}(}
+\DoxyCodeLine{00029\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,\ }
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}LidarComponent"{}}}
+\DoxyCodeLine{00032\ )\ \{}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{comment}{//\ Parameter\ validation\ following\ EPOS\ principles}}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordflow}{if}\ (!can)\ \{}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}CAN\ bus\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00036\ \ \ \ \ \}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{comment}{//\ Use\ default\ name\ if\ an\ empty\ string\ is\ provided}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ agentName\ =\ name.empty()\ ?\ \textcolor{stringliteral}{"{}LidarComponent"{}}\ :\ name;}
+\DoxyCodeLine{00040\ \ \ \ \ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ Create\ component\ data\ for\ Lidar\ producer}}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ std::make\_unique<LidarData>();}
+\DoxyCodeLine{00043\ \ \ \ \ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ Create\ Agent\ using\ function-\/based\ composition}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{//\ Lidar\ is\ configured\ as\ producer\ for\ EXTERNAL\_POINT\_CLOUD\_XYZ\ (matching\ original)}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<Agent>(}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ can,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CAN\ bus}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ agentName,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Agent\ name}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa36839459114ab3d7ef142b7befb47bc5}{DataTypes::EXTERNAL\_POINT\_CLOUD\_XYZ}}),\ \textcolor{comment}{//\ Data\ unit\ (matching\ original)}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ Agent::Type::INTEREST,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Producer\ observes\ INTEREST}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ addr,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Network\ address}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{lidar__functions_8hpp_a234a75d14ee5e2bbcc3303107d6dddf3}{lidar\_producer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Data\ generation\ function\ pointer}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{lidar__functions_8hpp_af4ef393a879c2b105661f854b75c1110}{lidar\_consumer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Response\ handler\ (unused\ for\ producer)}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Component\ data}}
+\DoxyCodeLine{00055\ \ \ \ \ );}
+\DoxyCodeLine{00056\ \}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00077\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{lidar__factory_8hpp_a65079b562c6f8538d43eb698f2d1da69}{create\_lidar\_component\_with\_ranges}}(}
+\DoxyCodeLine{00078\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordtype}{double}\ x\_min,\ \textcolor{keywordtype}{double}\ x\_max,}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordtype}{double}\ y\_min,\ \textcolor{keywordtype}{double}\ y\_max,}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordtype}{double}\ z\_min,\ \textcolor{keywordtype}{double}\ z\_max,}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}LidarComponent"{}}}
+\DoxyCodeLine{00084\ )\ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{comment}{//\ Parameter\ validation}}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordflow}{if}\ (!can)\ \{}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}CAN\ bus\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00088\ \ \ \ \ \}}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{comment}{//\ Use\ default\ name\ if\ an\ empty\ string\ is\ provided}}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ agentName\ =\ name.empty()\ ?\ \textcolor{stringliteral}{"{}LidarComponent"{}}\ :\ name;}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{keywordflow}{if}\ (x\_min\ >=\ x\_max\ ||\ y\_min\ >=\ y\_max\ ||\ z\_min\ >=\ z\_max)\ \{}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}Invalid\ range\ parameters:\ min\ must\ be\ less\ than\ max"{}});}
+\DoxyCodeLine{00095\ \ \ \ \ \}}
+\DoxyCodeLine{00096\ \ \ \ \ }
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{comment}{//\ Create\ component\ data\ with\ custom\ spatial\ ranges}}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ std::make\_unique<LidarData>();}
+\DoxyCodeLine{00099\ \ \ \ \ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}-\/>update\_spatial\_range(x\_min,\ x\_max,\ y\_min,\ y\_max,\ z\_min,\ z\_max);}
+\DoxyCodeLine{00100\ \ \ \ \ }
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{comment}{//\ Create\ Agent\ using\ function-\/based\ composition}}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<Agent>(}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ can,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CAN\ bus}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ agentName,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Agent\ name}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa36839459114ab3d7ef142b7befb47bc5}{DataTypes::EXTERNAL\_POINT\_CLOUD\_XYZ}}),\ \textcolor{comment}{//\ Data\ unit}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ Agent::Type::INTEREST,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Producer\ observes\ INTEREST}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ addr,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Network\ address}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{lidar__functions_8hpp_a234a75d14ee5e2bbcc3303107d6dddf3}{lidar\_producer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Data\ generation\ function\ pointer}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{lidar__functions_8hpp_af4ef393a879c2b105661f854b75c1110}{lidar\_consumer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Response\ handler\ (unused)}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Component\ data\ with\ custom\ ranges}}
+\DoxyCodeLine{00111\ \ \ \ \ );}
+\DoxyCodeLine{00112\ \}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00129\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{lidar__factory_8hpp_a141ba1ced218eb4921d2f7e70cb2420b}{create\_lidar\_component\_with\_density}}(}
+\DoxyCodeLine{00130\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keywordtype}{int}\ min\_points,\ \textcolor{keywordtype}{int}\ max\_points,}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}LidarComponent"{}}}
+\DoxyCodeLine{00134\ )\ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{comment}{//\ Parameter\ validation}}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordflow}{if}\ (!can)\ \{}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}CAN\ bus\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00138\ \ \ \ \ \}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{comment}{//\ Use\ default\ name\ if\ an\ empty\ string\ is\ provided}}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ agentName\ =\ name.empty()\ ?\ \textcolor{stringliteral}{"{}LidarComponent"{}}\ :\ name;}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_points\ <=\ 0\ ||\ max\_points\ <=\ min\_points)\ \{}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}Invalid\ density\ parameters:\ must\ have\ min\_points\ >\ 0\ and\ max\_points\ >\ min\_points"{}});}
+\DoxyCodeLine{00145\ \ \ \ \ \}}
+\DoxyCodeLine{00146\ \ \ \ \ }
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{comment}{//\ Create\ component\ data\ with\ custom\ density\ parameters}}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ std::make\_unique<LidarData>();}
+\DoxyCodeLine{00149\ \ \ \ \ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}-\/>update\_density\_range(min\_points,\ max\_points);}
+\DoxyCodeLine{00150\ \ \ \ \ }
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{comment}{//\ Create\ Agent\ using\ function-\/based\ composition}}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<Agent>(}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ can,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CAN\ bus}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ agentName,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Agent\ name}}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa36839459114ab3d7ef142b7befb47bc5}{DataTypes::EXTERNAL\_POINT\_CLOUD\_XYZ}}),\ \textcolor{comment}{//\ Data\ unit}}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ Agent::Type::INTEREST,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Producer\ observes\ INTEREST}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ addr,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Network\ address}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{lidar__functions_8hpp_a234a75d14ee5e2bbcc3303107d6dddf3}{lidar\_producer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Data\ generation\ function\ pointer}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{lidar__functions_8hpp_af4ef393a879c2b105661f854b75c1110}{lidar\_consumer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Response\ handler\ (unused)}}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Component\ data\ with\ custom\ density}}
+\DoxyCodeLine{00161\ \ \ \ \ );}
+\DoxyCodeLine{00162\ \}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00179\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{lidar__factory_8hpp_a553d7cf822b8ba6a7d40b4e76689906d}{create\_lidar\_component\_with\_timing}}(}
+\DoxyCodeLine{00180\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,}
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{keywordtype}{int}\ min\_delay\_ms,\ \textcolor{keywordtype}{int}\ max\_delay\_ms,}
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}LidarComponent"{}}}
+\DoxyCodeLine{00184\ )\ \{}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{comment}{//\ Parameter\ validation}}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{keywordflow}{if}\ (!can)\ \{}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}CAN\ bus\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00188\ \ \ \ \ \}}
+\DoxyCodeLine{00189\ \ \ \ \ }
+\DoxyCodeLine{00190\ \ \ \ \ \textcolor{comment}{//\ Use\ default\ name\ if\ an\ empty\ string\ is\ provided}}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ agentName\ =\ name.empty()\ ?\ \textcolor{stringliteral}{"{}LidarComponent"{}}\ :\ name;}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_delay\_ms\ <=\ 0\ ||\ max\_delay\_ms\ <=\ min\_delay\_ms)\ \{}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}Invalid\ timing\ parameters:\ must\ have\ min\_delay\_ms\ >\ 0\ and\ max\_delay\_ms\ >\ min\_delay\_ms"{}});}
+\DoxyCodeLine{00195\ \ \ \ \ \}}
+\DoxyCodeLine{00196\ \ \ \ \ }
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{comment}{//\ Create\ component\ data\ with\ custom\ timing\ parameters}}
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ std::make\_unique<LidarData>();}
+\DoxyCodeLine{00199\ \ \ \ \ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}-\/>update\_timing\_range(min\_delay\_ms,\ max\_delay\_ms);}
+\DoxyCodeLine{00200\ \ \ \ \ }
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{comment}{//\ Create\ Agent\ using\ function-\/based\ composition}}
+\DoxyCodeLine{00202\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<Agent>(}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ can,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CAN\ bus}}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ agentName,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Agent\ name}}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa36839459114ab3d7ef142b7befb47bc5}{DataTypes::EXTERNAL\_POINT\_CLOUD\_XYZ}}),\ \textcolor{comment}{//\ Data\ unit}}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ Agent::Type::INTEREST,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Producer\ observes\ INTEREST}}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ addr,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Network\ address}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{lidar__functions_8hpp_a234a75d14ee5e2bbcc3303107d6dddf3}{lidar\_producer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Data\ generation\ function\ pointer}}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{lidar__functions_8hpp_af4ef393a879c2b105661f854b75c1110}{lidar\_consumer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Response\ handler\ (unused)}}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Component\ data\ with\ custom\ timing}}
+\DoxyCodeLine{00211\ \ \ \ \ );}
+\DoxyCodeLine{00212\ \}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LIDAR\_FACTORY\_HPP\ }}
+
+\end{DoxyCode}

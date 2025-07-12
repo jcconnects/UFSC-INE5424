@@ -1,0 +1,205 @@
+\doxysection{include/app/components/camera\+\_\+factory.hpp File Reference}
+\hypertarget{camera__factory_8hpp}{}\label{camera__factory_8hpp}\index{include/app/components/camera\_factory.hpp@{include/app/components/camera\_factory.hpp}}
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include "{}../../api/framework/agent.\+h"{}}\newline
+{\ttfamily \#include "{}camera\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}camera\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../datatypes.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{camera__factory_8hpp_a87b1496052046c9aaf29f55537a62f69}{create\+\_\+camera\+\_\+component}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, const std\+::string \&name="{}Camera\+Component"{})
+\begin{DoxyCompactList}\small\item\em Creates a Camera component using function-\/based composition. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{camera__factory_8hpp_a078de33ef27604933ddb709cdcbec6e5}{create\+\_\+camera\+\_\+component\+\_\+with\+\_\+dimensions}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, int width, int height, int bytes\+\_\+per\+\_\+pixel=1, const std\+::string \&name="{}Camera\+Component"{})
+\begin{DoxyCompactList}\small\item\em Creates a Camera component with custom image dimensions. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{camera__factory_8hpp_ad3fea1dd8e09bd4e0e5eb776c4e10f22}{create\+\_\+camera\+\_\+component\+\_\+with\+\_\+pixel\+\_\+params}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, int min\+\_\+pixel, int max\+\_\+pixel, int noise\+\_\+range, const std\+::string \&name="{}Camera\+Component"{})
+\begin{DoxyCompactList}\small\item\em Creates a Camera component with custom pixel parameters. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{camera__factory_8hpp_a8dcbae5f6ed85a13b9ea14c4399d55da}{create\+\_\+camera\+\_\+component\+\_\+with\+\_\+timing}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, int min\+\_\+delay\+\_\+ms, int max\+\_\+delay\+\_\+ms, const std\+::string \&name="{}Camera\+Component"{})
+\begin{DoxyCompactList}\small\item\em Creates a Camera component with custom timing parameters. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{camera__factory_8hpp_a251d0f5c31658ccc5e8bc165301d596e}{create\+\_\+camera\+\_\+component\+\_\+fully\+\_\+custom}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, int width, int height, int bytes\+\_\+per\+\_\+pixel, int min\+\_\+pixel, int max\+\_\+pixel, int noise\+\_\+range, int min\+\_\+delay\+\_\+ms, int max\+\_\+delay\+\_\+ms, const std\+::string \&name="{}Camera\+Component"{})
+\begin{DoxyCompactList}\small\item\em Creates a fully customized Camera component. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{camera__factory_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{camera__factory_8hpp_a87b1496052046c9aaf29f55537a62f69}\index{camera\_factory.hpp@{camera\_factory.hpp}!create\_camera\_component@{create\_camera\_component}}
+\index{create\_camera\_component@{create\_camera\_component}!camera\_factory.hpp@{camera\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_camera\_component()}{create\_camera\_component()}}
+{\footnotesize\ttfamily \label{camera__factory_8hpp_a87b1496052046c9aaf29f55537a62f69} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+camera\+\_\+component (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}CameraComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a Camera component using function-\/based composition. 
+
+Replaces the inheritance-\/based \doxylink{struct_camera_component}{Camera\+Component} class with EPOS Smart\+Data principles. Eliminates vtable race conditions during destruction by using function pointers instead of virtual methods.
+
+Camera components are producer-\/only and generate pixel matrix data. Initially simplified to handle EXTERNAL\+\_\+\+PIXEL\+\_\+\+MATRIX only, but can be extended to support RGB\+\_\+\+IMAGE, VIDEO\+\_\+\+STREAM, and CAMERA\+\_\+\+METADATA. This factory creates a complete \doxylink{class_agent}{Agent} configured as a producer for EXTERNAL\+\_\+\+PIXEL\+\_\+\+MATRIX.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Camera\+Component"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} ready for operation 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null or name is empty \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{camera__factory_8hpp_a251d0f5c31658ccc5e8bc165301d596e}\index{camera\_factory.hpp@{camera\_factory.hpp}!create\_camera\_component\_fully\_custom@{create\_camera\_component\_fully\_custom}}
+\index{create\_camera\_component\_fully\_custom@{create\_camera\_component\_fully\_custom}!camera\_factory.hpp@{camera\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_camera\_component\_fully\_custom()}{create\_camera\_component\_fully\_custom()}}
+{\footnotesize\ttfamily \label{camera__factory_8hpp_a251d0f5c31658ccc5e8bc165301d596e} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+camera\+\_\+component\+\_\+fully\+\_\+custom (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{int}]{width}{, }\item[{int}]{height}{, }\item[{int}]{bytes\+\_\+per\+\_\+pixel}{, }\item[{int}]{min\+\_\+pixel}{, }\item[{int}]{max\+\_\+pixel}{, }\item[{int}]{noise\+\_\+range}{, }\item[{int}]{min\+\_\+delay\+\_\+ms}{, }\item[{int}]{max\+\_\+delay\+\_\+ms}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}CameraComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a fully customized Camera component. 
+
+Creates a Camera component with all parameters customizable. Provides maximum flexibility for testing and configuration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em width} & Image width in pixels \\
+\hline
+{\em height} & Image height in pixels \\
+\hline
+{\em bytes\+\_\+per\+\_\+pixel} & Bytes per pixel (1 for grayscale, 3 for RGB) \\
+\hline
+{\em min\+\_\+pixel} & Minimum pixel value (0-\/255) \\
+\hline
+{\em max\+\_\+pixel} & Maximum pixel value (0-\/255) \\
+\hline
+{\em noise\+\_\+range} & Noise variation range (±noise\+\_\+range) \\
+\hline
+{\em min\+\_\+delay\+\_\+ms} & Minimum delay between frames (milliseconds) \\
+\hline
+{\em max\+\_\+delay\+\_\+ms} & Maximum delay between frames (milliseconds) \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Camera\+Component"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to fully configured \doxylink{class_agent}{Agent} 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if any parameters are invalid \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{camera__factory_8hpp_a078de33ef27604933ddb709cdcbec6e5}\index{camera\_factory.hpp@{camera\_factory.hpp}!create\_camera\_component\_with\_dimensions@{create\_camera\_component\_with\_dimensions}}
+\index{create\_camera\_component\_with\_dimensions@{create\_camera\_component\_with\_dimensions}!camera\_factory.hpp@{camera\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_camera\_component\_with\_dimensions()}{create\_camera\_component\_with\_dimensions()}}
+{\footnotesize\ttfamily \label{camera__factory_8hpp_a078de33ef27604933ddb709cdcbec6e5} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+camera\+\_\+component\+\_\+with\+\_\+dimensions (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{int}]{width}{, }\item[{int}]{height}{, }\item[{int}]{bytes\+\_\+per\+\_\+pixel}{ = {\ttfamily 1}, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}CameraComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a Camera component with custom image dimensions. 
+
+Creates a Camera component with customized image resolution and color depth. Useful for testing different camera configurations or simulating different camera types (e.\+g., low-\/res vs high-\/res, grayscale vs color).
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em width} & Image width in pixels \\
+\hline
+{\em height} & Image height in pixels \\
+\hline
+{\em bytes\+\_\+per\+\_\+pixel} & Bytes per pixel (1 for grayscale, 3 for RGB) \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Camera\+Component"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} with custom dimensions 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null, name is empty, or dimensions are invalid \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{camera__factory_8hpp_ad3fea1dd8e09bd4e0e5eb776c4e10f22}\index{camera\_factory.hpp@{camera\_factory.hpp}!create\_camera\_component\_with\_pixel\_params@{create\_camera\_component\_with\_pixel\_params}}
+\index{create\_camera\_component\_with\_pixel\_params@{create\_camera\_component\_with\_pixel\_params}!camera\_factory.hpp@{camera\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_camera\_component\_with\_pixel\_params()}{create\_camera\_component\_with\_pixel\_params()}}
+{\footnotesize\ttfamily \label{camera__factory_8hpp_ad3fea1dd8e09bd4e0e5eb776c4e10f22} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+camera\+\_\+component\+\_\+with\+\_\+pixel\+\_\+params (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{int}]{min\+\_\+pixel}{, }\item[{int}]{max\+\_\+pixel}{, }\item[{int}]{noise\+\_\+range}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}CameraComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a Camera component with custom pixel parameters. 
+
+Creates a Camera component with customized pixel value ranges and noise characteristics. Useful for simulating different lighting conditions, sensor characteristics, or testing system robustness under various image quality conditions.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em min\+\_\+pixel} & Minimum pixel value (0-\/255) \\
+\hline
+{\em max\+\_\+pixel} & Maximum pixel value (0-\/255) \\
+\hline
+{\em noise\+\_\+range} & Noise variation range (±noise\+\_\+range) \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Camera\+Component"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} with custom pixel parameters 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null, name is empty, or parameters are invalid \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{camera__factory_8hpp_a8dcbae5f6ed85a13b9ea14c4399d55da}\index{camera\_factory.hpp@{camera\_factory.hpp}!create\_camera\_component\_with\_timing@{create\_camera\_component\_with\_timing}}
+\index{create\_camera\_component\_with\_timing@{create\_camera\_component\_with\_timing}!camera\_factory.hpp@{camera\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_camera\_component\_with\_timing()}{create\_camera\_component\_with\_timing()}}
+{\footnotesize\ttfamily \label{camera__factory_8hpp_a8dcbae5f6ed85a13b9ea14c4399d55da} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+camera\+\_\+component\+\_\+with\+\_\+timing (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{int}]{min\+\_\+delay\+\_\+ms}{, }\item[{int}]{max\+\_\+delay\+\_\+ms}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}CameraComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a Camera component with custom timing parameters. 
+
+Creates a Camera component with customized frame timing. Useful for simulating different camera frame rates or testing system performance under different timing conditions.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em min\+\_\+delay\+\_\+ms} & Minimum delay between frames (milliseconds) \\
+\hline
+{\em max\+\_\+delay\+\_\+ms} & Maximum delay between frames (milliseconds) \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Camera\+Component"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} with custom timing 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null, name is empty, or timing is invalid \\
+\hline
+\end{DoxyExceptions}

@@ -1,0 +1,167 @@
+\doxysection{csv\+\_\+logger.\+h}
+\hypertarget{csv__logger_8h_source}{}\label{csv__logger_8h_source}\index{include/api/util/csv\_logger.h@{include/api/util/csv\_logger.h}}
+\mbox{\hyperlink{csv__logger_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ CSV\_LOGGER\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ CSV\_LOGGER\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <pthread.h>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <sstream>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <iomanip>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <cstddef>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <sys/stat.h>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <sys/types.h>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <exception>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <ios>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <ostream>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <ctime>}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_c_s_v_logger_aa5776f73f9c1d1fc4e1b7579e4aa9143}{CSVLogger}}\ \{}
+\DoxyCodeLine{00020\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00021\ \ \ \ \ \mbox{\hyperlink{class_c_s_v_logger_aa5776f73f9c1d1fc4e1b7579e4aa9143}{CSVLogger}}(\textcolor{keyword}{const}\ std::string\&\ filepath,\ \textcolor{keyword}{const}\ std::string\&\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}});}
+\DoxyCodeLine{00022\ \ \ \ \ \mbox{\hyperlink{class_c_s_v_logger_af6a3f14f059edf9cfe572e43f09d2abc}{\string~CSVLogger}}();}
+\DoxyCodeLine{00023\ \ \ \ \ }
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_c_s_v_logger_a317b8ecb1db6f5f05710e116f38fc1f9}{log}}(\textcolor{keyword}{const}\ std::string\&\ csv\_line);}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_c_s_v_logger_ae0c2f88afd34a0f36626bb55f329e1ea}{flush}}();}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_c_s_v_logger_ae7379c58f66d271e8893600ac8d86622}{is\_open}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00027\ \ \ \ \ }
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{comment}{//\ Static\ method\ to\ create\ vehicle-\/specific\ log\ directory}}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keyword}{static}\ std::string\ \mbox{\hyperlink{class_c_s_v_logger_a486ab0c6a8bbd9505b088223d43bdff6}{create\_vehicle\_log\_dir}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vehicle\_id);}
+\DoxyCodeLine{00030\ \ \ \ \ }
+\DoxyCodeLine{00031\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00032\ \ \ \ \ std::unique\_ptr<std::ofstream>\ \_file;}
+\DoxyCodeLine{00033\ \ \ \ \ pthread\_mutex\_t\ \_mutex;}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordtype}{bool}\ \_is\_open;}
+\DoxyCodeLine{00035\ \ \ \ \ }
+\DoxyCodeLine{00036\ \ \ \ \ std::string\ get\_timestamp();}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ create\_directory(\textcolor{keyword}{const}\ std::string\&\ path);}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keyword}{static}\ std::string\ get\_directory\_from\_path(\textcolor{keyword}{const}\ std::string\&\ filepath);}
+\DoxyCodeLine{00039\ \};}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{comment}{//\ Implementation}}
+\DoxyCodeLine{00042\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_c_s_v_logger_aa5776f73f9c1d1fc4e1b7579e4aa9143}{CSVLogger::CSVLogger}}(\textcolor{keyword}{const}\ std::string\&\ filepath,\ \textcolor{keyword}{const}\ std::string\&\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}})\ :\ \_is\_open(false)\ \{}
+\DoxyCodeLine{00043\ \ \ \ \ pthread\_mutex\_init(\&\_mutex,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00044\ \ \ \ \ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{//\ Create\ directory\ if\ it\ doesn't\ exist}}
+\DoxyCodeLine{00046\ \ \ \ \ std::string\ dir\_path\ =\ get\_directory\_from\_path(filepath);}
+\DoxyCodeLine{00047\ \ \ \ \ }
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!dir\_path.empty())\ \{}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ create\_directory(dir\_path);}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \_file\ =\ std::make\_unique<std::ofstream>(filepath,\ std::ios::out\ |\ std::ios::app);}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_file-\/>is\_open())\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Check\ if\ file\ is\ empty\ (new\ file)\ to\ write\ header}}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \_file-\/>seekp(0,\ std::ios::end);}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_file-\/>tellp()\ ==\ 0)\ \{}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (*\_file)\ <<\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}}\ <<\ std::endl;}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ \ \ \_is\_open\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00062\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ std::exception\&\ e)\ \{}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \_is\_open\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00064\ \ \ \ \ \}}
+\DoxyCodeLine{00065\ \}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_c_s_v_logger_af6a3f14f059edf9cfe572e43f09d2abc}{CSVLogger::\string~CSVLogger}}()\ \{}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_file\ \&\&\ \_file-\/>is\_open())\ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \_file-\/>close();}
+\DoxyCodeLine{00070\ \ \ \ \ \}}
+\DoxyCodeLine{00071\ \ \ \ \ pthread\_mutex\_destroy(\&\_mutex);}
+\DoxyCodeLine{00072\ \}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_c_s_v_logger_a317b8ecb1db6f5f05710e116f38fc1f9}{CSVLogger::log}}(\textcolor{keyword}{const}\ std::string\&\ csv\_line)\ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_is\_open\ ||\ !\_file)\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00076\ \ \ \ \ }
+\DoxyCodeLine{00077\ \ \ \ \ pthread\_mutex\_lock(\&\_mutex);}
+\DoxyCodeLine{00078\ \ \ \ \ (*\_file)\ <<\ csv\_line\ <<\ std::endl;}
+\DoxyCodeLine{00079\ \ \ \ \ \_file-\/>flush();}
+\DoxyCodeLine{00080\ \ \ \ \ pthread\_mutex\_unlock(\&\_mutex);}
+\DoxyCodeLine{00081\ \}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_c_s_v_logger_ae0c2f88afd34a0f36626bb55f329e1ea}{CSVLogger::flush}}()\ \{}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_is\_open\ ||\ !\_file)\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00085\ \ \ \ \ }
+\DoxyCodeLine{00086\ \ \ \ \ pthread\_mutex\_lock(\&\_mutex);}
+\DoxyCodeLine{00087\ \ \ \ \ \_file-\/>flush();}
+\DoxyCodeLine{00088\ \ \ \ \ pthread\_mutex\_unlock(\&\_mutex);}
+\DoxyCodeLine{00089\ \}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_c_s_v_logger_ae7379c58f66d271e8893600ac8d86622}{CSVLogger::is\_open}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordflow}{return}\ \_is\_open;}
+\DoxyCodeLine{00093\ \}}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \textcolor{keyword}{inline}\ std::string\ \mbox{\hyperlink{class_c_s_v_logger_a486ab0c6a8bbd9505b088223d43bdff6}{CSVLogger::create\_vehicle\_log\_dir}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vehicle\_id)\ \{}
+\DoxyCodeLine{00096\ \ \ \ \ std::string\ base\_dir\ =\ \textcolor{stringliteral}{"{}tests/logs/vehicle\_"{}}\ +\ std::to\_string(vehicle\_id);}
+\DoxyCodeLine{00097\ \ \ \ \ }
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordflow}{if}\ (create\_directory(base\_dir))\ \{}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ base\_dir;}
+\DoxyCodeLine{00100\ \ \ \ \ \}}
+\DoxyCodeLine{00101\ \ \ \ \ }
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{comment}{//\ Fallback\ to\ tests/logs}}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keywordflow}{if}\ (create\_directory(\textcolor{stringliteral}{"{}tests/logs"{}}))\ \{}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}tests/logs"{}};}
+\DoxyCodeLine{00105\ \ \ \ \ \}}
+\DoxyCodeLine{00106\ \ \ \ \ }
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}."{}};\ \textcolor{comment}{//\ Last\ resort\ -\/\ current\ directory}}
+\DoxyCodeLine{00108\ \}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ CSVLogger::create\_directory(\textcolor{keyword}{const}\ std::string\&\ path)\ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{comment}{//\ Create\ directory\ recursively}}
+\DoxyCodeLine{00112\ \ \ \ \ std::string\ current\_path;}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ pos\ =\ 0;}
+\DoxyCodeLine{00114\ \ \ \ \ }
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordflow}{while}\ (pos\ <\ path.length())\ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ next\_pos\ =\ path.find(\textcolor{charliteral}{'/'},\ pos);}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (next\_pos\ ==\ std::string::npos)\ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ next\_pos\ =\ path.length();}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ current\_path\ +=\ path.substr(pos,\ next\_pos\ -\/\ pos);}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!current\_path.empty())\ \{}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }stat\ st;}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (stat(current\_path.c\_str(),\ \&st)\ !=\ 0)\ \{}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (mkdir(current\_path.c\_str(),\ 0755)\ !=\ 0)\ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (next\_pos\ <\ path.length())\ \{}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ current\_path\ +=\ \textcolor{stringliteral}{"{}/"{}};}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ pos\ =\ next\_pos\ +\ 1;}
+\DoxyCodeLine{00136\ \ \ \ \ \}}
+\DoxyCodeLine{00137\ \ \ \ \ }
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00139\ \}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{keyword}{inline}\ std::string\ CSVLogger::get\_directory\_from\_path(\textcolor{keyword}{const}\ std::string\&\ filepath)\ \{}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ last\_slash\ =\ filepath.find\_last\_of(\textcolor{charliteral}{'/'});}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordflow}{if}\ (last\_slash\ !=\ std::string::npos)\ \{}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ filepath.substr(0,\ last\_slash);}
+\DoxyCodeLine{00145\ \ \ \ \ \}}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00147\ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{keyword}{inline}\ std::string\ CSVLogger::get\_timestamp()\ \{}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keyword}{auto}\ now\ =\ std::chrono::system\_clock::now();}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keyword}{auto}\ time\_t\ =\ std::chrono::system\_clock::to\_time\_t(now);}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keyword}{auto}\ ms\ =\ std::chrono::duration\_cast<std::chrono::milliseconds>(}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ now.time\_since\_epoch())\ \%\ 1000;}
+\DoxyCodeLine{00154\ \ \ \ \ }
+\DoxyCodeLine{00155\ \ \ \ \ std::ostringstream\ oss;}
+\DoxyCodeLine{00156\ \ \ \ \ oss\ <<\ std::put\_time(std::localtime(\&time\_t),\ \textcolor{stringliteral}{"{}\%Y-\/\%m-\/\%d\ \%H:\%M:\%S"{}});}
+\DoxyCodeLine{00157\ \ \ \ \ oss\ <<\ \textcolor{stringliteral}{"{}."{}}\ <<\ std::setfill(\textcolor{charliteral}{'0'})\ <<\ std::setw(3)\ <<\ ms.count();}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordflow}{return}\ oss.str();}
+\DoxyCodeLine{00159\ \}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ CSV\_LOGGER\_H\ }}
+
+\end{DoxyCode}

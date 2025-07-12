@@ -1,0 +1,136 @@
+\doxysection{Periodic\+\_\+\+Thread\texorpdfstring{$<$}{<} Owner \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_periodic___thread}{}\label{class_periodic___thread}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+
+
+{\ttfamily \#include $<$periodic\+Thread.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_periodic___thread_a685e10ab7e8846f8f1dbb60b3e176a9d}{Periodic\+\_\+\+Thread}} ()=default
+\item 
+{\footnotesize template$<$typename ... Tn$>$ }\\\mbox{\hyperlink{class_periodic___thread_a123d095402ea6bee2aa89ce3da652657}{Periodic\+\_\+\+Thread}} (Owner \texorpdfstring{$\ast$}{*}owner, void(Owner\+::\texorpdfstring{$\ast$}{*}task)(Tn...), Tn...\+an)
+\item 
+\mbox{\hyperlink{class_periodic___thread_a855ada8f70f8dbfdb376118e55411d44}{\texorpdfstring{$\sim$}{\string~}\+Periodic\+\_\+\+Thread}} ()
+\item 
+void \mbox{\hyperlink{class_periodic___thread_a6beeb5b2b7f915df5c28fe215fa21d28}{start}} (std\+::int64\+\_\+t \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}})
+\item 
+void \mbox{\hyperlink{class_periodic___thread_a7f833c6eaf6ff5649f160d3ec7ac8427}{join}} ()
+\item 
+void \mbox{\hyperlink{class_periodic___thread_a4a6ba5ffa3dff30f9d42e2824d4a9465}{adjust\+\_\+period}} (std\+::int64\+\_\+t \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}})
+\item 
+void \mbox{\hyperlink{class_periodic___thread_a8b965e166a7c7a27f1bc354528ba642e}{set\+\_\+period}} (std\+::int64\+\_\+t \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}})
+\item 
+std\+::int64\+\_\+t \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}} () const
+\item 
+bool \mbox{\hyperlink{class_periodic___thread_aefa911df002f2897aab63a43d4555ec1}{running}} ()
+\item 
+\mbox{\hyperlink{class_periodic___thread_a7b94d4437fb09e1496642240b1091396}{Periodic\+\_\+\+Thread}} (const \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}} \&)=delete
+\item 
+\mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}} \& \mbox{\hyperlink{class_periodic___thread_ad6d3505e6bcfc5c15e33f5ca292b7776}{operator=}} (const \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}} \&)=delete
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_periodic___thread_ad08b3b9bc13cd526a5ab3ac7396ebe71}{run}} (void \texorpdfstring{$\ast$}{*}arg)
+\end{DoxyCompactItemize}
+
+
+\label{doc-constructors}
+\Hypertarget{class_periodic___thread_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_periodic___thread_a685e10ab7e8846f8f1dbb60b3e176a9d}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!Periodic\_Thread@{Periodic\_Thread}}
+\index{Periodic\_Thread@{Periodic\_Thread}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{Periodic\_Thread()}{Periodic\_Thread()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily \label{class_periodic___thread_a685e10ab7e8846f8f1dbb60b3e176a9d} 
+template$<$typename Owner$>$ \\
+\mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\mbox{\hyperlink{class_periodic___thread}{\+::\+Periodic\+\_\+\+Thread}} (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+\Hypertarget{class_periodic___thread_a123d095402ea6bee2aa89ce3da652657}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!Periodic\_Thread@{Periodic\_Thread}}
+\index{Periodic\_Thread@{Periodic\_Thread}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{Periodic\_Thread()}{Periodic\_Thread()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily \label{class_periodic___thread_a123d095402ea6bee2aa89ce3da652657} 
+template$<$typename Owner$>$ \\
+template$<$typename ... Tn$>$ \\
+\mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\mbox{\hyperlink{class_periodic___thread}{\+::\+Periodic\+\_\+\+Thread}} (\begin{DoxyParamCaption}\item[{Owner \texorpdfstring{$\ast$}{*}}]{owner}{, }\item[{void(Owner\+::\texorpdfstring{$\ast$}{*}}]{task~}{)(Tn...), }\item[{Tn...}]{an}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_periodic___thread_a855ada8f70f8dbfdb376118e55411d44}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!````~Periodic\_Thread@{\texorpdfstring{$\sim$}{\string~}Periodic\_Thread}}
+\index{````~Periodic\_Thread@{\texorpdfstring{$\sim$}{\string~}Periodic\_Thread}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Periodic\_Thread()}{\string~Periodic\_Thread()}}
+{\footnotesize\ttfamily \label{class_periodic___thread_a855ada8f70f8dbfdb376118e55411d44} 
+template$<$typename Owner$>$ \\
+\mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\+::\texorpdfstring{$\sim$}{\string~}\mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}} (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_periodic___thread_a7b94d4437fb09e1496642240b1091396}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!Periodic\_Thread@{Periodic\_Thread}}
+\index{Periodic\_Thread@{Periodic\_Thread}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{Periodic\_Thread()}{Periodic\_Thread()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily \label{class_periodic___thread_a7b94d4437fb09e1496642240b1091396} 
+template$<$typename Owner$>$ \\
+\mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\mbox{\hyperlink{class_periodic___thread}{\+::\+Periodic\+\_\+\+Thread}} (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$ \&}]{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_periodic___thread_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_periodic___thread_a4a6ba5ffa3dff30f9d42e2824d4a9465}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!adjust\_period@{adjust\_period}}
+\index{adjust\_period@{adjust\_period}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{adjust\_period()}{adjust\_period()}}
+{\footnotesize\ttfamily \label{class_periodic___thread_a4a6ba5ffa3dff30f9d42e2824d4a9465} 
+template$<$typename Owner$>$ \\
+void \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\+::adjust\+\_\+period (\begin{DoxyParamCaption}\item[{std\+::int64\+\_\+t}]{period}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_periodic___thread_a7f833c6eaf6ff5649f160d3ec7ac8427}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!join@{join}}
+\index{join@{join}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{join()}{join()}}
+{\footnotesize\ttfamily \label{class_periodic___thread_a7f833c6eaf6ff5649f160d3ec7ac8427} 
+template$<$typename Owner$>$ \\
+void \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\+::join (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_periodic___thread_ad6d3505e6bcfc5c15e33f5ca292b7776}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!operator=@{operator=}}
+\index{operator=@{operator=}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{operator=()}{operator=()}}
+{\footnotesize\ttfamily \label{class_periodic___thread_ad6d3505e6bcfc5c15e33f5ca292b7776} 
+template$<$typename Owner$>$ \\
+\mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}} \& \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\+::operator= (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$ \&}]{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+\Hypertarget{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!period@{period}}
+\index{period@{period}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{period()}{period()}}
+{\footnotesize\ttfamily \label{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927} 
+template$<$typename Owner$>$ \\
+std\+::int64\+\_\+t \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\+::period (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+\Hypertarget{class_periodic___thread_ad08b3b9bc13cd526a5ab3ac7396ebe71}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!run@{run}}
+\index{run@{run}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily \label{class_periodic___thread_ad08b3b9bc13cd526a5ab3ac7396ebe71} 
+template$<$typename Owner$>$ \\
+void \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\+::run (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{arg}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_periodic___thread_aefa911df002f2897aab63a43d4555ec1}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!running@{running}}
+\index{running@{running}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{running()}{running()}}
+{\footnotesize\ttfamily \label{class_periodic___thread_aefa911df002f2897aab63a43d4555ec1} 
+template$<$typename Owner$>$ \\
+bool \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\+::running (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_periodic___thread_a8b965e166a7c7a27f1bc354528ba642e}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!set\_period@{set\_period}}
+\index{set\_period@{set\_period}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{set\_period()}{set\_period()}}
+{\footnotesize\ttfamily \label{class_periodic___thread_a8b965e166a7c7a27f1bc354528ba642e} 
+template$<$typename Owner$>$ \\
+void \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\+::set\+\_\+period (\begin{DoxyParamCaption}\item[{std\+::int64\+\_\+t}]{period}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_periodic___thread_a6beeb5b2b7f915df5c28fe215fa21d28}\index{Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}!start@{start}}
+\index{start@{start}!Periodic\_Thread$<$ Owner $>$@{Periodic\_Thread$<$ Owner $>$}}
+\doxysubsubsection{\texorpdfstring{start()}{start()}}
+{\footnotesize\ttfamily \label{class_periodic___thread_a6beeb5b2b7f915df5c28fe215fa21d28} 
+template$<$typename Owner$>$ \\
+void \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ Owner $>$\+::start (\begin{DoxyParamCaption}\item[{std\+::int64\+\_\+t}]{period}{}\end{DoxyParamCaption})}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/framework/\mbox{\hyperlink{periodic_thread_8h}{periodic\+Thread.\+h}}\end{DoxyCompactItemize}

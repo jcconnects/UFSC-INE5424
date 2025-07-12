@@ -1,0 +1,416 @@
+\doxysection{Agent Class Reference}
+\hypertarget{class_agent}{}\label{class_agent}\index{Agent@{Agent}}
+
+
+EPOS-\/inspired \doxylink{class_agent}{Agent} implementation using composition over inheritance.  
+
+
+
+
+{\ttfamily \#include $<$agent.\+h$>$}
+
+Inheritance diagram for Agent\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_agent}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef \mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{CAN\+::\+Message}} \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}
+\item 
+typedef \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Message\+::\+Origin}} \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Address}}
+\item 
+typedef \mbox{\hyperlink{class_message_a6a16dfdcb8a3f35650440459b673ebbe}{Message\+::\+Array}} \mbox{\hyperlink{class_agent_a18a67129d2455bca64c43adf093567a6}{Value}}
+\item 
+typedef \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message\+::\+Unit}} \mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}
+\item 
+typedef \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Message\+::\+Type}} \mbox{\hyperlink{class_agent_a252b1a14b8f711d1ba6a25a2c80da6f3}{Type}}
+\item 
+typedef \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Message\+::\+Microseconds}} \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}
+\item 
+typedef \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{class_agent_a7938da6b695346da93afc23d43a987e0}{Thread}}
+\item 
+typedef \mbox{\hyperlink{class_c_a_n_a359d8413dfaf202bdaa027d33286fd4f}{CAN\+::\+Observer}} \mbox{\hyperlink{class_agent_a5d52ad1b2c84ad64f59744e9be7d1b3f}{Observer}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_agent_af463a1789fba270f3c71bbc341497ea0}{Agent}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}bus, const std\+::string \&\mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}}, \mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}} unit, \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}} type, \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Address}} \mbox{\hyperlink{class_agent_a374fceb89c2d3d53046ac128d2a50415}{address}}, \mbox{\hyperlink{component__functions_8hpp_a09035d123daa3e7131b0f583a140371c}{Data\+Producer}} producer, \mbox{\hyperlink{component__functions_8hpp_a53233b5baa21df43948d115fa1f102a1}{Response\+Handler}} handler, std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{struct_component_data}{Component\+Data}} $>$ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}, bool \mbox{\hyperlink{class_agent_acbe540cfd323fcd18db620e2265b40d9}{external}}=true)
+\begin{DoxyCompactList}\small\item\em Constructor for EPOS-\/inspired \doxylink{class_agent}{Agent} using composition. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{class_agent_ab8dd8d152605cf1339fed595376e83cb}{\texorpdfstring{$\sim$}{\string~}\+Agent}} ()
+\begin{DoxyCompactList}\small\item\em Destructor with proper cleanup order. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{class_agent_a18a67129d2455bca64c43adf093567a6}{Value}} \mbox{\hyperlink{class_agent_af986ce4308578cfb41ac891fb43477d6}{get}} (\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}} unit)
+\begin{DoxyCompactList}\small\item\em Get data using function pointer instead of virtual method. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_agent_ac8304f2fb2ab35287394c772b59fe73c}{handle\+\_\+response}} (\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}} \texorpdfstring{$\ast$}{*}msg)
+\begin{DoxyCompactList}\small\item\em Handle response using function pointer instead of virtual method. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_agent_a4a0d9642e1fa211160f67ab27320ec97}{send}} (\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}} unit, \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}} period)
+\item 
+int \mbox{\hyperlink{class_agent_a661a2c3e4ac1cc143eae7062cbac0fae}{receive}} (\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}} \texorpdfstring{$\ast$}{*}msg)
+\item 
+bool \mbox{\hyperlink{class_agent_a927dadd25d2b8e6172c18ead37c554cf}{running}} ()
+\item 
+void \mbox{\hyperlink{class_agent_acbe540cfd323fcd18db620e2265b40d9}{external}} (const bool external)
+\item 
+const bool \mbox{\hyperlink{class_agent_ab9e9da9e9a66227bca835dab3780d366}{external}} () const
+\item 
+std\+::string \mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}} () const
+\item 
+void \mbox{\hyperlink{class_agent_af8b714e0188b27f2294fdc138cad0190}{set\+\_\+csv\+\_\+logger}} (const std\+::string \&log\+\_\+dir)
+\item 
+void \mbox{\hyperlink{class_agent_a7a400be6500ceb7df23bf6d18ebf3a8d}{log\+\_\+message}} (const \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}} \&msg, const std\+::string \&direction)
+\item 
+int \mbox{\hyperlink{class_agent_ad438098d30b55b16ba88401f70a3bce2}{start\+\_\+periodic\+\_\+interest}} (\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}} unit, \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}} period)
+\begin{DoxyCompactList}\small\item\em Start sending periodic INTEREST messages for the specified unit and period. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_agent_a7846bb6027785d01803b71da1e667760}{stop\+\_\+periodic\+\_\+interest}} ()
+\begin{DoxyCompactList}\small\item\em Stop sending periodic INTEREST messages. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_agent_a7d5fd455d10924542f6b838e76cfd3c0}{send\+\_\+interest}} (\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}} unit)
+\begin{DoxyCompactList}\small\item\em Send a single INTEREST message (called by periodic thread) \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_agent_a06e90b6d019c3767897664144be0abe8}{update\+\_\+interest\+\_\+period}} (\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}} new\+\_\+period)
+\begin{DoxyCompactList}\small\item\em Update the period for periodic interest sending. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_agent_adbfbd8895294995d262be9ff18b26485}{run}} (void \texorpdfstring{$\ast$}{*}arg)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static const unsigned int \mbox{\hyperlink{class_agent_a39e9645b8248c543fde7c43e51c5cffb}{\+\_\+units\+\_\+per\+\_\+vehicle}} = 5
+\item 
+static constexpr int \mbox{\hyperlink{class_agent_a016b6c0d56b5ed4961f9e773f9e7e081}{MAX\+\_\+\+RESPONSES\+\_\+\+PER\+\_\+\+INTEREST}} = 5
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual void \mbox{\hyperlink{class_agent_adee5474d6762bc0ccfbfd86df1824ec5}{reply}} (\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}} unit)
+\begin{DoxyCompactList}\small\item\em Reply method that calls function pointer instead of virtual method. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{class_agent_a475c095d790fd809a4c4f54cdc8eb478}{thread\+\_\+running}} ()
+\item 
+int \mbox{\hyperlink{class_agent_abdd1927b5e75313e89c56dc9eea71929}{can\+\_\+send}} (\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}} \texorpdfstring{$\ast$}{*}msg)
+\item 
+\mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Address}} \mbox{\hyperlink{class_agent_a374fceb89c2d3d53046ac128d2a50415}{address}} () const
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+EPOS-\/inspired \doxylink{class_agent}{Agent} implementation using composition over inheritance. 
+
+This \doxylink{class_agent}{Agent} class eliminates the "{}pure virtual method called"{} race condition by using function pointers instead of virtual methods. Following EPOS Smart\+Data principles, components are pure data + function pairs rather than inheritance-\/based.
+
+Key improvements\+:
+\begin{DoxyItemize}
+\item No virtual methods = no vtable race conditions
+\item Function-\/based composition instead of inheritance
+\item Type-\/safe component data management
+\item Same public API as original \doxylink{class_agent}{Agent} for compatibility 
+\end{DoxyItemize}
+
+\label{doc-typedef-members}
+\Hypertarget{class_agent_doc-typedef-members}
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_agent_a2abe9226c41ade78a1cc022926011e79}\index{Agent@{Agent}!Address@{Address}}
+\index{Address@{Address}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{Address}{Address}}
+{\footnotesize\ttfamily \label{class_agent_a2abe9226c41ade78a1cc022926011e79} 
+typedef \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Message\+::\+Origin}} \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}}}
+
+\Hypertarget{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}\index{Agent@{Agent}!Message@{Message}}
+\index{Message@{Message}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{Message}{Message}}
+{\footnotesize\ttfamily \label{class_agent_a9469bca2c85eba8cb1c55ff157202ee5} 
+typedef \mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{CAN\+::\+Message}} \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Agent\+::\+Message}}}
+
+\Hypertarget{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}\index{Agent@{Agent}!Microseconds@{Microseconds}}
+\index{Microseconds@{Microseconds}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{Microseconds}{Microseconds}}
+{\footnotesize\ttfamily \label{class_agent_a22777b5e3a3b3d46961799fc6abb1a86} 
+typedef \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Message\+::\+Microseconds}} \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent\+::\+Microseconds}}}
+
+\Hypertarget{class_agent_a5d52ad1b2c84ad64f59744e9be7d1b3f}\index{Agent@{Agent}!Observer@{Observer}}
+\index{Observer@{Observer}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{Observer}{Observer}}
+{\footnotesize\ttfamily \label{class_agent_a5d52ad1b2c84ad64f59744e9be7d1b3f} 
+typedef \mbox{\hyperlink{class_c_a_n_a359d8413dfaf202bdaa027d33286fd4f}{CAN\+::\+Observer}} \mbox{\hyperlink{class_agent_a5d52ad1b2c84ad64f59744e9be7d1b3f}{Agent\+::\+Observer}}}
+
+\Hypertarget{class_agent_a7938da6b695346da93afc23d43a987e0}\index{Agent@{Agent}!Thread@{Thread}}
+\index{Thread@{Thread}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{Thread}{Thread}}
+{\footnotesize\ttfamily \label{class_agent_a7938da6b695346da93afc23d43a987e0} 
+typedef \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread}}$<$\mbox{\hyperlink{class_agent}{Agent}}$>$ \mbox{\hyperlink{class_agent_a7938da6b695346da93afc23d43a987e0}{Agent\+::\+Thread}}}
+
+\Hypertarget{class_agent_a252b1a14b8f711d1ba6a25a2c80da6f3}\index{Agent@{Agent}!Type@{Type}}
+\index{Type@{Type}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{Type}{Type}}
+{\footnotesize\ttfamily \label{class_agent_a252b1a14b8f711d1ba6a25a2c80da6f3} 
+typedef \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Message\+::\+Type}} \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Agent\+::\+Type}}}
+
+\Hypertarget{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}\index{Agent@{Agent}!Unit@{Unit}}
+\index{Unit@{Unit}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{Unit}{Unit}}
+{\footnotesize\ttfamily \label{class_agent_addb4d1988cc4fd0a7ae7df049c0be775} 
+typedef \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message\+::\+Unit}} \mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Agent\+::\+Unit}}}
+
+\Hypertarget{class_agent_a18a67129d2455bca64c43adf093567a6}\index{Agent@{Agent}!Value@{Value}}
+\index{Value@{Value}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{Value}{Value}}
+{\footnotesize\ttfamily \label{class_agent_a18a67129d2455bca64c43adf093567a6} 
+typedef \mbox{\hyperlink{class_message_a6a16dfdcb8a3f35650440459b673ebbe}{Message\+::\+Array}} \mbox{\hyperlink{class_agent_a18a67129d2455bca64c43adf093567a6}{Agent\+::\+Value}}}
+
+
+
+\label{doc-constructors}
+\Hypertarget{class_agent_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_agent_af463a1789fba270f3c71bbc341497ea0}\index{Agent@{Agent}!Agent@{Agent}}
+\index{Agent@{Agent}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{Agent()}{Agent()}}
+{\footnotesize\ttfamily \label{class_agent_af463a1789fba270f3c71bbc341497ea0} 
+Agent\+::\+Agent (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{bus}{, }\item[{const std\+::string \&}]{name}{, }\item[{\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}}]{unit}{, }\item[{\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}}]{type}{, }\item[{\mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Address}}}]{address}{, }\item[{\mbox{\hyperlink{component__functions_8hpp_a09035d123daa3e7131b0f583a140371c}{Data\+Producer}}}]{producer}{, }\item[{\mbox{\hyperlink{component__functions_8hpp_a53233b5baa21df43948d115fa1f102a1}{Response\+Handler}}}]{handler}{, }\item[{std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{struct_component_data}{Component\+Data}} $>$}]{data}{, }\item[{bool}]{external}{ = {\ttfamily true}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Constructor for EPOS-\/inspired \doxylink{class_agent}{Agent} using composition. 
+
+Creates an \doxylink{class_agent}{Agent} that uses function pointers instead of virtual methods, eliminating the vtable race condition during destruction.
+
+
+\begin{DoxyParams}{Parameters}
+{\em bus} & \doxylink{class_c_a_n}{CAN} bus for communication \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification \\
+\hline
+{\em unit} & Data unit this agent handles \\
+\hline
+{\em type} & \doxylink{class_agent}{Agent} type (INTEREST for producers, RESPONSE for consumers) \\
+\hline
+{\em address} & \doxylink{class_network}{Network} address \\
+\hline
+{\em producer} & Function pointer for data production (can be nullptr for consumers) \\
+\hline
+{\em handler} & Function pointer for response handling (can be nullptr for producers) \\
+\hline
+{\em data} & Component-\/specific data structure \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_agent_ab8dd8d152605cf1339fed595376e83cb}\index{Agent@{Agent}!````~Agent@{\texorpdfstring{$\sim$}{\string~}Agent}}
+\index{````~Agent@{\texorpdfstring{$\sim$}{\string~}Agent}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Agent()}{\string~Agent()}}
+{\footnotesize\ttfamily \label{class_agent_ab8dd8d152605cf1339fed595376e83cb} 
+Agent\+::\texorpdfstring{$\sim$}{\string~}\+Agent (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Destructor with proper cleanup order. 
+
+Ensures threads are properly joined before object destruction, eliminating the race condition that occurred with virtual methods. 
+
+\label{doc-func-members}
+\Hypertarget{class_agent_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_agent_a374fceb89c2d3d53046ac128d2a50415}\index{Agent@{Agent}!address@{address}}
+\index{address@{address}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{address()}{address()}}
+{\footnotesize\ttfamily \label{class_agent_a374fceb89c2d3d53046ac128d2a50415} 
+\mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} Agent\+::address (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+\Hypertarget{class_agent_abdd1927b5e75313e89c56dc9eea71929}\index{Agent@{Agent}!can\_send@{can\_send}}
+\index{can\_send@{can\_send}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{can\_send()}{can\_send()}}
+{\footnotesize\ttfamily \label{class_agent_abdd1927b5e75313e89c56dc9eea71929} 
+int Agent\+::can\+\_\+send (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}} \texorpdfstring{$\ast$}{*}}]{msg}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+\Hypertarget{class_agent_ab9e9da9e9a66227bca835dab3780d366}\index{Agent@{Agent}!external@{external}}
+\index{external@{external}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{external()}{external()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_agent_ab9e9da9e9a66227bca835dab3780d366} 
+const bool Agent\+::external (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_agent_acbe540cfd323fcd18db620e2265b40d9}\index{Agent@{Agent}!external@{external}}
+\index{external@{external}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{external()}{external()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_agent_acbe540cfd323fcd18db620e2265b40d9} 
+void Agent\+::external (\begin{DoxyParamCaption}\item[{const bool}]{external}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_agent_af986ce4308578cfb41ac891fb43477d6}\index{Agent@{Agent}!get@{get}}
+\index{get@{get}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{get()}{get()}}
+{\footnotesize\ttfamily \label{class_agent_af986ce4308578cfb41ac891fb43477d6} 
+\mbox{\hyperlink{class_agent_a18a67129d2455bca64c43adf093567a6}{Agent\+::\+Value}} Agent\+::get (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}}]{unit}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get data using function pointer instead of virtual method. 
+
+This is the key method that eliminates the race condition. Instead of calling a virtual method that could crash during destruction, we call a function pointer that was set during construction.
+
+
+\begin{DoxyParams}{Parameters}
+{\em unit} & The data unit being requested \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\doxylink{class_agent_a18a67129d2455bca64c43adf093567a6}{Value} containing the generated data 
+\end{DoxyReturn}
+\Hypertarget{class_agent_ac8304f2fb2ab35287394c772b59fe73c}\index{Agent@{Agent}!handle\_response@{handle\_response}}
+\index{handle\_response@{handle\_response}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{handle\_response()}{handle\_response()}}
+{\footnotesize\ttfamily \label{class_agent_ac8304f2fb2ab35287394c772b59fe73c} 
+void Agent\+::handle\+\_\+response (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}} \texorpdfstring{$\ast$}{*}}]{msg}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Handle response using function pointer instead of virtual method. 
+
+Similar to \doxylink{class_agent_af986ce4308578cfb41ac891fb43477d6}{get()}, this uses a function pointer to avoid virtual method calls that could cause race conditions during destruction.
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to the received message \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_agent_a7a400be6500ceb7df23bf6d18ebf3a8d}\index{Agent@{Agent}!log\_message@{log\_message}}
+\index{log\_message@{log\_message}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{log\_message()}{log\_message()}}
+{\footnotesize\ttfamily \label{class_agent_a7a400be6500ceb7df23bf6d18ebf3a8d} 
+void Agent\+::log\+\_\+message (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}} \&}]{msg}{, }\item[{const std\+::string \&}]{direction}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_agent_afab9e97454c47bfad2220991d3d73b37}\index{Agent@{Agent}!name@{name}}
+\index{name@{name}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{name()}{name()}}
+{\footnotesize\ttfamily \label{class_agent_afab9e97454c47bfad2220991d3d73b37} 
+std\+::string Agent\+::name (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_agent_a661a2c3e4ac1cc143eae7062cbac0fae}\index{Agent@{Agent}!receive@{receive}}
+\index{receive@{receive}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{receive()}{receive()}}
+{\footnotesize\ttfamily \label{class_agent_a661a2c3e4ac1cc143eae7062cbac0fae} 
+int Agent\+::receive (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}} \texorpdfstring{$\ast$}{*}}]{msg}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_agent_adee5474d6762bc0ccfbfd86df1824ec5}\index{Agent@{Agent}!reply@{reply}}
+\index{reply@{reply}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{reply()}{reply()}}
+{\footnotesize\ttfamily \label{class_agent_adee5474d6762bc0ccfbfd86df1824ec5} 
+void Agent\+::reply (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}}]{unit}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+
+
+Reply method that calls function pointer instead of virtual method. 
+
+This is the critical method where the race condition used to occur. Instead of calling the virtual \doxylink{class_agent_af986ce4308578cfb41ac891fb43477d6}{get()} method, we now call the function pointer directly, eliminating the vtable dependency. 
+
+Reimplemented in \mbox{\hyperlink{class_c_s_v_agent_a63b5cadfd153cb1d6a57780292f857ee}{CSVAgent}}.
+
+\Hypertarget{class_agent_adbfbd8895294995d262be9ff18b26485}\index{Agent@{Agent}!run@{run}}
+\index{run@{run}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily \label{class_agent_adbfbd8895294995d262be9ff18b26485} 
+void \texorpdfstring{$\ast$}{*} Agent\+::run (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{arg}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{class_agent_a927dadd25d2b8e6172c18ead37c554cf}\index{Agent@{Agent}!running@{running}}
+\index{running@{running}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{running()}{running()}}
+{\footnotesize\ttfamily \label{class_agent_a927dadd25d2b8e6172c18ead37c554cf} 
+bool Agent\+::running (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_agent_a4a0d9642e1fa211160f67ab27320ec97}\index{Agent@{Agent}!send@{send}}
+\index{send@{send}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{send()}{send()}}
+{\footnotesize\ttfamily \label{class_agent_a4a0d9642e1fa211160f67ab27320ec97} 
+int Agent\+::send (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}}]{unit}{, }\item[{\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}}]{period}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_agent_a7d5fd455d10924542f6b838e76cfd3c0}\index{Agent@{Agent}!send\_interest@{send\_interest}}
+\index{send\_interest@{send\_interest}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{send\_interest()}{send\_interest()}}
+{\footnotesize\ttfamily \label{class_agent_a7d5fd455d10924542f6b838e76cfd3c0} 
+void Agent\+::send\+\_\+interest (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}}]{unit}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Send a single INTEREST message (called by periodic thread) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em unit} & The data type unit \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_agent_af8b714e0188b27f2294fdc138cad0190}\index{Agent@{Agent}!set\_csv\_logger@{set\_csv\_logger}}
+\index{set\_csv\_logger@{set\_csv\_logger}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{set\_csv\_logger()}{set\_csv\_logger()}}
+{\footnotesize\ttfamily \label{class_agent_af8b714e0188b27f2294fdc138cad0190} 
+void Agent\+::set\+\_\+csv\+\_\+logger (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{log\+\_\+dir}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_agent_ad438098d30b55b16ba88401f70a3bce2}\index{Agent@{Agent}!start\_periodic\_interest@{start\_periodic\_interest}}
+\index{start\_periodic\_interest@{start\_periodic\_interest}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{start\_periodic\_interest()}{start\_periodic\_interest()}}
+{\footnotesize\ttfamily \label{class_agent_ad438098d30b55b16ba88401f70a3bce2} 
+int Agent\+::start\+\_\+periodic\+\_\+interest (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}}]{unit}{, }\item[{\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}}]{period}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Start sending periodic INTEREST messages for the specified unit and period. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em unit} & The data type unit to request \\
+\hline
+{\em period} & The desired response period from producers \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int Success/failure status 
+\end{DoxyReturn}
+\Hypertarget{class_agent_a7846bb6027785d01803b71da1e667760}\index{Agent@{Agent}!stop\_periodic\_interest@{stop\_periodic\_interest}}
+\index{stop\_periodic\_interest@{stop\_periodic\_interest}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{stop\_periodic\_interest()}{stop\_periodic\_interest()}}
+{\footnotesize\ttfamily \label{class_agent_a7846bb6027785d01803b71da1e667760} 
+void Agent\+::stop\+\_\+periodic\+\_\+interest (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Stop sending periodic INTEREST messages. 
+
+\Hypertarget{class_agent_a475c095d790fd809a4c4f54cdc8eb478}\index{Agent@{Agent}!thread\_running@{thread\_running}}
+\index{thread\_running@{thread\_running}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{thread\_running()}{thread\_running()}}
+{\footnotesize\ttfamily \label{class_agent_a475c095d790fd809a4c4f54cdc8eb478} 
+bool Agent\+::thread\+\_\+running (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+\Hypertarget{class_agent_a06e90b6d019c3767897664144be0abe8}\index{Agent@{Agent}!update\_interest\_period@{update\_interest\_period}}
+\index{update\_interest\_period@{update\_interest\_period}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{update\_interest\_period()}{update\_interest\_period()}}
+{\footnotesize\ttfamily \label{class_agent_a06e90b6d019c3767897664144be0abe8} 
+void Agent\+::update\+\_\+interest\+\_\+period (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}}]{new\+\_\+period}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update the period for periodic interest sending. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+period} & The new period to use \\
+\hline
+\end{DoxyParams}
+
+
+\label{doc-variable-members}
+\Hypertarget{class_agent_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_agent_a39e9645b8248c543fde7c43e51c5cffb}\index{Agent@{Agent}!\_units\_per\_vehicle@{\_units\_per\_vehicle}}
+\index{\_units\_per\_vehicle@{\_units\_per\_vehicle}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{\_units\_per\_vehicle}{\_units\_per\_vehicle}}
+{\footnotesize\ttfamily \label{class_agent_a39e9645b8248c543fde7c43e51c5cffb} 
+const unsigned int Agent\+::\+\_\+units\+\_\+per\+\_\+vehicle = 5\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_agent_a016b6c0d56b5ed4961f9e773f9e7e081}\index{Agent@{Agent}!MAX\_RESPONSES\_PER\_INTEREST@{MAX\_RESPONSES\_PER\_INTEREST}}
+\index{MAX\_RESPONSES\_PER\_INTEREST@{MAX\_RESPONSES\_PER\_INTEREST}!Agent@{Agent}}
+\doxysubsubsection{\texorpdfstring{MAX\_RESPONSES\_PER\_INTEREST}{MAX\_RESPONSES\_PER\_INTEREST}}
+{\footnotesize\ttfamily \label{class_agent_a016b6c0d56b5ed4961f9e773f9e7e081} 
+int Agent\+::\+MAX\+\_\+\+RESPONSES\+\_\+\+PER\+\_\+\+INTEREST = 5\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [constexpr]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/framework/\mbox{\hyperlink{agent_8h}{agent.\+h}}\end{DoxyCompactItemize}

@@ -1,0 +1,69 @@
+\doxysection{include/app/components/csv\+\_\+consumer\+\_\+functions.hpp File Reference}
+\hypertarget{csv__consumer__functions_8hpp}{}\label{csv__consumer__functions_8hpp}\index{include/app/components/csv\_consumer\_functions.hpp@{include/app/components/csv\_consumer\_functions.hpp}}
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include "{}csv\+\_\+consumer\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}csv\+\_\+component\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/framework/component\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/util/debug.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ \mbox{\hyperlink{csv__consumer__functions_8hpp_a6f088f8a9b4babc29c1d1e7abc090a23}{csv\+\_\+consumer\+\_\+producer}} (std\+::uint32\+\_\+t unit, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Producer function for CSV consumer component (consumer-\/only) \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{csv__consumer__functions_8hpp_a3fa016dba40799955a6c072ae823e1b1}{csv\+\_\+consumer\+\_\+consumer}} (void \texorpdfstring{$\ast$}{*}msg, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Consumer function for CSV consumer component -\/ processes CSV vehicle data. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{csv__consumer__functions_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{csv__consumer__functions_8hpp_a3fa016dba40799955a6c072ae823e1b1}\index{csv\_consumer\_functions.hpp@{csv\_consumer\_functions.hpp}!csv\_consumer\_consumer@{csv\_consumer\_consumer}}
+\index{csv\_consumer\_consumer@{csv\_consumer\_consumer}!csv\_consumer\_functions.hpp@{csv\_consumer\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{csv\_consumer\_consumer()}{csv\_consumer\_consumer()}}
+{\footnotesize\ttfamily \label{csv__consumer__functions_8hpp_a3fa016dba40799955a6c072ae823e1b1} 
+void csv\+\_\+consumer\+\_\+consumer (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{msg}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Consumer function for CSV consumer component -\/ processes CSV vehicle data. 
+
+Processes received CSV vehicle data messages that contain a prepended timestamp followed by a complete CSV record. Extracts the timestamp, parses the CSV record, and logs the reception details while tracking statistics.
+
+Expected message format\+:
+\begin{DoxyItemize}
+\item First 8 bytes\+: std\+::uint64\+\_\+t timestamp (prepended by CSV producer)
+\item Remaining bytes\+: \doxylink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVComponent\+Data\+::\+CSVRecord} structure
+\end{DoxyItemize}
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to the received message data \\
+\hline
+{\em data} & Pointer to \doxylink{struct_c_s_v_consumer_data}{CSVConsumer\+Data} structure for tracking received messages \\
+\hline
+\end{DoxyParams}
+\Hypertarget{csv__consumer__functions_8hpp_a6f088f8a9b4babc29c1d1e7abc090a23}\index{csv\_consumer\_functions.hpp@{csv\_consumer\_functions.hpp}!csv\_consumer\_producer@{csv\_consumer\_producer}}
+\index{csv\_consumer\_producer@{csv\_consumer\_producer}!csv\_consumer\_functions.hpp@{csv\_consumer\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{csv\_consumer\_producer()}{csv\_consumer\_producer()}}
+{\footnotesize\ttfamily \label{csv__consumer__functions_8hpp_a6f088f8a9b4babc29c1d1e7abc090a23} 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ csv\+\_\+consumer\+\_\+producer (\begin{DoxyParamCaption}\item[{std\+::uint32\+\_\+t}]{unit}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Producer function for CSV consumer component (consumer-\/only) 
+
+CSV consumer components are consumer-\/only and don\textquotesingle{}t produce data. This function returns an empty vector to maintain interface compatibility while indicating that the consumer doesn\textquotesingle{}t generate data.
+
+
+\begin{DoxyParams}{Parameters}
+{\em unit} & The data unit being requested (ignored for consumer) \\
+\hline
+{\em data} & Pointer to \doxylink{struct_c_s_v_consumer_data}{CSVConsumer\+Data} structure (unused for production) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Empty vector indicating no data production 
+\end{DoxyReturn}

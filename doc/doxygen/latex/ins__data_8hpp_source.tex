@@ -1,0 +1,55 @@
+\doxysection{ins\+\_\+data.\+hpp}
+\hypertarget{ins__data_8hpp_source}{}\label{ins__data_8hpp_source}\index{include/app/components/ins\_data.hpp@{include/app/components/ins\_data.hpp}}
+\mbox{\hyperlink{ins__data_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ INS\_DATA\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ INS\_DATA\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <random>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__types_8hpp}{../../api/framework/component\_types.hpp}}"{}}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00016\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_i_n_s_data_a6df76126890ee4070183a46ee32f7bfe}{INSData}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_component_data}{ComponentData}}\ \{}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{comment}{//\ Producer\ data:\ random\ number\ generation\ for\ navigation\ data}}
+\DoxyCodeLine{00018\ \ \ \ \ std::random\_device\ \mbox{\hyperlink{struct_i_n_s_data_ac66a667487b8d4a6b89498808bcb74d9}{rd}};}
+\DoxyCodeLine{00019\ \ \ \ \ std::mt19937\ \mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}};}
+\DoxyCodeLine{00020\ \ \ \ \ }
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{comment}{//\ Position\ distributions}}
+\DoxyCodeLine{00022\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_i_n_s_data_a94a6b437edb3f91145a9ba2d01abe0c3}{x\_dist}};\ \ \ \ \ \ \textcolor{comment}{//\ X\ coordinate\ (meters)}}
+\DoxyCodeLine{00023\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_i_n_s_data_a669d93432ea6ffbb2cecee18f653bf34}{y\_dist}};\ \ \ \ \ \ \textcolor{comment}{//\ Y\ coordinate\ (meters)}}
+\DoxyCodeLine{00024\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_i_n_s_data_ad58c02bd348ff3a5f179aa09b3035548}{alt\_dist}};\ \ \ \ \textcolor{comment}{//\ Altitude\ (meters)}}
+\DoxyCodeLine{00025\ \ \ \ \ }
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{comment}{//\ Motion\ distributions}}
+\DoxyCodeLine{00027\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_i_n_s_data_a53a491deb597267566427ff49b15155d}{vel\_dist}};\ \ \ \ \textcolor{comment}{//\ Velocity\ (m/s)}}
+\DoxyCodeLine{00028\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_i_n_s_data_a56e0db12c38572861b5397ea5f26c68c}{accel\_dist}};\ \ \textcolor{comment}{//\ Acceleration\ (m/s²)}}
+\DoxyCodeLine{00029\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_i_n_s_data_af45c43ecd8ab0ee644d020105526bf7e}{gyro\_dist}};\ \ \ \textcolor{comment}{//\ Gyroscope\ (rad/s)}}
+\DoxyCodeLine{00030\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_i_n_s_data_aa5a8d5524d661e39bbd704b32bac108f}{heading\_dist}};\ \textcolor{comment}{//\ Heading\ (radians)}}
+\DoxyCodeLine{00031\ \ \ \ \ }
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{comment}{//\ Timing\ distribution}}
+\DoxyCodeLine{00033\ \ \ \ \ std::uniform\_int\_distribution<>\ \mbox{\hyperlink{struct_i_n_s_data_a58d6dca9621794ad920dde41204c0323}{delay\_dist}};\ \ \ \textcolor{comment}{//\ Delay\ between\ readings\ (ms)}}
+\DoxyCodeLine{00034\ \ \ \ \ }
+\DoxyCodeLine{00046\ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_a6df76126890ee4070183a46ee32f7bfe}{INSData}}()\ :\ \mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}}(\mbox{\hyperlink{struct_i_n_s_data_ac66a667487b8d4a6b89498808bcb74d9}{rd}}()),}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_a94a6b437edb3f91145a9ba2d01abe0c3}{x\_dist}}(0.0,\ 1000.0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ X\ coordinate\ in\ meters\ (0\ to\ 1000m)}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_a669d93432ea6ffbb2cecee18f653bf34}{y\_dist}}(0.0,\ 1000.0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Y\ coordinate\ in\ meters\ (0\ to\ 1000m)}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_ad58c02bd348ff3a5f179aa09b3035548}{alt\_dist}}(0.0,\ 500.0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Altitude\ meters}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_a53a491deb597267566427ff49b15155d}{vel\_dist}}(0.0,\ 30.0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Velocity\ m/s}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_a56e0db12c38572861b5397ea5f26c68c}{accel\_dist}}(-\/2.0\ *\ 9.80665,\ 2.0\ *\ 9.80665),\ \textcolor{comment}{//\ Acceleration\ m/s²\ (±2g)}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_af45c43ecd8ab0ee644d020105526bf7e}{gyro\_dist}}(-\/3.14159265358979323846,\ 3.14159265358979323846),\ \textcolor{comment}{//\ Gyro\ rad/s\ (±π)}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_aa5a8d5524d661e39bbd704b32bac108f}{heading\_dist}}(0,\ 2.0\ *\ 3.14159265358979323846),\ \textcolor{comment}{//\ Heading\ rad\ (0\ to\ 2π)}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_a58d6dca9621794ad920dde41204c0323}{delay\_dist}}(90,\ 110)\ \{\}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Milliseconds\ delay\ (INS\ typically\ \string~10Hz)}}
+\DoxyCodeLine{00055\ \ \ \ \ }
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_i_n_s_data_ae04680e56b515b41f6a15c8f05a52a8d}{update\_position\_range}}(\textcolor{keywordtype}{double}\ x\_min,\ \textcolor{keywordtype}{double}\ x\_max,\ \textcolor{keywordtype}{double}\ y\_min,\ \textcolor{keywordtype}{double}\ y\_max,\ }
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ alt\_min,\ \textcolor{keywordtype}{double}\ alt\_max)\ \{}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_a94a6b437edb3f91145a9ba2d01abe0c3}{x\_dist}}\ =\ std::uniform\_real\_distribution<>(x\_min,\ x\_max);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_a669d93432ea6ffbb2cecee18f653bf34}{y\_dist}}\ =\ std::uniform\_real\_distribution<>(y\_min,\ y\_max);}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_ad58c02bd348ff3a5f179aa09b3035548}{alt\_dist}}\ =\ std::uniform\_real\_distribution<>(alt\_min,\ alt\_max);}
+\DoxyCodeLine{00074\ \ \ \ \ \}}
+\DoxyCodeLine{00075\ \ \ \ \ }
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_i_n_s_data_a8c5444c221b86e9153a814b52d56ba18}{update\_motion\_range}}(\textcolor{keywordtype}{double}\ vel\_min,\ \textcolor{keywordtype}{double}\ vel\_max,\ \textcolor{keywordtype}{double}\ accel\_min,\ \textcolor{keywordtype}{double}\ accel\_max)\ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_a53a491deb597267566427ff49b15155d}{vel\_dist}}\ =\ std::uniform\_real\_distribution<>(vel\_min,\ vel\_max);}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data_a56e0db12c38572861b5397ea5f26c68c}{accel\_dist}}\ =\ std::uniform\_real\_distribution<>(accel\_min,\ accel\_max);}
+\DoxyCodeLine{00087\ \ \ \ \ \}}
+\DoxyCodeLine{00088\ \};}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ INS\_DATA\_HPP\ }}
+
+\end{DoxyCode}

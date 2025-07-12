@@ -1,0 +1,53 @@
+\doxysection{basic\+\_\+producer\+\_\+b\+\_\+factory.\+hpp}
+\hypertarget{basic__producer__b__factory_8hpp_source}{}\label{basic__producer__b__factory_8hpp_source}\index{include/app/components/basic\_producer\_b\_factory.hpp@{include/app/components/basic\_producer\_b\_factory.hpp}}
+\mbox{\hyperlink{basic__producer__b__factory_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ BASIC\_PRODUCER\_B\_FACTORY\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ BASIC\_PRODUCER\_B\_FACTORY\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{agent_8h}{api/framework/agent.h}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__functions_8hpp}{../../api/framework/component\_functions.hpp}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{unit__b__data_8hpp}{unit\_b\_data.hpp}}"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{unit__b__functions_8hpp}{unit\_b\_functions.hpp}}"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{datatypes_8h}{../datatypes.h}}"{}}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00030\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{basic__producer__b__factory_8hpp_aa5079893f8ac7a6d86b6324e6fbdce29}{create\_basic\_producer\_b}}(}
+\DoxyCodeLine{00031\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,\ }
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}BasicProducerB"{}},}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordtype}{float}\ min\_range\ =\ 200.0f,}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordtype}{float}\ max\_range\ =\ 300.0f}
+\DoxyCodeLine{00036\ )\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{comment}{//\ Parameter\ validation\ following\ EPOS\ principles}}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordflow}{if}\ (!can)\ \{}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}CAN\ bus\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00040\ \ \ \ \ \}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{//\ Use\ default\ name\ if\ an\ empty\ string\ is\ provided}}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ agentName\ =\ name.empty()\ ?\ \textcolor{stringliteral}{"{}BasicProducerB"{}}\ :\ name;}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_range\ >=\ max\_range)\ \{}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}Invalid\ range:\ min\_range\ must\ be\ <\ max\_range"{}});}
+\DoxyCodeLine{00047\ \ \ \ \ \}}
+\DoxyCodeLine{00048\ \ \ \ \ }
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{comment}{//\ Create\ component\ data\ with\ specified\ range}}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ std::make\_unique<UnitBData>(min\_range,\ max\_range);}
+\DoxyCodeLine{00051\ \ \ \ \ }
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{//\ Create\ Agent\ using\ function-\/based\ composition}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<Agent>(}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ can,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CAN\ bus}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ agentName,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Agent\ name}}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5c268c7fc56153276aa90202c15aa3ab}{DataTypes::UNIT\_B}}),\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Data\ unit}}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ Agent::Type::INTEREST,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Producer\ observes\ INTEREST}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ addr,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Network\ address}}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{unit__b__functions_8hpp_a00ef3486cd7b1e1177a093b41f43bee1}{basic\_producer\_b}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Producer\ function\ pointer}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keyword}{nullptr},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ No\ response\ handler\ for\ producers}}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Component\ data}}
+\DoxyCodeLine{00062\ \ \ \ \ );}
+\DoxyCodeLine{00063\ \}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ BASIC\_PRODUCER\_B\_FACTORY\_HPP\ }}
+
+\end{DoxyCode}

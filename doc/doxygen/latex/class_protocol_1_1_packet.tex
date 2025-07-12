@@ -1,0 +1,123 @@
+\doxysection{Protocol\texorpdfstring{$<$}{<} NIC \texorpdfstring{$>$}{>}\+::Packet Class Reference}
+\hypertarget{class_protocol_1_1_packet}{}\label{class_protocol_1_1_packet}\index{Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}}
+
+
+{\ttfamily \#include $<$protocol.\+h$>$}
+
+Inheritance diagram for Protocol\texorpdfstring{$<$}{<} NIC \texorpdfstring{$>$}{>}\+::Packet\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_protocol_1_1_packet}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_protocol_1_1_packet_ac86af28cc790092e03a697234255bcdd}{Packet}} ()
+\item 
+\mbox{\hyperlink{class_protocol_1_1_header}{Header}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_protocol_1_1_packet_ad66f6f2c239cacd75dfcd6dae89348ea}{header}} ()
+\item 
+\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{Timestamp\+Fields}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_protocol_1_1_packet_a18319d3114c4dccbc6335d287a5fa5a1}{timestamps}} ()
+\item 
+\mbox{\hyperlink{struct_coordinates}{Coordinates}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_protocol_1_1_packet_aa9dbd5c0b87a17d359d76af08a7d7063}{coordinates}} ()
+\item 
+\mbox{\hyperlink{struct_protocol_1_1_authentication_fields}{Authentication\+Fields}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_protocol_1_1_packet_a16322e49b4e6aa2e8f8f84133a7ba7b5}{authentication}} ()
+\item 
+{\footnotesize template$<$typename T$>$ }\\T \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_protocol_1_1_packet_a0b24c14862b490ee5b5378d3c1bfa8c9}{data}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{class_protocol_1_1_header}{Protocol$<$ NIC $>$\+::\+Header}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_protocol_1_1_header_aa7883d10b19303b2c4ea49ddd3958a36}{Header}} ()
+\item 
+\mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}} \mbox{\hyperlink{class_protocol_1_1_header_aec8af8cc384a41bbec30ba3d4181f42a}{from\+\_\+port}} () const
+\item 
+void \mbox{\hyperlink{class_protocol_1_1_header_a068b8bdaa0e0911062bd20eb4f5b3f10}{from\+\_\+port}} (\mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}} p)
+\item 
+\mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}} \mbox{\hyperlink{class_protocol_1_1_header_a4b90f32cdfce1925ac70dfe475a074aa}{to\+\_\+port}} () const
+\item 
+void \mbox{\hyperlink{class_protocol_1_1_header_a057159267e5d239c7f9bc1a795abb0d6}{to\+\_\+port}} (\mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}} p)
+\item 
+unsigned int \mbox{\hyperlink{class_protocol_1_1_header_ace7e2145947b82235295706e63555cdd}{size}} () const
+\item 
+void \mbox{\hyperlink{class_protocol_1_1_header_af154d998b095f9e7e91672c106d6dcb7}{size}} (unsigned int s)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static constexpr unsigned int \mbox{\hyperlink{class_protocol_1_1_packet_a48eabdedaecb867890e09f2bb0c71ada}{sync\+\_\+status\+\_\+offset}} ()
+\item 
+static constexpr unsigned int \mbox{\hyperlink{class_protocol_1_1_packet_a933c92cc4b2156d3925f59a57b0800d2}{tx\+\_\+timestamp\+\_\+offset}} ()
+\end{DoxyCompactItemize}
+
+
+\label{doc-constructors}
+\Hypertarget{class_protocol_1_1_packet_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_protocol_1_1_packet_ac86af28cc790092e03a697234255bcdd}\index{Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}!Packet@{Packet}}
+\index{Packet@{Packet}!Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}}
+\doxysubsubsection{\texorpdfstring{Packet()}{Packet()}}
+{\footnotesize\ttfamily \label{class_protocol_1_1_packet_ac86af28cc790092e03a697234255bcdd} 
+template$<$typename \mbox{\hyperlink{class_n_i_c}{NIC}}$>$ \\
+\mbox{\hyperlink{class_protocol}{Protocol}}$<$ \mbox{\hyperlink{class_n_i_c}{NIC}} $>$\+::\+Packet\+::\+Packet (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_protocol_1_1_packet_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_protocol_1_1_packet_a16322e49b4e6aa2e8f8f84133a7ba7b5}\index{Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}!authentication@{authentication}}
+\index{authentication@{authentication}!Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}}
+\doxysubsubsection{\texorpdfstring{authentication()}{authentication()}}
+{\footnotesize\ttfamily \label{class_protocol_1_1_packet_a16322e49b4e6aa2e8f8f84133a7ba7b5} 
+template$<$typename \mbox{\hyperlink{class_n_i_c}{NIC}}$>$ \\
+\mbox{\hyperlink{struct_protocol_1_1_authentication_fields}{Authentication\+Fields}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_protocol}{Protocol}}$<$ \mbox{\hyperlink{class_n_i_c}{NIC}} $>$\+::\+Packet\+::authentication (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_protocol_1_1_packet_aa9dbd5c0b87a17d359d76af08a7d7063}\index{Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}!coordinates@{coordinates}}
+\index{coordinates@{coordinates}!Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}}
+\doxysubsubsection{\texorpdfstring{coordinates()}{coordinates()}}
+{\footnotesize\ttfamily \label{class_protocol_1_1_packet_aa9dbd5c0b87a17d359d76af08a7d7063} 
+template$<$typename \mbox{\hyperlink{class_n_i_c}{NIC}}$>$ \\
+\mbox{\hyperlink{struct_coordinates}{Coordinates}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_protocol}{Protocol}}$<$ \mbox{\hyperlink{class_n_i_c}{NIC}} $>$\+::\+Packet\+::coordinates (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_protocol_1_1_packet_a0b24c14862b490ee5b5378d3c1bfa8c9}\index{Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}!data@{data}}
+\index{data@{data}!Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}}
+\doxysubsubsection{\texorpdfstring{data()}{data()}}
+{\footnotesize\ttfamily \label{class_protocol_1_1_packet_a0b24c14862b490ee5b5378d3c1bfa8c9} 
+template$<$typename \mbox{\hyperlink{class_n_i_c}{NIC}}$>$ \\
+template$<$typename T$>$ \\
+T \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_protocol}{Protocol}}$<$ \mbox{\hyperlink{class_n_i_c}{NIC}} $>$\+::\+Packet\+::data (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_protocol_1_1_packet_ad66f6f2c239cacd75dfcd6dae89348ea}\index{Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}!header@{header}}
+\index{header@{header}!Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}}
+\doxysubsubsection{\texorpdfstring{header()}{header()}}
+{\footnotesize\ttfamily \label{class_protocol_1_1_packet_ad66f6f2c239cacd75dfcd6dae89348ea} 
+template$<$typename \mbox{\hyperlink{class_n_i_c}{NIC}}$>$ \\
+\mbox{\hyperlink{class_protocol_1_1_header}{Header}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_protocol}{Protocol}}$<$ \mbox{\hyperlink{class_n_i_c}{NIC}} $>$\+::\+Packet\+::header (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_protocol_1_1_packet_a48eabdedaecb867890e09f2bb0c71ada}\index{Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}!sync\_status\_offset@{sync\_status\_offset}}
+\index{sync\_status\_offset@{sync\_status\_offset}!Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}}
+\doxysubsubsection{\texorpdfstring{sync\_status\_offset()}{sync\_status\_offset()}}
+{\footnotesize\ttfamily \label{class_protocol_1_1_packet_a48eabdedaecb867890e09f2bb0c71ada} 
+template$<$typename \mbox{\hyperlink{class_n_i_c}{NIC}}$>$ \\
+constexpr unsigned int \mbox{\hyperlink{class_protocol}{Protocol}}$<$ \mbox{\hyperlink{class_n_i_c}{NIC}} $>$\+::\+Packet\+::sync\+\_\+status\+\_\+offset (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}, {\ttfamily [constexpr]}}
+
+\Hypertarget{class_protocol_1_1_packet_a18319d3114c4dccbc6335d287a5fa5a1}\index{Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}!timestamps@{timestamps}}
+\index{timestamps@{timestamps}!Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}}
+\doxysubsubsection{\texorpdfstring{timestamps()}{timestamps()}}
+{\footnotesize\ttfamily \label{class_protocol_1_1_packet_a18319d3114c4dccbc6335d287a5fa5a1} 
+template$<$typename \mbox{\hyperlink{class_n_i_c}{NIC}}$>$ \\
+\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{Timestamp\+Fields}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_protocol}{Protocol}}$<$ \mbox{\hyperlink{class_n_i_c}{NIC}} $>$\+::\+Packet\+::timestamps (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_protocol_1_1_packet_a933c92cc4b2156d3925f59a57b0800d2}\index{Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}!tx\_timestamp\_offset@{tx\_timestamp\_offset}}
+\index{tx\_timestamp\_offset@{tx\_timestamp\_offset}!Protocol$<$ NIC $>$::Packet@{Protocol$<$ NIC $>$::Packet}}
+\doxysubsubsection{\texorpdfstring{tx\_timestamp\_offset()}{tx\_timestamp\_offset()}}
+{\footnotesize\ttfamily \label{class_protocol_1_1_packet_a933c92cc4b2156d3925f59a57b0800d2} 
+template$<$typename \mbox{\hyperlink{class_n_i_c}{NIC}}$>$ \\
+constexpr unsigned int \mbox{\hyperlink{class_protocol}{Protocol}}$<$ \mbox{\hyperlink{class_n_i_c}{NIC}} $>$\+::\+Packet\+::tx\+\_\+timestamp\+\_\+offset (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}, {\ttfamily [constexpr]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/network/\mbox{\hyperlink{protocol_8h}{protocol.\+h}}\end{DoxyCompactItemize}

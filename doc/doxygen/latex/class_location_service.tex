@@ -1,0 +1,67 @@
+\doxysection{Location\+Service Class Reference}
+\hypertarget{class_location_service}{}\label{class_location_service}\index{LocationService@{LocationService}}
+
+
+{\ttfamily \#include $<$location\+\_\+service.\+h$>$}
+
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static bool \mbox{\hyperlink{class_location_service_a65ebade635a5f172144ab5856eec7da2}{load\+Trajectory}} (const std\+::string \&csv\+\_\+filename)
+\item 
+static void \mbox{\hyperlink{class_location_service_ad11354246a6ad14ce40d4002d45f3f38}{get\+Coordinates}} (double \&x, double \&y, std\+::chrono\+::milliseconds timestamp=std\+::chrono\+::milliseconds\+::zero())
+\item 
+static void \mbox{\hyperlink{class_location_service_a47a113762a9a60846db63b02cb62abf8}{get\+Current\+Coordinates}} (double \&x, double \&y)
+\item 
+static void \mbox{\hyperlink{class_location_service_a60a9212286654d7d7656a6e97f901239}{set\+Current\+Coordinates}} (double x, double y)
+\item 
+static bool \mbox{\hyperlink{class_location_service_ab6c51f90d5245e776162086cb1283496}{has\+Trajectory}} ()
+\item 
+static std\+::chrono\+::milliseconds \mbox{\hyperlink{class_location_service_a8c97008e2668e008b4a3b7e942930e2a}{get\+Trajectory\+Duration}} ()
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{class_location_service_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_location_service_ad11354246a6ad14ce40d4002d45f3f38}\index{LocationService@{LocationService}!getCoordinates@{getCoordinates}}
+\index{getCoordinates@{getCoordinates}!LocationService@{LocationService}}
+\doxysubsubsection{\texorpdfstring{getCoordinates()}{getCoordinates()}}
+{\footnotesize\ttfamily \label{class_location_service_ad11354246a6ad14ce40d4002d45f3f38} 
+void Location\+Service\+::get\+Coordinates (\begin{DoxyParamCaption}\item[{double \&}]{x}{, }\item[{double \&}]{y}{, }\item[{std\+::chrono\+::milliseconds}]{timestamp}{ = {\ttfamily std\+:\+:chrono\+:\+:milliseconds\+:\+:zero()}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_location_service_a47a113762a9a60846db63b02cb62abf8}\index{LocationService@{LocationService}!getCurrentCoordinates@{getCurrentCoordinates}}
+\index{getCurrentCoordinates@{getCurrentCoordinates}!LocationService@{LocationService}}
+\doxysubsubsection{\texorpdfstring{getCurrentCoordinates()}{getCurrentCoordinates()}}
+{\footnotesize\ttfamily \label{class_location_service_a47a113762a9a60846db63b02cb62abf8} 
+void Location\+Service\+::get\+Current\+Coordinates (\begin{DoxyParamCaption}\item[{double \&}]{x}{, }\item[{double \&}]{y}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_location_service_a8c97008e2668e008b4a3b7e942930e2a}\index{LocationService@{LocationService}!getTrajectoryDuration@{getTrajectoryDuration}}
+\index{getTrajectoryDuration@{getTrajectoryDuration}!LocationService@{LocationService}}
+\doxysubsubsection{\texorpdfstring{getTrajectoryDuration()}{getTrajectoryDuration()}}
+{\footnotesize\ttfamily \label{class_location_service_a8c97008e2668e008b4a3b7e942930e2a} 
+std\+::chrono\+::milliseconds Location\+Service\+::get\+Trajectory\+Duration (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_location_service_ab6c51f90d5245e776162086cb1283496}\index{LocationService@{LocationService}!hasTrajectory@{hasTrajectory}}
+\index{hasTrajectory@{hasTrajectory}!LocationService@{LocationService}}
+\doxysubsubsection{\texorpdfstring{hasTrajectory()}{hasTrajectory()}}
+{\footnotesize\ttfamily \label{class_location_service_ab6c51f90d5245e776162086cb1283496} 
+bool Location\+Service\+::has\+Trajectory (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_location_service_a65ebade635a5f172144ab5856eec7da2}\index{LocationService@{LocationService}!loadTrajectory@{loadTrajectory}}
+\index{loadTrajectory@{loadTrajectory}!LocationService@{LocationService}}
+\doxysubsubsection{\texorpdfstring{loadTrajectory()}{loadTrajectory()}}
+{\footnotesize\ttfamily \label{class_location_service_a65ebade635a5f172144ab5856eec7da2} 
+bool Location\+Service\+::load\+Trajectory (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{csv\+\_\+filename}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_location_service_a60a9212286654d7d7656a6e97f901239}\index{LocationService@{LocationService}!setCurrentCoordinates@{setCurrentCoordinates}}
+\index{setCurrentCoordinates@{setCurrentCoordinates}!LocationService@{LocationService}}
+\doxysubsubsection{\texorpdfstring{setCurrentCoordinates()}{setCurrentCoordinates()}}
+{\footnotesize\ttfamily \label{class_location_service_a60a9212286654d7d7656a6e97f901239} 
+void Location\+Service\+::set\+Current\+Coordinates (\begin{DoxyParamCaption}\item[{double}]{x}{, }\item[{double}]{y}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/framework/\mbox{\hyperlink{location__service_8h}{location\+\_\+service.\+h}}\end{DoxyCompactItemize}

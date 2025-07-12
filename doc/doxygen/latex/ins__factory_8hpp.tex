@@ -1,0 +1,131 @@
+\doxysection{include/app/components/ins\+\_\+factory.hpp File Reference}
+\hypertarget{ins__factory_8hpp}{}\label{ins__factory_8hpp}\index{include/app/components/ins\_factory.hpp@{include/app/components/ins\_factory.hpp}}
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include "{}../../api/framework/agent.\+h"{}}\newline
+{\ttfamily \#include "{}ins\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}ins\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../datatypes.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{ins__factory_8hpp_a837bf8f6449a0d1b4b4c97c9b1ceeec5}{create\+\_\+ins\+\_\+component}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, const std\+::string \&name="{}INSComponent"{})
+\begin{DoxyCompactList}\small\item\em Creates an INS (Inertial Navigation System) component using function-\/based composition. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{ins__factory_8hpp_adb88f4bed4c3065de53130a5f149b25a}{create\+\_\+ins\+\_\+component\+\_\+with\+\_\+ranges}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, double x\+\_\+min, double x\+\_\+max, double y\+\_\+min, double y\+\_\+max, double alt\+\_\+min, double alt\+\_\+max, const std\+::string \&name="{}INSComponent"{})
+\begin{DoxyCompactList}\small\item\em Creates an INS component with custom navigation ranges. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{ins__factory_8hpp_a12a4f6feab454b6dd9277ea93de7494c}{create\+\_\+ins\+\_\+component\+\_\+with\+\_\+motion}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, double vel\+\_\+min, double vel\+\_\+max, double accel\+\_\+min, double accel\+\_\+max, const std\+::string \&name="{}INSComponent"{})
+\begin{DoxyCompactList}\small\item\em Creates an INS component with custom motion parameters. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{ins__factory_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{ins__factory_8hpp_a837bf8f6449a0d1b4b4c97c9b1ceeec5}\index{ins\_factory.hpp@{ins\_factory.hpp}!create\_ins\_component@{create\_ins\_component}}
+\index{create\_ins\_component@{create\_ins\_component}!ins\_factory.hpp@{ins\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_ins\_component()}{create\_ins\_component()}}
+{\footnotesize\ttfamily \label{ins__factory_8hpp_a837bf8f6449a0d1b4b4c97c9b1ceeec5} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+ins\+\_\+component (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}INSComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates an INS (Inertial Navigation System) component using function-\/based composition. 
+
+Replaces the inheritance-\/based \doxylink{struct_i_n_s_component}{INSComponent} class with EPOS Smart\+Data principles. Eliminates vtable race conditions during destruction by using function pointers instead of virtual methods.
+
+INS components are producer-\/only and generate navigation data including position, velocity, acceleration, gyroscope readings, and heading information. This factory creates a complete \doxylink{class_agent}{Agent} configured as a producer for EXTERNAL\+\_\+\+INERTIAL\+\_\+\+POSITION.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+INSComponent"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} ready for operation 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null or name is empty \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{ins__factory_8hpp_a12a4f6feab454b6dd9277ea93de7494c}\index{ins\_factory.hpp@{ins\_factory.hpp}!create\_ins\_component\_with\_motion@{create\_ins\_component\_with\_motion}}
+\index{create\_ins\_component\_with\_motion@{create\_ins\_component\_with\_motion}!ins\_factory.hpp@{ins\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_ins\_component\_with\_motion()}{create\_ins\_component\_with\_motion()}}
+{\footnotesize\ttfamily \label{ins__factory_8hpp_a12a4f6feab454b6dd9277ea93de7494c} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+ins\+\_\+component\+\_\+with\+\_\+motion (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{double}]{vel\+\_\+min}{, }\item[{double}]{vel\+\_\+max}{, }\item[{double}]{accel\+\_\+min}{, }\item[{double}]{accel\+\_\+max}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}INSComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates an INS component with custom motion parameters. 
+
+Creates an INS component with customized velocity and acceleration ranges. Useful for simulating different vehicle types or motion profiles.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em vel\+\_\+min} & Minimum velocity (m/s) \\
+\hline
+{\em vel\+\_\+max} & Maximum velocity (m/s) \\
+\hline
+{\em accel\+\_\+min} & Minimum acceleration (m/s²) \\
+\hline
+{\em accel\+\_\+max} & Maximum acceleration (m/s²) \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+INSComponent"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} with custom motion parameters 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null, name is empty, or parameters are invalid \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{ins__factory_8hpp_adb88f4bed4c3065de53130a5f149b25a}\index{ins\_factory.hpp@{ins\_factory.hpp}!create\_ins\_component\_with\_ranges@{create\_ins\_component\_with\_ranges}}
+\index{create\_ins\_component\_with\_ranges@{create\_ins\_component\_with\_ranges}!ins\_factory.hpp@{ins\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_ins\_component\_with\_ranges()}{create\_ins\_component\_with\_ranges()}}
+{\footnotesize\ttfamily \label{ins__factory_8hpp_adb88f4bed4c3065de53130a5f149b25a} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+ins\+\_\+component\+\_\+with\+\_\+ranges (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{double}]{x\+\_\+min}{, }\item[{double}]{x\+\_\+max}{, }\item[{double}]{y\+\_\+min}{, }\item[{double}]{y\+\_\+max}{, }\item[{double}]{alt\+\_\+min}{, }\item[{double}]{alt\+\_\+max}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}INSComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates an INS component with custom navigation ranges. 
+
+Creates an INS component with customized position and motion ranges. Useful for testing specific scenarios or configuring INS for different operational environments.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em x\+\_\+min} & Minimum X coordinate (meters) \\
+\hline
+{\em x\+\_\+max} & Maximum X coordinate (meters) \\
+\hline
+{\em y\+\_\+min} & Minimum Y coordinate (meters) \\
+\hline
+{\em y\+\_\+max} & Maximum Y coordinate (meters) \\
+\hline
+{\em alt\+\_\+min} & Minimum altitude (meters) \\
+\hline
+{\em alt\+\_\+max} & Maximum altitude (meters) \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+INSComponent"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} with custom ranges 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null, name is empty, or ranges are invalid \\
+\hline
+\end{DoxyExceptions}

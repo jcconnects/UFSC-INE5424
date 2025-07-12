@@ -1,0 +1,111 @@
+\doxysection{include/api/network/protocol.h File Reference}
+\hypertarget{protocol_8h}{}\label{protocol_8h}\index{include/api/network/protocol.h@{include/api/network/protocol.h}}
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$cstddef$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include $<$cstdio$>$}\newline
+{\ttfamily \#include $<$algorithm$>$}\newline
+{\ttfamily \#include $<$mutex$>$}\newline
+{\ttfamily \#include "{}api/traits.\+h"{}}\newline
+{\ttfamily \#include "{}api/util/debug.\+h"{}}\newline
+{\ttfamily \#include "{}api/util/observed.\+h"{}}\newline
+{\ttfamily \#include "{}api/util/observer.\+h"{}}\newline
+{\ttfamily \#include "{}api/network/ethernet.\+h"{}}\newline
+{\ttfamily \#include "{}api/framework/clock.\+h"{}}\newline
+{\ttfamily \#include "{}api/framework/location\+\_\+service.\+h"{}}\newline
+{\ttfamily \#include "{}api/util/geo\+\_\+utils.\+h"{}}\newline
+{\ttfamily \#include "{}api/network/message.\+h"{}}\newline
+{\ttfamily \#include "{}api/framework/leader\+Key\+Storage.\+h"{}}\newline
+{\ttfamily \#include "{}api/framework/vehicle\+RSUManager.\+h"{}}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_protocol}{Protocol$<$ NIC $>$}}
+\item 
+class \mbox{\hyperlink{class_protocol_1_1_header}{Protocol$<$ NIC $>$\+::\+Header}}
+\item 
+struct \mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{Protocol$<$ NIC $>$\+::\+Timestamp\+Fields}}
+\item 
+struct \mbox{\hyperlink{struct_protocol_1_1_authentication_fields}{Protocol$<$ NIC $>$\+::\+Authentication\+Fields}}
+\item 
+class \mbox{\hyperlink{class_protocol_1_1_packet}{Protocol$<$ NIC $>$\+::\+Packet}}
+\item 
+class \mbox{\hyperlink{class_protocol_1_1_address}{Protocol$<$ NIC $>$\+::\+Address}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{protocol_8h_ad1552adee734eb7f3459a7476f5e303b}{Packet}} ()
+\item 
+Header \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}} ()
+\item 
+Timestamp\+Fields \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}} ()
+\item 
+\mbox{\hyperlink{struct_coordinates}{Coordinates}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}} ()
+\item 
+Authentication\+Fields \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{protocol_8h_a776ea8afc7815faed58109430f74c1c2}{authentication}} ()
+\item 
+{\footnotesize template$<$typename T$>$ }\\T \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename \mbox{\hyperlink{class_n_i_c}{NIC}}$>$ }\\\mbox{\hyperlink{class_protocol}{Protocol}}$<$ \mbox{\hyperlink{class_n_i_c}{NIC}} $>$\+::\+Observed \mbox{\hyperlink{protocol_8h_a837ec11b4a07bd90eeda1d50a7e32fdb}{Protocol$<$ NIC $>$\+::\+\_\+observed}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{protocol_8h_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{protocol_8h_a776ea8afc7815faed58109430f74c1c2}\index{protocol.h@{protocol.h}!authentication@{authentication}}
+\index{authentication@{authentication}!protocol.h@{protocol.h}}
+\doxysubsubsection{\texorpdfstring{authentication()}{authentication()}}
+{\footnotesize\ttfamily \label{protocol_8h_a776ea8afc7815faed58109430f74c1c2} 
+Authentication\+Fields \texorpdfstring{$\ast$}{*} \+\_\+\+\_\+attribute\+\_\+\+\_\+\+::authentication (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{protocol_8h_a1a975da314c9523eb960d796231eaab4}\index{protocol.h@{protocol.h}!coordinates@{coordinates}}
+\index{coordinates@{coordinates}!protocol.h@{protocol.h}}
+\doxysubsubsection{\texorpdfstring{coordinates()}{coordinates()}}
+{\footnotesize\ttfamily \label{protocol_8h_a1a975da314c9523eb960d796231eaab4} 
+\mbox{\hyperlink{struct_coordinates}{Coordinates}} \texorpdfstring{$\ast$}{*} \+\_\+\+\_\+attribute\+\_\+\+\_\+\+::coordinates (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}\index{protocol.h@{protocol.h}!data@{data}}
+\index{data@{data}!protocol.h@{protocol.h}}
+\doxysubsubsection{\texorpdfstring{data()}{data()}}
+{\footnotesize\ttfamily \label{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb} 
+template$<$typename T$>$ \\
+T \texorpdfstring{$\ast$}{*} \+\_\+\+\_\+attribute\+\_\+\+\_\+\+::data (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{protocol_8h_ac28f3c5c6696c919222b234f77c85013}\index{protocol.h@{protocol.h}!header@{header}}
+\index{header@{header}!protocol.h@{protocol.h}}
+\doxysubsubsection{\texorpdfstring{header()}{header()}}
+{\footnotesize\ttfamily \label{protocol_8h_ac28f3c5c6696c919222b234f77c85013} 
+Header \texorpdfstring{$\ast$}{*} \+\_\+\+\_\+attribute\+\_\+\+\_\+\+::header (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{protocol_8h_ad1552adee734eb7f3459a7476f5e303b}\index{protocol.h@{protocol.h}!Packet@{Packet}}
+\index{Packet@{Packet}!protocol.h@{protocol.h}}
+\doxysubsubsection{\texorpdfstring{Packet()}{Packet()}}
+{\footnotesize\ttfamily \label{protocol_8h_ad1552adee734eb7f3459a7476f5e303b} 
+\+\_\+\+\_\+attribute\+\_\+\+\_\+\+::\+Packet (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}\index{protocol.h@{protocol.h}!timestamps@{timestamps}}
+\index{timestamps@{timestamps}!protocol.h@{protocol.h}}
+\doxysubsubsection{\texorpdfstring{timestamps()}{timestamps()}}
+{\footnotesize\ttfamily \label{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538} 
+Timestamp\+Fields \texorpdfstring{$\ast$}{*} \+\_\+\+\_\+attribute\+\_\+\+\_\+\+::timestamps (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+\label{doc-var-members}
+\Hypertarget{protocol_8h_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{protocol_8h_a837ec11b4a07bd90eeda1d50a7e32fdb}\index{protocol.h@{protocol.h}!Protocol$<$ NIC $>$::\_observed@{Protocol$<$ NIC $>$::\_observed}}
+\index{Protocol$<$ NIC $>$::\_observed@{Protocol$<$ NIC $>$::\_observed}!protocol.h@{protocol.h}}
+\doxysubsubsection{\texorpdfstring{Protocol$<$ NIC $>$::\_observed}{Protocol< NIC >::\_observed}}
+{\footnotesize\ttfamily \label{protocol_8h_a837ec11b4a07bd90eeda1d50a7e32fdb} 
+template$<$typename \mbox{\hyperlink{class_n_i_c}{NIC}}$>$ \\
+\mbox{\hyperlink{class_protocol}{Protocol}}$<$\mbox{\hyperlink{class_n_i_c}{NIC}}$>$\+::\+Observed \mbox{\hyperlink{class_protocol}{Protocol}}$<$ \mbox{\hyperlink{class_n_i_c}{NIC}} $>$\+::\+\_\+observed}
+

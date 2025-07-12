@@ -1,0 +1,346 @@
+\doxysection{vehicle\+RSUManager.\+h}
+\hypertarget{vehicle_r_s_u_manager_8h_source}{}\label{vehicle_r_s_u_manager_8h_source}\index{include/api/framework/vehicleRSUManager.h@{include/api/framework/vehicleRSUManager.h}}
+\mbox{\hyperlink{vehicle_r_s_u_manager_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ VEHICLE\_RSU\_MANAGER\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ VEHICLE\_RSU\_MANAGER\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <limits>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <cstdio>}\ \textcolor{comment}{//\ For\ snprintf\ in\ debug\ logging}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{leader_key_storage_8h}{api/framework/leaderKeyStorage.h}}"{}}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{clock_8h}{api/framework/clock.h}}"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{location__service_8h}{api/framework/location\_service.h}}"{}}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{geo__utils_8h}{api/util/geo\_utils.h}}"{}}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{periodic_thread_8h}{api/framework/periodicThread.h}}"{}}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ Forward\ declaration\ for\ Protocol}}
+\DoxyCodeLine{00021\ \textcolor{comment}{//\ template\ <typename\ NIC>\ class\ Protocol;}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00032\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Protocol\_T>}
+\DoxyCodeLine{00033\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_vehicle_r_s_u_manager_aec0ffb39c81ed3afedcdef60b8c89549}{VehicleRSUManager}}\ \{}
+\DoxyCodeLine{00034\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a0d33c75cd635bbb1857a7320a2ab63a6}{RSUInfo}}\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ Protocol\_T::Address\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a3783cfd752b3ad3a603cd7b29c019751}{address}};\ \ \ \ \ \ \ \ \textcolor{comment}{//\ RSU\ network\ address}}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a72afecb032ffcbbbce8fa5e8c8d9c41f}{x}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ RSU\ position}}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_abd6a6a1299c6dd88e66b14f401e5257c}{y}};}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_ad1f5676cc02a6de7f649986aba26dcdf}{radius}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ RSU\ coverage\ radius\ (for\ info\ only)}}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a23533f85052e05f8a5e842c3bba501b7}{group\_key}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ RSU\ authentication\ key}}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ std::chrono::steady\_clock::time\_point\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a90d0f1b5903628989e132cd3129e0d13}{last\_seen}};\ \textcolor{comment}{//\ Last\ STATUS\ message\ time}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a8247c73b50df3532bba8220434e1fd30}{distance\_to\_vehicle}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Calculated\ distance\ (updated\ dynamically)}}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a0d33c75cd635bbb1857a7320a2ab63a6}{RSUInfo}}()\ :\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a72afecb032ffcbbbce8fa5e8c8d9c41f}{x}}(0),\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_abd6a6a1299c6dd88e66b14f401e5257c}{y}}(0),\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_ad1f5676cc02a6de7f649986aba26dcdf}{radius}}(0),\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a8247c73b50df3532bba8220434e1fd30}{distance\_to\_vehicle}}(std::numeric\_limits<double>::max())\ \{\}}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a4040c8aee2fe63e805a19259fa6ecb5e}{RSUInfo}}(\textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ Protocol\_T::Address\&\ addr,\ \textcolor{keywordtype}{double}\ x\_coord,\ \textcolor{keywordtype}{double}\ y\_coord,\ }
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ r,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ key)}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ :\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a3783cfd752b3ad3a603cd7b29c019751}{address}}(addr),\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a72afecb032ffcbbbce8fa5e8c8d9c41f}{x}}(x\_coord),\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_abd6a6a1299c6dd88e66b14f401e5257c}{y}}(y\_coord),\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_ad1f5676cc02a6de7f649986aba26dcdf}{radius}}(r),\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a23533f85052e05f8a5e842c3bba501b7}{group\_key}}(key),}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a90d0f1b5903628989e132cd3129e0d13}{last\_seen}}(std::chrono::steady\_clock::now()),\ }
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a8247c73b50df3532bba8220434e1fd30}{distance\_to\_vehicle}}(std::numeric\_limits<double>::max())\ \{\}}
+\DoxyCodeLine{00051\ \ \ \ \ \};}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00054\ \ \ \ \ std::vector<RSUInfo>\ \_known\_rsus;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ List\ of\ known\ RSUs}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keyword}{mutable}\ std::mutex\ \_rsu\_list\_mutex;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Thread\ safety}}
+\DoxyCodeLine{00056\ \ \ \ \ RSUInfo*\ \_current\_leader;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Current\ closest\ RSU}}
+\DoxyCodeLine{00057\ \ \ \ \ std::chrono::seconds\ \_rsu\_timeout;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ RSU\ timeout\ period}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \_vehicle\_id;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ logging}}
+\DoxyCodeLine{00059\ \ \ \ \ }
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{//\ Neighbor\ RSU\ keys\ (just\ keys,\ not\ full\ info)}}
+\DoxyCodeLine{00061\ \ \ \ \ std::vector<MacKeyType>\ \_neighbor\_rsu\_keys;}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keyword}{mutable}\ std::mutex\ \_neighbor\_keys\_mutex;\ \ \ \ \textcolor{comment}{//\ Thread\ safety\ for\ neighbor\ keys}}
+\DoxyCodeLine{00063\ \ \ \ \ }
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{//\ Periodic\ cleanup\ thread}}
+\DoxyCodeLine{00065\ \ \ \ \ std::unique\_ptr<Periodic\_Thread<VehicleRSUManager>>\ \_cleanup\_thread;}
+\DoxyCodeLine{00066\ \ \ \ \ std::atomic<bool>\ \_running;}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00069\ \ \ \ \ \mbox{\hyperlink{class_vehicle_r_s_u_manager_aec0ffb39c81ed3afedcdef60b8c89549}{VehicleRSUManager}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vehicle\_id,\ }
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::chrono::seconds\ timeout\ =\ std::chrono::seconds(10))}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ :\ \_current\_leader(nullptr),\ \_rsu\_timeout(timeout),\ \_vehicle\_id(vehicle\_id),\ \_running(true)\ \{}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ RSU\ Manager\ initialized\ with\ "{}}\ }
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ timeout.count()\ <<\ \textcolor{stringliteral}{"{}s\ timeout\(\backslash\)n"{}};}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Start\ periodic\ cleanup\ thread\ (cleanup\ every\ 5\ seconds)}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Starting\ periodic\ cleanup\ thread\ (5s\ interval)\(\backslash\)n"{}};}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \_cleanup\_thread\ =\ std::make\_unique<Periodic\_Thread<VehicleRSUManager>>(}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&\mbox{\hyperlink{class_vehicle_r_s_u_manager_a482d690a3af039127810b71e28ce526b}{VehicleRSUManager::cleanup\_stale\_rsus}}}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ );}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \_cleanup\_thread-\/>start(1000000);\ \textcolor{comment}{//\ 1\ seconds\ in\ microseconds}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Periodic\ cleanup\ thread\ started\(\backslash\)n"{}};}
+\DoxyCodeLine{00085\ \ \ \ \ \}}
+\DoxyCodeLine{00086\ \ \ \ \ }
+\DoxyCodeLine{00087\ \ \ \ \ \mbox{\hyperlink{class_vehicle_r_s_u_manager_aba74087284bd0d0b61cd3f20b9b75ff8}{\string~VehicleRSUManager}}()\ \{}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ RSU\ Manager\ shutting\ down\(\backslash\)n"{}};}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \_running.store(\textcolor{keyword}{false},\ std::memory\_order\_release);}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_cleanup\_thread)\ \{}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Stopping\ periodic\ cleanup\ thread\(\backslash\)n"{}};}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \_cleanup\_thread-\/>join();}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ <<\ \textcolor{stringliteral}{"{}]\ RSU\ Manager\ destroyed\(\backslash\)n"{}};}
+\DoxyCodeLine{00097\ \ \ \ \ \}}
+\DoxyCodeLine{00098\ \ \ \ \ }
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{comment}{//\ Process\ incoming\ RSU\ STATUS\ message}}
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_r_s_u_manager_ae85d33dd93d9fdd92018b552d8aa55d4}{process\_rsu\_status}}(\textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ Protocol\_T::Address\&\ rsu\_address,}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ x,\ \textcolor{keywordtype}{double}\ y,\ \textcolor{keywordtype}{double}\ radius,\ }
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ group\_key)\ \{}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_running.load(std::memory\_order\_acquire))\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_rsu\_list\_mutex);}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Processing\ RSU\ STATUS\ from\ "{}}\ <<\ rsu\_address.to\_string()}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ at\ ("{}}\ <<\ x\ <<\ \textcolor{stringliteral}{"{},\ "{}}\ <<\ y\ <<\ \textcolor{stringliteral}{"{})\ radius="{}}\ <<\ radius\ <<\ \textcolor{stringliteral}{"{}m\(\backslash\)n"{}};}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ RSU\ key}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ std::string\ rsu\_key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ group\_key[i]);}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ rsu\_key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ RSU\ key\ received:\ "{}}\ <<\ rsu\_key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Check\ if\ this\ key\ exists\ in\ neighbor\ keys\ and\ remove\ it\ (we\ now\ have\ full\ info)}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_r_s_u_manager_a7f88c7fb206de16cb255ab01bc6003b3}{remove\_neighbor\_rsu\_key}}(group\_key);}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Find\ existing\ RSU\ or\ create\ new\ one}}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ it\ =\ find\_rsu\_by\_address(rsu\_address);}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (it\ !=\ \_known\_rsus.end())\ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Update\ existing\ RSU}}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ it-\/>x\ =\ x;}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ it-\/>y\ =\ y;}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ it-\/>radius\ =\ radius;}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ it-\/>group\_key\ =\ group\_key;}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ it-\/>last\_seen\ =\ std::chrono::steady\_clock::now();}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Updated\ RSU\ "{}}\ <<\ rsu\_address.to\_string()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Add\ new\ RSU}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \_known\_rsus.emplace\_back(rsu\_address,\ x,\ y,\ radius,\ group\_key);}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Discovered\ new\ RSU\ "{}}\ <<\ rsu\_address.to\_string()\ }
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ at\ ("{}}\ <<\ x\ <<\ \textcolor{stringliteral}{"{},\ "{}}\ <<\ y\ <<\ \textcolor{stringliteral}{"{})\(\backslash\)n"{}};}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Trigger\ leader\ selection\ update}}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_r_s_u_manager_ae07a51faee4a75c90ae86ed8a1bfa41e}{update\_leader\_selection}}();}
+\DoxyCodeLine{00144\ \ \ \ \ \}}
+\DoxyCodeLine{00145\ \ \ \ \ }
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{comment}{//\ Update\ distances\ and\ leader\ selection}}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_r_s_u_manager_ae07a51faee4a75c90ae86ed8a1bfa41e}{update\_leader\_selection}}()\ \{}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Must\ be\ called\ with\ \_rsu\_list\_mutex\ held}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_known\_rsus.empty())\ \{}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_current\_leader\ !=\ \textcolor{keyword}{nullptr})\ \{}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Lost\ all\ RSUs\ -\/\ clearing\ leader\(\backslash\)n"{}};}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \_current\_leader\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ No\ RSUs\ available\ for\ leader\ selection\(\backslash\)n"{}};}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ if\ (\_known\_rsus.size()\ ==\ 1)\ \{}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ db<VehicleRSUManager>(TRC)\ <<\ "{}[RSUManager\ "{}\ <<\ \_vehicle\_id\ }}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ "{}]\ Only\ one\ known\ rsu\ :\ keeping\ leader\(\backslash\)n"{};}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ return;}}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ \}}}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Updating\ leader\ selection\ among\ "{}}\ <<\ \_known\_rsus.size()\ <<\ \textcolor{stringliteral}{"{}\ RSUs\(\backslash\)n"{}};}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Update\ distances\ to\ all\ RSUs}}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_r_s_u_manager_a53cc5a1828304173404720f0d75f6fa7}{update\_distances}}();}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Sort\ RSUs\ by\ distance\ (closest\ first)}}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ std::sort(\_known\_rsus.begin(),\ \_known\_rsus.end(),}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ [](\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info}{RSUInfo}}\&\ a,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info}{RSUInfo}}\&\ b)\ \{}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ a.distance\_to\_vehicle\ <\ b.distance\_to\_vehicle;}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Log\ all\ RSU\ distances\ for\ debugging}}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ \_known\_rsus.size();\ ++i)\ \{}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ rsu\ =\ \_known\_rsus[i];}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ RSU\ "{}}\ <<\ rsu.address.to\_string()}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ distance="{}}\ <<\ rsu.distance\_to\_vehicle\ <<\ \textcolor{stringliteral}{"{}m\(\backslash\)n"{}};}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Select\ closest\ RSU\ (we\ can\ communicate\ with\ all\ RSUs\ in\ our\ list)}}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ If\ we\ received\ STATUS\ messages\ from\ them,\ they\ are\ within\ collision\ domain}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info}{RSUInfo}}*\ new\_leader\ =\ \&\_known\_rsus[0];\ \textcolor{comment}{//\ Closest\ RSU}}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Check\ if\ leader\ changed}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ leader\_changed\ =\ (\_current\_leader\ !=\ new\_leader);}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (leader\_changed)\ \{}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_current\_leader\ \&\&\ new\_leader)\ \{}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Leader\ changed\ from\ "{}}\ <<\ \_current\_leader-\/>address.to\_string()}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ to\ "{}}\ <<\ new\_leader-\/>\mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a3783cfd752b3ad3a603cd7b29c019751}{address}}.to\_string()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (!\_current\_leader\ \&\&\ new\_leader)\ \{}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ First\ leader\ selected:\ "{}}\ <<\ new\_leader-\/>\mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info_a3783cfd752b3ad3a603cd7b29c019751}{address}}.to\_string()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \_current\_leader\ =\ new\_leader;}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_current\_leader)\ \{}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Current\ leader:\ "{}}\ <<\ \_current\_leader-\/>address.to\_string()}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (distance:\ "{}}\ <<\ \_current\_leader-\/>distance\_to\_vehicle\ <<\ \textcolor{stringliteral}{"{}m)\(\backslash\)n"{}};}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (leader\_changed)\ \{}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Update\ global\ leader\ storage}}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ leader\_id\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\textcolor{keyword}{>}(\_current\_leader-\/>address.paddr().bytes[5]);}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Updating\ global\ leader\ storage\ with\ ID\ "{}}\ <<\ (int)leader\_id\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_a209a9826106362df59d13924242abce0}{setLeaderId}}(\_current\_leader-\/>address.paddr());}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_ae50fdd2568a695c267a18202792c22c7}{setGroupMacKey}}(\_current\_leader-\/>group\_key);}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Update\ Clock\ for\ PTP\ synchronization}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}().\mbox{\hyperlink{class_clock_a2cc3f3a5fe94bcdfcd45e83936f6c513}{setSelfId}}(leader\_id);}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}().\mbox{\hyperlink{class_clock_a5cc4fda803bea0fe083ecd7cfebca43c}{activate}}(\textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00225\ \ \ \ \ \}}
+\DoxyCodeLine{00226\ \ \ \ \ }
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{comment}{//\ Calculate\ distances\ from\ vehicle\ to\ all\ RSUs}}
+\DoxyCodeLine{00228\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_r_s_u_manager_a53cc5a1828304173404720f0d75f6fa7}{update\_distances}}()\ \{}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Get\ current\ vehicle\ position}}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ vehicle\_x,\ vehicle\_y;}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_location_service_a47a113762a9a60846db63b02cb62abf8}{LocationService::getCurrentCoordinates}}(vehicle\_x,\ vehicle\_y);}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Vehicle\ position:\ ("{}}\ <<\ vehicle\_x\ <<\ \textcolor{stringliteral}{"{},\ "{}}\ <<\ vehicle\_y\ <<\ \textcolor{stringliteral}{"{})\(\backslash\)n"{}};}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Calculate\ distance\ to\ each\ RSU}}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ rsu\ :\ \_known\_rsus)\ \{}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ rsu.distance\_to\_vehicle\ =\ \mbox{\hyperlink{class_geo_utils_a89d28ded3fcf2e9a1f127bc208762882}{GeoUtils::euclideanDistance}}(}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vehicle\_x,\ vehicle\_y,\ rsu.x,\ rsu.y);}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00241\ \ \ \ \ \}}
+\DoxyCodeLine{00242\ \ \ \ \ }
+\DoxyCodeLine{00243\ \ \ \ \ \textcolor{comment}{//\ Cleanup\ stale\ RSUs\ (called\ by\ periodic\ thread)}}
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_r_s_u_manager_a482d690a3af039127810b71e28ce526b}{cleanup\_stale\_rsus}}()\ \{}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_running.load(std::memory\_order\_acquire))\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_rsu\_list\_mutex);}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ now\ =\ std::chrono::steady\_clock::now();}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ list\_changed\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Running\ periodic\ RSU\ cleanup,\ checking\ "{}}\ <<\ \_known\_rsus.size()\ <<\ \textcolor{stringliteral}{"{}\ RSUs\(\backslash\)n"{}};}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ it\ =\ \_known\_rsus.begin();}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (it\ !=\ \_known\_rsus.end())\ \{}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ time\_since\_last\_seen\ =\ std::chrono::duration\_cast<std::chrono::seconds>(now\ -\/\ it-\/>last\_seen);}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (time\_since\_last\_seen\ >\ \_rsu\_timeout)\ \{}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Removing\ stale\ RSU\ "{}}\ <<\ it-\/>address.to\_string()\ }
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (last\ seen\ "{}}\ <<\ time\_since\_last\_seen.count()\ <<\ \textcolor{stringliteral}{"{}s\ ago)\(\backslash\)n"{}};}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Check\ if\ we're\ removing\ the\ current\ leader}}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_current\_leader\ ==\ \&(*it))\ \{}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Removing\ current\ leader\ due\ to\ timeout\(\backslash\)n"{}};}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_current\_leader\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ list\_changed\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ it\ =\ \_known\_rsus.erase(it);}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ list\_changed\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ RSU\ "{}}\ <<\ it-\/>address.to\_string()\ }
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ is\ fresh\ (last\ seen\ "{}}\ <<\ time\_since\_last\_seen.count()\ <<\ \textcolor{stringliteral}{"{}s\ ago)\(\backslash\)n"{}};}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ++it;}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (list\_changed)\ \{}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ RSU\ list\ changed\ after\ cleanup,\ updating\ leader\ selection\(\backslash\)n"{}};}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_r_s_u_manager_ae07a51faee4a75c90ae86ed8a1bfa41e}{update\_leader\_selection}}();}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ No\ changes\ after\ RSU\ cleanup\(\backslash\)n"{}};}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00289\ \ \ \ \ \}}
+\DoxyCodeLine{00290\ \ \ \ \ }
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{comment}{//\ Get\ current\ leader\ info\ (for\ debugging)}}
+\DoxyCodeLine{00292\ \ \ \ \ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info}{RSUInfo}}*\ \mbox{\hyperlink{class_vehicle_r_s_u_manager_a85b321ad0d731209978e5a0a457a98f0}{get\_current\_leader}}()\ \{}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_rsu\_list\_mutex);}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \_current\_leader;}
+\DoxyCodeLine{00295\ \ \ \ \ \}}
+\DoxyCodeLine{00296\ \ \ \ \ }
+\DoxyCodeLine{00297\ \ \ \ \ \textcolor{comment}{//\ Get\ all\ known\ RSUs\ (for\ debugging)}}
+\DoxyCodeLine{00298\ \ \ \ \ std::vector<RSUInfo>\ \mbox{\hyperlink{class_vehicle_r_s_u_manager_a02003d38714e66c1187a45fe9e5bc384}{get\_known\_rsus}}()\ \{}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_rsu\_list\_mutex);}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \_known\_rsus;\ \textcolor{comment}{//\ Copy\ for\ thread\ safety}}
+\DoxyCodeLine{00301\ \ \ \ \ \}}
+\DoxyCodeLine{00302\ \ \ \ \ }
+\DoxyCodeLine{00303\ \ \ \ \ \textcolor{comment}{//\ Add\ neighbor\ RSU\ key}}
+\DoxyCodeLine{00304\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_r_s_u_manager_a29fdcf3002b86f4e8308f82b415c4551}{add\_neighbor\_rsu\_key}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ key)\ \{}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_neighbor\_keys\_mutex);}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Check\ if\ key\ already\ exists}}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ existing\_key\ :\ \_neighbor\_rsu\_keys)\ \{}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (existing\_key\ ==\ key)\ \{}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Neighbor\ RSU\ key\ already\ exists\(\backslash\)n"{}};}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \_neighbor\_rsu\_keys.push\_back(key);}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Added\ neighbor\ RSU\ key\ (total:\ "{}}\ <<\ \_neighbor\_rsu\_keys.size()\ <<\ \textcolor{stringliteral}{"{})\(\backslash\)n"{}};}
+\DoxyCodeLine{00317\ \ \ \ \ \}}
+\DoxyCodeLine{00318\ \ \ \ \ }
+\DoxyCodeLine{00319\ \ \ \ \ \textcolor{comment}{//\ Get\ all\ neighbor\ RSU\ keys\ (for\ MAC\ verification)}}
+\DoxyCodeLine{00320\ \ \ \ \ std::vector<MacKeyType>\ \mbox{\hyperlink{class_vehicle_r_s_u_manager_a360a57cf0f1c5e18110ae8bdc3da1304}{get\_neighbor\_rsu\_keys}}()\ \{}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_neighbor\_keys\_mutex);}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \_neighbor\_rsu\_keys;\ \textcolor{comment}{//\ Copy\ for\ thread\ safety}}
+\DoxyCodeLine{00323\ \ \ \ \ \}}
+\DoxyCodeLine{00324\ \ \ \ \ }
+\DoxyCodeLine{00325\ \ \ \ \ \textcolor{comment}{//\ Remove\ neighbor\ RSU\ key\ (when\ we\ get\ full\ RSU\ info\ via\ STATUS)}}
+\DoxyCodeLine{00326\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_vehicle_r_s_u_manager_a7f88c7fb206de16cb255ab01bc6003b3}{remove\_neighbor\_rsu\_key}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ key)\ \{}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_neighbor\_keys\_mutex);}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ it\ =\ std::find(\_neighbor\_rsu\_keys.begin(),\ \_neighbor\_rsu\_keys.end(),\ key);}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (it\ !=\ \_neighbor\_rsu\_keys.end())\ \{}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \_neighbor\_rsu\_keys.erase(it);}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<VehicleRSUManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSUManager\ "{}}\ <<\ \_vehicle\_id\ }
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}]\ Removed\ neighbor\ RSU\ key\ (remaining:\ "{}}\ <<\ \_neighbor\_rsu\_keys.size()\ <<\ \textcolor{stringliteral}{"{})\(\backslash\)n"{}};}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00336\ \ \ \ \ \}}
+\DoxyCodeLine{00337\ \ \ \ \ }
+\DoxyCodeLine{00338\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00339\ \ \ \ \ \textcolor{comment}{//\ Find\ RSU\ by\ address}}
+\DoxyCodeLine{00340\ \ \ \ \ \textcolor{keyword}{typename}\ std::vector<RSUInfo>::iterator\ find\_rsu\_by\_address(}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ Protocol\_T::Address\&\ address)\ \{}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::find\_if(\_known\_rsus.begin(),\ \_known\_rsus.end(),}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ [\&address](\textcolor{keyword}{const}\ RSUInfo\&\ info)\ \{}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ info.address\ ==\ address;}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00346\ \ \ \ \ \}}
+\DoxyCodeLine{00347\ \};}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ VEHICLE\_RSU\_MANAGER\_H\ }}
+
+\end{DoxyCode}

@@ -1,0 +1,232 @@
+\doxysection{Communicator\texorpdfstring{$<$}{<} Channel \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_communicator}{}\label{class_communicator}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+
+
+{\ttfamily \#include $<$communicator.\+h$>$}
+
+Inheritance diagram for Communicator\texorpdfstring{$<$}{<} Channel \texorpdfstring{$>$}{>}\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.608696cm]{class_communicator}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef \mbox{\hyperlink{class_concurrent___observer}{Concurrent\+\_\+\+Observer}}$<$ typename Channel\+::\+Observer\+::\+Observed\+\_\+\+Data, typename Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition $>$ \mbox{\hyperlink{class_communicator_ab72912032a4ff8b222c1ae09dcf64254}{Observer}}
+\item 
+typedef Channel\+::\+Buffer \mbox{\hyperlink{class_communicator_a4eeb6883f7ff2f4ed249181737d4678b}{Buffer}}
+\item 
+typedef Channel\+::\+Address \mbox{\hyperlink{class_communicator_af94211e0ba84bea53416f4a94f54cc66}{Address}}
+\item 
+typedef Channel\+::\+Port \mbox{\hyperlink{class_communicator_a963a6f4674b436afce66a15518919ede}{Port}}
+\item 
+typedef \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$ \mbox{\hyperlink{class_communicator_a99cb97795d5a97176898095bd6ab67c6}{Message\+\_\+T}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Types inherited from \mbox{\hyperlink{class_concurrent___observer}{Concurrent\+\_\+\+Observer$<$ Channel\+::\+Observer\+::\+Observed\+\_\+\+Data, Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+typedef Channel\+::\+Observer\+::\+Observed\+\_\+\+Data \mbox{\hyperlink{class_concurrent___observer_a20cca23de0ab1069fb5894d2240a8f71}{Observed\+\_\+\+Data}}
+\item 
+typedef Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition \mbox{\hyperlink{class_concurrent___observer_a06fad56d0e1bc34113eaed3aedff1cd6}{Observing\+\_\+\+Condition}}
+\item 
+typedef \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ Channel\+::\+Observer\+::\+Observed\+\_\+\+Data, Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition $>$ \mbox{\hyperlink{class_concurrent___observer_a468eb5233f5c956182c62addc2de0a2f}{Observed}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Types inherited from \mbox{\hyperlink{class_conditional___data___observer}{Conditional\+\_\+\+Data\+\_\+\+Observer$<$ Channel\+::\+Observer\+::\+Observed\+\_\+\+Data, Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+typedef Channel\+::\+Observer\+::\+Observed\+\_\+\+Data \mbox{\hyperlink{class_conditional___data___observer_a0b16b8ce9623817ce37695912e1ff310}{Observed\+\_\+\+Data}}
+\item 
+typedef Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition \mbox{\hyperlink{class_conditional___data___observer_a2f93f9437c93539cc17e8cd2380dbb16}{Observing\+\_\+\+Condition}}
+\item 
+typedef \mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\+\_\+\+Data\+\_\+\+Observed}}$<$ Channel\+::\+Observer\+::\+Observed\+\_\+\+Data, Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition $>$ \mbox{\hyperlink{class_conditional___data___observer_ab6c4d2e0d793e10224ed356058430fa1}{Observed}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_communicator_aa524b1a5d7470c99da967898d9ed2ff2}{Communicator}} (Channel \texorpdfstring{$\ast$}{*}channel, \mbox{\hyperlink{class_communicator_af94211e0ba84bea53416f4a94f54cc66}{Address}} \mbox{\hyperlink{class_communicator_a6a36e03ee1f2c5778ea859cbf2ab93b0}{address}})
+\item 
+\mbox{\hyperlink{class_communicator_a5d7aa945e4a5fa0031dbcfc3afd28d4d}{\texorpdfstring{$\sim$}{\string~}\+Communicator}} ()
+\item 
+bool \mbox{\hyperlink{class_communicator_a7bad30ec63e0b5b0b2138702549191ae}{send}} (const \mbox{\hyperlink{class_communicator_a99cb97795d5a97176898095bd6ab67c6}{Message\+\_\+T}} \texorpdfstring{$\ast$}{*}message)
+\item 
+bool \mbox{\hyperlink{class_communicator_a37470a32c261ce0d05501348bd28d0c0}{receive}} (\mbox{\hyperlink{class_communicator_a99cb97795d5a97176898095bd6ab67c6}{Message\+\_\+T}} \texorpdfstring{$\ast$}{*}message)
+\item 
+const \mbox{\hyperlink{class_communicator_af94211e0ba84bea53416f4a94f54cc66}{Address}} \& \mbox{\hyperlink{class_communicator_a6a36e03ee1f2c5778ea859cbf2ab93b0}{address}} () const
+\item 
+void \mbox{\hyperlink{class_communicator_aac6c603dab3586e8a4d76bc952290ce7}{release}} ()
+\item 
+\mbox{\hyperlink{class_communicator_a05401a8da69303fba9f2b3769c341ad3}{Communicator}} (const \mbox{\hyperlink{class_communicator}{Communicator}} \&)=delete
+\item 
+\mbox{\hyperlink{class_communicator}{Communicator}} \& \mbox{\hyperlink{class_communicator_ae5dbec0885049f4d90f71576497395e1}{operator=}} (const \mbox{\hyperlink{class_communicator}{Communicator}} \&)=delete
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{class_concurrent___observer}{Concurrent\+\_\+\+Observer$<$ Channel\+::\+Observer\+::\+Observed\+\_\+\+Data, Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_concurrent___observer_a97e91bd686c32f17f73d971b29fbf835}{Concurrent\+\_\+\+Observer}} (Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition \mbox{\hyperlink{class_conditional___data___observer_a3874329125ab0c3e3675ccd0ad1729b6}{rank}})
+\item 
+\mbox{\hyperlink{class_concurrent___observer_a111935d37fa6937b34b93969d86cd064}{\texorpdfstring{$\sim$}{\string~}\+Concurrent\+\_\+\+Observer}} ()
+\item 
+void \mbox{\hyperlink{class_concurrent___observer_a44a610e26d760bd97bbfbdc90ca5cf2c}{update}} (Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition c, Channel\+::\+Observer\+::\+Observed\+\_\+\+Data \texorpdfstring{$\ast$}{*}d) override
+\item 
+Channel\+::\+Observer\+::\+Observed\+\_\+\+Data \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_concurrent___observer_a3e04ae68a99e56ea92c1690333b186eb}{updated}} ()
+\item 
+void \mbox{\hyperlink{class_concurrent___observer_a3d73cf9d52eb2b081208d60dc9356592}{detach\+\_\+signal}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{class_conditional___data___observer}{Conditional\+\_\+\+Data\+\_\+\+Observer$<$ Channel\+::\+Observer\+::\+Observed\+\_\+\+Data, Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_conditional___data___observer_a8f22e1849f82ea76db69f69cfbd3fe6e}{Conditional\+\_\+\+Data\+\_\+\+Observer}} (Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition c)
+\item 
+virtual \mbox{\hyperlink{class_conditional___data___observer_a5ceffc5f4ca4f4ac107b793e9d06456c}{\texorpdfstring{$\sim$}{\string~}\+Conditional\+\_\+\+Data\+\_\+\+Observer}} ()=default
+\item 
+const Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition \mbox{\hyperlink{class_conditional___data___observer_a3874329125ab0c3e3675ccd0ad1729b6}{rank}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::atomic$<$ bool $>$ \mbox{\hyperlink{class_communicator_add2399b5fa321a94edd31c436883bceb}{\+\_\+running}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static constexpr const unsigned int \mbox{\hyperlink{class_communicator_a8bd4d44f6d58e69b13988919397fbb6e}{MAX\+\_\+\+MESSAGE\+\_\+\+SIZE}} = Channel\+::\+MTU
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Protected Attributes inherited from \mbox{\hyperlink{class_conditional___data___observer}{Conditional\+\_\+\+Data\+\_\+\+Observer$<$ Channel\+::\+Observer\+::\+Observed\+\_\+\+Data, Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition \mbox{\hyperlink{class_conditional___data___observer_aa4acb207eaeed3fbaf57207e6b84d4a8}{\+\_\+rank}}
+\item 
+\mbox{\hyperlink{class_list}{List}}$<$ Channel\+::\+Observer\+::\+Observed\+\_\+\+Data $>$ \mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\+\_\+data}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-typedef-members}
+\Hypertarget{class_communicator_doc-typedef-members}
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_communicator_af94211e0ba84bea53416f4a94f54cc66}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!Address@{Address}}
+\index{Address@{Address}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Address}{Address}}
+{\footnotesize\ttfamily \label{class_communicator_af94211e0ba84bea53416f4a94f54cc66} 
+template$<$typename Channel$>$ \\
+typedef Channel\+::\+Address \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::\+Address}
+
+\Hypertarget{class_communicator_a4eeb6883f7ff2f4ed249181737d4678b}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!Buffer@{Buffer}}
+\index{Buffer@{Buffer}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Buffer}{Buffer}}
+{\footnotesize\ttfamily \label{class_communicator_a4eeb6883f7ff2f4ed249181737d4678b} 
+template$<$typename Channel$>$ \\
+typedef Channel\+::\+Buffer \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\mbox{\hyperlink{class_buffer}{\+::\+Buffer}}}
+
+\Hypertarget{class_communicator_a99cb97795d5a97176898095bd6ab67c6}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!Message\_T@{Message\_T}}
+\index{Message\_T@{Message\_T}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Message\_T}{Message\_T}}
+{\footnotesize\ttfamily \label{class_communicator_a99cb97795d5a97176898095bd6ab67c6} 
+template$<$typename Channel$>$ \\
+typedef \mbox{\hyperlink{class_message}{Message}}$<$Channel$>$ \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::\+Message\+\_\+T}
+
+\Hypertarget{class_communicator_ab72912032a4ff8b222c1ae09dcf64254}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!Observer@{Observer}}
+\index{Observer@{Observer}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Observer}{Observer}}
+{\footnotesize\ttfamily \label{class_communicator_ab72912032a4ff8b222c1ae09dcf64254} 
+template$<$typename Channel$>$ \\
+typedef \mbox{\hyperlink{class_concurrent___observer}{Concurrent\+\_\+\+Observer}}$<$typename Channel\+::\+Observer\+::\+Observed\+\_\+\+Data, typename Channel\+::\+Observer\+::\+Observing\+\_\+\+Condition$>$ \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::\+Observer}
+
+\Hypertarget{class_communicator_a963a6f4674b436afce66a15518919ede}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!Port@{Port}}
+\index{Port@{Port}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Port}{Port}}
+{\footnotesize\ttfamily \label{class_communicator_a963a6f4674b436afce66a15518919ede} 
+template$<$typename Channel$>$ \\
+typedef Channel\+::\+Port \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::\+Port}
+
+
+
+\label{doc-constructors}
+\Hypertarget{class_communicator_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_communicator_aa524b1a5d7470c99da967898d9ed2ff2}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!Communicator@{Communicator}}
+\index{Communicator@{Communicator}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Communicator()}{Communicator()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_communicator_aa524b1a5d7470c99da967898d9ed2ff2} 
+template$<$typename Channel$>$ \\
+\mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\mbox{\hyperlink{class_communicator}{\+::\+Communicator}} (\begin{DoxyParamCaption}\item[{Channel \texorpdfstring{$\ast$}{*}}]{channel}{, }\item[{\mbox{\hyperlink{class_communicator_af94211e0ba84bea53416f4a94f54cc66}{Address}}}]{address}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_communicator_a5d7aa945e4a5fa0031dbcfc3afd28d4d}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!````~Communicator@{\texorpdfstring{$\sim$}{\string~}Communicator}}
+\index{````~Communicator@{\texorpdfstring{$\sim$}{\string~}Communicator}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Communicator()}{\string~Communicator()}}
+{\footnotesize\ttfamily \label{class_communicator_a5d7aa945e4a5fa0031dbcfc3afd28d4d} 
+template$<$typename Channel$>$ \\
+\mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::\texorpdfstring{$\sim$}{\string~}\mbox{\hyperlink{class_communicator}{Communicator}} (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_communicator_a05401a8da69303fba9f2b3769c341ad3}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!Communicator@{Communicator}}
+\index{Communicator@{Communicator}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Communicator()}{Communicator()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_communicator_a05401a8da69303fba9f2b3769c341ad3} 
+template$<$typename Channel$>$ \\
+\mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\mbox{\hyperlink{class_communicator}{\+::\+Communicator}} (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$ \&}]{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_communicator_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_communicator_a6a36e03ee1f2c5778ea859cbf2ab93b0}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!address@{address}}
+\index{address@{address}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{address()}{address()}}
+{\footnotesize\ttfamily \label{class_communicator_a6a36e03ee1f2c5778ea859cbf2ab93b0} 
+template$<$typename Channel$>$ \\
+const \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\mbox{\hyperlink{class_communicator_af94211e0ba84bea53416f4a94f54cc66}{\+::\+Address}} \& \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::address (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+\Hypertarget{class_communicator_ae5dbec0885049f4d90f71576497395e1}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!operator=@{operator=}}
+\index{operator=@{operator=}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{operator=()}{operator=()}}
+{\footnotesize\ttfamily \label{class_communicator_ae5dbec0885049f4d90f71576497395e1} 
+template$<$typename Channel$>$ \\
+\mbox{\hyperlink{class_communicator}{Communicator}} \& \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::operator= (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$ \&}]{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+\Hypertarget{class_communicator_a37470a32c261ce0d05501348bd28d0c0}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!receive@{receive}}
+\index{receive@{receive}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{receive()}{receive()}}
+{\footnotesize\ttfamily \label{class_communicator_a37470a32c261ce0d05501348bd28d0c0} 
+template$<$typename Channel$>$ \\
+bool \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::receive (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_communicator_a99cb97795d5a97176898095bd6ab67c6}{Message\+\_\+T}} \texorpdfstring{$\ast$}{*}}]{message}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_communicator_aac6c603dab3586e8a4d76bc952290ce7}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!release@{release}}
+\index{release@{release}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{release()}{release()}}
+{\footnotesize\ttfamily \label{class_communicator_aac6c603dab3586e8a4d76bc952290ce7} 
+template$<$typename Channel$>$ \\
+void \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::release (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_communicator_a7bad30ec63e0b5b0b2138702549191ae}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!send@{send}}
+\index{send@{send}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{send()}{send()}}
+{\footnotesize\ttfamily \label{class_communicator_a7bad30ec63e0b5b0b2138702549191ae} 
+template$<$typename Channel$>$ \\
+bool \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::send (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_communicator_a99cb97795d5a97176898095bd6ab67c6}{Message\+\_\+T}} \texorpdfstring{$\ast$}{*}}]{message}{}\end{DoxyParamCaption})}
+
+
+
+\label{doc-variable-members}
+\Hypertarget{class_communicator_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_communicator_add2399b5fa321a94edd31c436883bceb}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!\_running@{\_running}}
+\index{\_running@{\_running}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{\_running}{\_running}}
+{\footnotesize\ttfamily \label{class_communicator_add2399b5fa321a94edd31c436883bceb} 
+template$<$typename Channel$>$ \\
+std\+::atomic$<$bool$>$ \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::\+\_\+running}
+
+\Hypertarget{class_communicator_a8bd4d44f6d58e69b13988919397fbb6e}\index{Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}!MAX\_MESSAGE\_SIZE@{MAX\_MESSAGE\_SIZE}}
+\index{MAX\_MESSAGE\_SIZE@{MAX\_MESSAGE\_SIZE}!Communicator$<$ Channel $>$@{Communicator$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{MAX\_MESSAGE\_SIZE}{MAX\_MESSAGE\_SIZE}}
+{\footnotesize\ttfamily \label{class_communicator_a8bd4d44f6d58e69b13988919397fbb6e} 
+template$<$typename Channel$>$ \\
+const unsigned int \mbox{\hyperlink{class_communicator}{Communicator}}$<$ Channel $>$\+::\+MAX\+\_\+\+MESSAGE\+\_\+\+SIZE = Channel\+::\+MTU\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [constexpr]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/network/\mbox{\hyperlink{communicator_8h}{communicator.\+h}}\end{DoxyCompactItemize}

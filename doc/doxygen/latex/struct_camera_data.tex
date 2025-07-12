@@ -1,0 +1,234 @@
+\doxysection{Camera\+Data Struct Reference}
+\hypertarget{struct_camera_data}{}\label{struct_camera_data}\index{CameraData@{CameraData}}
+
+
+Data structure for Camera component.  
+
+
+
+
+{\ttfamily \#include $<$camera\+\_\+data.\+hpp$>$}
+
+Inheritance diagram for Camera\+Data\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{struct_camera_data}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{struct_camera_data_ab924bcae0c53d6fd14d885ce9d97bc10}{Camera\+Data}} ()
+\begin{DoxyCompactList}\small\item\em Constructor initializes random number generation with realistic image parameters. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_camera_data_a902a4721b2c43aa00e6de3228064c04f}{update\+\_\+image\+\_\+dimensions}} (int width, int height, int bpp=1)
+\begin{DoxyCompactList}\small\item\em Update the image dimensions. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_camera_data_af74eca2c8929d9043bde6ec3730a297b}{update\+\_\+pixel\+\_\+range}} (int min\+\_\+pixel, int max\+\_\+pixel, int noise\+\_\+range)
+\begin{DoxyCompactList}\small\item\em Update the pixel value generation ranges. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_camera_data_a74032b0c584b5677bb886c0411f0b59e}{update\+\_\+timing\+\_\+range}} (int min\+\_\+delay\+\_\+ms, int max\+\_\+delay\+\_\+ms)
+\begin{DoxyCompactList}\small\item\em Update the frame timing parameters. \end{DoxyCompactList}\item 
+std\+::size\+\_\+t \mbox{\hyperlink{struct_camera_data_a719c0ac2dc9c53ac66c9d0d7c0e3750d}{get\+\_\+image\+\_\+size}} () const
+\begin{DoxyCompactList}\small\item\em Get the total image size in bytes. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{struct_component_data}{Component\+Data}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual \mbox{\hyperlink{struct_component_data_a9d2f13c283f7f17eee8f4283c04f519d}{\texorpdfstring{$\sim$}{\string~}\+Component\+Data}} ()=default
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::random\+\_\+device \mbox{\hyperlink{struct_camera_data_a8e971432c8d7e39f5b38ae1c4ff4ab6a}{rd}}
+\item 
+std\+::mt19937 \mbox{\hyperlink{struct_camera_data_aab80829a34a8f93c0aa7c47133f14a2c}{gen}}
+\item 
+int \mbox{\hyperlink{struct_camera_data_a70f210cc29181357d7b1090c0842cc0f}{image\+\_\+width}}
+\item 
+int \mbox{\hyperlink{struct_camera_data_a62b8abe06bbddfe829f4214fbec720b8}{image\+\_\+height}}
+\item 
+int \mbox{\hyperlink{struct_camera_data_ac381a7c24a4c29cb4b312f6d495068e8}{bytes\+\_\+per\+\_\+pixel}}
+\item 
+std\+::uniform\+\_\+int\+\_\+distribution \mbox{\hyperlink{struct_camera_data_a42c500bf03a6da080e88846c4b63443d}{pixel\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+int\+\_\+distribution \mbox{\hyperlink{struct_camera_data_a4f3ba41dcbcd9980bf11740c44d07710}{noise\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_camera_data_a7b2a14383feda3f559bc2b998930fac4}{pattern\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+int\+\_\+distribution \mbox{\hyperlink{struct_camera_data_a134a23f90adc381163cf0ba8c08ee393}{frame\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+int\+\_\+distribution \mbox{\hyperlink{struct_camera_data_a039545221c38e20253948078ff798676}{delay\+\_\+dist}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Data structure for Camera component. 
+
+Following EPOS Smart\+Data principles, this structure contains all the data needed for \doxylink{struct_camera_component}{Camera\+Component} functionality. Generates realistic pixel matrix data for image simulation. Initially simplified to handle EXTERNAL\+\_\+\+PIXEL\+\_\+\+MATRIX only, but can be extended to support RGB\+\_\+\+IMAGE, VIDEO\+\_\+\+STREAM, and CAMERA\+\_\+\+METADATA.
+
+Replaces inheritance-\/based data storage with pure composition. 
+
+\label{doc-constructors}
+\Hypertarget{struct_camera_data_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{struct_camera_data_ab924bcae0c53d6fd14d885ce9d97bc10}\index{CameraData@{CameraData}!CameraData@{CameraData}}
+\index{CameraData@{CameraData}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{CameraData()}{CameraData()}}
+{\footnotesize\ttfamily \label{struct_camera_data_ab924bcae0c53d6fd14d885ce9d97bc10} 
+Camera\+Data\+::\+Camera\+Data (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Constructor initializes random number generation with realistic image parameters. 
+
+Sets up the same random distributions as the original \doxylink{struct_camera_component}{Camera\+Component}\+:
+\begin{DoxyItemize}
+\item Image dimensions\+: 640x480 (VGA resolution, typical for automotive cameras)
+\item Bytes per pixel\+: 1 (grayscale) initially, can be extended to 3 (RGB)
+\item Pixel values\+: 0-\/255 (standard 8-\/bit grayscale)
+\item Noise\+: ±10 (realistic sensor noise)
+\item Pattern variation\+: 0.\+0-\/1.\+0 (for generating realistic image patterns)
+\item Frame variation\+: 0-\/100 (frame-\/to-\/frame variation)
+\item Delay\+: 30-\/40ms (typical camera \texorpdfstring{$\sim$}{\string~}30\+Hz frame rate) 
+\end{DoxyItemize}
+
+\label{doc-func-members}
+\Hypertarget{struct_camera_data_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{struct_camera_data_a719c0ac2dc9c53ac66c9d0d7c0e3750d}\index{CameraData@{CameraData}!get\_image\_size@{get\_image\_size}}
+\index{get\_image\_size@{get\_image\_size}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{get\_image\_size()}{get\_image\_size()}}
+{\footnotesize\ttfamily \label{struct_camera_data_a719c0ac2dc9c53ac66c9d0d7c0e3750d} 
+std\+::size\+\_\+t Camera\+Data\+::get\+\_\+image\+\_\+size (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get the total image size in bytes. 
+
+\begin{DoxyReturn}{Returns}
+Total size of one image frame in bytes 
+\end{DoxyReturn}
+\Hypertarget{struct_camera_data_a902a4721b2c43aa00e6de3228064c04f}\index{CameraData@{CameraData}!update\_image\_dimensions@{update\_image\_dimensions}}
+\index{update\_image\_dimensions@{update\_image\_dimensions}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{update\_image\_dimensions()}{update\_image\_dimensions()}}
+{\footnotesize\ttfamily \label{struct_camera_data_a902a4721b2c43aa00e6de3228064c04f} 
+void Camera\+Data\+::update\+\_\+image\+\_\+dimensions (\begin{DoxyParamCaption}\item[{int}]{width}{, }\item[{int}]{height}{, }\item[{int}]{bpp}{ = {\ttfamily 1}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update the image dimensions. 
+
+Allows dynamic reconfiguration of the image size. Useful for testing different resolutions or runtime configuration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em width} & Image width in pixels \\
+\hline
+{\em height} & Image height in pixels \\
+\hline
+{\em bpp} & Bytes per pixel (1 for grayscale, 3 for RGB) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{struct_camera_data_af74eca2c8929d9043bde6ec3730a297b}\index{CameraData@{CameraData}!update\_pixel\_range@{update\_pixel\_range}}
+\index{update\_pixel\_range@{update\_pixel\_range}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{update\_pixel\_range()}{update\_pixel\_range()}}
+{\footnotesize\ttfamily \label{struct_camera_data_af74eca2c8929d9043bde6ec3730a297b} 
+void Camera\+Data\+::update\+\_\+pixel\+\_\+range (\begin{DoxyParamCaption}\item[{int}]{min\+\_\+pixel}{, }\item[{int}]{max\+\_\+pixel}{, }\item[{int}]{noise\+\_\+range}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update the pixel value generation ranges. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em min\+\_\+pixel} & Minimum pixel value \\
+\hline
+{\em max\+\_\+pixel} & Maximum pixel value \\
+\hline
+{\em noise\+\_\+range} & Noise variation range (±noise\+\_\+range) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{struct_camera_data_a74032b0c584b5677bb886c0411f0b59e}\index{CameraData@{CameraData}!update\_timing\_range@{update\_timing\_range}}
+\index{update\_timing\_range@{update\_timing\_range}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{update\_timing\_range()}{update\_timing\_range()}}
+{\footnotesize\ttfamily \label{struct_camera_data_a74032b0c584b5677bb886c0411f0b59e} 
+void Camera\+Data\+::update\+\_\+timing\+\_\+range (\begin{DoxyParamCaption}\item[{int}]{min\+\_\+delay\+\_\+ms}{, }\item[{int}]{max\+\_\+delay\+\_\+ms}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update the frame timing parameters. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em min\+\_\+delay\+\_\+ms} & Minimum delay between frames (milliseconds) \\
+\hline
+{\em max\+\_\+delay\+\_\+ms} & Maximum delay between frames (milliseconds) \\
+\hline
+\end{DoxyParams}
+
+
+\label{doc-variable-members}
+\Hypertarget{struct_camera_data_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{struct_camera_data_ac381a7c24a4c29cb4b312f6d495068e8}\index{CameraData@{CameraData}!bytes\_per\_pixel@{bytes\_per\_pixel}}
+\index{bytes\_per\_pixel@{bytes\_per\_pixel}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{bytes\_per\_pixel}{bytes\_per\_pixel}}
+{\footnotesize\ttfamily \label{struct_camera_data_ac381a7c24a4c29cb4b312f6d495068e8} 
+int Camera\+Data\+::bytes\+\_\+per\+\_\+pixel}
+
+\Hypertarget{struct_camera_data_a039545221c38e20253948078ff798676}\index{CameraData@{CameraData}!delay\_dist@{delay\_dist}}
+\index{delay\_dist@{delay\_dist}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{delay\_dist}{delay\_dist}}
+{\footnotesize\ttfamily \label{struct_camera_data_a039545221c38e20253948078ff798676} 
+std\+::uniform\+\_\+int\+\_\+distribution Camera\+Data\+::delay\+\_\+dist}
+
+\Hypertarget{struct_camera_data_a134a23f90adc381163cf0ba8c08ee393}\index{CameraData@{CameraData}!frame\_dist@{frame\_dist}}
+\index{frame\_dist@{frame\_dist}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{frame\_dist}{frame\_dist}}
+{\footnotesize\ttfamily \label{struct_camera_data_a134a23f90adc381163cf0ba8c08ee393} 
+std\+::uniform\+\_\+int\+\_\+distribution Camera\+Data\+::frame\+\_\+dist}
+
+\Hypertarget{struct_camera_data_aab80829a34a8f93c0aa7c47133f14a2c}\index{CameraData@{CameraData}!gen@{gen}}
+\index{gen@{gen}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{gen}{gen}}
+{\footnotesize\ttfamily \label{struct_camera_data_aab80829a34a8f93c0aa7c47133f14a2c} 
+std\+::mt19937 Camera\+Data\+::gen}
+
+\Hypertarget{struct_camera_data_a62b8abe06bbddfe829f4214fbec720b8}\index{CameraData@{CameraData}!image\_height@{image\_height}}
+\index{image\_height@{image\_height}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{image\_height}{image\_height}}
+{\footnotesize\ttfamily \label{struct_camera_data_a62b8abe06bbddfe829f4214fbec720b8} 
+int Camera\+Data\+::image\+\_\+height}
+
+\Hypertarget{struct_camera_data_a70f210cc29181357d7b1090c0842cc0f}\index{CameraData@{CameraData}!image\_width@{image\_width}}
+\index{image\_width@{image\_width}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{image\_width}{image\_width}}
+{\footnotesize\ttfamily \label{struct_camera_data_a70f210cc29181357d7b1090c0842cc0f} 
+int Camera\+Data\+::image\+\_\+width}
+
+\Hypertarget{struct_camera_data_a4f3ba41dcbcd9980bf11740c44d07710}\index{CameraData@{CameraData}!noise\_dist@{noise\_dist}}
+\index{noise\_dist@{noise\_dist}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{noise\_dist}{noise\_dist}}
+{\footnotesize\ttfamily \label{struct_camera_data_a4f3ba41dcbcd9980bf11740c44d07710} 
+std\+::uniform\+\_\+int\+\_\+distribution Camera\+Data\+::noise\+\_\+dist}
+
+\Hypertarget{struct_camera_data_a7b2a14383feda3f559bc2b998930fac4}\index{CameraData@{CameraData}!pattern\_dist@{pattern\_dist}}
+\index{pattern\_dist@{pattern\_dist}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{pattern\_dist}{pattern\_dist}}
+{\footnotesize\ttfamily \label{struct_camera_data_a7b2a14383feda3f559bc2b998930fac4} 
+std\+::uniform\+\_\+real\+\_\+distribution Camera\+Data\+::pattern\+\_\+dist}
+
+\Hypertarget{struct_camera_data_a42c500bf03a6da080e88846c4b63443d}\index{CameraData@{CameraData}!pixel\_dist@{pixel\_dist}}
+\index{pixel\_dist@{pixel\_dist}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{pixel\_dist}{pixel\_dist}}
+{\footnotesize\ttfamily \label{struct_camera_data_a42c500bf03a6da080e88846c4b63443d} 
+std\+::uniform\+\_\+int\+\_\+distribution Camera\+Data\+::pixel\+\_\+dist}
+
+\Hypertarget{struct_camera_data_a8e971432c8d7e39f5b38ae1c4ff4ab6a}\index{CameraData@{CameraData}!rd@{rd}}
+\index{rd@{rd}!CameraData@{CameraData}}
+\doxysubsubsection{\texorpdfstring{rd}{rd}}
+{\footnotesize\ttfamily \label{struct_camera_data_a8e971432c8d7e39f5b38ae1c4ff4ab6a} 
+std\+::random\+\_\+device Camera\+Data\+::rd}
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/app/components/\mbox{\hyperlink{camera__data_8hpp}{camera\+\_\+data.\+hpp}}\end{DoxyCompactItemize}

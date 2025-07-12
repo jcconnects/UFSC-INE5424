@@ -1,0 +1,38 @@
+\doxysection{ecu\+\_\+data.\+hpp}
+\hypertarget{ecu__data_8hpp_source}{}\label{ecu__data_8hpp_source}\index{include/app/components/ecu\_data.hpp@{include/app/components/ecu\_data.hpp}}
+\mbox{\hyperlink{ecu__data_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ ECU\_DATA\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ ECU\_DATA\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__types_8hpp}{../../api/framework/component\_types.hpp}}"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00016\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_e_c_u_data_a2c9f6402d4c8bd70a98cc1d609c03c41}{ECUData}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_component_data}{ComponentData}}\ \{}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{comment}{//\ Consumer\ data:\ tracking\ received\ messages}}
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_e_c_u_data_a32cf1c0855b3d5f52c89ca147672d12f}{messages\_received}};}
+\DoxyCodeLine{00019\ \ \ \ \ std::string\ \mbox{\hyperlink{struct_e_c_u_data_ac277919575354ca1673ae5a8b16b5cf6}{last\_message\_source}};}
+\DoxyCodeLine{00020\ \ \ \ \ std::uint32\_t\ \mbox{\hyperlink{struct_e_c_u_data_abd7bb1eb7b71cf90dd59ca2c96a9c4ae}{last\_message\_unit}};}
+\DoxyCodeLine{00021\ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_e_c_u_data_a087b0a637db3b2978c27c60a23b47d08}{last\_message\_size}};}
+\DoxyCodeLine{00022\ \ \ \ \ }
+\DoxyCodeLine{00029\ \ \ \ \ \mbox{\hyperlink{struct_e_c_u_data_a2c9f6402d4c8bd70a98cc1d609c03c41}{ECUData}}()\ :\ \mbox{\hyperlink{struct_e_c_u_data_a32cf1c0855b3d5f52c89ca147672d12f}{messages\_received}}(0),\ \mbox{\hyperlink{struct_e_c_u_data_ac277919575354ca1673ae5a8b16b5cf6}{last\_message\_source}}(\textcolor{stringliteral}{"{}"{}}),\ }
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_e_c_u_data_abd7bb1eb7b71cf90dd59ca2c96a9c4ae}{last\_message\_unit}}(0),\ \mbox{\hyperlink{struct_e_c_u_data_a087b0a637db3b2978c27c60a23b47d08}{last\_message\_size}}(0)\ \{\}}
+\DoxyCodeLine{00031\ \ \ \ \ }
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_e_c_u_data_a192243a407bde05dd0f81ee26e8d9f61}{reset\_consumer\_state}}()\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_e_c_u_data_a32cf1c0855b3d5f52c89ca147672d12f}{messages\_received}}\ =\ 0;}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_e_c_u_data_ac277919575354ca1673ae5a8b16b5cf6}{last\_message\_source}}\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_e_c_u_data_abd7bb1eb7b71cf90dd59ca2c96a9c4ae}{last\_message\_unit}}\ =\ 0;}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_e_c_u_data_a087b0a637db3b2978c27c60a23b47d08}{last\_message\_size}}\ =\ 0;}
+\DoxyCodeLine{00040\ \ \ \ \ \}}
+\DoxyCodeLine{00041\ \ \ \ \ }
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_e_c_u_data_a7b7c7c8a2f02fb25de99ac4474990bbb}{update\_message\_tracking}}(\textcolor{keyword}{const}\ std::string\&\ source,\ std::uint32\_t\ unit,\ std::size\_t\ size)\ \{}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_e_c_u_data_a32cf1c0855b3d5f52c89ca147672d12f}{messages\_received}}++;}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_e_c_u_data_ac277919575354ca1673ae5a8b16b5cf6}{last\_message\_source}}\ =\ source;}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_e_c_u_data_abd7bb1eb7b71cf90dd59ca2c96a9c4ae}{last\_message\_unit}}\ =\ unit;}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_e_c_u_data_a087b0a637db3b2978c27c60a23b47d08}{last\_message\_size}}\ =\ size;}
+\DoxyCodeLine{00054\ \ \ \ \ \}}
+\DoxyCodeLine{00055\ \};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ ECU\_DATA\_HPP\ }}
+
+\end{DoxyCode}

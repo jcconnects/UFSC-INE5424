@@ -1,0 +1,70 @@
+\doxysection{camera\+\_\+data.\+hpp}
+\hypertarget{camera__data_8hpp_source}{}\label{camera__data_8hpp_source}\index{include/app/components/camera\_data.hpp@{include/app/components/camera\_data.hpp}}
+\mbox{\hyperlink{camera__data_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ CAMERA\_DATA\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ CAMERA\_DATA\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <random>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__types_8hpp}{../../api/framework/component\_types.hpp}}"{}}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00017\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_camera_data_ab924bcae0c53d6fd14d885ce9d97bc10}{CameraData}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_component_data}{ComponentData}}\ \{}
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{comment}{//\ Producer\ data:\ random\ number\ generation\ for\ pixel\ matrix\ data}}
+\DoxyCodeLine{00019\ \ \ \ \ std::random\_device\ \mbox{\hyperlink{struct_camera_data_a8e971432c8d7e39f5b38ae1c4ff4ab6a}{rd}};}
+\DoxyCodeLine{00020\ \ \ \ \ std::mt19937\ \mbox{\hyperlink{struct_camera_data_aab80829a34a8f93c0aa7c47133f14a2c}{gen}};}
+\DoxyCodeLine{00021\ \ \ \ \ }
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{comment}{//\ Image\ dimensions}}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_camera_data_a70f210cc29181357d7b1090c0842cc0f}{image\_width}};}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_camera_data_a62b8abe06bbddfe829f4214fbec720b8}{image\_height}};}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_camera_data_ac381a7c24a4c29cb4b312f6d495068e8}{bytes\_per\_pixel}};}
+\DoxyCodeLine{00026\ \ \ \ \ }
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{comment}{//\ Pixel\ value\ distributions}}
+\DoxyCodeLine{00028\ \ \ \ \ std::uniform\_int\_distribution<>\ \mbox{\hyperlink{struct_camera_data_a42c500bf03a6da080e88846c4b63443d}{pixel\_dist}};\ \ \ \ \ \textcolor{comment}{//\ Pixel\ intensity\ values\ (0-\/255)}}
+\DoxyCodeLine{00029\ \ \ \ \ std::uniform\_int\_distribution<>\ \mbox{\hyperlink{struct_camera_data_a4f3ba41dcbcd9980bf11740c44d07710}{noise\_dist}};\ \ \ \ \ \textcolor{comment}{//\ Noise\ variation}}
+\DoxyCodeLine{00030\ \ \ \ \ }
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{comment}{//\ Image\ pattern\ distributions\ (for\ realistic\ image\ simulation)}}
+\DoxyCodeLine{00032\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_camera_data_a7b2a14383feda3f559bc2b998930fac4}{pattern\_dist}};\ \ \textcolor{comment}{//\ Pattern\ variation\ (0.0-\/1.0)}}
+\DoxyCodeLine{00033\ \ \ \ \ std::uniform\_int\_distribution<>\ \mbox{\hyperlink{struct_camera_data_a134a23f90adc381163cf0ba8c08ee393}{frame\_dist}};\ \ \ \ \ \textcolor{comment}{//\ Frame\ variation}}
+\DoxyCodeLine{00034\ \ \ \ \ }
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{comment}{//\ Timing\ distribution}}
+\DoxyCodeLine{00036\ \ \ \ \ std::uniform\_int\_distribution<>\ \mbox{\hyperlink{struct_camera_data_a039545221c38e20253948078ff798676}{delay\_dist}};\ \ \ \ \ \textcolor{comment}{//\ Delay\ between\ frames\ (ms)}}
+\DoxyCodeLine{00037\ \ \ \ \ }
+\DoxyCodeLine{00050\ \ \ \ \ \mbox{\hyperlink{struct_camera_data_ab924bcae0c53d6fd14d885ce9d97bc10}{CameraData}}()\ :\ \mbox{\hyperlink{struct_camera_data_aab80829a34a8f93c0aa7c47133f14a2c}{gen}}(\mbox{\hyperlink{struct_camera_data_a8e971432c8d7e39f5b38ae1c4ff4ab6a}{rd}}()),}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a70f210cc29181357d7b1090c0842cc0f}{image\_width}}(640),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ VGA\ width\ (pixels)}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a62b8abe06bbddfe829f4214fbec720b8}{image\_height}}(480),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ VGA\ height\ (pixels)}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_ac381a7c24a4c29cb4b312f6d495068e8}{bytes\_per\_pixel}}(1),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Grayscale\ initially\ (can\ extend\ to\ 3\ for\ RGB)}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a42c500bf03a6da080e88846c4b63443d}{pixel\_dist}}(0,\ 255),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Pixel\ intensity\ (0-\/255)}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a4f3ba41dcbcd9980bf11740c44d07710}{noise\_dist}}(-\/10,\ 10),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Noise\ variation\ (±10)}}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a7b2a14383feda3f559bc2b998930fac4}{pattern\_dist}}(0.0,\ 1.0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Pattern\ variation\ (0.0-\/1.0)}}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a134a23f90adc381163cf0ba8c08ee393}{frame\_dist}}(0,\ 100),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Frame\ variation\ (0-\/100)}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a039545221c38e20253948078ff798676}{delay\_dist}}(30,\ 40)\ \{\}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Milliseconds\ delay\ (camera\ typically\ \string~30Hz)}}
+\DoxyCodeLine{00059\ \ \ \ \ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_camera_data_a902a4721b2c43aa00e6de3228064c04f}{update\_image\_dimensions}}(\textcolor{keywordtype}{int}\ width,\ \textcolor{keywordtype}{int}\ height,\ \textcolor{keywordtype}{int}\ bpp\ =\ 1)\ \{}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (width\ >\ 0\ \&\&\ height\ >\ 0\ \&\&\ bpp\ >\ 0)\ \{}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a70f210cc29181357d7b1090c0842cc0f}{image\_width}}\ =\ width;}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a62b8abe06bbddfe829f4214fbec720b8}{image\_height}}\ =\ height;}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_ac381a7c24a4c29cb4b312f6d495068e8}{bytes\_per\_pixel}}\ =\ bpp;}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00076\ \ \ \ \ \}}
+\DoxyCodeLine{00077\ \ \ \ \ }
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_camera_data_af74eca2c8929d9043bde6ec3730a297b}{update\_pixel\_range}}(\textcolor{keywordtype}{int}\ min\_pixel,\ \textcolor{keywordtype}{int}\ max\_pixel,\ \textcolor{keywordtype}{int}\ noise\_range)\ \{}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_pixel\ >=\ 0\ \&\&\ max\_pixel\ >\ min\_pixel\ \&\&\ noise\_range\ >=\ 0)\ \{}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a42c500bf03a6da080e88846c4b63443d}{pixel\_dist}}\ =\ std::uniform\_int\_distribution<>(min\_pixel,\ max\_pixel);}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a4f3ba41dcbcd9980bf11740c44d07710}{noise\_dist}}\ =\ std::uniform\_int\_distribution<>(-\/noise\_range,\ noise\_range);}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00090\ \ \ \ \ \}}
+\DoxyCodeLine{00091\ \ \ \ \ }
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_camera_data_a74032b0c584b5677bb886c0411f0b59e}{update\_timing\_range}}(\textcolor{keywordtype}{int}\ min\_delay\_ms,\ \textcolor{keywordtype}{int}\ max\_delay\_ms)\ \{}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_delay\_ms\ >\ 0\ \&\&\ max\_delay\_ms\ >\ min\_delay\_ms)\ \{}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_camera_data_a039545221c38e20253948078ff798676}{delay\_dist}}\ =\ std::uniform\_int\_distribution<>(min\_delay\_ms,\ max\_delay\_ms);}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00102\ \ \ \ \ \}}
+\DoxyCodeLine{00103\ \ \ \ \ }
+\DoxyCodeLine{00109\ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_camera_data_a719c0ac2dc9c53ac66c9d0d7c0e3750d}{get\_image\_size}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_camera_data_a70f210cc29181357d7b1090c0842cc0f}{image\_width}}\ *\ \mbox{\hyperlink{struct_camera_data_a62b8abe06bbddfe829f4214fbec720b8}{image\_height}}\ *\ \mbox{\hyperlink{struct_camera_data_ac381a7c24a4c29cb4b312f6d495068e8}{bytes\_per\_pixel}};}
+\DoxyCodeLine{00111\ \ \ \ \ \}}
+\DoxyCodeLine{00112\ \};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ CAMERA\_DATA\_HPP\ }}
+
+\end{DoxyCode}

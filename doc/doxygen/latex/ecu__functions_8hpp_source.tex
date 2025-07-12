@@ -1,0 +1,58 @@
+\doxysection{ecu\+\_\+functions.\+hpp}
+\hypertarget{ecu__functions_8hpp_source}{}\label{ecu__functions_8hpp_source}\index{include/app/components/ecu\_functions.hpp@{include/app/components/ecu\_functions.hpp}}
+\mbox{\hyperlink{ecu__functions_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ ECU\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ ECU\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ecu__data_8hpp}{ecu\_data.hpp}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__functions_8hpp}{../../api/framework/component\_functions.hpp}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{../../api/util/debug.h}}"{}}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{inline}\ std::vector<std::uint8\_t>\ \mbox{\hyperlink{ecu__functions_8hpp_ad13ece3d8efb31a62055866dfda2e269}{ecu\_producer}}(std::uint32\_t\ unit,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{comment}{//\ ECU\ is\ consumer-\/only\ -\/\ return\ empty\ data}}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keywordflow}{return}\ std::vector<std::uint8\_t>();}
+\DoxyCodeLine{00024\ \}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00036\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{ecu__functions_8hpp_ad9180ad60f199dad373b1e201a2e6218}{ecu\_consumer}}(\textcolor{keywordtype}{void}*\ msg,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \mbox{\hyperlink{struct_e_c_u_data}{ECUData}}*\ ecu\_data\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{struct_e_c_u_data}{ECUData}}*\textcolor{keyword}{>}(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00038\ \ \ \ \ }
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordflow}{if}\ (!msg\ ||\ !\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[ECUComponent]\ Received\ null\ message\ or\ data\ pointer\(\backslash\)n"{}};}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00042\ \ \ \ \ \}}
+\DoxyCodeLine{00043\ \ \ \ \ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ Note:\ In\ real\ implementation,\ msg\ would\ be\ cast\ to\ Agent::Message*}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{//\ For\ now,\ we\ simulate\ the\ behavior\ from\ ECUComponent::handle\_response()}}
+\DoxyCodeLine{00046\ \ \ \ \ }
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{comment}{//\ Cast\ message\ pointer\ (following\ ECUComponent\ pattern)}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{comment}{//\ Agent::Message*\ message\ =\ static\_cast<Agent::Message*>(msg);}}
+\DoxyCodeLine{00049\ \ \ \ \ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{//\ Extract\ message\ information\ (same\ logic\ as\ ECUComponent::handle\_response())}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{//\ std::string\ origin\ =\ message-\/>origin().to\_string();}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{//\ std::uint32\_t\ unit\ =\ message-\/>unit();}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{comment}{//\ std::size\_t\ value\_size\ =\ message-\/>value\_size();}}
+\DoxyCodeLine{00054\ \ \ \ \ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{//\ For\ testing\ purposes,\ we\ simulate\ the\ message\ processing}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{//\ This\ will\ be\ properly\ implemented\ when\ Agent::Message\ is\ available}}
+\DoxyCodeLine{00057\ \ \ \ \ std::string\ simulated\_origin\ =\ \textcolor{stringliteral}{"{}SimulatedOrigin"{}};}
+\DoxyCodeLine{00058\ \ \ \ \ std::uint32\_t\ simulated\_unit\ =\ 0x80000301;\ \textcolor{comment}{//\ EXTERNAL\_POINT\_CLOUD\_XYZ}}
+\DoxyCodeLine{00059\ \ \ \ \ std::size\_t\ simulated\_size\ =\ 256;\ \textcolor{comment}{//\ Typical\ message\ size}}
+\DoxyCodeLine{00060\ \ \ \ \ }
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{//\ Update\ tracking\ data}}
+\DoxyCodeLine{00062\ \ \ \ \ ecu\_data-\/>\mbox{\hyperlink{struct_e_c_u_data_a7b7c7c8a2f02fb25de99ac4474990bbb}{update\_message\_tracking}}(simulated\_origin,\ simulated\_unit,\ simulated\_size);}
+\DoxyCodeLine{00063\ \ \ \ \ }
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{//\ Log\ the\ received\ message\ (same\ as\ ECUComponent::handle\_response())}}
+\DoxyCodeLine{00065\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[ECUComponent]\ received\ RESPONSE\ message\ from\ "{}}\ <<\ simulated\_origin}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ for\ unit\ "{}}\ <<\ simulated\_unit}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ with\ "{}}\ <<\ simulated\_size\ <<\ \textcolor{stringliteral}{"{}\ bytes\ of\ data\(\backslash\)n"{}};}
+\DoxyCodeLine{00068\ \ \ \ \ }
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{comment}{//\ Additional\ logging\ for\ tracking}}
+\DoxyCodeLine{00070\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[ECUComponent]\ Total\ messages\ received:\ "{}}\ <<\ ecu\_data-\/>\mbox{\hyperlink{struct_e_c_u_data_a32cf1c0855b3d5f52c89ca147672d12f}{messages\_received}}\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00071\ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ ECU\_FUNCTIONS\_HPP\ }}
+
+\end{DoxyCode}

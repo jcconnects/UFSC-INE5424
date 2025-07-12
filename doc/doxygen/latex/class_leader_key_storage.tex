@@ -1,0 +1,126 @@
+\doxysection{Leader\+Key\+Storage Class Reference}
+\hypertarget{class_leader_key_storage}{}\label{class_leader_key_storage}\index{LeaderKeyStorage@{LeaderKeyStorage}}
+
+
+Thread-\/safe singleton for leader key storage.  
+
+
+
+
+{\ttfamily \#include $<$leader\+Key\+Storage.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_leader_key_storage_a209a9826106362df59d13924242abce0}{set\+Leader\+Id}} (const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&leader\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Set the current leader ID. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \mbox{\hyperlink{class_leader_key_storage_a92ad0e468adab9e803a23b72766cb9ea}{get\+Leader\+Id}} () const
+\begin{DoxyCompactList}\small\item\em Get the current leader ID. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_leader_key_storage_ae50fdd2568a695c267a18202792c22c7}{set\+Group\+Mac\+Key}} (const \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} \&key)
+\begin{DoxyCompactList}\small\item\em Set the current group MAC key. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} \mbox{\hyperlink{class_leader_key_storage_a111ba868b182ba904375e24d003cb489}{get\+Group\+Mac\+Key}} () const
+\begin{DoxyCompactList}\small\item\em Get the current group MAC key. \end{DoxyCompactList}\item 
+std\+::chrono\+::steady\+\_\+clock\+::time\+\_\+point \mbox{\hyperlink{class_leader_key_storage_a3d82bb4bbf8368077921cdde451d4805}{get\+Last\+Update\+Time}} () const
+\begin{DoxyCompactList}\small\item\em Get the last update time. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{class_leader_key_storage}{Leader\+Key\+Storage}} \& \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{get\+Instance}} ()
+\begin{DoxyCompactList}\small\item\em Get the singleton instance. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Thread-\/safe singleton for leader key storage. 
+
+This class is thread-\/safe and can be accessed from multiple threads. All public methods are protected by mutex locks. The singleton instance is initialized in a thread-\/safe manner using C++11\textquotesingle{}s static initialization guarantees. 
+
+\label{doc-func-members}
+\Hypertarget{class_leader_key_storage_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_leader_key_storage_a111ba868b182ba904375e24d003cb489}\index{LeaderKeyStorage@{LeaderKeyStorage}!getGroupMacKey@{getGroupMacKey}}
+\index{getGroupMacKey@{getGroupMacKey}!LeaderKeyStorage@{LeaderKeyStorage}}
+\doxysubsubsection{\texorpdfstring{getGroupMacKey()}{getGroupMacKey()}}
+{\footnotesize\ttfamily \label{class_leader_key_storage_a111ba868b182ba904375e24d003cb489} 
+\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} Leader\+Key\+Storage\+::get\+Group\+Mac\+Key (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get the current group MAC key. 
+
+\begin{DoxyReturn}{Returns}
+The current MAC key
+\end{DoxyReturn}
+Thread-\/safe\+: Protected by mutex \Hypertarget{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}\index{LeaderKeyStorage@{LeaderKeyStorage}!getInstance@{getInstance}}
+\index{getInstance@{getInstance}!LeaderKeyStorage@{LeaderKeyStorage}}
+\doxysubsubsection{\texorpdfstring{getInstance()}{getInstance()}}
+{\footnotesize\ttfamily \label{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0} 
+\mbox{\hyperlink{class_leader_key_storage}{Leader\+Key\+Storage}} \& Leader\+Key\+Storage\+::get\+Instance (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+Get the singleton instance. 
+
+\begin{DoxyReturn}{Returns}
+Reference to the singleton instance
+\end{DoxyReturn}
+Thread-\/safe\+: Uses C++11\textquotesingle{}s static initialization guarantees \Hypertarget{class_leader_key_storage_a3d82bb4bbf8368077921cdde451d4805}\index{LeaderKeyStorage@{LeaderKeyStorage}!getLastUpdateTime@{getLastUpdateTime}}
+\index{getLastUpdateTime@{getLastUpdateTime}!LeaderKeyStorage@{LeaderKeyStorage}}
+\doxysubsubsection{\texorpdfstring{getLastUpdateTime()}{getLastUpdateTime()}}
+{\footnotesize\ttfamily \label{class_leader_key_storage_a3d82bb4bbf8368077921cdde451d4805} 
+std\+::chrono\+::steady\+\_\+clock\+::time\+\_\+point Leader\+Key\+Storage\+::get\+Last\+Update\+Time (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get the last update time. 
+
+\begin{DoxyReturn}{Returns}
+The time of the last update
+\end{DoxyReturn}
+Thread-\/safe\+: Uses atomic operations \Hypertarget{class_leader_key_storage_a92ad0e468adab9e803a23b72766cb9ea}\index{LeaderKeyStorage@{LeaderKeyStorage}!getLeaderId@{getLeaderId}}
+\index{getLeaderId@{getLeaderId}!LeaderKeyStorage@{LeaderKeyStorage}}
+\doxysubsubsection{\texorpdfstring{getLeaderId()}{getLeaderId()}}
+{\footnotesize\ttfamily \label{class_leader_key_storage_a92ad0e468adab9e803a23b72766cb9ea} 
+\mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} Leader\+Key\+Storage\+::get\+Leader\+Id (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get the current leader ID. 
+
+\begin{DoxyReturn}{Returns}
+The MAC address of the current leader
+\end{DoxyReturn}
+Thread-\/safe\+: Protected by mutex \Hypertarget{class_leader_key_storage_ae50fdd2568a695c267a18202792c22c7}\index{LeaderKeyStorage@{LeaderKeyStorage}!setGroupMacKey@{setGroupMacKey}}
+\index{setGroupMacKey@{setGroupMacKey}!LeaderKeyStorage@{LeaderKeyStorage}}
+\doxysubsubsection{\texorpdfstring{setGroupMacKey()}{setGroupMacKey()}}
+{\footnotesize\ttfamily \label{class_leader_key_storage_ae50fdd2568a695c267a18202792c22c7} 
+void Leader\+Key\+Storage\+::set\+Group\+Mac\+Key (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} \&}]{key}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Set the current group MAC key. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & The new MAC key\\
+\hline
+\end{DoxyParams}
+Thread-\/safe\+: Protected by mutex \Hypertarget{class_leader_key_storage_a209a9826106362df59d13924242abce0}\index{LeaderKeyStorage@{LeaderKeyStorage}!setLeaderId@{setLeaderId}}
+\index{setLeaderId@{setLeaderId}!LeaderKeyStorage@{LeaderKeyStorage}}
+\doxysubsubsection{\texorpdfstring{setLeaderId()}{setLeaderId()}}
+{\footnotesize\ttfamily \label{class_leader_key_storage_a209a9826106362df59d13924242abce0} 
+void Leader\+Key\+Storage\+::set\+Leader\+Id (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&}]{leader\+\_\+id}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Set the current leader ID. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em leader\+\_\+id} & The MAC address of the new leader\\
+\hline
+\end{DoxyParams}
+Thread-\/safe\+: Protected by mutex 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/framework/\mbox{\hyperlink{leader_key_storage_8h}{leader\+Key\+Storage.\+h}}\end{DoxyCompactItemize}

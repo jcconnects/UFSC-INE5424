@@ -1,0 +1,145 @@
+\doxysection{Network Class Reference}
+\hypertarget{class_network}{}\label{class_network}\index{Network@{Network}}
+
+
+{\ttfamily \#include $<$network.\+h$>$}
+
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+enum class \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852a}{Entity\+Type}} \{ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2}{VEHICLE}}
+, \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aa75988ec7a180ed96d48291db84701f84}{RSU}}
+ \}
+\item 
+typedef \mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{Initializer\+::\+NIC\+\_\+T}} \mbox{\hyperlink{class_network_a590638bc97b681f5f4c1f0c280c2e3c2}{NIC}}
+\item 
+typedef \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Initializer\+::\+Protocol\+\_\+T}} \mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Protocol}}
+\item 
+typedef \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer\+::\+Message}} \mbox{\hyperlink{class_network_ace8ef437586a78c43b82d6d4b5ae6410}{Message}}
+\item 
+typedef \mbox{\hyperlink{class_initializer_a580ff83e3e338f95aa4a918980d1cf87}{Initializer\+::\+Communicator\+\_\+T}} \mbox{\hyperlink{class_network_a638cca85e6d97e60e28b9bbb310aa1e2}{Communicator}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_network_aee62207dc11044c14f314e7922857c38}{Network}} (const unsigned int id=0, \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852a}{Entity\+Type}} entity\+\_\+type=\mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2}{Entity\+Type\+::\+VEHICLE}})
+\item 
+\mbox{\hyperlink{class_network_a7a4e19cdb4bf0c7ecf82baa643831492}{\texorpdfstring{$\sim$}{\string~}\+Network}} ()
+\item 
+void \mbox{\hyperlink{class_network_a223d8aca05065fb5a5c80b119c077831}{stop}} ()
+\item 
+\mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Protocol}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_network_aa5756a1aa44b3f3b0b3213b954022b0d}{channel}} ()
+\item 
+\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_network_a6d0aa4bf1498f16b4f4e66ba7a72a4f8}{bus}} ()
+\item 
+const \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC\+::\+Address}} \mbox{\hyperlink{class_network_acf5cddd16900d4e174160223e79bee0c}{address}} ()
+\item 
+void \mbox{\hyperlink{class_network_a784fd614e27ac0bb55f0634fc5add421}{set\+\_\+vehicle\+\_\+rsu\+\_\+manager}} (\mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ \mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Protocol}} $>$ \texorpdfstring{$\ast$}{*}manager)
+\end{DoxyCompactItemize}
+
+
+\label{doc-typedef-members}
+\Hypertarget{class_network_doc-typedef-members}
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_network_a638cca85e6d97e60e28b9bbb310aa1e2}\index{Network@{Network}!Communicator@{Communicator}}
+\index{Communicator@{Communicator}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{Communicator}{Communicator}}
+{\footnotesize\ttfamily \label{class_network_a638cca85e6d97e60e28b9bbb310aa1e2} 
+typedef \mbox{\hyperlink{class_initializer_a580ff83e3e338f95aa4a918980d1cf87}{Initializer\+::\+Communicator\+\_\+T}} \mbox{\hyperlink{class_network_a638cca85e6d97e60e28b9bbb310aa1e2}{Network\+::\+Communicator}}}
+
+\Hypertarget{class_network_ace8ef437586a78c43b82d6d4b5ae6410}\index{Network@{Network}!Message@{Message}}
+\index{Message@{Message}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{Message}{Message}}
+{\footnotesize\ttfamily \label{class_network_ace8ef437586a78c43b82d6d4b5ae6410} 
+typedef \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer\+::\+Message}} \mbox{\hyperlink{class_network_ace8ef437586a78c43b82d6d4b5ae6410}{Network\+::\+Message}}}
+
+\Hypertarget{class_network_a590638bc97b681f5f4c1f0c280c2e3c2}\index{Network@{Network}!NIC@{NIC}}
+\index{NIC@{NIC}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{NIC}{NIC}}
+{\footnotesize\ttfamily \label{class_network_a590638bc97b681f5f4c1f0c280c2e3c2} 
+typedef \mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{Initializer\+::\+NIC\+\_\+T}} \mbox{\hyperlink{class_network_a590638bc97b681f5f4c1f0c280c2e3c2}{Network\+::\+NIC}}}
+
+\Hypertarget{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}\index{Network@{Network}!Protocol@{Protocol}}
+\index{Protocol@{Protocol}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{Protocol}{Protocol}}
+{\footnotesize\ttfamily \label{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a} 
+typedef \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Initializer\+::\+Protocol\+\_\+T}} \mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Network\+::\+Protocol}}}
+
+
+
+\label{doc-enum-members}
+\Hypertarget{class_network_doc-enum-members}
+\doxysubsection{Member Enumeration Documentation}
+\Hypertarget{class_network_a4b0f38eb75202f20638f1e096cb0852a}\index{Network@{Network}!EntityType@{EntityType}}
+\index{EntityType@{EntityType}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{EntityType}{EntityType}}
+{\footnotesize\ttfamily \label{class_network_a4b0f38eb75202f20638f1e096cb0852a} 
+enum class \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852a}{Network\+::\+Entity\+Type}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}[2]{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{VEHICLE@{VEHICLE}!Network@{Network}}\index{Network@{Network}!VEHICLE@{VEHICLE}}}\Hypertarget{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2}\label{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2} 
+VEHICLE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RSU@{RSU}!Network@{Network}}\index{Network@{Network}!RSU@{RSU}}}\Hypertarget{class_network_a4b0f38eb75202f20638f1e096cb0852aa75988ec7a180ed96d48291db84701f84}\label{class_network_a4b0f38eb75202f20638f1e096cb0852aa75988ec7a180ed96d48291db84701f84} 
+RSU&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\label{doc-constructors}
+\Hypertarget{class_network_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_network_aee62207dc11044c14f314e7922857c38}\index{Network@{Network}!Network@{Network}}
+\index{Network@{Network}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{Network()}{Network()}}
+{\footnotesize\ttfamily \label{class_network_aee62207dc11044c14f314e7922857c38} 
+Network\+::\+Network (\begin{DoxyParamCaption}\item[{const unsigned int}]{id}{ = {\ttfamily 0}, }\item[{\mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852a}{Entity\+Type}}}]{entity\+\_\+type}{ = {\ttfamily \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2}{Entity\+Type\+::\+VEHICLE}}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_network_a7a4e19cdb4bf0c7ecf82baa643831492}\index{Network@{Network}!````~Network@{\texorpdfstring{$\sim$}{\string~}Network}}
+\index{````~Network@{\texorpdfstring{$\sim$}{\string~}Network}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Network()}{\string~Network()}}
+{\footnotesize\ttfamily \label{class_network_a7a4e19cdb4bf0c7ecf82baa643831492} 
+Network\+::\texorpdfstring{$\sim$}{\string~}\+Network (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_network_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_network_acf5cddd16900d4e174160223e79bee0c}\index{Network@{Network}!address@{address}}
+\index{address@{address}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{address()}{address()}}
+{\footnotesize\ttfamily \label{class_network_acf5cddd16900d4e174160223e79bee0c} 
+const \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Network\+::\+NIC\+::\+Address}} Network\+::address (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_network_a6d0aa4bf1498f16b4f4e66ba7a72a4f8}\index{Network@{Network}!bus@{bus}}
+\index{bus@{bus}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{bus()}{bus()}}
+{\footnotesize\ttfamily \label{class_network_a6d0aa4bf1498f16b4f4e66ba7a72a4f8} 
+\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*} Network\+::bus (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_network_aa5756a1aa44b3f3b0b3213b954022b0d}\index{Network@{Network}!channel@{channel}}
+\index{channel@{channel}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{channel()}{channel()}}
+{\footnotesize\ttfamily \label{class_network_aa5756a1aa44b3f3b0b3213b954022b0d} 
+\mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Network\+::\+Protocol}} \texorpdfstring{$\ast$}{*} Network\+::channel (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_network_a784fd614e27ac0bb55f0634fc5add421}\index{Network@{Network}!set\_vehicle\_rsu\_manager@{set\_vehicle\_rsu\_manager}}
+\index{set\_vehicle\_rsu\_manager@{set\_vehicle\_rsu\_manager}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{set\_vehicle\_rsu\_manager()}{set\_vehicle\_rsu\_manager()}}
+{\footnotesize\ttfamily \label{class_network_a784fd614e27ac0bb55f0634fc5add421} 
+void Network\+::set\+\_\+vehicle\+\_\+rsu\+\_\+manager (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ \mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Protocol}} $>$ \texorpdfstring{$\ast$}{*}}]{manager}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_network_a223d8aca05065fb5a5c80b119c077831}\index{Network@{Network}!stop@{stop}}
+\index{stop@{stop}!Network@{Network}}
+\doxysubsubsection{\texorpdfstring{stop()}{stop()}}
+{\footnotesize\ttfamily \label{class_network_a223d8aca05065fb5a5c80b119c077831} 
+void Network\+::stop (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/framework/\mbox{\hyperlink{network_8h}{network.\+h}}\end{DoxyCompactItemize}

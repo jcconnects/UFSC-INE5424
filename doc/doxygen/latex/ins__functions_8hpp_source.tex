@@ -1,0 +1,83 @@
+\doxysection{ins\+\_\+functions.\+hpp}
+\hypertarget{ins__functions_8hpp_source}{}\label{ins__functions_8hpp_source}\index{include/app/components/ins\_functions.hpp@{include/app/components/ins\_functions.hpp}}
+\mbox{\hyperlink{ins__functions_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ INS\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ INS\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ins__data_8hpp}{ins\_data.hpp}}"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__functions_8hpp}{../../api/framework/component\_functions.hpp}}"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{../../api/util/debug.h}}"{}}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ INS-\/specific\ constants\ (local\ to\ function\ file\ scope)}}
+\DoxyCodeLine{00014\ \textcolor{keyword}{namespace\ }\{}
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{double}\ PI\_INS\ =\ 3.14159265358979323846;}
+\DoxyCodeLine{00016\ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{double}\ G\_TO\_MS2\_INS\ =\ 9.80665;}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{double}\ DEG\_TO\_RAD\_INS\ =\ PI\_INS\ /\ 180.0;}
+\DoxyCodeLine{00018\ \}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00032\ \textcolor{keyword}{inline}\ std::vector<std::uint8\_t>\ \mbox{\hyperlink{ins__functions_8hpp_a8e9d00f9b724b87739524bf3adf6cde0}{ins\_producer}}(std::uint32\_t\ unit,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00033\ \ \ \ \ \mbox{\hyperlink{struct_i_n_s_data}{INSData}}*\ ins\_data\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{struct_i_n_s_data}{INSData}}*\textcolor{keyword}{>}(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00034\ \ \ \ \ }
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[INSComponent]\ Received\ null\ data\ pointer\(\backslash\)n"{}};}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::vector<std::uint8\_t>();}
+\DoxyCodeLine{00038\ \ \ \ \ \}}
+\DoxyCodeLine{00039\ \ \ \ \ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{//\ Static\ message\ counter\ (function-\/local,\ maintains\ state\ between\ calls)}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ message\_counter\ =\ 0;}
+\DoxyCodeLine{00042\ \ \ \ \ message\_counter++;}
+\DoxyCodeLine{00043\ \ \ \ \ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ Generate\ navigation\ data\ using\ the\ same\ logic\ as\ INSComponent::get()}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{float}\ x\_position\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a94a6b437edb3f91145a9ba2d01abe0c3}{x\_dist}}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}}));}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordtype}{float}\ y\_position\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a669d93432ea6ffbb2cecee18f653bf34}{y\_dist}}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}}));}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{float}\ altitude\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_ad58c02bd348ff3a5f179aa09b3035548}{alt\_dist}}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}}));}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordtype}{float}\ velocity\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a53a491deb597267566427ff49b15155d}{vel\_dist}}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}}));}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordtype}{float}\ acceleration\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a56e0db12c38572861b5397ea5f26c68c}{accel\_dist}}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}}));}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{float}\ gyro\_x\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_af45c43ecd8ab0ee644d020105526bf7e}{gyro\_dist}}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}}));}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordtype}{float}\ gyro\_y\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_af45c43ecd8ab0ee644d020105526bf7e}{gyro\_dist}}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}}));}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{keywordtype}{float}\ heading\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_aa5a8d5524d661e39bbd704b32bac108f}{heading\_dist}}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}}));}
+\DoxyCodeLine{00053\ \ \ \ \ }
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{//\ Create\ data\ array\ (8\ floats\ =\ 32\ bytes,\ same\ as\ original)}}
+\DoxyCodeLine{00055\ \ \ \ \ std::vector<std::uint8\_t>\ navigation\_data(8\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00056\ \ \ \ \ }
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{//\ Pack\ navigation\ data\ into\ byte\ array\ (same\ order\ as\ original)}}
+\DoxyCodeLine{00058\ \ \ \ \ std::memcpy(navigation\_data.data()\ +\ 0\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&x\_position,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00059\ \ \ \ \ std::memcpy(navigation\_data.data()\ +\ 1\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&y\_position,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00060\ \ \ \ \ std::memcpy(navigation\_data.data()\ +\ 2\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&altitude,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00061\ \ \ \ \ std::memcpy(navigation\_data.data()\ +\ 3\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&velocity,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00062\ \ \ \ \ std::memcpy(navigation\_data.data()\ +\ 4\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&acceleration,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00063\ \ \ \ \ std::memcpy(navigation\_data.data()\ +\ 5\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&gyro\_x,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00064\ \ \ \ \ std::memcpy(navigation\_data.data()\ +\ 6\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&gyro\_y,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00065\ \ \ \ \ std::memcpy(navigation\_data.data()\ +\ 7\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&heading,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00066\ \ \ \ \ }
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{//\ Simulate\ processing\ delay\ (same\ as\ original\ INSComponent)}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordtype}{int}\ delay\_ms\ =\ ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a58d6dca9621794ad920dde41204c0323}{delay\_dist}}(ins\_data-\/>\mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}});}
+\DoxyCodeLine{00069\ \ \ \ \ std::this\_thread::sleep\_for(std::chrono::milliseconds(delay\_ms));}
+\DoxyCodeLine{00070\ \ \ \ \ }
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{//\ Log\ navigation\ data\ generation\ (same\ format\ as\ original)}}
+\DoxyCodeLine{00072\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[INSComponent]\ Generated\ navigation\ data\ \#"{}}\ <<\ message\_counter}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ -\/\ Position:\ ("{}}\ <<\ x\_position\ <<\ \textcolor{stringliteral}{"{},\ "{}}\ <<\ y\_position\ <<\ \textcolor{stringliteral}{"{},\ "{}}\ <<\ altitude\ <<\ \textcolor{stringliteral}{"{})"{}}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ Velocity:\ "{}}\ <<\ velocity\ <<\ \textcolor{stringliteral}{"{}\ m/s"{}}}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ Acceleration:\ "{}}\ <<\ acceleration\ <<\ \textcolor{stringliteral}{"{}\ m/s²"{}}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ Gyro:\ ("{}}\ <<\ gyro\_x\ <<\ \textcolor{stringliteral}{"{},\ "{}}\ <<\ gyro\_y\ <<\ \textcolor{stringliteral}{"{})\ rad/s"{}}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ Heading:\ "{}}\ <<\ heading\ <<\ \textcolor{stringliteral}{"{}\ rad"{}}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (delay:\ "{}}\ <<\ delay\_ms\ <<\ \textcolor{stringliteral}{"{}ms)\(\backslash\)n"{}};}
+\DoxyCodeLine{00079\ \ \ \ \ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordflow}{return}\ navigation\_data;}
+\DoxyCodeLine{00081\ \}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00093\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{ins__functions_8hpp_a15e1cc2a7a835acd99d9a3c46f40984c}{ins\_consumer}}(\textcolor{keywordtype}{void}*\ msg,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{comment}{//\ INS\ is\ producer-\/only\ -\/\ no\ response\ handling\ needed}}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{//\ This\ function\ exists\ for\ interface\ compatibility}}
+\DoxyCodeLine{00096\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[INSComponent]\ Consumer\ function\ called\ (INS\ is\ producer-\/only)\(\backslash\)n"{}};}
+\DoxyCodeLine{00097\ \}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ INS\_FUNCTIONS\_HPP\ }}
+
+\end{DoxyCode}

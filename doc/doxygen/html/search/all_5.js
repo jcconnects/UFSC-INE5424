@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['accel_5fdist_0',['accel_dist',['../struct_i_n_s_data.html#a56e0db12c38572861b5397ea5f26c68c',1,'INSData']]],
+  ['acceleration_1',['acceleration',['../struct_c_s_v_component_data_1_1_c_s_v_record.html#a607d75c19ec5e52d4d83f2bd0f8380ff',1,'CSVComponentData::CSVRecord']]],
+  ['acceleration_5fvector_2',['ACCELERATION_VECTOR',['../datatypes_8h.html#a25497ba2d1a0dd3eafe0295fb262504fad32f1b4a654bfba5632fd9315fb37f60',1,'datatypes.h']]],
+  ['acknowledgements_3',['Acknowledgements',['../index.html#autotoc_md10',1,'']]],
+  ['activate_4',['activate',['../class_clock.html#a5cc4fda803bea0fe083ecd7cfebca43c',1,'Clock']]],
+  ['add_5',['add',['../class_static_size_hashed_cache.html#a344e386f2d6a3e7e1d9d2d4d431181f9',1,'StaticSizeHashedCache']]],
+  ['add_5fneighbor_5frsu_6',['add_neighbor_rsu',['../class_protocol.html#ab162aadadb63de98f40f59f16c11c673',1,'Protocol']]],
+  ['add_5fneighbor_5frsu_5fkey_7',['add_neighbor_rsu_key',['../class_vehicle_r_s_u_manager.html#a29fdcf3002b86f4e8308f82b415c4551',1,'VehicleRSUManager']]],
+  ['address_8',['Address',['../struct_ethernet_1_1_address.html',1,'Ethernet::Address'],['../class_protocol_1_1_address.html',1,'Protocol&lt; NIC &gt;::Address'],['../class_agent.html#a2abe9226c41ade78a1cc022926011e79',1,'Agent::Address'],['../class_gateway.html#a8870ecac85c6ef2130172409529f3e4b',1,'Gateway::Address'],['../class_r_s_u.html#a2514e690b6735481fe6c88dabebb9ef0',1,'RSU::Address'],['../class_c_a_n.html#aebcadd3df44c50eb74a733a8220610a3',1,'CAN::Address'],['../class_communicator.html#af94211e0ba84bea53416f4a94f54cc66',1,'Communicator::Address'],['../class_n_i_c.html#aaa3a968abe4bc5c6206036e2a7ca6965',1,'NIC::Address'],['../class_protocol_1_1_address.html#aabbd339755b0de40ad48c975b81f91ff',1,'Protocol::Address::Address()'],['../class_protocol_1_1_address.html#a6385825cfcfe54442be94464b7ae392b',1,'Protocol::Address::Address(const Null &amp;null)'],['../class_protocol_1_1_address.html#aeac32825ff4ebb20e375edbff258b01f',1,'Protocol::Address::Address(Physical_Address paddr, Port port)']]],
+  ['address_9',['address',['../struct_vehicle_r_s_u_manager_1_1_r_s_u_info.html#a3783cfd752b3ad3a603cd7b29c019751',1,'VehicleRSUManager::RSUInfo::address'],['../class_agent.html#a374fceb89c2d3d53046ac128d2a50415',1,'Agent::address()'],['../class_gateway.html#a0cfa8003cefbe287da06a97f6539cd1a',1,'Gateway::address()'],['../class_network.html#acf5cddd16900d4e174160223e79bee0c',1,'Network::address()'],['../class_r_s_u.html#a170895c1c3e1a9617c8e891516aca401',1,'RSU::address()'],['../class_communicator.html#a6a36e03ee1f2c5778ea859cbf2ab93b0',1,'Communicator::address()'],['../class_n_i_c.html#a0523377d78db71cb0f7ef58b45c9de38',1,'NIC::address()'],['../class_protocol.html#ad5834739a942736582589e1b4728432f',1,'Protocol::address()']]],
+  ['adjust_5fperiod_10',['adjust_period',['../class_periodic___thread.html#a4a6ba5ffa3dff30f9d42e2824d4a9465',1,'Periodic_Thread::adjust_period()'],['../class_r_s_u.html#a2f583a4621b4e5ff46fa7c20d537d4cf',1,'RSU::adjust_period()']]],
+  ['age_11',['age',['../struct_status_manager_1_1_neighbor_info.html#a52cf507b8587df071462a87c42f8aa2f',1,'StatusManager::NeighborInfo']]],
+  ['agent_12',['Agent',['../class_agent.html',1,'Agent'],['../class_agent.html#af463a1789fba270f3c71bbc341497ea0',1,'Agent::Agent()']]],
+  ['agent_2eh_13',['agent.h',['../agent_8h.html',1,'']]],
+  ['alloc_14',['alloc',['../class_n_i_c.html#a5efaaa7fd14dcc58a722da04de6c3476',1,'NIC']]],
+  ['alt_15',['alt',['../struct_c_s_v_component_data_1_1_c_s_v_record.html#adac58840143593675837fb9bd386d223',1,'CSVComponentData::CSVRecord']]],
+  ['alt_5fdist_16',['alt_dist',['../struct_i_n_s_data.html#ad58c02bd348ff3a5f179aa09b3035548',1,'INSData']]],
+  ['architecture_17',['1. High-Level Architecture',['../index.html#autotoc_md2',1,'']]],
+  ['array_18',['Array',['../class_message.html#a6a16dfdcb8a3f35650440459b673ebbe',1,'Message']]],
+  ['attach_19',['attach',['../class_protocol.html#acdbe278edf6c525dccda43b8596f2372',1,'Protocol::attach()'],['../class_conditionally___data___observed.html#a572069ab252a64a136006a50bb287a3a',1,'Conditionally_Data_Observed::attach()'],['../class_concurrent___observed.html#ae91b53086a4956c83505231c598d0182',1,'Concurrent_Observed::attach()']]],
+  ['authentication_20',['authentication',['../class_protocol_1_1_packet.html#a16322e49b4e6aa2e8f8f84133a7ba7b5',1,'Protocol::Packet::authentication()'],['../protocol_8h.html#a776ea8afc7815faed58109430f74c1c2',1,'authentication():&#160;protocol.h']]],
+  ['authenticationfields_21',['AuthenticationFields',['../struct_protocol_1_1_authentication_fields.html',1,'Protocol&lt; NIC &gt;::AuthenticationFields'],['../struct_protocol_1_1_authentication_fields.html#aa8e29def03a415c66b438b1660970a0f',1,'Protocol::AuthenticationFields::AuthenticationFields()']]],
+  ['autonomous_20systems_22',['Communication Library for Autonomous Systems',['../index.html',1,'']]],
+  ['awaiting_5fsecond_5fmsg_23',['AWAITING_SECOND_MSG',['../class_clock.html#a5ea60a8cfa56e8ea89ff4e4baa198bdaa64900a01baa6706d53db08f39b9259bd',1,'Clock']]]
+];

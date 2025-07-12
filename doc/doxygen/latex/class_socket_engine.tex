@@ -1,0 +1,145 @@
+\doxysection{Socket\+Engine Class Reference}
+\hypertarget{class_socket_engine}{}\label{class_socket_engine}\index{SocketEngine@{SocketEngine}}
+
+
+{\ttfamily \#include $<$socket\+Engine.\+h$>$}
+
+Inheritance diagram for Socket\+Engine\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_socket_engine}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_socket_engine_a797adbf4ef594d984448c3ed116bda2e}{Socket\+Engine}} ()
+\item 
+virtual \mbox{\hyperlink{class_socket_engine_a0c7d3e6612d76e2d49ef2954d3d317e8}{\texorpdfstring{$\sim$}{\string~}\+Socket\+Engine}} ()
+\item 
+void \mbox{\hyperlink{class_socket_engine_af47f2634e12c58bb5836ef7eac74cbec}{start}} ()
+\item 
+void \mbox{\hyperlink{class_socket_engine_adadb5f685a08e20862c1807b9a29cc02}{stop}} ()
+\item 
+const bool \mbox{\hyperlink{class_socket_engine_a2dc521686d479336a9a42a78d0945d91}{running}} ()
+\item 
+int \mbox{\hyperlink{class_socket_engine_a191e7364b2bbe08efd7d6c2e47505daf}{send}} (\mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet\+::\+Frame}} \texorpdfstring{$\ast$}{*}frame, unsigned int size)
+\item 
+const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \& \mbox{\hyperlink{class_socket_engine_aabcf3c5a0d0d91b4d8373f77df64d810}{mac\+\_\+address}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static const char \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_socket_engine_ab09fbcacb0e90ee39047b30037ff8ee6}{INTERFACE}} ()
+\item 
+static void \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_socket_engine_a8e8dd03b26c7f2663d296588b1cf5f78}{run}} (void \texorpdfstring{$\ast$}{*}arg)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\+\_\+sock\+\_\+fd}}
+\item 
+int \mbox{\hyperlink{class_socket_engine_a3e62fe8545db3cbc682901d3e8ec70a5}{\+\_\+ep\+\_\+fd}}
+\item 
+int \mbox{\hyperlink{class_socket_engine_a5f6edb79b1a8b186f92d62e7ef66dc7f}{\+\_\+if\+\_\+index}}
+\item 
+\mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \mbox{\hyperlink{class_socket_engine_a0dfdf262299d8de4b58f1661bac1ea39}{\+\_\+mac\+\_\+address}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-constructors}
+\Hypertarget{class_socket_engine_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_socket_engine_a797adbf4ef594d984448c3ed116bda2e}\index{SocketEngine@{SocketEngine}!SocketEngine@{SocketEngine}}
+\index{SocketEngine@{SocketEngine}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{SocketEngine()}{SocketEngine()}}
+{\footnotesize\ttfamily \label{class_socket_engine_a797adbf4ef594d984448c3ed116bda2e} 
+Socket\+Engine\+::\+Socket\+Engine (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_socket_engine_a0c7d3e6612d76e2d49ef2954d3d317e8}\index{SocketEngine@{SocketEngine}!````~SocketEngine@{\texorpdfstring{$\sim$}{\string~}SocketEngine}}
+\index{````~SocketEngine@{\texorpdfstring{$\sim$}{\string~}SocketEngine}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}SocketEngine()}{\string~SocketEngine()}}
+{\footnotesize\ttfamily \label{class_socket_engine_a0c7d3e6612d76e2d49ef2954d3d317e8} 
+Socket\+Engine\+::\texorpdfstring{$\sim$}{\string~}\+Socket\+Engine (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_socket_engine_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_socket_engine_ab09fbcacb0e90ee39047b30037ff8ee6}\index{SocketEngine@{SocketEngine}!INTERFACE@{INTERFACE}}
+\index{INTERFACE@{INTERFACE}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{INTERFACE()}{INTERFACE()}}
+{\footnotesize\ttfamily \label{class_socket_engine_ab09fbcacb0e90ee39047b30037ff8ee6} 
+const char \texorpdfstring{$\ast$}{*} Socket\+Engine\+::\+INTERFACE (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{class_socket_engine_aabcf3c5a0d0d91b4d8373f77df64d810}\index{SocketEngine@{SocketEngine}!mac\_address@{mac\_address}}
+\index{mac\_address@{mac\_address}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{mac\_address()}{mac\_address()}}
+{\footnotesize\ttfamily \label{class_socket_engine_aabcf3c5a0d0d91b4d8373f77df64d810} 
+const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \& Socket\+Engine\+::mac\+\_\+address (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_socket_engine_a8e8dd03b26c7f2663d296588b1cf5f78}\index{SocketEngine@{SocketEngine}!run@{run}}
+\index{run@{run}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{run()}{run()}}
+{\footnotesize\ttfamily \label{class_socket_engine_a8e8dd03b26c7f2663d296588b1cf5f78} 
+void \texorpdfstring{$\ast$}{*} Socket\+Engine\+::run (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{arg}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_socket_engine_a2dc521686d479336a9a42a78d0945d91}\index{SocketEngine@{SocketEngine}!running@{running}}
+\index{running@{running}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{running()}{running()}}
+{\footnotesize\ttfamily \label{class_socket_engine_a2dc521686d479336a9a42a78d0945d91} 
+const bool Socket\+Engine\+::running (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_socket_engine_a191e7364b2bbe08efd7d6c2e47505daf}\index{SocketEngine@{SocketEngine}!send@{send}}
+\index{send@{send}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{send()}{send()}}
+{\footnotesize\ttfamily \label{class_socket_engine_a191e7364b2bbe08efd7d6c2e47505daf} 
+int Socket\+Engine\+::send (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet\+::\+Frame}} \texorpdfstring{$\ast$}{*}}]{frame}{, }\item[{unsigned int}]{size}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_socket_engine_af47f2634e12c58bb5836ef7eac74cbec}\index{SocketEngine@{SocketEngine}!start@{start}}
+\index{start@{start}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{start()}{start()}}
+{\footnotesize\ttfamily \label{class_socket_engine_af47f2634e12c58bb5836ef7eac74cbec} 
+void Socket\+Engine\+::start (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_socket_engine_adadb5f685a08e20862c1807b9a29cc02}\index{SocketEngine@{SocketEngine}!stop@{stop}}
+\index{stop@{stop}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{stop()}{stop()}}
+{\footnotesize\ttfamily \label{class_socket_engine_adadb5f685a08e20862c1807b9a29cc02} 
+void Socket\+Engine\+::stop (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+\label{doc-variable-members}
+\Hypertarget{class_socket_engine_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_socket_engine_a3e62fe8545db3cbc682901d3e8ec70a5}\index{SocketEngine@{SocketEngine}!\_ep\_fd@{\_ep\_fd}}
+\index{\_ep\_fd@{\_ep\_fd}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{\_ep\_fd}{\_ep\_fd}}
+{\footnotesize\ttfamily \label{class_socket_engine_a3e62fe8545db3cbc682901d3e8ec70a5} 
+int Socket\+Engine\+::\+\_\+ep\+\_\+fd\hspace{0.3cm}{\ttfamily [protected]}}
+
+\Hypertarget{class_socket_engine_a5f6edb79b1a8b186f92d62e7ef66dc7f}\index{SocketEngine@{SocketEngine}!\_if\_index@{\_if\_index}}
+\index{\_if\_index@{\_if\_index}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{\_if\_index}{\_if\_index}}
+{\footnotesize\ttfamily \label{class_socket_engine_a5f6edb79b1a8b186f92d62e7ef66dc7f} 
+int Socket\+Engine\+::\+\_\+if\+\_\+index\hspace{0.3cm}{\ttfamily [protected]}}
+
+\Hypertarget{class_socket_engine_a0dfdf262299d8de4b58f1661bac1ea39}\index{SocketEngine@{SocketEngine}!\_mac\_address@{\_mac\_address}}
+\index{\_mac\_address@{\_mac\_address}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{\_mac\_address}{\_mac\_address}}
+{\footnotesize\ttfamily \label{class_socket_engine_a0dfdf262299d8de4b58f1661bac1ea39} 
+\mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} Socket\+Engine\+::\+\_\+mac\+\_\+address\hspace{0.3cm}{\ttfamily [protected]}}
+
+\Hypertarget{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}\index{SocketEngine@{SocketEngine}!\_sock\_fd@{\_sock\_fd}}
+\index{\_sock\_fd@{\_sock\_fd}!SocketEngine@{SocketEngine}}
+\doxysubsubsection{\texorpdfstring{\_sock\_fd}{\_sock\_fd}}
+{\footnotesize\ttfamily \label{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773} 
+int Socket\+Engine\+::\+\_\+sock\+\_\+fd\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/network/\mbox{\hyperlink{socket_engine_8h}{socket\+Engine.\+h}}\end{DoxyCompactItemize}

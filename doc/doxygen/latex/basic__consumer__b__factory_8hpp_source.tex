@@ -1,0 +1,58 @@
+\doxysection{basic\+\_\+consumer\+\_\+b\+\_\+factory.\+hpp}
+\hypertarget{basic__consumer__b__factory_8hpp_source}{}\label{basic__consumer__b__factory_8hpp_source}\index{include/app/components/basic\_consumer\_b\_factory.hpp@{include/app/components/basic\_consumer\_b\_factory.hpp}}
+\mbox{\hyperlink{basic__consumer__b__factory_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ BASIC\_CONSUMER\_B\_FACTORY\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ BASIC\_CONSUMER\_B\_FACTORY\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{agent_8h}{api/framework/agent.h}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__functions_8hpp}{../../api/framework/component\_functions.hpp}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{unit__b__data_8hpp}{unit\_b\_data.hpp}}"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{unit__b__functions_8hpp}{unit\_b\_functions.hpp}}"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{datatypes_8h}{../datatypes.h}}"{}}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00028\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{basic__consumer__b__factory_8hpp_a3293843e2f79e5fd91db46a917276394}{create\_basic\_consumer\_b}}(}
+\DoxyCodeLine{00029\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,\ }
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}BasicConsumerB"{}}}
+\DoxyCodeLine{00032\ )\ \{}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{comment}{//\ Parameter\ validation\ following\ EPOS\ principles}}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordflow}{if}\ (!can)\ \{}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}CAN\ bus\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00036\ \ \ \ \ \}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{comment}{//\ Use\ default\ name\ if\ an\ empty\ string\ is\ provided}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ agentName\ =\ name.empty()\ ?\ \textcolor{stringliteral}{"{}BasicConsumerB"{}}\ :\ name;}
+\DoxyCodeLine{00040\ \ \ \ \ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ Create\ component\ data\ for\ consumer}}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ std::make\_unique<UnitBData>();}
+\DoxyCodeLine{00043\ \ \ \ \ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ Create\ Agent\ using\ function-\/based\ composition}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<Agent>(}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ can,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CAN\ bus}}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ agentName,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Agent\ name}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5c268c7fc56153276aa90202c15aa3ab}{DataTypes::UNIT\_B}}),\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Data\ unit}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ Agent::Type::RESPONSE,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Consumer\ observes\ RESPONSE}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ addr,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Network\ address}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{keyword}{nullptr},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ No\ producer\ function\ for\ consumers}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{unit__b__functions_8hpp_a2505fe46bba772c93a32382747f5bad3}{basic\_consumer\_b}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Response\ handler\ function\ pointer}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Component\ data}}
+\DoxyCodeLine{00054\ \ \ \ \ );}
+\DoxyCodeLine{00055\ \}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00070\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{basic__consumer__b__factory_8hpp_ad25c83a52a9cfab9cdaf743d8be454ff}{create\_basic\_consumer\_b\_with\_period}}(}
+\DoxyCodeLine{00071\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,\ }
+\DoxyCodeLine{00073\ \ \ \ \ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent::Microseconds}}\ period\ =\ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent::Microseconds}}(1000000),}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}BasicConsumerB"{}}}
+\DoxyCodeLine{00075\ )\ \{}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keyword}{auto}\ consumer\ =\ \mbox{\hyperlink{basic__consumer__b__factory_8hpp_a3293843e2f79e5fd91db46a917276394}{create\_basic\_consumer\_b}}(can,\ addr,\ name);}
+\DoxyCodeLine{00077\ \ \ \ \ consumer-\/>start\_periodic\_interest(\textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5c268c7fc56153276aa90202c15aa3ab}{DataTypes::UNIT\_B}}),\ period);}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{return}\ consumer;}
+\DoxyCodeLine{00079\ \}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ BASIC\_CONSUMER\_B\_FACTORY\_HPP\ }}
+
+\end{DoxyCode}

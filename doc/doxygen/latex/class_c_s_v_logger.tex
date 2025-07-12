@@ -1,0 +1,75 @@
+\doxysection{CSVLogger Class Reference}
+\hypertarget{class_c_s_v_logger}{}\label{class_c_s_v_logger}\index{CSVLogger@{CSVLogger}}
+
+
+{\ttfamily \#include $<$csv\+\_\+logger.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_c_s_v_logger_aa5776f73f9c1d1fc4e1b7579e4aa9143}{CSVLogger}} (const std\+::string \&filepath, const std\+::string \&\mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}})
+\item 
+\mbox{\hyperlink{class_c_s_v_logger_af6a3f14f059edf9cfe572e43f09d2abc}{\texorpdfstring{$\sim$}{\string~}\+CSVLogger}} ()
+\item 
+void \mbox{\hyperlink{class_c_s_v_logger_a317b8ecb1db6f5f05710e116f38fc1f9}{log}} (const std\+::string \&csv\+\_\+line)
+\item 
+void \mbox{\hyperlink{class_c_s_v_logger_ae0c2f88afd34a0f36626bb55f329e1ea}{flush}} ()
+\item 
+bool \mbox{\hyperlink{class_c_s_v_logger_ae7379c58f66d271e8893600ac8d86622}{is\+\_\+open}} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static std\+::string \mbox{\hyperlink{class_c_s_v_logger_a486ab0c6a8bbd9505b088223d43bdff6}{create\+\_\+vehicle\+\_\+log\+\_\+dir}} (unsigned int vehicle\+\_\+id)
+\end{DoxyCompactItemize}
+
+
+\label{doc-constructors}
+\Hypertarget{class_c_s_v_logger_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_c_s_v_logger_aa5776f73f9c1d1fc4e1b7579e4aa9143}\index{CSVLogger@{CSVLogger}!CSVLogger@{CSVLogger}}
+\index{CSVLogger@{CSVLogger}!CSVLogger@{CSVLogger}}
+\doxysubsubsection{\texorpdfstring{CSVLogger()}{CSVLogger()}}
+{\footnotesize\ttfamily \label{class_c_s_v_logger_aa5776f73f9c1d1fc4e1b7579e4aa9143} 
+CSVLogger\+::\+CSVLogger (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{filepath}{, }\item[{const std\+::string \&}]{header}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_c_s_v_logger_af6a3f14f059edf9cfe572e43f09d2abc}\index{CSVLogger@{CSVLogger}!````~CSVLogger@{\texorpdfstring{$\sim$}{\string~}CSVLogger}}
+\index{````~CSVLogger@{\texorpdfstring{$\sim$}{\string~}CSVLogger}!CSVLogger@{CSVLogger}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}CSVLogger()}{\string~CSVLogger()}}
+{\footnotesize\ttfamily \label{class_c_s_v_logger_af6a3f14f059edf9cfe572e43f09d2abc} 
+CSVLogger\+::\texorpdfstring{$\sim$}{\string~}\+CSVLogger (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_c_s_v_logger_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_c_s_v_logger_a486ab0c6a8bbd9505b088223d43bdff6}\index{CSVLogger@{CSVLogger}!create\_vehicle\_log\_dir@{create\_vehicle\_log\_dir}}
+\index{create\_vehicle\_log\_dir@{create\_vehicle\_log\_dir}!CSVLogger@{CSVLogger}}
+\doxysubsubsection{\texorpdfstring{create\_vehicle\_log\_dir()}{create\_vehicle\_log\_dir()}}
+{\footnotesize\ttfamily \label{class_c_s_v_logger_a486ab0c6a8bbd9505b088223d43bdff6} 
+std\+::string CSVLogger\+::create\+\_\+vehicle\+\_\+log\+\_\+dir (\begin{DoxyParamCaption}\item[{unsigned int}]{vehicle\+\_\+id}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{class_c_s_v_logger_ae0c2f88afd34a0f36626bb55f329e1ea}\index{CSVLogger@{CSVLogger}!flush@{flush}}
+\index{flush@{flush}!CSVLogger@{CSVLogger}}
+\doxysubsubsection{\texorpdfstring{flush()}{flush()}}
+{\footnotesize\ttfamily \label{class_c_s_v_logger_ae0c2f88afd34a0f36626bb55f329e1ea} 
+void CSVLogger\+::flush (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_c_s_v_logger_ae7379c58f66d271e8893600ac8d86622}\index{CSVLogger@{CSVLogger}!is\_open@{is\_open}}
+\index{is\_open@{is\_open}!CSVLogger@{CSVLogger}}
+\doxysubsubsection{\texorpdfstring{is\_open()}{is\_open()}}
+{\footnotesize\ttfamily \label{class_c_s_v_logger_ae7379c58f66d271e8893600ac8d86622} 
+bool CSVLogger\+::is\+\_\+open (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_c_s_v_logger_a317b8ecb1db6f5f05710e116f38fc1f9}\index{CSVLogger@{CSVLogger}!log@{log}}
+\index{log@{log}!CSVLogger@{CSVLogger}}
+\doxysubsubsection{\texorpdfstring{log()}{log()}}
+{\footnotesize\ttfamily \label{class_c_s_v_logger_a317b8ecb1db6f5f05710e116f38fc1f9} 
+void CSVLogger\+::log (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{csv\+\_\+line}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/util/\mbox{\hyperlink{csv__logger_8h}{csv\+\_\+logger.\+h}}\end{DoxyCompactItemize}

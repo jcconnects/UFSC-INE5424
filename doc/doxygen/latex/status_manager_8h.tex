@@ -1,0 +1,39 @@
+\doxysection{include/api/framework/status\+Manager.h File Reference}
+\hypertarget{status_manager_8h}{}\label{status_manager_8h}\index{include/api/framework/statusManager.h@{include/api/framework/statusManager.h}}
+{\ttfamily \#include $<$map$>$}\newline
+{\ttfamily \#include $<$mutex$>$}\newline
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include $<$array$>$}\newline
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$algorithm$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include "{}api/network/protocol.\+h"{}}\newline
+{\ttfamily \#include "{}api/framework/periodic\+Thread.\+h"{}}\newline
+{\ttfamily \#include "{}api/util/debug.\+h"{}}\newline
+{\ttfamily \#include "{}api/framework/leader\+Key\+Storage.\+h"{}}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_status_manager}{Status\+Manager$<$ NIC\+\_\+\+TYPE $>$}}
+\begin{DoxyCompactList}\small\item\em Thread-\/safe manager for vehicle status and leader election. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{struct_status_manager_1_1_neighbor_info}{Status\+Manager$<$ NIC\+\_\+\+TYPE $>$\+::\+Neighbor\+Info}}
+\item 
+struct \mbox{\hyperlink{struct_traits_3_01_status_manager_3_01_n_i_c___t_y_p_e_01_4_01_4}{Traits$<$ Status\+Manager$<$ NIC\+\_\+\+TYPE $>$ $>$}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{status_manager_8h_a71b351748e2640037b9e75365d24beda}{Unique\+Key\+Value\+Type}} = std\+::array$<$uint8\+\_\+t, 16$>$
+\end{DoxyCompactItemize}
+
+
+\label{doc-typedef-members}
+\Hypertarget{status_manager_8h_doc-typedef-members}
+\doxysubsection{Typedef Documentation}
+\Hypertarget{status_manager_8h_a71b351748e2640037b9e75365d24beda}\index{statusManager.h@{statusManager.h}!UniqueKeyValueType@{UniqueKeyValueType}}
+\index{UniqueKeyValueType@{UniqueKeyValueType}!statusManager.h@{statusManager.h}}
+\doxysubsubsection{\texorpdfstring{UniqueKeyValueType}{UniqueKeyValueType}}
+{\footnotesize\ttfamily \label{status_manager_8h_a71b351748e2640037b9e75365d24beda} 
+using \mbox{\hyperlink{status_manager_8h_a71b351748e2640037b9e75365d24beda}{Unique\+Key\+Value\+Type}} = std\+::array$<$uint8\+\_\+t, 16$>$}
+

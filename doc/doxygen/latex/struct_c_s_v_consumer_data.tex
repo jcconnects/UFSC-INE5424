@@ -1,0 +1,241 @@
+\doxysection{CSVConsumer\+Data Struct Reference}
+\hypertarget{struct_c_s_v_consumer_data}{}\label{struct_c_s_v_consumer_data}\index{CSVConsumerData@{CSVConsumerData}}
+
+
+Data structure for CSV consumer component.  
+
+
+
+
+{\ttfamily \#include $<$csv\+\_\+consumer\+\_\+data.\+hpp$>$}
+
+Inheritance diagram for CSVConsumer\+Data\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{struct_c_s_v_consumer_data}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{struct_c_s_v_consumer_data_ad67e553b95f1cd4fde0e7fd73507418e}{CSVConsumer\+Data}} ()
+\begin{DoxyCompactList}\small\item\em Constructor initializes CSV consumer state. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_c_s_v_consumer_data_ad07b5a76aa39e6f816152527f83fff75}{update\+\_\+message\+\_\+tracking}} (std\+::size\+\_\+t message\+\_\+size, std\+::uint64\+\_\+t csv\+\_\+timestamp, std\+::uint32\+\_\+t vehicle\+\_\+id, double x, double y, double z, double speed)
+\begin{DoxyCompactList}\small\item\em Update tracking data when a message is received. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_c_s_v_consumer_data_abc3158303435a12f53bca08008ee8b3d}{mark\+\_\+invalid\+\_\+message}} ()
+\begin{DoxyCompactList}\small\item\em Mark a message as invalid. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{struct_c_s_v_consumer_data_a6c4a56ee8c89ab451d3479ea51e53c18}{get\+\_\+runtime\+\_\+seconds}} () const
+\begin{DoxyCompactList}\small\item\em Get total runtime in seconds. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{struct_c_s_v_consumer_data_aa8ca242f6f7742cd5b1dac2ed93a99bb}{get\+\_\+message\+\_\+rate}} () const
+\begin{DoxyCompactList}\small\item\em Get message reception rate in messages per second. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{struct_c_s_v_consumer_data_adabf0892337c21d63631d58f6d239084}{get\+\_\+data\+\_\+rate}} () const
+\begin{DoxyCompactList}\small\item\em Get data reception rate in bytes per second. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{struct_component_data}{Component\+Data}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual \mbox{\hyperlink{struct_component_data_a9d2f13c283f7f17eee8f4283c04f519d}{\texorpdfstring{$\sim$}{\string~}\+Component\+Data}} ()=default
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::size\+\_\+t \mbox{\hyperlink{struct_c_s_v_consumer_data_a3b122a626d88b18f905280e1248d2ed9}{messages\+\_\+received}}
+\item 
+std\+::size\+\_\+t \mbox{\hyperlink{struct_c_s_v_consumer_data_a084c2b6706aa564f50e87e2936e72c40}{total\+\_\+bytes\+\_\+received}}
+\item 
+std\+::size\+\_\+t \mbox{\hyperlink{struct_c_s_v_consumer_data_a932b2a246058564b7bc1e3cfd72977d2}{invalid\+\_\+messages}}
+\item 
+std\+::uint64\+\_\+t \mbox{\hyperlink{struct_c_s_v_consumer_data_ab0da9825b74b70e2bb08e50fb3679a0e}{last\+\_\+csv\+\_\+timestamp}}
+\item 
+std\+::uint32\+\_\+t \mbox{\hyperlink{struct_c_s_v_consumer_data_a5b0ec8ff3e5dbb5e0d275da585ef999f}{last\+\_\+vehicle\+\_\+id}}
+\item 
+double \mbox{\hyperlink{struct_c_s_v_consumer_data_a6963b25aef85fb3833d7c0cfcaf5f9bd}{last\+\_\+position\+\_\+x}}
+\item 
+double \mbox{\hyperlink{struct_c_s_v_consumer_data_aa439c5edc257dd4960365fcba8d4d77e}{last\+\_\+position\+\_\+y}}
+\item 
+double \mbox{\hyperlink{struct_c_s_v_consumer_data_a3977c05127e7cddff88ba5b69427364a}{last\+\_\+position\+\_\+z}}
+\item 
+double \mbox{\hyperlink{struct_c_s_v_consumer_data_a1bad81d095c4780277a452218379ac24}{last\+\_\+speed}}
+\item 
+std\+::chrono\+::steady\+\_\+clock\+::time\+\_\+point \mbox{\hyperlink{struct_c_s_v_consumer_data_ad2410ed37b3d4272113ba0bcbfc516c8}{last\+\_\+message\+\_\+time}}
+\item 
+std\+::chrono\+::steady\+\_\+clock\+::time\+\_\+point \mbox{\hyperlink{struct_c_s_v_consumer_data_a51c604c75e8af1a666d6f768d32ce364}{start\+\_\+time}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Data structure for CSV consumer component. 
+
+Following EPOS Smart\+Data principles, this structure contains all the data needed for CSV consumer functionality. Tracks received CSV vehicle data messages and provides statistics about message reception.
+
+CSV consumer processes messages with prepended timestamps and CSV records in the format\+: timestamp,id,lat,lon,alt,x,y,z,speed,heading,yawrate,acceleration 
+
+\label{doc-constructors}
+\Hypertarget{struct_c_s_v_consumer_data_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{struct_c_s_v_consumer_data_ad67e553b95f1cd4fde0e7fd73507418e}\index{CSVConsumerData@{CSVConsumerData}!CSVConsumerData@{CSVConsumerData}}
+\index{CSVConsumerData@{CSVConsumerData}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{CSVConsumerData()}{CSVConsumerData()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_ad67e553b95f1cd4fde0e7fd73507418e} 
+CSVConsumer\+Data\+::\+CSVConsumer\+Data (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Constructor initializes CSV consumer state. 
+
+Sets up the CSV consumer with default values for tracking received CSV vehicle data messages. 
+
+\label{doc-func-members}
+\Hypertarget{struct_c_s_v_consumer_data_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{struct_c_s_v_consumer_data_adabf0892337c21d63631d58f6d239084}\index{CSVConsumerData@{CSVConsumerData}!get\_data\_rate@{get\_data\_rate}}
+\index{get\_data\_rate@{get\_data\_rate}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{get\_data\_rate()}{get\_data\_rate()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_adabf0892337c21d63631d58f6d239084} 
+double CSVConsumer\+Data\+::get\+\_\+data\+\_\+rate (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get data reception rate in bytes per second. 
+
+\begin{DoxyReturn}{Returns}
+Bytes per second since component creation 
+\end{DoxyReturn}
+\Hypertarget{struct_c_s_v_consumer_data_aa8ca242f6f7742cd5b1dac2ed93a99bb}\index{CSVConsumerData@{CSVConsumerData}!get\_message\_rate@{get\_message\_rate}}
+\index{get\_message\_rate@{get\_message\_rate}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{get\_message\_rate()}{get\_message\_rate()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_aa8ca242f6f7742cd5b1dac2ed93a99bb} 
+double CSVConsumer\+Data\+::get\+\_\+message\+\_\+rate (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get message reception rate in messages per second. 
+
+\begin{DoxyReturn}{Returns}
+Messages per second since component creation 
+\end{DoxyReturn}
+\Hypertarget{struct_c_s_v_consumer_data_a6c4a56ee8c89ab451d3479ea51e53c18}\index{CSVConsumerData@{CSVConsumerData}!get\_runtime\_seconds@{get\_runtime\_seconds}}
+\index{get\_runtime\_seconds@{get\_runtime\_seconds}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{get\_runtime\_seconds()}{get\_runtime\_seconds()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_a6c4a56ee8c89ab451d3479ea51e53c18} 
+double CSVConsumer\+Data\+::get\+\_\+runtime\+\_\+seconds (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get total runtime in seconds. 
+
+\begin{DoxyReturn}{Returns}
+Runtime since component creation in seconds 
+\end{DoxyReturn}
+\Hypertarget{struct_c_s_v_consumer_data_abc3158303435a12f53bca08008ee8b3d}\index{CSVConsumerData@{CSVConsumerData}!mark\_invalid\_message@{mark\_invalid\_message}}
+\index{mark\_invalid\_message@{mark\_invalid\_message}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{mark\_invalid\_message()}{mark\_invalid\_message()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_abc3158303435a12f53bca08008ee8b3d} 
+void CSVConsumer\+Data\+::mark\+\_\+invalid\+\_\+message (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Mark a message as invalid. 
+
+\Hypertarget{struct_c_s_v_consumer_data_ad07b5a76aa39e6f816152527f83fff75}\index{CSVConsumerData@{CSVConsumerData}!update\_message\_tracking@{update\_message\_tracking}}
+\index{update\_message\_tracking@{update\_message\_tracking}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{update\_message\_tracking()}{update\_message\_tracking()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_ad07b5a76aa39e6f816152527f83fff75} 
+void CSVConsumer\+Data\+::update\+\_\+message\+\_\+tracking (\begin{DoxyParamCaption}\item[{std\+::size\+\_\+t}]{message\+\_\+size}{, }\item[{std\+::uint64\+\_\+t}]{csv\+\_\+timestamp}{, }\item[{std\+::uint32\+\_\+t}]{vehicle\+\_\+id}{, }\item[{double}]{x}{, }\item[{double}]{y}{, }\item[{double}]{z}{, }\item[{double}]{speed}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update tracking data when a message is received. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em message\+\_\+size} & Size of the received message in bytes \\
+\hline
+{\em csv\+\_\+timestamp} & Timestamp from the CSV record \\
+\hline
+{\em vehicle\+\_\+id} & \doxylink{class_vehicle}{Vehicle} ID from the CSV record \\
+\hline
+{\em x} & X position from CSV record \\
+\hline
+{\em y} & Y position from CSV record \\
+\hline
+{\em z} & Z position from CSV record \\
+\hline
+{\em speed} & Speed from CSV record \\
+\hline
+\end{DoxyParams}
+
+
+\label{doc-variable-members}
+\Hypertarget{struct_c_s_v_consumer_data_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{struct_c_s_v_consumer_data_a932b2a246058564b7bc1e3cfd72977d2}\index{CSVConsumerData@{CSVConsumerData}!invalid\_messages@{invalid\_messages}}
+\index{invalid\_messages@{invalid\_messages}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{invalid\_messages}{invalid\_messages}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_a932b2a246058564b7bc1e3cfd72977d2} 
+std\+::size\+\_\+t CSVConsumer\+Data\+::invalid\+\_\+messages}
+
+\Hypertarget{struct_c_s_v_consumer_data_ab0da9825b74b70e2bb08e50fb3679a0e}\index{CSVConsumerData@{CSVConsumerData}!last\_csv\_timestamp@{last\_csv\_timestamp}}
+\index{last\_csv\_timestamp@{last\_csv\_timestamp}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{last\_csv\_timestamp}{last\_csv\_timestamp}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_ab0da9825b74b70e2bb08e50fb3679a0e} 
+std\+::uint64\+\_\+t CSVConsumer\+Data\+::last\+\_\+csv\+\_\+timestamp}
+
+\Hypertarget{struct_c_s_v_consumer_data_ad2410ed37b3d4272113ba0bcbfc516c8}\index{CSVConsumerData@{CSVConsumerData}!last\_message\_time@{last\_message\_time}}
+\index{last\_message\_time@{last\_message\_time}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{last\_message\_time}{last\_message\_time}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_ad2410ed37b3d4272113ba0bcbfc516c8} 
+std\+::chrono\+::steady\+\_\+clock\+::time\+\_\+point CSVConsumer\+Data\+::last\+\_\+message\+\_\+time}
+
+\Hypertarget{struct_c_s_v_consumer_data_a6963b25aef85fb3833d7c0cfcaf5f9bd}\index{CSVConsumerData@{CSVConsumerData}!last\_position\_x@{last\_position\_x}}
+\index{last\_position\_x@{last\_position\_x}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{last\_position\_x}{last\_position\_x}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_a6963b25aef85fb3833d7c0cfcaf5f9bd} 
+double CSVConsumer\+Data\+::last\+\_\+position\+\_\+x}
+
+\Hypertarget{struct_c_s_v_consumer_data_aa439c5edc257dd4960365fcba8d4d77e}\index{CSVConsumerData@{CSVConsumerData}!last\_position\_y@{last\_position\_y}}
+\index{last\_position\_y@{last\_position\_y}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{last\_position\_y}{last\_position\_y}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_aa439c5edc257dd4960365fcba8d4d77e} 
+double CSVConsumer\+Data\+::last\+\_\+position\+\_\+y}
+
+\Hypertarget{struct_c_s_v_consumer_data_a3977c05127e7cddff88ba5b69427364a}\index{CSVConsumerData@{CSVConsumerData}!last\_position\_z@{last\_position\_z}}
+\index{last\_position\_z@{last\_position\_z}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{last\_position\_z}{last\_position\_z}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_a3977c05127e7cddff88ba5b69427364a} 
+double CSVConsumer\+Data\+::last\+\_\+position\+\_\+z}
+
+\Hypertarget{struct_c_s_v_consumer_data_a1bad81d095c4780277a452218379ac24}\index{CSVConsumerData@{CSVConsumerData}!last\_speed@{last\_speed}}
+\index{last\_speed@{last\_speed}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{last\_speed}{last\_speed}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_a1bad81d095c4780277a452218379ac24} 
+double CSVConsumer\+Data\+::last\+\_\+speed}
+
+\Hypertarget{struct_c_s_v_consumer_data_a5b0ec8ff3e5dbb5e0d275da585ef999f}\index{CSVConsumerData@{CSVConsumerData}!last\_vehicle\_id@{last\_vehicle\_id}}
+\index{last\_vehicle\_id@{last\_vehicle\_id}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{last\_vehicle\_id}{last\_vehicle\_id}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_a5b0ec8ff3e5dbb5e0d275da585ef999f} 
+std\+::uint32\+\_\+t CSVConsumer\+Data\+::last\+\_\+vehicle\+\_\+id}
+
+\Hypertarget{struct_c_s_v_consumer_data_a3b122a626d88b18f905280e1248d2ed9}\index{CSVConsumerData@{CSVConsumerData}!messages\_received@{messages\_received}}
+\index{messages\_received@{messages\_received}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{messages\_received}{messages\_received}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_a3b122a626d88b18f905280e1248d2ed9} 
+std\+::size\+\_\+t CSVConsumer\+Data\+::messages\+\_\+received}
+
+\Hypertarget{struct_c_s_v_consumer_data_a51c604c75e8af1a666d6f768d32ce364}\index{CSVConsumerData@{CSVConsumerData}!start\_time@{start\_time}}
+\index{start\_time@{start\_time}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{start\_time}{start\_time}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_a51c604c75e8af1a666d6f768d32ce364} 
+std\+::chrono\+::steady\+\_\+clock\+::time\+\_\+point CSVConsumer\+Data\+::start\+\_\+time}
+
+\Hypertarget{struct_c_s_v_consumer_data_a084c2b6706aa564f50e87e2936e72c40}\index{CSVConsumerData@{CSVConsumerData}!total\_bytes\_received@{total\_bytes\_received}}
+\index{total\_bytes\_received@{total\_bytes\_received}!CSVConsumerData@{CSVConsumerData}}
+\doxysubsubsection{\texorpdfstring{total\_bytes\_received}{total\_bytes\_received}}
+{\footnotesize\ttfamily \label{struct_c_s_v_consumer_data_a084c2b6706aa564f50e87e2936e72c40} 
+std\+::size\+\_\+t CSVConsumer\+Data\+::total\+\_\+bytes\+\_\+received}
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/app/components/\mbox{\hyperlink{csv__consumer__data_8hpp}{csv\+\_\+consumer\+\_\+data.\+hpp}}\end{DoxyCompactItemize}

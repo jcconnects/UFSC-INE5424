@@ -1,0 +1,60 @@
+\doxysection{include/app/components/ecu\+\_\+functions.hpp File Reference}
+\hypertarget{ecu__functions_8hpp}{}\label{ecu__functions_8hpp}\index{include/app/components/ecu\_functions.hpp@{include/app/components/ecu\_functions.hpp}}
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include "{}ecu\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/framework/component\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/util/debug.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ \mbox{\hyperlink{ecu__functions_8hpp_ad13ece3d8efb31a62055866dfda2e269}{ecu\+\_\+producer}} (std\+::uint32\+\_\+t unit, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Producer function for ECU component (consumer-\/only) \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ecu__functions_8hpp_ad9180ad60f199dad373b1e201a2e6218}{ecu\+\_\+consumer}} (void \texorpdfstring{$\ast$}{*}msg, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Consumer function for ECU component -\/ handles received messages. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{ecu__functions_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{ecu__functions_8hpp_ad9180ad60f199dad373b1e201a2e6218}\index{ecu\_functions.hpp@{ecu\_functions.hpp}!ecu\_consumer@{ecu\_consumer}}
+\index{ecu\_consumer@{ecu\_consumer}!ecu\_functions.hpp@{ecu\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{ecu\_consumer()}{ecu\_consumer()}}
+{\footnotesize\ttfamily \label{ecu__functions_8hpp_ad9180ad60f199dad373b1e201a2e6218} 
+void ecu\+\_\+consumer (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{msg}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Consumer function for ECU component -\/ handles received messages. 
+
+Replaces ECUComponent\+::handle\+\_\+response() virtual method with direct function call. Processes received messages from other components (Camera, Lidar, INS) and logs the reception details, maintaining the exact behavior of the original implementation.
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to the received message (cast to \doxylink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Agent\+::\+Message}\texorpdfstring{$\ast$}{*}) \\
+\hline
+{\em data} & Pointer to \doxylink{struct_e_c_u_data}{ECUData} structure for tracking received messages \\
+\hline
+\end{DoxyParams}
+\Hypertarget{ecu__functions_8hpp_ad13ece3d8efb31a62055866dfda2e269}\index{ecu\_functions.hpp@{ecu\_functions.hpp}!ecu\_producer@{ecu\_producer}}
+\index{ecu\_producer@{ecu\_producer}!ecu\_functions.hpp@{ecu\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{ecu\_producer()}{ecu\_producer()}}
+{\footnotesize\ttfamily \label{ecu__functions_8hpp_ad13ece3d8efb31a62055866dfda2e269} 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ ecu\+\_\+producer (\begin{DoxyParamCaption}\item[{std\+::uint32\+\_\+t}]{unit}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Producer function for ECU component (consumer-\/only) 
+
+ECU components are consumer-\/only and don\textquotesingle{}t produce data. This function returns an empty vector to maintain interface compatibility while indicating that ECU doesn\textquotesingle{}t generate data.
+
+
+\begin{DoxyParams}{Parameters}
+{\em unit} & The data unit being requested (ignored for ECU) \\
+\hline
+{\em data} & Pointer to \doxylink{struct_e_c_u_data}{ECUData} structure (unused for production) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Empty vector indicating no data production 
+\end{DoxyReturn}

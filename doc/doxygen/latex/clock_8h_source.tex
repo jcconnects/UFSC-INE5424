@@ -1,0 +1,458 @@
+\doxysection{clock.\+h}
+\hypertarget{clock_8h_source}{}\label{clock_8h_source}\index{include/api/framework/clock.h@{include/api/framework/clock.h}}
+\mbox{\hyperlink{clock_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ CLOCK\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ CLOCK\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <ostream>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}\ \ \textcolor{comment}{//\ For\ db<>\ logging}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{traits_8h}{api/traits.h}}"{}}\ \ \ \ \ \ \textcolor{comment}{//\ For\ traits\ specialization}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{leader_key_storage_8h}{api/framework/leaderKeyStorage.h}}"{}}\ \ \textcolor{comment}{//\ For\ LeaderKeyStorage}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ethernet_8h}{api/network/ethernet.h}}"{}}\ \ \textcolor{comment}{//\ For\ Ethernet::Address}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ -\/-\/-\/\ Placeholder\ types\ (These\ should\ be\ defined\ in\ appropriate\ common\ headers)\ -\/-\/-\/}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ Represents\ a\ timestamp,\ using\ microseconds\ since\ a\ steady\ epoch}}
+\DoxyCodeLine{00016\ \textcolor{keyword}{using\ }\mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ =\ std::chrono::time\_point<std::chrono::steady\_clock,\ std::chrono::microseconds>;}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{comment}{//\ Represents\ a\ duration,\ e.g.,\ for\ offsets}}
+\DoxyCodeLine{00019\ \textcolor{keyword}{using\ }\mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ =\ std::chrono::microseconds;}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{comment}{//\ Represents\ frequency\ error,\ unitless\ (e.g.,\ parts\ per\ million\ or\ direct\ ratio)}}
+\DoxyCodeLine{00022\ \textcolor{keyword}{using\ }\mbox{\hyperlink{clock_8h_a1da24dd25411ec4c2076f1a166d98609}{FrequencyErrorType}}\ =\ double;}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{//\ Identifier\ for\ a\ PTP\ leader\ (e.g.,\ a\ vehicle\ ID\ or\ MAC\ address\ representation)}}
+\DoxyCodeLine{00025\ \textcolor{comment}{//\ For\ simplicity,\ using\ uint32\_t.\ Adapt\ as\ needed.}}
+\DoxyCodeLine{00026\ \textcolor{keyword}{using\ }\mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ =\ uint32\_t;}
+\DoxyCodeLine{00027\ \textcolor{keyword}{const}\ \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}}\ =\ 0;\ \textcolor{comment}{//\ Example\ invalid\ ID}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{comment}{//\ Structure\ to\ pass\ PTP-\/relevant\ data\ (extracted\ from\ message\ headers)\ to\ the\ Clock's\ activate\ method}}
+\DoxyCodeLine{00030\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}\ \{}
+\DoxyCodeLine{00031\ \ \ \ \ \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ \mbox{\hyperlink{struct_ptp_relevant_data_ab2007597f3a427bbfb23fb81fe52cb0c}{sender\_id}};\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ ID\ of\ the\ message\ sender\ (potential\ PTP\ master)}}
+\DoxyCodeLine{00032\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{struct_ptp_relevant_data_a63286839e08442908351928dd646a737}{ts\_tx\_at\_sender}};\ \ \textcolor{comment}{//\ Timestamp\ from\ the\ sender's\ NIC/PTP\ header\ (ts\_PN\ equivalent)}}
+\DoxyCodeLine{00033\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{struct_ptp_relevant_data_a8df7b439622b84080783866528e740b1}{ts\_local\_rx}};\ \ \ \ \ \ \textcolor{comment}{//\ Local\ hardware\ timestamp\ when\ this\ node's\ NIC\ received\ the\ frame}}
+\DoxyCodeLine{00034\ \};}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{comment}{//\ Structure\ to\ store\ processed\ PTP\ message\ data\ internally\ by\ the\ Clock}}
+\DoxyCodeLine{00037\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_ptp_internal_message_info_a778185fb4f9e5551aecc1c7fe174c31c}{PtpInternalMessageInfo}}\ \{}
+\DoxyCodeLine{00038\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{struct_ptp_internal_message_info_adfc86f412e8424bc5d806cb0bd487c49}{ts\_tx\_at\_sender}}\ =\ TimestampType::min();\ \ \ \textcolor{comment}{//\ ts\_PN\ equivalent}}
+\DoxyCodeLine{00039\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{struct_ptp_internal_message_info_a13c48516cd46eb1c9f1ed5e8a4ffd2c4}{ts\_local\_rx}}\ =\ TimestampType::min();\ \ \ \ \textcolor{comment}{//\ ts\_N\_prime\ (local\ hardware\ time\ of\ reception)}}
+\DoxyCodeLine{00040\ \ \ \ \ \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ \mbox{\hyperlink{struct_ptp_internal_message_info_a8875dfbd1c6978587b4ee84a23d3f4f1}{d\_tx\_calc}}\ =\ DurationType::zero();\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Calculated\ total\ propagation\ delay}}
+\DoxyCodeLine{00041\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{struct_ptp_internal_message_info_a7c81ee1f0d2bb8c5d28f4f86e881a84c}{leader\_time\_at\_local\_rx\_event}}\ =\ TimestampType::min();\ \textcolor{comment}{//\ ts\_PN\ +\ d\_TX\_calc}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \ \ \mbox{\hyperlink{struct_ptp_internal_message_info_a778185fb4f9e5551aecc1c7fe174c31c}{PtpInternalMessageInfo}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00044\ \};}
+\DoxyCodeLine{00045\ \textcolor{comment}{//\ -\/-\/-\/\ End\ Placeholder\ types\ -\/-\/-\/}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00056\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_clock_aaadf4fd3494f23514024098c2d0c9134}{Clock}}\ \{}
+\DoxyCodeLine{00057\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keyword}{enum\ class}\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bda}{State}}\ \{}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa96b1cef9e0248eb415e510c98e4ad2b1}{UNSYNCHRONIZED}},}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa64900a01baa6706d53db08f39b9259bd}{AWAITING\_SECOND\_MSG}},\ \textcolor{comment}{//\ Offset\ acquired,\ awaiting\ second\ message\ for\ drift}}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa35c25b3993876576ae1222f9ebb04f63}{SYNCHRONIZED}}\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Offset\ and\ drift\ acquired}}
+\DoxyCodeLine{00062\ \ \ \ \ \};}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{//\ Deleted\ copy\ constructor\ and\ assignment\ operator}}
+\DoxyCodeLine{00065\ \ \ \ \ \mbox{\hyperlink{class_clock_aaadf4fd3494f23514024098c2d0c9134}{Clock}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_clock_aaadf4fd3494f23514024098c2d0c9134}{Clock}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00066\ \ \ \ \ \mbox{\hyperlink{class_clock_aaadf4fd3494f23514024098c2d0c9134}{Clock}}\&\ \mbox{\hyperlink{class_clock_a21bfcb54d1da00cea13a357ea5d8696c}{operator=}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_clock_aaadf4fd3494f23514024098c2d0c9134}{Clock}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_clock_aaadf4fd3494f23514024098c2d0c9134}{Clock}}\&\ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{getInstance}}();}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_clock_a2cc3f3a5fe94bcdfcd45e83936f6c513}{setSelfId}}(\mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/\ Core\ Public\ Interface\ -\/-\/-\/}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_clock_a5cc4fda803bea0fe083ecd7cfebca43c}{activate}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}*\ new\_msg\_data);}
+\DoxyCodeLine{00074\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{class_clock_a9f373864d63fa4886f025cc521d1681b}{getSynchronizedTime}}(\textcolor{keywordtype}{bool}*\ is\_synchronized);}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_clock_ad3fe983739dee8a41196e8b32944ed48}{isFullySynchronized}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00076\ \ \ \ \ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bda}{State}}\ \mbox{\hyperlink{class_clock_a011c0dbf8a1ebc4e61269805bc0ea32d}{getState}}();}
+\DoxyCodeLine{00077\ \ \ \ \ \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ \mbox{\hyperlink{class_clock_a709e756b0a780c395a711d04cf6c3eff}{getCurrentLeader}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00078\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{class_clock_a6d700b0a82c49d281747430069ef0db1}{getLocalSteadyHardwareTime}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00079\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{class_clock_aa30983826ccc0feb58436921b1d1b5e1}{getLocalSystemTime}}();}
+\DoxyCodeLine{00080\ \ \ \ \ \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ \mbox{\hyperlink{class_clock_a500605886bf252683db2fe59efe652ba}{getMaxLeaderSilenceInterval}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_clock_a0ab5423b0a997aa13d7b6131c46d1358}{reset}}();}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{//\ Private\ constructor\ for\ singleton}}
+\DoxyCodeLine{00085\ \ \ \ \ \mbox{\hyperlink{class_clock_aaadf4fd3494f23514024098c2d0c9134}{Clock}}()\ :}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \_currentState(\mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bda}{State}}::\mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa96b1cef9e0248eb415e510c98e4ad2b1}{UNSYNCHRONIZED}}),}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \_current\_offset(\mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}::zero()),}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \_current\_drift\_fe(0.0),}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \_leader\_time\_at\_last\_sync\_event(\mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}::min()),}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \_local\_time\_at\_last\_sync\_event(\mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}::min()),}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \_last\_sync\_local\_time(\mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}::min()),}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \_current\_leader\_id(\mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}}),}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \_leader\_has\_changed\_flag(false),}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \_self\_id(\mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}})\ \{}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ doClearSyncData();}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ Initialized\ in\ UNSYNCHRONIZED\ state\(\backslash\)n"{}};}
+\DoxyCodeLine{00097\ \ \ \ \ \}}
+\DoxyCodeLine{00098\ \ \ \ \ \mbox{\hyperlink{class_clock}{\string~Clock}}()\ =\ \textcolor{keywordflow}{default};\ \textcolor{comment}{//\ Default\ destructor}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/\ State\ Machine\ Actions\ (called\ with\ \_mutex\ held)\ -\/-\/-\/}}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{keywordtype}{void}\ doClearSyncData();}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keywordtype}{void}\ doProcessFirstLeaderMsg(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}\&\ msg\_data);}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keywordtype}{void}\ doProcessSecondLeaderMsgAndCalcDrift(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}\&\ msg\_data);}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordtype}{void}\ doProcessSubsequentLeaderMsg(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}\&\ msg\_data);}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/\ Guard\ Conditions\ -\/-\/-\/}}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keywordtype}{bool}\ isLeaderMessageTimedOut()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordtype}{bool}\ isMessageFromCurrentLeader(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}\&\ msg\_data)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keywordtype}{bool}\ isLeaderAssigned()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordtype}{bool}\ checkAndHandleLeaderChange(\mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ storage\_leader\_id);}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/\ Member\ Variables\ -\/-\/-\/}}
+\DoxyCodeLine{00114\ \ \ \ \ std::atomic<State>\ \_currentState;\ \ \textcolor{comment}{//\ Made\ atomic\ for\ better\ performance}}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keyword}{mutable}\ std::mutex\ \_mutex;}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{comment}{//\ PTP\ Synchronization\ Data}}
+\DoxyCodeLine{00118\ \ \ \ \ \mbox{\hyperlink{struct_ptp_internal_message_info}{PtpInternalMessageInfo}}\ \_msg1\_data;\ \textcolor{comment}{//\ Data\ from\ the\ (N-\/1)th\ PTP-\/relevant\ message}}
+\DoxyCodeLine{00119\ \ \ \ \ \mbox{\hyperlink{struct_ptp_internal_message_info}{PtpInternalMessageInfo}}\ \_msg2\_data;\ \textcolor{comment}{//\ Data\ from\ the\ (N)th\ (latest)\ PTP-\/relevant\ message}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \ \ \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ \_current\_offset;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ O\ =\ LocalRxTime\ -\/\ (LeaderTxTimeAtSender\ +\ PropagationDelay)}}
+\DoxyCodeLine{00122\ \ \ \ \ \mbox{\hyperlink{clock_8h_a1da24dd25411ec4c2076f1a166d98609}{FrequencyErrorType}}\ \_current\_drift\_fe;\ \textcolor{comment}{//\ Frequency\ error\ (drift\ rate)\ relative\ to\ leader}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \_leader\_time\_at\_last\_sync\_event;\ \textcolor{comment}{//\ Leader's\ clock\ value\ (ts\_tx\_at\_sender\ +\ d\_tx\_calc)\ at\ the\ moment\ of\ the\ last\ local\ RX\ event\ used\ for\ sync}}
+\DoxyCodeLine{00125\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \_local\_time\_at\_last\_sync\_event;\ \ \textcolor{comment}{//\ Local\ hardware\ clock\ value\ at\ that\ same\ local\ RX\ event}}
+\DoxyCodeLine{00126\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \_last\_sync\_local\_time;}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \ \ \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ \_current\_leader\_id;}
+\DoxyCodeLine{00129\ \ \ \ \ std::atomic<bool>\ \_leader\_has\_changed\_flag;\ \ \textcolor{comment}{//\ Made\ atomic\ for\ better\ performance}}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ \_self\_id;}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{comment}{//\ Configuration\ Constants}}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{comment}{//\ Allow\ up\ to\ 10ms\ cumulative\ error:}}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{comment}{//\ For\ standard\ crystal\ specification\ worst-\/case\ (\string~20\ ppb):\ 10ms\ /\ 20ppb\ =\ 500ms}}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ MAX\_LEADER\_SILENCE\_INTERVAL\ =\ std::chrono::microseconds(500000);}
+\DoxyCodeLine{00137\ \};}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00145\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_clock_aaadf4fd3494f23514024098c2d0c9134}{Clock}}\&\ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}()\ \{}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_clock_aaadf4fd3494f23514024098c2d0c9134}{Clock}}\ instance;}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordflow}{return}\ instance;}
+\DoxyCodeLine{00148\ \}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00156\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_clock_a2cc3f3a5fe94bcdfcd45e83936f6c513}{Clock::setSelfId}}(\mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ \textcolor{keywordtype}{id})\ \{}
+\DoxyCodeLine{00157\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_self\_id\ ==\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}}\ \&\&\ \textcolor{keywordtype}{id}\ !=\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}})\ \{}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \_self\_id\ =\ id;}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ Self\ ID\ set\ to\ "{}}\ <<\ \_self\_id\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00161\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\textcolor{keywordtype}{id}\ !=\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}}\ \&\&\ \_self\_id\ !=\ \textcolor{keywordtype}{id}\ \&\&\ \_self\_id\ !=\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}})\ \{}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ If\ already\ set\ and\ trying\ to\ change\ to\ a\ different\ valid\ ID}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ Attempt\ to\ change\ self\ ID\ from\ "{}}\ <<\ \_self\_id\ }
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ to\ "{}}\ <<\ \textcolor{keywordtype}{id}\ <<\ \textcolor{stringliteral}{"{}.\ Current\ self\ ID\ maintained.\(\backslash\)n"{}};}
+\DoxyCodeLine{00165\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\textcolor{keywordtype}{id}\ ==\ \_self\_id)\ \{}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Setting\ to\ the\ same\ ID,\ no\ action\ needed\ but\ maybe\ log\ for\ debugging}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ Self\ ID\ re-\/confirmed\ to\ "{}}\ <<\ \_self\_id\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00168\ \ \ \ \ \}}
+\DoxyCodeLine{00169\ \}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00177\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_clock_a5cc4fda803bea0fe083ecd7cfebca43c}{Clock::activate}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}*\ new\_msg\_data)\ \{}
+\DoxyCodeLine{00178\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{comment}{//\ Get\ current\ leader\ from\ storage\ without\ holding\ its\ mutex}}
+\DoxyCodeLine{00181\ \ \ \ \ \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ storage\_leader\_id\ =\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}};}
+\DoxyCodeLine{00182\ \ \ \ \ \{}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ storage\ =\ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}();}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ storage\_leader\ =\ storage.getLeaderId();}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ storage\_leader\_id\ =\ storage\_leader.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[5];}
+\DoxyCodeLine{00186\ \ \ \ \ \}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \ \ \textcolor{comment}{//\ NEW:\ Check\ if\ this\ node\ IS\ the\ leader\ (according\ to\ storage)}}
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_self\_id\ !=\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}}\ \&\&\ \_self\_id\ ==\ storage\_leader\_id)\ \{}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_currentState.load(std::memory\_order\_acquire)\ !=\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa35c25b3993876576ae1222f9ebb04f63}{State::SYNCHRONIZED}}\ ||\ \_current\_leader\_id\ !=\ \_self\_id)\ \{}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ This\ node\ ("{}}\ <<\ \_self\_id\ <<\ \textcolor{stringliteral}{"{})\ is\ the\ PTP\ leader.\ Forcing\ SYNCHRONIZED\ state.\(\backslash\)n"{}};}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ \_currentState.store(\mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa35c25b3993876576ae1222f9ebb04f63}{State::SYNCHRONIZED}},\ std::memory\_order\_release);}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \_current\_leader\_id\ =\ \_self\_id;\ \textcolor{comment}{//\ This\ node\ is\ the\ leader}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \_current\_offset\ =\ DurationType::zero();}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \_current\_drift\_fe\ =\ 0.0;}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \_local\_time\_at\_last\_sync\_event\ =\ \mbox{\hyperlink{class_clock_a6d700b0a82c49d281747430069ef0db1}{getLocalSteadyHardwareTime}}();}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \_leader\_time\_at\_last\_sync\_event\ =\ \_local\_time\_at\_last\_sync\_event;\ \textcolor{comment}{//\ Leader\ time\ is\ its\ own\ local\ time}}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \_msg1\_data\ =\ \mbox{\hyperlink{struct_ptp_internal_message_info}{PtpInternalMessageInfo}}();\ \textcolor{comment}{//\ Clear\ old\ sync\ message\ data}}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \_msg2\_data\ =\ \mbox{\hyperlink{struct_ptp_internal_message_info}{PtpInternalMessageInfo}}();}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \_leader\_has\_changed\_flag.store(\textcolor{keyword}{false},\ std::memory\_order\_release);\ }
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ As\ a\ leader,\ its\ clock\ is\ authoritative.\ No\ further\ processing\ of\ PTP\ messages\ for\ sync.}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00204\ \ \ \ \ \}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{comment}{//\ If\ this\ node\ is\ NOT\ the\ leader,\ proceed\ with\ normal\ PTP\ logic.}}
+\DoxyCodeLine{00207\ \ \ \ \ \textcolor{comment}{//\ Check\ and\ handle\ leader\ change\ (original\ logic,\ might\ set\ state\ to\ UNSYNCHRONIZED)}}
+\DoxyCodeLine{00208\ \ \ \ \ [[maybe\_unused]]\ \textcolor{keywordtype}{bool}\ actual\_leader\_change\_occurred\ =\ checkAndHandleLeaderChange(storage\_leader\_id);}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \ \ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bda}{State}}\ current\_state\_local\ =\ \_currentState.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00211\ \ \ \ \ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bda}{State}}\ new\_state\ =\ current\_state\_local;}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \ \ \ \ \textcolor{comment}{//\ Main\ state\ transitions}}
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{keywordflow}{switch}\ (current\_state\_local)\ \{}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa96b1cef9e0248eb415e510c98e4ad2b1}{State::UNSYNCHRONIZED}}:}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (new\_msg\_data\ \&\&\ isLeaderAssigned()\ \&\&\ isMessageFromCurrentLeader(*new\_msg\_data))\ \{}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_state\ =\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa64900a01baa6706d53db08f39b9259bd}{State::AWAITING\_SECOND\_MSG}};}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ doProcessFirstLeaderMsg(*new\_msg\_data);}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa64900a01baa6706d53db08f39b9259bd}{State::AWAITING\_SECOND\_MSG}}:}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (isLeaderMessageTimedOut())\ \{}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Clock]\ Leader\ is\ timedout!\(\backslash\)n"{}};}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_state\ =\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa96b1cef9e0248eb415e510c98e4ad2b1}{State::UNSYNCHRONIZED}};}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ doClearSyncData();}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (new\_msg\_data\ \&\&\ isMessageFromCurrentLeader(*new\_msg\_data))\ \{}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_state\ =\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa35c25b3993876576ae1222f9ebb04f63}{State::SYNCHRONIZED}};}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ doProcessSecondLeaderMsgAndCalcDrift(*new\_msg\_data);}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa35c25b3993876576ae1222f9ebb04f63}{State::SYNCHRONIZED}}:}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (isLeaderMessageTimedOut())\ \{}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Clock]\ Leader\ is\ timedout!\(\backslash\)n"{}};}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_state\ =\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa96b1cef9e0248eb415e510c98e4ad2b1}{State::UNSYNCHRONIZED}};}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ doClearSyncData();}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (new\_msg\_data\ \&\&\ isMessageFromCurrentLeader(*new\_msg\_data))\ \{}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ doProcessSubsequentLeaderMsg(*new\_msg\_data);}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00242\ \ \ \ \ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{comment}{//\ Log\ state\ transition\ if\ it\ changed}}
+\DoxyCodeLine{00245\ \ \ \ \ \textcolor{keywordflow}{if}\ (new\_state\ !=\ current\_state\_local)\ \{}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ "{}}\ <<\ current\_state\_local\ <<\ \textcolor{stringliteral}{"{}\ -\/>\ "{}}\ <<\ new\_state\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \_currentState.store(new\_state,\ std::memory\_order\_release);}
+\DoxyCodeLine{00248\ \ \ \ \ \}}
+\DoxyCodeLine{00249\ \}}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00257\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{class_clock_a9f373864d63fa4886f025cc521d1681b}{Clock::getSynchronizedTime}}(\textcolor{keywordtype}{bool}*\ is\_synchronized)\ \{}
+\DoxyCodeLine{00258\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00259\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ local\_hw\_now\ =\ \mbox{\hyperlink{class_clock_aa30983826ccc0feb58436921b1d1b5e1}{getLocalSystemTime}}();}
+\DoxyCodeLine{00260\ \ \ \ \ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bda}{State}}\ current\_state\_local\ =\ \_currentState.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordflow}{if}\ (current\_state\_local\ ==\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa96b1cef9e0248eb415e510c98e4ad2b1}{State::UNSYNCHRONIZED}})\ \{}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock::getSynchronizedTime\ WARNING:\ Clock\ UNSYNCHRONIZED.\ Returning\ local\ hardware\ time.\(\backslash\)n"{}};}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ *is\_synchronized\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ local\_hw\_now;}
+\DoxyCodeLine{00266\ \ \ \ \ \}}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{keywordflow}{if}\ (current\_state\_local\ ==\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa64900a01baa6706d53db08f39b9259bd}{State::AWAITING\_SECOND\_MSG}})\ \{}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Only\ offset\ correction:\ SynchronizedTime\ =\ LeaderTimeAtSync\ +\ ElapsedLocal}}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Note:\ \_current\_offset\ =\ \_local\_time\_at\_last\_sync\_event\ -\/\ \_leader\_time\_at\_last\_sync\_event}}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ So,\ LeaderTimeAtSync\ =\ \_local\_time\_at\_last\_sync\_event\ -\/\ \_current\_offset}}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ SynchronizedTime\ =\ (\_local\_time\_at\_last\_sync\_event\ -\/\ \_current\_offset)\ +\ elapsed\_since\_last\_sync}}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ SynchronizedTime\ =\ local\_hw\_now\ -\/\ \_current\_offset}}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ *is\_synchronized\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ local\_hw\_now\ -\/\ \_current\_offset;}
+\DoxyCodeLine{00276\ \ \ \ \ \}}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \ \ \ \ }
+\DoxyCodeLine{00279\ \ \ \ \ \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ elapsed\_since\_last\_sync\ =\ local\_hw\_now\ -\/\ \_local\_time\_at\_last\_sync\_event;}
+\DoxyCodeLine{00280\ \ \ \ \ \textcolor{keywordtype}{double}\ leader\_increment\_double\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(elapsed\_since\_last\_sync.count())\ *\ \_current\_drift\_fe;}
+\DoxyCodeLine{00281\ \ \ \ \ \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ leader\_increment\ =\ std::chrono::microseconds(\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\textcolor{keyword}{>}(leader\_increment\_double));}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{comment}{//\ State::SYNCHRONIZED:\ Apply\ offset\ and\ drift\ correction}}
+\DoxyCodeLine{00284\ \ \ \ \ \textcolor{comment}{//\ SynchronizedTime\ =\ local\_hw\_now\ -\/\ (\_current\_offset\_at\_last\_event\ +\ drift\_correction\_for\_elapsed\_time)}}
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{comment}{//\ Or,\ using\ the\ state\ machine's\ variables:}}
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{comment}{//\ leader\_increment\ =\ elapsed\_local\ *\ (1.0\ -\/\ current\_drift\_fe)}}
+\DoxyCodeLine{00287\ \ \ \ \ \textcolor{comment}{//\ sync\_time\ =\ leader\_time\_at\_last\_sync\_event\ +\ leader\_increment}}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \ \ *is\_synchronized\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{keywordflow}{return}\ local\_hw\_now\ -\/\ \_current\_offset\ -\/\ leader\_increment;}
+\DoxyCodeLine{00291\ \}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00299\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_clock_ad3fe983739dee8a41196e8b32944ed48}{Clock::isFullySynchronized}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00300\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00301\ \ \ \ \ \textcolor{keywordflow}{return}\ \_currentState.load(std::memory\_order\_acquire)\ ==\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa35c25b3993876576ae1222f9ebb04f63}{State::SYNCHRONIZED}};}
+\DoxyCodeLine{00302\ \}}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00310\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bda}{Clock::State}}\ \mbox{\hyperlink{class_clock_a011c0dbf8a1ebc4e61269805bc0ea32d}{Clock::getState}}()\ \{}
+\DoxyCodeLine{00311\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \ \ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bda}{State}}\ current\_state\_local\ =\ \_currentState.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00314\ \ \ \ \ }
+\DoxyCodeLine{00315\ \ \ \ \ \textcolor{comment}{//\ NEW:\ If\ this\ node\ is\ the\ leader,\ it's\ always\ synchronized.}}
+\DoxyCodeLine{00316\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_self\_id\ !=\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}}\ \&\&\ \_current\_leader\_id\ ==\ \_self\_id)\ \{}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (current\_state\_local\ !=\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa35c25b3993876576ae1222f9ebb04f63}{State::SYNCHRONIZED}})\ \{}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ This\ ensures\ that\ if\ somehow\ the\ state\ was\ different,\ it's\ corrected.}}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock::getState:\ This\ node\ ("{}}\ <<\ \_self\_id\ <<\ \textcolor{stringliteral}{"{})\ is\ leader.\ Correcting\ state\ to\ SYNCHRONIZED.\(\backslash\)n"{}};}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \_currentState.store(\mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa35c25b3993876576ae1222f9ebb04f63}{State::SYNCHRONIZED}},\ std::memory\_order\_release);}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa35c25b3993876576ae1222f9ebb04f63}{State::SYNCHRONIZED}};}
+\DoxyCodeLine{00323\ \ \ \ \ \}}
+\DoxyCodeLine{00324\ \ \ \ \ }
+\DoxyCodeLine{00325\ \ \ \ \ \textcolor{comment}{//\ Only\ check\ timeout\ for\ states\ that\ expect\ leader\ messages\ (non-\/leader\ case)}}
+\DoxyCodeLine{00326\ \ \ \ \ \textcolor{keywordflow}{if}\ (current\_state\_local\ ==\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa64900a01baa6706d53db08f39b9259bd}{State::AWAITING\_SECOND\_MSG}}\ ||\ }
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ current\_state\_local\ ==\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa35c25b3993876576ae1222f9ebb04f63}{State::SYNCHRONIZED}})\ \{}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (isLeaderMessageTimedOut())\ \{}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ Timeout\ detected,\ transitioning\ to\ UNSYNCHRONIZED\(\backslash\)n"{}};}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \ \ \ \ \_currentState.store(\mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa96b1cef9e0248eb415e510c98e4ad2b1}{State::UNSYNCHRONIZED}},\ std::memory\_order\_release);}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ doClearSyncData();}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa96b1cef9e0248eb415e510c98e4ad2b1}{State::UNSYNCHRONIZED}};}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00335\ \ \ \ \ \}}
+\DoxyCodeLine{00336\ \ \ \ \ \textcolor{keywordflow}{return}\ current\_state\_local;}
+\DoxyCodeLine{00337\ \}}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00345\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ \mbox{\hyperlink{class_clock_a709e756b0a780c395a711d04cf6c3eff}{Clock::getCurrentLeader}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00346\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00347\ \ \ \ \ \textcolor{keywordflow}{return}\ \_current\_leader\_id;}
+\DoxyCodeLine{00348\ \}}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \textcolor{comment}{//\ Provides\ the\ local\ hardware\ time\ (monotonic\ steady\ clock)}}
+\DoxyCodeLine{00351\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{class_clock_a6d700b0a82c49d281747430069ef0db1}{Clock::getLocalSteadyHardwareTime}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00352\ \ \ \ \ \textcolor{keywordflow}{return}\ std::chrono::time\_point\_cast<std::chrono::microseconds>(std::chrono::steady\_clock::now());}
+\DoxyCodeLine{00353\ \}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{comment}{//\ Provides\ the\ local\ system\ time\ (wall\ clock,\ can\ change)}}
+\DoxyCodeLine{00356\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{class_clock_aa30983826ccc0feb58436921b1d1b5e1}{Clock::getLocalSystemTime}}()\ \{}
+\DoxyCodeLine{00357\ \ \ \ \ \textcolor{comment}{//\ Since\ we\ want\ to\ maintain\ a\ single\ timestamp\ type\ (steady\_clock),}}
+\DoxyCodeLine{00358\ \ \ \ \ \textcolor{comment}{//\ we'll\ just\ return\ the\ steady\ clock\ time}}
+\DoxyCodeLine{00359\ \ \ \ \ \textcolor{comment}{//\ This\ is\ a\ simplification\ -\/\ in\ a\ real\ system\ you\ might\ want\ to}}
+\DoxyCodeLine{00360\ \ \ \ \ \textcolor{comment}{//\ maintain\ the\ relationship\ between\ system\ and\ steady\ time}}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_clock_a6d700b0a82c49d281747430069ef0db1}{getLocalSteadyHardwareTime}}();\ \textcolor{comment}{//\ +\ Simulation's\ artificial\ drift}}
+\DoxyCodeLine{00363\ \}}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ \mbox{\hyperlink{class_clock_a500605886bf252683db2fe59efe652ba}{Clock::getMaxLeaderSilenceInterval}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00366\ \ \ \ \ \textcolor{keywordflow}{return}\ MAX\_LEADER\_SILENCE\_INTERVAL;}
+\DoxyCodeLine{00367\ \}}
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00374\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_clock_a0ab5423b0a997aa13d7b6131c46d1358}{Clock::reset}}()\ \{}
+\DoxyCodeLine{00375\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock::reset()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00376\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00377\ \ \ \ \ \_currentState.store(\mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa96b1cef9e0248eb415e510c98e4ad2b1}{State::UNSYNCHRONIZED}},\ std::memory\_order\_release);}
+\DoxyCodeLine{00378\ \ \ \ \ \_current\_leader\_id\ =\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}};}
+\DoxyCodeLine{00379\ \ \ \ \ doClearSyncData();}
+\DoxyCodeLine{00380\ \ \ \ \ \_self\_id\ =\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}};\ \textcolor{comment}{//\ Reset\ self\_id\ as\ well\ for\ testing}}
+\DoxyCodeLine{00381\ \}}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ Clock::doClearSyncData()\ \{}
+\DoxyCodeLine{00384\ \ \ \ \ \_msg1\_data\ =\ \mbox{\hyperlink{struct_ptp_internal_message_info}{PtpInternalMessageInfo}}();}
+\DoxyCodeLine{00385\ \ \ \ \ \_msg2\_data\ =\ \mbox{\hyperlink{struct_ptp_internal_message_info}{PtpInternalMessageInfo}}();}
+\DoxyCodeLine{00386\ \ \ \ \ \_current\_offset\ =\ DurationType::zero();}
+\DoxyCodeLine{00387\ \ \ \ \ \_current\_drift\_fe\ =\ 0.0;}
+\DoxyCodeLine{00388\ \ \ \ \ \_leader\_time\_at\_last\_sync\_event\ =\ TimestampType::min();}
+\DoxyCodeLine{00389\ \ \ \ \ \_local\_time\_at\_last\_sync\_event\ =\ \mbox{\hyperlink{class_clock_a6d700b0a82c49d281747430069ef0db1}{getLocalSteadyHardwareTime}}();}
+\DoxyCodeLine{00390\ \ \ \ \ \_leader\_has\_changed\_flag.store(\textcolor{keyword}{false},\ std::memory\_order\_release);}
+\DoxyCodeLine{00391\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ Sync\ data\ cleared\(\backslash\)n"{}};}
+\DoxyCodeLine{00392\ \}}
+\DoxyCodeLine{00393\ }
+\DoxyCodeLine{00394\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ Clock::doProcessFirstLeaderMsg(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}\&\ msg\_data)\ \{}
+\DoxyCodeLine{00395\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ now\ =\ \mbox{\hyperlink{class_clock_a6d700b0a82c49d281747430069ef0db1}{getLocalSteadyHardwareTime}}();}
+\DoxyCodeLine{00396\ \ \ \ \ \_last\_sync\_local\_time\ =\ now;}
+\DoxyCodeLine{00397\ \ \ \ \ \_msg1\_data.ts\_tx\_at\_sender\ =\ msg\_data.\mbox{\hyperlink{struct_ptp_relevant_data_a63286839e08442908351928dd646a737}{ts\_tx\_at\_sender}};}
+\DoxyCodeLine{00398\ \ \ \ \ \_msg1\_data.ts\_local\_rx\ =\ msg\_data.\mbox{\hyperlink{struct_ptp_relevant_data_a8df7b439622b84080783866528e740b1}{ts\_local\_rx}};}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \ \ \ \ \_msg1\_data.d\_tx\_calc\ =\ std::chrono::microseconds(2);}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00402\ \ \ \ \ \_msg1\_data.leader\_time\_at\_local\_rx\_event\ =\ \_msg1\_data.ts\_tx\_at\_sender\ +\ \_msg1\_data.d\_tx\_calc;}
+\DoxyCodeLine{00403\ \ \ \ \ \_current\_offset\ =\ \_msg1\_data.ts\_local\_rx\ -\/\ \_msg1\_data.leader\_time\_at\_local\_rx\_event;}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00405\ \ \ \ \ \_leader\_time\_at\_last\_sync\_event\ =\ \_msg1\_data.leader\_time\_at\_local\_rx\_event;}
+\DoxyCodeLine{00406\ \ \ \ \ \_local\_time\_at\_last\_sync\_event\ =\ \_msg1\_data.ts\_local\_rx;}
+\DoxyCodeLine{00407\ \ \ \ \ \_current\_drift\_fe\ =\ 0.0;}
+\DoxyCodeLine{00408\ \ \ \ \ }
+\DoxyCodeLine{00409\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ Processed\ first\ leader\ message.\ Offset:\ "{}}\ }
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ <<\ \_current\_offset.count()\ <<\ \textcolor{stringliteral}{"{}us\(\backslash\)n"{}};}
+\DoxyCodeLine{00411\ \}}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ Clock::doProcessSecondLeaderMsgAndCalcDrift(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}\&\ msg\_data)\ \{}
+\DoxyCodeLine{00414\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ now\ =\ \mbox{\hyperlink{class_clock_a6d700b0a82c49d281747430069ef0db1}{getLocalSteadyHardwareTime}}();}
+\DoxyCodeLine{00415\ \ \ \ \ \_last\_sync\_local\_time\ =\ now;}
+\DoxyCodeLine{00416\ \ \ \ \ \_msg2\_data.ts\_tx\_at\_sender\ =\ msg\_data.\mbox{\hyperlink{struct_ptp_relevant_data_a63286839e08442908351928dd646a737}{ts\_tx\_at\_sender}};}
+\DoxyCodeLine{00417\ \ \ \ \ \_msg2\_data.ts\_local\_rx\ =\ msg\_data.\mbox{\hyperlink{struct_ptp_relevant_data_a8df7b439622b84080783866528e740b1}{ts\_local\_rx}};}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ \ \ \ \ \_msg2\_data.d\_tx\_calc\ =\ std::chrono::microseconds(2);}
+\DoxyCodeLine{00420\ \ \ \ \ \_msg2\_data.leader\_time\_at\_local\_rx\_event\ =\ \_msg2\_data.ts\_tx\_at\_sender\ +\ \_msg2\_data.d\_tx\_calc;}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \ \ \ \ \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ o1\ =\ \_msg1\_data.ts\_local\_rx\ -\/\ \_msg1\_data.leader\_time\_at\_local\_rx\_event;}
+\DoxyCodeLine{00423\ \ \ \ \ \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ o2\ =\ \_msg2\_data.ts\_local\_rx\ -\/\ \_msg2\_data.leader\_time\_at\_local\_rx\_event;}
+\DoxyCodeLine{00424\ \ \ \ \ \_current\_offset\ =\ o2;\ }
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \ \ \ \ \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ delta\_o\ =\ o2\ -\/\ o1;}
+\DoxyCodeLine{00427\ \ \ \ \ \textcolor{comment}{//\ Use\ effective\ leader\ timestamps\ at\ local\ reception\ events\ for\ delta\_T}}
+\DoxyCodeLine{00428\ \ \ \ \ \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{DurationType}}\ delta\_t\_leader\_effective\ =\ \_msg2\_data.leader\_time\_at\_local\_rx\_event\ -\/\ \_msg1\_data.leader\_time\_at\_local\_rx\_event;}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ \ \ \ \ \textcolor{keywordflow}{if}\ (delta\_t\_leader\_effective.count()\ >\ 0)\ \{}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \ \ \_current\_drift\_fe\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{clock_8h_a1da24dd25411ec4c2076f1a166d98609}{FrequencyErrorType}}\textcolor{keyword}{>}(delta\_o.count())\ /\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{clock_8h_a1da24dd25411ec4c2076f1a166d98609}{FrequencyErrorType}}\textcolor{keyword}{>}(delta\_t\_leader\_effective.count());}
+\DoxyCodeLine{00432\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ std::cerr\ <<\ "{}Clock\ WARNING:\ delta\_T\_leader\_effective\ is\ zero\ or\ negative\ during\ drift\ calculation.\ Drift\ not\ updated\ from\ "{}\ <<\ \_current\_drift\_fe\ <<\ "{}.\(\backslash\)n"{};}}
+\DoxyCodeLine{00434\ \ \ \ \ \}}
+\DoxyCodeLine{00435\ \ \ \ \ }
+\DoxyCodeLine{00436\ \ \ \ \ \_leader\_time\_at\_last\_sync\_event\ =\ \_msg2\_data.leader\_time\_at\_local\_rx\_event;}
+\DoxyCodeLine{00437\ \ \ \ \ \_local\_time\_at\_last\_sync\_event\ =\ \_msg2\_data.ts\_local\_rx;}
+\DoxyCodeLine{00438\ \ \ \ \ }
+\DoxyCodeLine{00439\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ Processed\ second\ leader\ message.\ New\ Offset:\ "{}}\ }
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \ \ <<\ \_current\_offset.count()\ <<\ \textcolor{stringliteral}{"{}us,\ Drift\ FE:\ "{}}\ <<\ \_current\_drift\_fe\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00441\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Clock]\ Leader\ tx\ timestamps:\ "{}}\ <<\ \_msg1\_data.ts\_tx\_at\_sender.time\_since\_epoch().count()\ <<}
+\DoxyCodeLine{00442\ \ \ \ \ \textcolor{stringliteral}{"{}\ "{}}\ <<\ \_msg2\_data.ts\_tx\_at\_sender.time\_since\_epoch().count()\ <<}
+\DoxyCodeLine{00443\ \ \ \ \ \textcolor{stringliteral}{"{}\ Local\ rx\ timestamps:\ "{}}\ <<\ \_msg1\_data.ts\_local\_rx.time\_since\_epoch().count()\ <<}
+\DoxyCodeLine{00444\ \ \ \ \ \textcolor{stringliteral}{"{}\ "{}}\ <<\ \_msg2\_data.ts\_local\_rx.time\_since\_epoch().count()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00445\ \}}
+\DoxyCodeLine{00446\ }
+\DoxyCodeLine{00447\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ Clock::doProcessSubsequentLeaderMsg(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}\&\ msg\_data)\ \{}
+\DoxyCodeLine{00448\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ now\ =\ \mbox{\hyperlink{class_clock_a6d700b0a82c49d281747430069ef0db1}{getLocalSteadyHardwareTime}}();}
+\DoxyCodeLine{00449\ \ \ \ \ \_last\_sync\_local\_time\ =\ now;}
+\DoxyCodeLine{00450\ \ \ \ \ \textcolor{comment}{//\ Action\ for:\ SYNCHRONIZED\ -\/-\/>\ SYNCHRONIZED}}
+\DoxyCodeLine{00451\ \ \ \ \ \_msg1\_data\ =\ \_msg2\_data;}
+\DoxyCodeLine{00452\ \ \ \ \ doProcessSecondLeaderMsgAndCalcDrift(msg\_data);}
+\DoxyCodeLine{00453\ \ \ \ \ }
+\DoxyCodeLine{00454\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ Processed\ subsequent\ leader\ message.\ Updated\ Offset:\ "{}}\ }
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ <<\ \_current\_offset.count()\ <<\ \textcolor{stringliteral}{"{}us,\ Updated\ Drift\ FE:\ "{}}\ <<\ \_current\_drift\_fe\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00456\ \}}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00458\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ Clock::isLeaderMessageTimedOut()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00459\ \ \ \ \ \textcolor{comment}{//\ NEW:\ If\ this\ node\ is\ the\ current\ leader,\ it\ doesn't\ time\ out\ on\ itself.}}
+\DoxyCodeLine{00460\ \ \ \ \ \textcolor{comment}{//\ Note:\ \_current\_leader\_id\ and\ \_self\_id\ are\ read.\ Callers\ must\ hold\ \_mutex.}}
+\DoxyCodeLine{00461\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_self\_id\ !=\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}}\ \&\&\ \_current\_leader\_id\ ==\ \_self\_id)\ \{}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00463\ \ \ \ \ \}}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00465\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_local\_time\_at\_last\_sync\_event\ ==\ TimestampType::min()\ ||\ !isLeaderAssigned())\ \{}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ No\ sync\ event\ yet\ or\ no\ leader,\ so\ not\ "{}timed\ out"{}\ in\ the\ sense\ of\ expecting\ a\ message}}
+\DoxyCodeLine{00467\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00468\ \ \ \ \ \}}
+\DoxyCodeLine{00469\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ local\_hw\_now\ =\ \mbox{\hyperlink{class_clock_a6d700b0a82c49d281747430069ef0db1}{getLocalSteadyHardwareTime}}();}
+\DoxyCodeLine{00470\ \ \ \ \ \textcolor{keywordflow}{return}\ (local\_hw\_now\ -\/\ \_last\_sync\_local\_time)\ >\ MAX\_LEADER\_SILENCE\_INTERVAL;}
+\DoxyCodeLine{00471\ \}}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ Clock::isMessageFromCurrentLeader(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}\&\ msg\_data)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00474\ \ \ \ \ \textcolor{keywordflow}{return}\ msg\_data.\mbox{\hyperlink{struct_ptp_relevant_data_ab2007597f3a427bbfb23fb81fe52cb0c}{sender\_id}}\ ==\ \_current\_leader\_id;}
+\DoxyCodeLine{00475\ \}}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ Clock::isLeaderAssigned()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00478\ \ \ \ \ \textcolor{keywordflow}{return}\ \_current\_leader\_id\ !=\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}};}
+\DoxyCodeLine{00479\ \}}
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00493\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ Clock::checkAndHandleLeaderChange(\mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ storage\_leader\_id)\ \{}
+\DoxyCodeLine{00494\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_current\_leader\_id\ !=\ storage\_leader\_id)\ \{}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Clock>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Clock:\ Leader\ changed\ from\ "{}}\ <<\ \_current\_leader\_id\ }
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ to\ "{}}\ <<\ storage\_leader\_id\ <<\ \textcolor{stringliteral}{"{}\ during\ activation\(\backslash\)n"{}};}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ \_current\_leader\_id\ =\ storage\_leader\_id;}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \_currentState.store(\mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa96b1cef9e0248eb415e510c98e4ad2b1}{State::UNSYNCHRONIZED}},\ std::memory\_order\_release);}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ doClearSyncData();}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};\ \textcolor{comment}{//\ Leader\ changed}}
+\DoxyCodeLine{00501\ \ \ \ \ \}}
+\DoxyCodeLine{00502\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \textcolor{comment}{//\ No\ change}}
+\DoxyCodeLine{00503\ \}}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \textcolor{comment}{//\ Stream\ operator\ for\ Clock::State}}
+\DoxyCodeLine{00506\ \textcolor{keyword}{inline}\ std::ostream\&\ \mbox{\hyperlink{clock_8h_ab4b4300b39e933c58a649b409d765592}{operator<<}}(std::ostream\&\ os,\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bda}{Clock::State}}\ state)\ \{}
+\DoxyCodeLine{00507\ \ \ \ \ \textcolor{keywordflow}{switch}\ (state)\ \{}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa96b1cef9e0248eb415e510c98e4ad2b1}{Clock::State::UNSYNCHRONIZED}}:}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ os\ <<\ \textcolor{stringliteral}{"{}UNSYNCHRONIZED"{}};}
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa64900a01baa6706d53db08f39b9259bd}{Clock::State::AWAITING\_SECOND\_MSG}}:}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ os\ <<\ \textcolor{stringliteral}{"{}AWAITING\_SECOND\_MSG"{}};}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bdaa35c25b3993876576ae1222f9ebb04f63}{Clock::State::SYNCHRONIZED}}:}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ os\ <<\ \textcolor{stringliteral}{"{}SYNCHRONIZED"{}};}
+\DoxyCodeLine{00514\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00515\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ os\ <<\ \textcolor{stringliteral}{"{}UNKNOWN\_STATE"{}};}
+\DoxyCodeLine{00516\ \ \ \ \ \}}
+\DoxyCodeLine{00517\ \}}
+\DoxyCodeLine{00518\ }
+\DoxyCodeLine{00519\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ CLOCK\_H}}
+
+\end{DoxyCode}

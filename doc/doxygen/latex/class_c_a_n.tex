@@ -1,0 +1,179 @@
+\doxysection{CAN Class Reference}
+\hypertarget{class_c_a_n}{}\label{class_c_a_n}\index{CAN@{CAN}}
+
+
+{\ttfamily \#include $<$bus.\+h$>$}
+
+Inheritance diagram for CAN\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{class_c_a_n}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer\+::\+Message}} \mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}}
+\item 
+typedef Initializer\+::\+Protocol\+\_\+\+T\+::\+Address \mbox{\hyperlink{class_c_a_n_aebcadd3df44c50eb74a733a8220610a3}{Address}}
+\item 
+typedef \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message\+::\+Unit}} \mbox{\hyperlink{class_c_a_n_aace97fc6d79153cbde52e6ed6d585a97}{Unit}}
+\item 
+typedef \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Message\+::\+Type}} \mbox{\hyperlink{class_c_a_n_adb64217ec81862dfaca8cdfa06b67056}{Type}}
+\item 
+typedef \mbox{\hyperlink{class_concurrent___observer}{Concurrent\+\_\+\+Observer}}$<$ \mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}}, \mbox{\hyperlink{class_condition}{Condition}} $>$ \mbox{\hyperlink{class_c_a_n_a359d8413dfaf202bdaa027d33286fd4f}{Observer}}
+\item 
+typedef \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ \mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}}, \mbox{\hyperlink{class_condition}{Condition}} $>$ \mbox{\hyperlink{class_c_a_n_a980249b929bca6a3c2c28613f0c4bf93}{Observed}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Types inherited from \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed$<$ Initializer\+::\+Message, Condition $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+typedef \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer\+::\+Message}} \mbox{\hyperlink{class_concurrent___observed_afcfe96d231174bc8f06785d79f44fe05}{Observed\+\_\+\+Data}}
+\item 
+typedef \mbox{\hyperlink{class_condition}{Condition}} \mbox{\hyperlink{class_concurrent___observed_a5de1df05b91b77d3d4d639010bdf72fd}{Observing\+\_\+\+Condition}}
+\item 
+typedef \mbox{\hyperlink{class_concurrent___observer}{Concurrent\+\_\+\+Observer}}$<$ \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer\+::\+Message}}, \mbox{\hyperlink{class_condition}{Condition}} $>$ \mbox{\hyperlink{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}{Observer}}
+\item 
+typedef \mbox{\hyperlink{class_ordered___list}{Ordered\+\_\+\+List}}$<$ \mbox{\hyperlink{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}{Observer}}, \mbox{\hyperlink{class_condition}{Condition}} $>$ \mbox{\hyperlink{class_concurrent___observed_aace59afae8d08a779e6461559aeb6b1c}{Observers}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Types inherited from \mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\+\_\+\+Data\+\_\+\+Observed$<$ Initializer\+::\+Message, Condition $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+typedef \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer\+::\+Message}} \mbox{\hyperlink{class_conditionally___data___observed_a8f4d45fc4a937ad39fd550117c691ea5}{Observed\+\_\+\+Data}}
+\item 
+typedef \mbox{\hyperlink{class_condition}{Condition}} \mbox{\hyperlink{class_conditionally___data___observed_a7abc2da27e26e93ce06c26447f5ad486}{Observing\+\_\+\+Condition}}
+\item 
+typedef \mbox{\hyperlink{class_conditional___data___observer}{Conditional\+\_\+\+Data\+\_\+\+Observer}}$<$ \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer\+::\+Message}}, \mbox{\hyperlink{class_condition}{Condition}} $>$ \mbox{\hyperlink{class_conditionally___data___observed_a4757a2ca2e3efd0be1e5478b92b635a8}{Observer}}
+\item 
+typedef \mbox{\hyperlink{class_ordered___list}{Ordered\+\_\+\+List}}$<$ \mbox{\hyperlink{class_conditionally___data___observed_a4757a2ca2e3efd0be1e5478b92b635a8}{Observer}}, \mbox{\hyperlink{class_condition}{Condition}} $>$ \mbox{\hyperlink{class_conditionally___data___observed_ac426014d93611d29092d39305eac99ff}{Observers}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_c_a_n_a0ceb0a5180d9da6d987f059a609aa04b}{CAN}} ()=default
+\item 
+\mbox{\hyperlink{class_c_a_n_a3cb7ade9935e058284389bc89c592544}{\texorpdfstring{$\sim$}{\string~}\+CAN}} ()=default
+\item 
+int \mbox{\hyperlink{class_c_a_n_a261d3591fcfa47037f7165dfaef96201}{send}} (\mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}} \texorpdfstring{$\ast$}{*}msg)
+\item 
+bool \mbox{\hyperlink{class_c_a_n_ae12e1bdec86279a65067b3ec0fea1810}{notify}} (\mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}} \texorpdfstring{$\ast$}{*}buf, \mbox{\hyperlink{class_condition}{Condition}} c) override
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed$<$ Initializer\+::\+Message, Condition $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_concurrent___observed_a2d06723771ce7a85324b6bae71562ead}{Concurrent\+\_\+\+Observed}} ()
+\item 
+\mbox{\hyperlink{class_concurrent___observed_aff678432d77b924ac2f9f96f81177900}{\texorpdfstring{$\sim$}{\string~}\+Concurrent\+\_\+\+Observed}} ()
+\item 
+void \mbox{\hyperlink{class_concurrent___observed_ae91b53086a4956c83505231c598d0182}{attach}} (\mbox{\hyperlink{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}{Observer}} \texorpdfstring{$\ast$}{*}o, \mbox{\hyperlink{class_condition}{Condition}} c)
+\item 
+void \mbox{\hyperlink{class_concurrent___observed_a04eef75c917de163a776ddebeb1f5d7a}{detach}} (\mbox{\hyperlink{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}{Observer}} \texorpdfstring{$\ast$}{*}o, \mbox{\hyperlink{class_condition}{Condition}} c)
+\item 
+virtual bool \mbox{\hyperlink{class_concurrent___observed_a0f1a9aa88542f8ae850f1cc3d27b4f98}{notify}} (\mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer\+::\+Message}} \texorpdfstring{$\ast$}{*}d, \mbox{\hyperlink{class_condition}{Condition}} c)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\+\_\+\+Data\+\_\+\+Observed$<$ Initializer\+::\+Message, Condition $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_conditionally___data___observed_ad30ddf9fb57ef30ba3bb21cc11f3ff7a}{Conditionally\+\_\+\+Data\+\_\+\+Observed}} ()=default
+\item 
+virtual \mbox{\hyperlink{class_conditionally___data___observed_a46e984d93441e348b861e7837e76d592}{\texorpdfstring{$\sim$}{\string~}\+Conditionally\+\_\+\+Data\+\_\+\+Observed}} ()=default
+\item 
+void \mbox{\hyperlink{class_conditionally___data___observed_a572069ab252a64a136006a50bb287a3a}{attach}} (\mbox{\hyperlink{class_conditionally___data___observed_a4757a2ca2e3efd0be1e5478b92b635a8}{Observer}} \texorpdfstring{$\ast$}{*}o, \mbox{\hyperlink{class_condition}{Condition}} c)
+\item 
+void \mbox{\hyperlink{class_conditionally___data___observed_a189c2425ae77901be9bdf5a5bb5bf640}{detach}} (\mbox{\hyperlink{class_conditionally___data___observed_a4757a2ca2e3efd0be1e5478b92b635a8}{Observer}} \texorpdfstring{$\ast$}{*}o, \mbox{\hyperlink{class_condition}{Condition}} c)
+\item 
+bool \mbox{\hyperlink{class_conditionally___data___observed_aa4cb3f63ba747ca4732e42d6a244ea80}{notify}} (\mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer\+::\+Message}} \texorpdfstring{$\ast$}{*}d, \mbox{\hyperlink{class_condition}{Condition}} c)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Protected Attributes inherited from \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed$<$ Initializer\+::\+Message, Condition $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+pthread\+\_\+mutex\+\_\+t \mbox{\hyperlink{class_concurrent___observed_a7e68e7947fd7db3a644bae7ce0fa6495}{\+\_\+mtx}}
+\item 
+\mbox{\hyperlink{class_concurrent___observed_aace59afae8d08a779e6461559aeb6b1c}{Observers}} \mbox{\hyperlink{class_concurrent___observed_ac8d1f370e094921ddc2faae02359f243}{\+\_\+observers}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes inherited from \mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\+\_\+\+Data\+\_\+\+Observed$<$ Initializer\+::\+Message, Condition $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_conditionally___data___observed_ac426014d93611d29092d39305eac99ff}{Observers}} \mbox{\hyperlink{class_conditionally___data___observed_a12935de2b8830363e0e5d3d0d298e318}{\+\_\+observers}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-typedef-members}
+\Hypertarget{class_c_a_n_doc-typedef-members}
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_c_a_n_aebcadd3df44c50eb74a733a8220610a3}\index{CAN@{CAN}!Address@{Address}}
+\index{Address@{Address}!CAN@{CAN}}
+\doxysubsubsection{\texorpdfstring{Address}{Address}}
+{\footnotesize\ttfamily \label{class_c_a_n_aebcadd3df44c50eb74a733a8220610a3} 
+typedef Initializer\+::\+Protocol\+\_\+\+T\+::\+Address \mbox{\hyperlink{class_c_a_n_aebcadd3df44c50eb74a733a8220610a3}{CAN\+::\+Address}}}
+
+\Hypertarget{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}\index{CAN@{CAN}!Message@{Message}}
+\index{Message@{Message}!CAN@{CAN}}
+\doxysubsubsection{\texorpdfstring{Message}{Message}}
+{\footnotesize\ttfamily \label{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268} 
+typedef \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer\+::\+Message}} \mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{CAN\+::\+Message}}}
+
+\Hypertarget{class_c_a_n_a980249b929bca6a3c2c28613f0c4bf93}\index{CAN@{CAN}!Observed@{Observed}}
+\index{Observed@{Observed}!CAN@{CAN}}
+\doxysubsubsection{\texorpdfstring{Observed}{Observed}}
+{\footnotesize\ttfamily \label{class_c_a_n_a980249b929bca6a3c2c28613f0c4bf93} 
+typedef \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$\mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}}, \mbox{\hyperlink{class_condition}{Condition}}$>$ \mbox{\hyperlink{class_c_a_n_a980249b929bca6a3c2c28613f0c4bf93}{CAN\+::\+Observed}}}
+
+\Hypertarget{class_c_a_n_a359d8413dfaf202bdaa027d33286fd4f}\index{CAN@{CAN}!Observer@{Observer}}
+\index{Observer@{Observer}!CAN@{CAN}}
+\doxysubsubsection{\texorpdfstring{Observer}{Observer}}
+{\footnotesize\ttfamily \label{class_c_a_n_a359d8413dfaf202bdaa027d33286fd4f} 
+typedef \mbox{\hyperlink{class_concurrent___observer}{Concurrent\+\_\+\+Observer}}$<$\mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}}, \mbox{\hyperlink{class_condition}{Condition}}$>$ \mbox{\hyperlink{class_c_a_n_a359d8413dfaf202bdaa027d33286fd4f}{CAN\+::\+Observer}}}
+
+\Hypertarget{class_c_a_n_adb64217ec81862dfaca8cdfa06b67056}\index{CAN@{CAN}!Type@{Type}}
+\index{Type@{Type}!CAN@{CAN}}
+\doxysubsubsection{\texorpdfstring{Type}{Type}}
+{\footnotesize\ttfamily \label{class_c_a_n_adb64217ec81862dfaca8cdfa06b67056} 
+typedef \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Message\+::\+Type}} \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{CAN\+::\+Type}}}
+
+\Hypertarget{class_c_a_n_aace97fc6d79153cbde52e6ed6d585a97}\index{CAN@{CAN}!Unit@{Unit}}
+\index{Unit@{Unit}!CAN@{CAN}}
+\doxysubsubsection{\texorpdfstring{Unit}{Unit}}
+{\footnotesize\ttfamily \label{class_c_a_n_aace97fc6d79153cbde52e6ed6d585a97} 
+typedef \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message\+::\+Unit}} \mbox{\hyperlink{class_c_a_n_aace97fc6d79153cbde52e6ed6d585a97}{CAN\+::\+Unit}}}
+
+
+
+\label{doc-constructors}
+\Hypertarget{class_c_a_n_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_c_a_n_a0ceb0a5180d9da6d987f059a609aa04b}\index{CAN@{CAN}!CAN@{CAN}}
+\index{CAN@{CAN}!CAN@{CAN}}
+\doxysubsubsection{\texorpdfstring{CAN()}{CAN()}}
+{\footnotesize\ttfamily \label{class_c_a_n_a0ceb0a5180d9da6d987f059a609aa04b} 
+CAN\+::\+CAN (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+\Hypertarget{class_c_a_n_a3cb7ade9935e058284389bc89c592544}\index{CAN@{CAN}!````~CAN@{\texorpdfstring{$\sim$}{\string~}CAN}}
+\index{````~CAN@{\texorpdfstring{$\sim$}{\string~}CAN}!CAN@{CAN}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}CAN()}{\string~CAN()}}
+{\footnotesize\ttfamily \label{class_c_a_n_a3cb7ade9935e058284389bc89c592544} 
+CAN\+::\texorpdfstring{$\sim$}{\string~}\+CAN (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_c_a_n_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_c_a_n_ae12e1bdec86279a65067b3ec0fea1810}\index{CAN@{CAN}!notify@{notify}}
+\index{notify@{notify}!CAN@{CAN}}
+\doxysubsubsection{\texorpdfstring{notify()}{notify()}}
+{\footnotesize\ttfamily \label{class_c_a_n_ae12e1bdec86279a65067b3ec0fea1810} 
+bool CAN\+::notify (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}} \texorpdfstring{$\ast$}{*}}]{buf}{, }\item[{\mbox{\hyperlink{class_condition}{Condition}}}]{c}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}}
+
+\Hypertarget{class_c_a_n_a261d3591fcfa47037f7165dfaef96201}\index{CAN@{CAN}!send@{send}}
+\index{send@{send}!CAN@{CAN}}
+\doxysubsubsection{\texorpdfstring{send()}{send()}}
+{\footnotesize\ttfamily \label{class_c_a_n_a261d3591fcfa47037f7165dfaef96201} 
+int CAN\+::send (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}} \texorpdfstring{$\ast$}{*}}]{msg}{}\end{DoxyParamCaption})}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/network/\mbox{\hyperlink{bus_8h}{bus.\+h}}\end{DoxyCompactItemize}

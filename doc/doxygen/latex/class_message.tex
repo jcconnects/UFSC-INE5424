@@ -1,0 +1,401 @@
+\doxysection{Message\texorpdfstring{$<$}{<} Channel \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_message}{}\label{class_message}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+
+
+Template class for network messages with \doxylink{class_clock}{Clock} integration.  
+
+
+
+
+{\ttfamily \#include $<$message.\+h$>$}
+
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+enum class \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}} \+: std\+::uint8\+\_\+t \{ \newline
+\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a696b031073e74bf2cb98e5ef201d4aa3}{UNKNOWN}} = 0
+, \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4accc0377a8afbf50e7094f5c23a8af223}{INVALID}} = 1
+, \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ac1833ca6521c2a6c481c6dbe9671738d}{INTEREST}}
+, \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a4fa1a4d2e48aa765093ca6aae57a5150}{RESPONSE}}
+, \newline
+\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a5f241c8c8f985b3c51e05d39cf030f4c}{STATUS}}
+, \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ace4e1a7286ff585e08bf30898cf6b3eb}{REQ}}
+, \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a43fc76e7030d9b4f29c4862987a061f4}{KEY\+\_\+\+RESPONSE}}
+ \}
+\item 
+typedef Channel\+::\+Address \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}}
+\item 
+typedef Channel\+::\+Physical\+\_\+\+Address \mbox{\hyperlink{class_message_a570a57cb42cbc97977feda17972dde87}{Physical\+\_\+\+Address}}
+\item 
+typedef Channel\+::\+Port \mbox{\hyperlink{class_message_a70773c9c1cf139e2fe11c502d1d0cdee}{Port}}
+\item 
+typedef std\+::uint32\+\_\+t \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}}
+\item 
+typedef std\+::vector$<$ std\+::uint8\+\_\+t $>$ \mbox{\hyperlink{class_message_a6a16dfdcb8a3f35650440459b673ebbe}{Array}}
+\item 
+typedef std\+::chrono\+::microseconds \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_message_ad59adc2b9f638117ca4004b3ea86d386}{Message}} (\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}} \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\+\_\+type}}, const \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}} \&\mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}}, \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}} \mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}, \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}} \mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}=\mbox{\hyperlink{class_message_ad04a4699ab611dddc70590532b236bf0}{ZERO}}, const void \texorpdfstring{$\ast$}{*}value\+\_\+data=nullptr, const unsigned int \mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\+\_\+size}}=0)
+\item 
+\mbox{\hyperlink{class_message_a5bf54d9aff7f328102f3872fd47dc1b2}{Message}} (const \mbox{\hyperlink{class_message}{Message}} \&other)
+\item 
+\mbox{\hyperlink{class_message_abe6ffb6c739ad77afe0d0603ade7cd01}{Message}} ()=default
+\item 
+\mbox{\hyperlink{class_message_a80ef7c17301775057bf90e7e5b77c558}{\texorpdfstring{$\sim$}{\string~}\+Message}} ()=default
+\item 
+const \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}} \& \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\+\_\+type}} () const
+\item 
+const \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}} \& \mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}} () const
+\item 
+const \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}} \& \mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{timestamp}} () const
+\item 
+const \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}} \& \mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}} () const
+\item 
+const \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}} \& \mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}} () const
+\item 
+const std\+::uint8\+\_\+t \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_message_aaf1cab965242de0422e0bd2ad3de2a69}{value}} () const
+\item 
+const unsigned int \mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\+\_\+size}} () const
+\item 
+const void \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{data}} () const
+\item 
+const unsigned int \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}} () const
+\item 
+const bool \mbox{\hyperlink{class_message_a5e1b63e51a32c96c04178a30859edbfc}{external}} () const
+\item 
+void \mbox{\hyperlink{class_message_a5105651558cae34d8076e11240b6669b}{message\+\_\+type}} (const \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}} message\+\_\+type)
+\item 
+void \mbox{\hyperlink{class_message_a21fcaa4a1fb1b1fa2ebe08dcc59fecfe}{origin}} (const \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}} addr)
+\item 
+void \mbox{\hyperlink{class_message_aea20253de0dade4fd3b092e7eb96065c}{timestamp}} (const \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}} timestamp)
+\item 
+void \mbox{\hyperlink{class_message_aac0416746dc6505d0d6fd1ca7f1bb839}{unit}} (const \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}} type)
+\item 
+void \mbox{\hyperlink{class_message_a6cee6082e977df193e798b183b9f2dee}{period}} (const \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}} period)
+\item 
+void \mbox{\hyperlink{class_message_aacf4553c7def85bfe8bdd7ff2d8bf7d9}{value}} (const void \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{data}}, const unsigned int \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}})
+\item 
+void \mbox{\hyperlink{class_message_ae38ef6f1926d671626d0fe5f8730547f}{external}} (const bool external)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{class_message}{Message}} \mbox{\hyperlink{class_message_ab8169b9a5a41c7aecf8c2b65a864643d}{deserialize}} (const void \texorpdfstring{$\ast$}{*}serialized, const unsigned int \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}})
+\item 
+static \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}} \mbox{\hyperlink{class_message_a6e77e8a3dd4ffc3e33f03e8754d330cd}{get\+Synchronized\+Timestamp}} ()
+\item 
+static bool \mbox{\hyperlink{class_message_ac64c57149efd21464b04986553a17650}{is\+Clock\+Synchronized}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static constexpr \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}} \mbox{\hyperlink{class_message_ad04a4699ab611dddc70590532b236bf0}{ZERO}} = Microseconds\+::zero()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename Channel$>$\newline
+class Message$<$ Channel $>$}
+Template class for network messages with \doxylink{class_clock}{Clock} integration. 
+
+This \doxylink{class_message}{Message} class is integrated with the \doxylink{class_clock}{Clock} singleton to provide synchronized timestamps across the distributed system. When messages are created, they automatically use the \doxylink{class_clock}{Clock}\textquotesingle{}s get\+Synchronized\+Time() method instead of local system time, ensuring temporal consistency in a PTP-\/synchronized network.
+
+\doxylink{class_clock}{Clock} Integration Features\+:
+\begin{DoxyItemize}
+\item Automatic synchronized timestamping in constructor
+\item Static utility methods for getting synchronized timestamps
+\item \doxylink{class_clock}{Clock} synchronization status checking
+\end{DoxyItemize}
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em \doxylink{class_protocol}{Protocol}} & The network protocol type (e.\+g., \doxylink{class_ethernet}{Ethernet}) \\
+\hline
+\end{DoxyTemplParams}
+
+
+\label{doc-typedef-members}
+\Hypertarget{class_message_doc-typedef-members}
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_message_a6a16dfdcb8a3f35650440459b673ebbe}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!Array@{Array}}
+\index{Array@{Array}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Array}{Array}}
+{\footnotesize\ttfamily \label{class_message_a6a16dfdcb8a3f35650440459b673ebbe} 
+template$<$typename Channel$>$ \\
+typedef std\+::vector$<$std\+::uint8\+\_\+t$>$ \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::\+Array}
+
+\Hypertarget{class_message_a8d96e96af236b29707044cc25f30c568}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!Microseconds@{Microseconds}}
+\index{Microseconds@{Microseconds}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Microseconds}{Microseconds}}
+{\footnotesize\ttfamily \label{class_message_a8d96e96af236b29707044cc25f30c568} 
+template$<$typename Channel$>$ \\
+typedef std\+::chrono\+::microseconds \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::\+Microseconds}
+
+\Hypertarget{class_message_a9503881ced5ab90d776a921d5e29e27f}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!Origin@{Origin}}
+\index{Origin@{Origin}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Origin}{Origin}}
+{\footnotesize\ttfamily \label{class_message_a9503881ced5ab90d776a921d5e29e27f} 
+template$<$typename Channel$>$ \\
+typedef Channel\+::\+Address \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::\+Origin}
+
+\Hypertarget{class_message_a570a57cb42cbc97977feda17972dde87}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!Physical\_Address@{Physical\_Address}}
+\index{Physical\_Address@{Physical\_Address}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Physical\_Address}{Physical\_Address}}
+{\footnotesize\ttfamily \label{class_message_a570a57cb42cbc97977feda17972dde87} 
+template$<$typename Channel$>$ \\
+typedef Channel\+::\+Physical\+\_\+\+Address \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::\+Physical\+\_\+\+Address}
+
+\Hypertarget{class_message_a70773c9c1cf139e2fe11c502d1d0cdee}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!Port@{Port}}
+\index{Port@{Port}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Port}{Port}}
+{\footnotesize\ttfamily \label{class_message_a70773c9c1cf139e2fe11c502d1d0cdee} 
+template$<$typename Channel$>$ \\
+typedef Channel\+::\+Port \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::\+Port}
+
+\Hypertarget{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!Unit@{Unit}}
+\index{Unit@{Unit}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Unit}{Unit}}
+{\footnotesize\ttfamily \label{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4} 
+template$<$typename Channel$>$ \\
+typedef std\+::uint32\+\_\+t \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::\+Unit}
+
+
+
+\label{doc-enum-members}
+\Hypertarget{class_message_doc-enum-members}
+\doxysubsection{Member Enumeration Documentation}
+\Hypertarget{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!Type@{Type}}
+\index{Type@{Type}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Type}{Type}}
+{\footnotesize\ttfamily \label{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4} 
+template$<$typename Channel$>$ \\
+enum class \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Message\+::\+Type}} \+: std\+::uint8\+\_\+t\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}[2]{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{UNKNOWN@{UNKNOWN}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!UNKNOWN@{UNKNOWN}}}\Hypertarget{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a696b031073e74bf2cb98e5ef201d4aa3}\label{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a696b031073e74bf2cb98e5ef201d4aa3} 
+UNKNOWN&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INVALID@{INVALID}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!INVALID@{INVALID}}}\Hypertarget{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4accc0377a8afbf50e7094f5c23a8af223}\label{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4accc0377a8afbf50e7094f5c23a8af223} 
+INVALID&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INTEREST@{INTEREST}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!INTEREST@{INTEREST}}}\Hypertarget{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ac1833ca6521c2a6c481c6dbe9671738d}\label{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ac1833ca6521c2a6c481c6dbe9671738d} 
+INTEREST&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RESPONSE@{RESPONSE}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!RESPONSE@{RESPONSE}}}\Hypertarget{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a4fa1a4d2e48aa765093ca6aae57a5150}\label{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a4fa1a4d2e48aa765093ca6aae57a5150} 
+RESPONSE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{STATUS@{STATUS}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!STATUS@{STATUS}}}\Hypertarget{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a5f241c8c8f985b3c51e05d39cf030f4c}\label{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a5f241c8c8f985b3c51e05d39cf030f4c} 
+STATUS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{REQ@{REQ}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!REQ@{REQ}}}\Hypertarget{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ace4e1a7286ff585e08bf30898cf6b3eb}\label{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ace4e1a7286ff585e08bf30898cf6b3eb} 
+REQ&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{KEY\_RESPONSE@{KEY\_RESPONSE}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!KEY\_RESPONSE@{KEY\_RESPONSE}}}\Hypertarget{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a43fc76e7030d9b4f29c4862987a061f4}\label{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a43fc76e7030d9b4f29c4862987a061f4} 
+KEY\+\_\+\+RESPONSE&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\label{doc-constructors}
+\Hypertarget{class_message_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_message_ad59adc2b9f638117ca4004b3ea86d386}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!Message@{Message}}
+\index{Message@{Message}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Message()}{Message()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily \label{class_message_ad59adc2b9f638117ca4004b3ea86d386} 
+template$<$typename Channel$>$ \\
+\mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\mbox{\hyperlink{class_message}{\+::\+Message}} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}}]{message\+\_\+type}{, }\item[{const \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}} \&}]{origin}{, }\item[{\mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}}}]{unit}{, }\item[{\mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}}]{period}{ = {\ttfamily \mbox{\hyperlink{class_message_ad04a4699ab611dddc70590532b236bf0}{ZERO}}}, }\item[{const void \texorpdfstring{$\ast$}{*}}]{value\+\_\+data}{ = {\ttfamily nullptr}, }\item[{const unsigned int}]{value\+\_\+size}{ = {\ttfamily 0}}\end{DoxyParamCaption})}
+
+\Hypertarget{class_message_a5bf54d9aff7f328102f3872fd47dc1b2}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!Message@{Message}}
+\index{Message@{Message}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Message()}{Message()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily \label{class_message_a5bf54d9aff7f328102f3872fd47dc1b2} 
+template$<$typename Channel$>$ \\
+\mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\mbox{\hyperlink{class_message}{\+::\+Message}} (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$ \&}]{other}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_message_abe6ffb6c739ad77afe0d0603ade7cd01}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!Message@{Message}}
+\index{Message@{Message}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{Message()}{Message()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily \label{class_message_abe6ffb6c739ad77afe0d0603ade7cd01} 
+template$<$typename Channel$>$ \\
+\mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\mbox{\hyperlink{class_message}{\+::\+Message}} (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+\Hypertarget{class_message_a80ef7c17301775057bf90e7e5b77c558}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!````~Message@{\texorpdfstring{$\sim$}{\string~}Message}}
+\index{````~Message@{\texorpdfstring{$\sim$}{\string~}Message}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Message()}{\string~Message()}}
+{\footnotesize\ttfamily \label{class_message_a80ef7c17301775057bf90e7e5b77c558} 
+template$<$typename Channel$>$ \\
+\mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::\texorpdfstring{$\sim$}{\string~}\mbox{\hyperlink{class_message}{Message}} (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_message_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!data@{data}}
+\index{data@{data}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{data()}{data()}}
+{\footnotesize\ttfamily \label{class_message_af4a12921a8a6818b391da4ebc0ee0d4d} 
+template$<$typename Channel$>$ \\
+const void \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::data (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+\Hypertarget{class_message_ab8169b9a5a41c7aecf8c2b65a864643d}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!deserialize@{deserialize}}
+\index{deserialize@{deserialize}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{deserialize()}{deserialize()}}
+{\footnotesize\ttfamily \label{class_message_ab8169b9a5a41c7aecf8c2b65a864643d} 
+template$<$typename Channel$>$ \\
+\mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$ \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::deserialize (\begin{DoxyParamCaption}\item[{const void \texorpdfstring{$\ast$}{*}}]{serialized}{, }\item[{const unsigned int}]{size}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_message_a5e1b63e51a32c96c04178a30859edbfc}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!external@{external}}
+\index{external@{external}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{external()}{external()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_message_a5e1b63e51a32c96c04178a30859edbfc} 
+template$<$typename Channel$>$ \\
+const bool \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::external (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+\Hypertarget{class_message_ae38ef6f1926d671626d0fe5f8730547f}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!external@{external}}
+\index{external@{external}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{external()}{external()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_message_ae38ef6f1926d671626d0fe5f8730547f} 
+template$<$typename Channel$>$ \\
+void \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::external (\begin{DoxyParamCaption}\item[{const bool}]{external}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_message_a6e77e8a3dd4ffc3e33f03e8754d330cd}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!getSynchronizedTimestamp@{getSynchronizedTimestamp}}
+\index{getSynchronizedTimestamp@{getSynchronizedTimestamp}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{getSynchronizedTimestamp()}{getSynchronizedTimestamp()}}
+{\footnotesize\ttfamily \label{class_message_a6e77e8a3dd4ffc3e33f03e8754d330cd} 
+template$<$typename \mbox{\hyperlink{class_protocol}{Protocol}}$>$ \\
+\mbox{\hyperlink{class_message}{Message}}$<$ \mbox{\hyperlink{class_protocol}{Protocol}} $>$\mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{\+::\+Microseconds}} \mbox{\hyperlink{class_message}{Message}}$<$ \mbox{\hyperlink{class_protocol}{Protocol}} $>$\+::get\+Synchronized\+Timestamp (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_message_ac64c57149efd21464b04986553a17650}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!isClockSynchronized@{isClockSynchronized}}
+\index{isClockSynchronized@{isClockSynchronized}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{isClockSynchronized()}{isClockSynchronized()}}
+{\footnotesize\ttfamily \label{class_message_ac64c57149efd21464b04986553a17650} 
+template$<$typename \mbox{\hyperlink{class_protocol}{Protocol}}$>$ \\
+bool \mbox{\hyperlink{class_message}{Message}}$<$ \mbox{\hyperlink{class_protocol}{Protocol}} $>$\+::is\+Clock\+Synchronized (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!message\_type@{message\_type}}
+\index{message\_type@{message\_type}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{message\_type()}{message\_type()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae} 
+template$<$typename Channel$>$ \\
+const \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{\+::\+Type}} \& \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::message\+\_\+type (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+\Hypertarget{class_message_a5105651558cae34d8076e11240b6669b}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!message\_type@{message\_type}}
+\index{message\_type@{message\_type}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{message\_type()}{message\_type()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_message_a5105651558cae34d8076e11240b6669b} 
+template$<$typename Channel$>$ \\
+void \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::message\+\_\+type (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}}]{message\+\_\+type}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_message_aa3290cab595b83a90309002d03379d58}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!origin@{origin}}
+\index{origin@{origin}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{origin()}{origin()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_message_aa3290cab595b83a90309002d03379d58} 
+template$<$typename Channel$>$ \\
+const \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{\+::\+Origin}} \& \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::origin (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+\Hypertarget{class_message_a21fcaa4a1fb1b1fa2ebe08dcc59fecfe}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!origin@{origin}}
+\index{origin@{origin}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{origin()}{origin()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_message_a21fcaa4a1fb1b1fa2ebe08dcc59fecfe} 
+template$<$typename Channel$>$ \\
+void \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::origin (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}}}]{addr}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_message_ae793e41a6806927dd1f159ec49837508}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!period@{period}}
+\index{period@{period}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{period()}{period()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_message_ae793e41a6806927dd1f159ec49837508} 
+template$<$typename Channel$>$ \\
+const \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{\+::\+Microseconds}} \& \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::period (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+\Hypertarget{class_message_a6cee6082e977df193e798b183b9f2dee}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!period@{period}}
+\index{period@{period}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{period()}{period()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_message_a6cee6082e977df193e798b183b9f2dee} 
+template$<$typename Channel$>$ \\
+void \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::period (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}}]{period}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!size@{size}}
+\index{size@{size}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{size()}{size()}}
+{\footnotesize\ttfamily \label{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f} 
+template$<$typename Channel$>$ \\
+const unsigned int \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::size (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+\Hypertarget{class_message_aae60b766de043dc68bdc455e572d2c19}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!timestamp@{timestamp}}
+\index{timestamp@{timestamp}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{timestamp()}{timestamp()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_message_aae60b766de043dc68bdc455e572d2c19} 
+template$<$typename Channel$>$ \\
+const \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{\+::\+Microseconds}} \& \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::timestamp (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+\Hypertarget{class_message_aea20253de0dade4fd3b092e7eb96065c}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!timestamp@{timestamp}}
+\index{timestamp@{timestamp}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{timestamp()}{timestamp()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_message_aea20253de0dade4fd3b092e7eb96065c} 
+template$<$typename Channel$>$ \\
+void \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::timestamp (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}}]{timestamp}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_message_a735ef7d00f8107014facffab3b89f61e}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!unit@{unit}}
+\index{unit@{unit}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{unit()}{unit()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_message_a735ef7d00f8107014facffab3b89f61e} 
+template$<$typename Channel$>$ \\
+const \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{\+::\+Unit}} \& \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::unit (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+\Hypertarget{class_message_aac0416746dc6505d0d6fd1ca7f1bb839}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!unit@{unit}}
+\index{unit@{unit}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{unit()}{unit()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_message_aac0416746dc6505d0d6fd1ca7f1bb839} 
+template$<$typename Channel$>$ \\
+void \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::unit (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}}}]{type}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_message_aaf1cab965242de0422e0bd2ad3de2a69}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!value@{value}}
+\index{value@{value}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{value()}{value()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_message_aaf1cab965242de0422e0bd2ad3de2a69} 
+template$<$typename Channel$>$ \\
+const std\+::uint8\+\_\+t \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::value (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+\Hypertarget{class_message_aacf4553c7def85bfe8bdd7ff2d8bf7d9}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!value@{value}}
+\index{value@{value}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{value()}{value()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_message_aacf4553c7def85bfe8bdd7ff2d8bf7d9} 
+template$<$typename Channel$>$ \\
+void \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::value (\begin{DoxyParamCaption}\item[{const void \texorpdfstring{$\ast$}{*}}]{data}{, }\item[{const unsigned int}]{size}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_message_a7f18843f030797c61e327d63d98e6a4a}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!value\_size@{value\_size}}
+\index{value\_size@{value\_size}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{value\_size()}{value\_size()}}
+{\footnotesize\ttfamily \label{class_message_a7f18843f030797c61e327d63d98e6a4a} 
+template$<$typename Channel$>$ \\
+const unsigned int \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::value\+\_\+size (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+
+
+\label{doc-variable-members}
+\Hypertarget{class_message_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_message_ad04a4699ab611dddc70590532b236bf0}\index{Message$<$ Channel $>$@{Message$<$ Channel $>$}!ZERO@{ZERO}}
+\index{ZERO@{ZERO}!Message$<$ Channel $>$@{Message$<$ Channel $>$}}
+\doxysubsubsection{\texorpdfstring{ZERO}{ZERO}}
+{\footnotesize\ttfamily \label{class_message_ad04a4699ab611dddc70590532b236bf0} 
+template$<$typename Channel$>$ \\
+\mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}} \mbox{\hyperlink{class_message}{Message}}$<$ Channel $>$\+::\+ZERO = Microseconds\+::zero()\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [constexpr]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/network/\mbox{\hyperlink{message_8h}{message.\+h}}\end{DoxyCompactItemize}

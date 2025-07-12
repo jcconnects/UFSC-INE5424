@@ -1,0 +1,143 @@
+\doxysection{Static\+Size\+Hashed\+Cache\texorpdfstring{$<$}{<} V, N \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_static_size_hashed_cache}{}\label{class_static_size_hashed_cache}\index{StaticSizeHashedCache$<$ V, N $>$@{StaticSizeHashedCache$<$ V, N $>$}}
+
+
+A hash cache with a static size, using linear probing for collision resolution.  
+
+
+
+
+{\ttfamily \#include $<$static\+\_\+size\+\_\+hashed\+\_\+cache.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_static_size_hashed_cache_a649863a839bf86f70a9a0fd78da10b69}{Static\+Size\+Hashed\+Cache}} ()
+\begin{DoxyCompactList}\small\item\em Constructs a new \doxylink{class_static_size_hashed_cache}{Static\+Size\+Hashed\+Cache} object. Initializes the cache as empty. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_static_size_hashed_cache_a344e386f2d6a3e7e1d9d2d4d431181f9}{add}} (long int key, V value)
+\begin{DoxyCompactList}\small\item\em Adds a key-\/value pair to the cache. If the key already exists, its value is updated. It uses linear probing to find a vacant spot if a collision occurs. \end{DoxyCompactList}\item 
+V \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_static_size_hashed_cache_a606ab3224a23ea9600291b74bd57c011}{get}} (long int key)
+\begin{DoxyCompactList}\small\item\em Retrieves a pointer to the value associated with a given key. It uses linear probing to find the key. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{class_static_size_hashed_cache_ab89c0d749fbd74465b73512b5d10b6cf}{contains}} (long int key) const
+\begin{DoxyCompactList}\small\item\em Determines if a key is already in the data structure. It uses linear probing to find the key. \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename F$>$ }\\void \mbox{\hyperlink{class_static_size_hashed_cache_a0287a58c92ed5dfbc78fc278564f7d17}{for\+\_\+each}} (F \&\&fn)
+\begin{DoxyCompactList}\small\item\em Iterate over all occupied entries and apply a functor. The functor receives (key, value\&) as parameters. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename V, size\+\_\+t N = 1000$>$\newline
+class Static\+Size\+Hashed\+Cache$<$ V, N $>$}
+A hash cache with a static size, using linear probing for collision resolution. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em V} & The type of the values to be stored in the cache. \\
+\hline
+{\em N} & The static size of the cache. \\
+\hline
+\end{DoxyTemplParams}
+
+
+\label{doc-constructors}
+\Hypertarget{class_static_size_hashed_cache_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_static_size_hashed_cache_a649863a839bf86f70a9a0fd78da10b69}\index{StaticSizeHashedCache$<$ V, N $>$@{StaticSizeHashedCache$<$ V, N $>$}!StaticSizeHashedCache@{StaticSizeHashedCache}}
+\index{StaticSizeHashedCache@{StaticSizeHashedCache}!StaticSizeHashedCache$<$ V, N $>$@{StaticSizeHashedCache$<$ V, N $>$}}
+\doxysubsubsection{\texorpdfstring{StaticSizeHashedCache()}{StaticSizeHashedCache()}}
+{\footnotesize\ttfamily \label{class_static_size_hashed_cache_a649863a839bf86f70a9a0fd78da10b69} 
+template$<$typename V, size\+\_\+t N = 1000$>$ \\
+\mbox{\hyperlink{class_static_size_hashed_cache}{Static\+Size\+Hashed\+Cache}}$<$ V, N $>$\mbox{\hyperlink{class_static_size_hashed_cache}{\+::\+Static\+Size\+Hashed\+Cache}} (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Constructs a new \doxylink{class_static_size_hashed_cache}{Static\+Size\+Hashed\+Cache} object. Initializes the cache as empty. 
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_static_size_hashed_cache_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_static_size_hashed_cache_a344e386f2d6a3e7e1d9d2d4d431181f9}\index{StaticSizeHashedCache$<$ V, N $>$@{StaticSizeHashedCache$<$ V, N $>$}!add@{add}}
+\index{add@{add}!StaticSizeHashedCache$<$ V, N $>$@{StaticSizeHashedCache$<$ V, N $>$}}
+\doxysubsubsection{\texorpdfstring{add()}{add()}}
+{\footnotesize\ttfamily \label{class_static_size_hashed_cache_a344e386f2d6a3e7e1d9d2d4d431181f9} 
+template$<$typename V, size\+\_\+t N = 1000$>$ \\
+void \mbox{\hyperlink{class_static_size_hashed_cache}{Static\+Size\+Hashed\+Cache}}$<$ V, N $>$\+::add (\begin{DoxyParamCaption}\item[{long int}]{key}{, }\item[{V}]{value}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Adds a key-\/value pair to the cache. If the key already exists, its value is updated. It uses linear probing to find a vacant spot if a collision occurs. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & The key to add. \\
+\hline
+{\em value} & The value to associate with the key. \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::runtime\+\_\+error} & if the cache is full and a new key is being added. \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{class_static_size_hashed_cache_ab89c0d749fbd74465b73512b5d10b6cf}\index{StaticSizeHashedCache$<$ V, N $>$@{StaticSizeHashedCache$<$ V, N $>$}!contains@{contains}}
+\index{contains@{contains}!StaticSizeHashedCache$<$ V, N $>$@{StaticSizeHashedCache$<$ V, N $>$}}
+\doxysubsubsection{\texorpdfstring{contains()}{contains()}}
+{\footnotesize\ttfamily \label{class_static_size_hashed_cache_ab89c0d749fbd74465b73512b5d10b6cf} 
+template$<$typename V, size\+\_\+t N = 1000$>$ \\
+bool \mbox{\hyperlink{class_static_size_hashed_cache}{Static\+Size\+Hashed\+Cache}}$<$ V, N $>$\+::contains (\begin{DoxyParamCaption}\item[{long int}]{key}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Determines if a key is already in the data structure. It uses linear probing to find the key. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & The key to look for. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the key is in the cache, false otherwise. 
+\end{DoxyReturn}
+\Hypertarget{class_static_size_hashed_cache_a0287a58c92ed5dfbc78fc278564f7d17}\index{StaticSizeHashedCache$<$ V, N $>$@{StaticSizeHashedCache$<$ V, N $>$}!for\_each@{for\_each}}
+\index{for\_each@{for\_each}!StaticSizeHashedCache$<$ V, N $>$@{StaticSizeHashedCache$<$ V, N $>$}}
+\doxysubsubsection{\texorpdfstring{for\_each()}{for\_each()}}
+{\footnotesize\ttfamily \label{class_static_size_hashed_cache_a0287a58c92ed5dfbc78fc278564f7d17} 
+template$<$typename V, size\+\_\+t N = 1000$>$ \\
+template$<$typename F$>$ \\
+void \mbox{\hyperlink{class_static_size_hashed_cache}{Static\+Size\+Hashed\+Cache}}$<$ V, N $>$\+::for\+\_\+each (\begin{DoxyParamCaption}\item[{F \&\&}]{fn}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Iterate over all occupied entries and apply a functor. The functor receives (key, value\&) as parameters. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em F} & Callable type \\
+\hline
+\end{DoxyTemplParams}
+\Hypertarget{class_static_size_hashed_cache_a606ab3224a23ea9600291b74bd57c011}\index{StaticSizeHashedCache$<$ V, N $>$@{StaticSizeHashedCache$<$ V, N $>$}!get@{get}}
+\index{get@{get}!StaticSizeHashedCache$<$ V, N $>$@{StaticSizeHashedCache$<$ V, N $>$}}
+\doxysubsubsection{\texorpdfstring{get()}{get()}}
+{\footnotesize\ttfamily \label{class_static_size_hashed_cache_a606ab3224a23ea9600291b74bd57c011} 
+template$<$typename V, size\+\_\+t N = 1000$>$ \\
+V \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_static_size_hashed_cache}{Static\+Size\+Hashed\+Cache}}$<$ V, N $>$\+::get (\begin{DoxyParamCaption}\item[{long int}]{key}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Retrieves a pointer to the value associated with a given key. It uses linear probing to find the key. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & The key to look for. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A pointer to the value if the key is found, otherwise nullptr. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+include/api/\mbox{\hyperlink{traits_8h}{traits.\+h}}\item 
+include/api/util/\mbox{\hyperlink{static__size__hashed__cache_8h}{static\+\_\+size\+\_\+hashed\+\_\+cache.\+h}}\end{DoxyCompactItemize}

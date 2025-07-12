@@ -1,0 +1,58 @@
+\doxysection{ecu\+\_\+factory.\+hpp}
+\hypertarget{ecu__factory_8hpp_source}{}\label{ecu__factory_8hpp_source}\index{include/app/components/ecu\_factory.hpp@{include/app/components/ecu\_factory.hpp}}
+\mbox{\hyperlink{ecu__factory_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ ECU\_FACTORY\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ ECU\_FACTORY\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{agent_8h}{../../api/framework/agent.h}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ecu__data_8hpp}{ecu\_data.hpp}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ecu__functions_8hpp}{ecu\_functions.hpp}}"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{datatypes_8h}{../datatypes.h}}"{}}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00028\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{ecu__factory_8hpp_afd42ad1f823fb5044d5c3c2ffc6282d8}{create\_ecu\_component}}(}
+\DoxyCodeLine{00029\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,\ }
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}ECUComponent"{}}}
+\DoxyCodeLine{00032\ )\ \{}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{comment}{//\ Parameter\ validation\ following\ EPOS\ principles}}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordflow}{if}\ (!can)\ \{}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}CAN\ bus\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00036\ \ \ \ \ \}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{comment}{//\ Use\ default\ name\ if\ an\ empty\ string\ is\ provided}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ agentName\ =\ name.empty()\ ?\ \textcolor{stringliteral}{"{}ECUComponent"{}}\ :\ name;}
+\DoxyCodeLine{00040\ \ \ \ \ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ Create\ component\ data\ for\ ECU\ consumer}}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ std::make\_unique<ECUData>();}
+\DoxyCodeLine{00043\ \ \ \ \ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ Create\ Agent\ using\ function-\/based\ composition}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{//\ ECU\ is\ configured\ as\ consumer\ for\ EXTERNAL\_POINT\_CLOUD\_XYZ\ (matching\ original)}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<Agent>(}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ can,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CAN\ bus}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ agentName,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Agent\ name}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa36839459114ab3d7ef142b7befb47bc5}{DataTypes::EXTERNAL\_POINT\_CLOUD\_XYZ}}),\ \textcolor{comment}{//\ Data\ unit\ (matching\ original)}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ Agent::Type::RESPONSE,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Consumer\ observes\ RESPONSE}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ addr,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Network\ address}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{ecu__functions_8hpp_ad13ece3d8efb31a62055866dfda2e269}{ecu\_producer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Producer\ function\ (returns\ empty)}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{ecu__functions_8hpp_ad9180ad60f199dad373b1e201a2e6218}{ecu\_consumer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Response\ handler\ function\ pointer}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Component\ data}}
+\DoxyCodeLine{00055\ \ \ \ \ );}
+\DoxyCodeLine{00056\ \}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00072\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{ecu__factory_8hpp_a5b46ef4effc9f234a703ef293417df1f}{create\_ecu\_component\_with\_period}}(}
+\DoxyCodeLine{00073\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,\ }
+\DoxyCodeLine{00075\ \ \ \ \ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent::Microseconds}}\ period\ =\ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent::Microseconds}}(1000000),}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}ECUComponent"{}}}
+\DoxyCodeLine{00077\ )\ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keyword}{auto}\ ecu\ =\ \mbox{\hyperlink{ecu__factory_8hpp_afd42ad1f823fb5044d5c3c2ffc6282d8}{create\_ecu\_component}}(can,\ addr,\ name);}
+\DoxyCodeLine{00079\ \ \ \ \ ecu-\/>start\_periodic\_interest(\textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa36839459114ab3d7ef142b7befb47bc5}{DataTypes::EXTERNAL\_POINT\_CLOUD\_XYZ}}),\ period);}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordflow}{return}\ ecu;}
+\DoxyCodeLine{00081\ \}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ ECU\_FACTORY\_HPP\ }}
+
+\end{DoxyCode}

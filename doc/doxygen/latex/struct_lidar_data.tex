@@ -1,0 +1,205 @@
+\doxysection{Lidar\+Data Struct Reference}
+\hypertarget{struct_lidar_data}{}\label{struct_lidar_data}\index{LidarData@{LidarData}}
+
+
+Data structure for Lidar component.  
+
+
+
+
+{\ttfamily \#include $<$lidar\+\_\+data.\+hpp$>$}
+
+Inheritance diagram for Lidar\+Data\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{struct_lidar_data}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{struct_lidar_data_a0c8fe11914e9aff260be3359b00ebde3}{Lidar\+Data}} ()
+\begin{DoxyCompactList}\small\item\em Constructor initializes random number generation with realistic ranges. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_lidar_data_ac9ea7edc6e9f68f21f36bc0d5d3ac62e}{update\+\_\+spatial\+\_\+range}} (double x\+\_\+min, double x\+\_\+max, double y\+\_\+min, double y\+\_\+max, double z\+\_\+min, double z\+\_\+max)
+\begin{DoxyCompactList}\small\item\em Update the point cloud generation ranges. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_lidar_data_af25f4ca6c1eb1cea3d1ac354b3abd4e0}{update\+\_\+density\+\_\+range}} (int min\+\_\+points, int max\+\_\+points)
+\begin{DoxyCompactList}\small\item\em Update the point cloud density parameters. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_lidar_data_a34662e0ab1edfa4739633a3cf74dfa43}{update\+\_\+timing\+\_\+range}} (int min\+\_\+delay\+\_\+ms, int max\+\_\+delay\+\_\+ms)
+\begin{DoxyCompactList}\small\item\em Update the scan timing parameters. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{struct_component_data}{Component\+Data}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual \mbox{\hyperlink{struct_component_data_a9d2f13c283f7f17eee8f4283c04f519d}{\texorpdfstring{$\sim$}{\string~}\+Component\+Data}} ()=default
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::random\+\_\+device \mbox{\hyperlink{struct_lidar_data_ab028cb6a2247f150d1184f5b3662f2f5}{rd}}
+\item 
+std\+::mt19937 \mbox{\hyperlink{struct_lidar_data_ae75fd8d773e563174b414bcb2f9da605}{gen}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_lidar_data_a7861762e7420eea3b0ce6d31400fe945}{x\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_lidar_data_a289aa9bb4f75ec3141d1506a6af0790b}{y\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_lidar_data_a9d0a37d41d66cd37d13963bbc4fd80d7}{z\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_lidar_data_a18361dcacb044e8c72167ca36313bedd}{intensity\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+int\+\_\+distribution \mbox{\hyperlink{struct_lidar_data_aa8ddadf1c8ed7a2f2a40e1d74ca36178}{num\+\_\+points\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+int\+\_\+distribution \mbox{\hyperlink{struct_lidar_data_a4a71df05971be5cf51b1488a000d780b}{delay\+\_\+dist}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Data structure for Lidar component. 
+
+Following EPOS Smart\+Data principles, this structure contains all the data needed for \doxylink{struct_lidar_component}{Lidar\+Component} functionality. Generates realistic 3D point cloud data with configurable ranges and densities for simulation purposes.
+
+Replaces inheritance-\/based data storage with pure composition. 
+
+\label{doc-constructors}
+\Hypertarget{struct_lidar_data_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{struct_lidar_data_a0c8fe11914e9aff260be3359b00ebde3}\index{LidarData@{LidarData}!LidarData@{LidarData}}
+\index{LidarData@{LidarData}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{LidarData()}{LidarData()}}
+{\footnotesize\ttfamily \label{struct_lidar_data_a0c8fe11914e9aff260be3359b00ebde3} 
+Lidar\+Data\+::\+Lidar\+Data (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Constructor initializes random number generation with realistic ranges. 
+
+Sets up the same random distributions as the original \doxylink{struct_lidar_component}{Lidar\+Component}\+:
+\begin{DoxyItemize}
+\item X/Y coordinates\+: ±50m (typical lidar range for automotive)
+\item Z coordinate\+: -\/5 to +10m (ground to overhead obstacles)
+\item Intensity\+: 0.\+0-\/1.\+0 (normalized reflectance values)
+\item Points per scan\+: 1000-\/5000 (typical automotive lidar density)
+\item Delay\+: 90-\/110ms (typical lidar \texorpdfstring{$\sim$}{\string~}10\+Hz scan rate) 
+\end{DoxyItemize}
+
+\label{doc-func-members}
+\Hypertarget{struct_lidar_data_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{struct_lidar_data_af25f4ca6c1eb1cea3d1ac354b3abd4e0}\index{LidarData@{LidarData}!update\_density\_range@{update\_density\_range}}
+\index{update\_density\_range@{update\_density\_range}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{update\_density\_range()}{update\_density\_range()}}
+{\footnotesize\ttfamily \label{struct_lidar_data_af25f4ca6c1eb1cea3d1ac354b3abd4e0} 
+void Lidar\+Data\+::update\+\_\+density\+\_\+range (\begin{DoxyParamCaption}\item[{int}]{min\+\_\+points}{, }\item[{int}]{max\+\_\+points}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update the point cloud density parameters. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em min\+\_\+points} & Minimum number of points per scan \\
+\hline
+{\em max\+\_\+points} & Maximum number of points per scan \\
+\hline
+\end{DoxyParams}
+\Hypertarget{struct_lidar_data_ac9ea7edc6e9f68f21f36bc0d5d3ac62e}\index{LidarData@{LidarData}!update\_spatial\_range@{update\_spatial\_range}}
+\index{update\_spatial\_range@{update\_spatial\_range}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{update\_spatial\_range()}{update\_spatial\_range()}}
+{\footnotesize\ttfamily \label{struct_lidar_data_ac9ea7edc6e9f68f21f36bc0d5d3ac62e} 
+void Lidar\+Data\+::update\+\_\+spatial\+\_\+range (\begin{DoxyParamCaption}\item[{double}]{x\+\_\+min}{, }\item[{double}]{x\+\_\+max}{, }\item[{double}]{y\+\_\+min}{, }\item[{double}]{y\+\_\+max}{, }\item[{double}]{z\+\_\+min}{, }\item[{double}]{z\+\_\+max}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update the point cloud generation ranges. 
+
+Allows dynamic reconfiguration of the point cloud spatial ranges. Useful for testing different scenarios or runtime configuration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em x\+\_\+min} & Minimum X coordinate \\
+\hline
+{\em x\+\_\+max} & Maximum X coordinate \\
+\hline
+{\em y\+\_\+min} & Minimum Y coordinate \\
+\hline
+{\em y\+\_\+max} & Maximum Y coordinate \\
+\hline
+{\em z\+\_\+min} & Minimum Z coordinate \\
+\hline
+{\em z\+\_\+max} & Maximum Z coordinate \\
+\hline
+\end{DoxyParams}
+\Hypertarget{struct_lidar_data_a34662e0ab1edfa4739633a3cf74dfa43}\index{LidarData@{LidarData}!update\_timing\_range@{update\_timing\_range}}
+\index{update\_timing\_range@{update\_timing\_range}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{update\_timing\_range()}{update\_timing\_range()}}
+{\footnotesize\ttfamily \label{struct_lidar_data_a34662e0ab1edfa4739633a3cf74dfa43} 
+void Lidar\+Data\+::update\+\_\+timing\+\_\+range (\begin{DoxyParamCaption}\item[{int}]{min\+\_\+delay\+\_\+ms}{, }\item[{int}]{max\+\_\+delay\+\_\+ms}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update the scan timing parameters. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em min\+\_\+delay\+\_\+ms} & Minimum delay between scans (milliseconds) \\
+\hline
+{\em max\+\_\+delay\+\_\+ms} & Maximum delay between scans (milliseconds) \\
+\hline
+\end{DoxyParams}
+
+
+\label{doc-variable-members}
+\Hypertarget{struct_lidar_data_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{struct_lidar_data_a4a71df05971be5cf51b1488a000d780b}\index{LidarData@{LidarData}!delay\_dist@{delay\_dist}}
+\index{delay\_dist@{delay\_dist}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{delay\_dist}{delay\_dist}}
+{\footnotesize\ttfamily \label{struct_lidar_data_a4a71df05971be5cf51b1488a000d780b} 
+std\+::uniform\+\_\+int\+\_\+distribution Lidar\+Data\+::delay\+\_\+dist}
+
+\Hypertarget{struct_lidar_data_ae75fd8d773e563174b414bcb2f9da605}\index{LidarData@{LidarData}!gen@{gen}}
+\index{gen@{gen}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{gen}{gen}}
+{\footnotesize\ttfamily \label{struct_lidar_data_ae75fd8d773e563174b414bcb2f9da605} 
+std\+::mt19937 Lidar\+Data\+::gen}
+
+\Hypertarget{struct_lidar_data_a18361dcacb044e8c72167ca36313bedd}\index{LidarData@{LidarData}!intensity\_dist@{intensity\_dist}}
+\index{intensity\_dist@{intensity\_dist}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{intensity\_dist}{intensity\_dist}}
+{\footnotesize\ttfamily \label{struct_lidar_data_a18361dcacb044e8c72167ca36313bedd} 
+std\+::uniform\+\_\+real\+\_\+distribution Lidar\+Data\+::intensity\+\_\+dist}
+
+\Hypertarget{struct_lidar_data_aa8ddadf1c8ed7a2f2a40e1d74ca36178}\index{LidarData@{LidarData}!num\_points\_dist@{num\_points\_dist}}
+\index{num\_points\_dist@{num\_points\_dist}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{num\_points\_dist}{num\_points\_dist}}
+{\footnotesize\ttfamily \label{struct_lidar_data_aa8ddadf1c8ed7a2f2a40e1d74ca36178} 
+std\+::uniform\+\_\+int\+\_\+distribution Lidar\+Data\+::num\+\_\+points\+\_\+dist}
+
+\Hypertarget{struct_lidar_data_ab028cb6a2247f150d1184f5b3662f2f5}\index{LidarData@{LidarData}!rd@{rd}}
+\index{rd@{rd}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{rd}{rd}}
+{\footnotesize\ttfamily \label{struct_lidar_data_ab028cb6a2247f150d1184f5b3662f2f5} 
+std\+::random\+\_\+device Lidar\+Data\+::rd}
+
+\Hypertarget{struct_lidar_data_a7861762e7420eea3b0ce6d31400fe945}\index{LidarData@{LidarData}!x\_dist@{x\_dist}}
+\index{x\_dist@{x\_dist}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{x\_dist}{x\_dist}}
+{\footnotesize\ttfamily \label{struct_lidar_data_a7861762e7420eea3b0ce6d31400fe945} 
+std\+::uniform\+\_\+real\+\_\+distribution Lidar\+Data\+::x\+\_\+dist}
+
+\Hypertarget{struct_lidar_data_a289aa9bb4f75ec3141d1506a6af0790b}\index{LidarData@{LidarData}!y\_dist@{y\_dist}}
+\index{y\_dist@{y\_dist}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{y\_dist}{y\_dist}}
+{\footnotesize\ttfamily \label{struct_lidar_data_a289aa9bb4f75ec3141d1506a6af0790b} 
+std\+::uniform\+\_\+real\+\_\+distribution Lidar\+Data\+::y\+\_\+dist}
+
+\Hypertarget{struct_lidar_data_a9d0a37d41d66cd37d13963bbc4fd80d7}\index{LidarData@{LidarData}!z\_dist@{z\_dist}}
+\index{z\_dist@{z\_dist}!LidarData@{LidarData}}
+\doxysubsubsection{\texorpdfstring{z\_dist}{z\_dist}}
+{\footnotesize\ttfamily \label{struct_lidar_data_a9d0a37d41d66cd37d13963bbc4fd80d7} 
+std\+::uniform\+\_\+real\+\_\+distribution Lidar\+Data\+::z\+\_\+dist}
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/app/components/\mbox{\hyperlink{lidar__data_8hpp}{lidar\+\_\+data.\+hpp}}\end{DoxyCompactItemize}

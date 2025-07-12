@@ -1,0 +1,76 @@
+\doxysection{csv\+\_\+consumer\+\_\+factory.\+hpp}
+\hypertarget{csv__consumer__factory_8hpp_source}{}\label{csv__consumer__factory_8hpp_source}\index{include/app/components/csv\_consumer\_factory.hpp@{include/app/components/csv\_consumer\_factory.hpp}}
+\mbox{\hyperlink{csv__consumer__factory_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ CSV\_CONSUMER\_FACTORY\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ CSV\_CONSUMER\_FACTORY\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{agent_8h}{../../api/framework/agent.h}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{csv__consumer__data_8hpp}{csv\_consumer\_data.hpp}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{csv__consumer__functions_8hpp}{csv\_consumer\_functions.hpp}}"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{datatypes_8h}{../datatypes.h}}"{}}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00028\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{csv__consumer__factory_8hpp_af18465fb5dca5593fe4c4bd93f5bd016}{create\_csv\_consumer}}(}
+\DoxyCodeLine{00029\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,\ }
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}CSVConsumer"{}}}
+\DoxyCodeLine{00032\ )\ \{}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{comment}{//\ Parameter\ validation\ following\ EPOS\ principles}}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordflow}{if}\ (!can)\ \{}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}CAN\ bus\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00036\ \ \ \ \ \}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{comment}{//\ Use\ default\ name\ if\ an\ empty\ string\ is\ provided}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ agentName\ =\ name.empty()\ ?\ \textcolor{stringliteral}{"{}CSVConsumer"{}}\ :\ name;}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ Create\ component\ data\ for\ CSV\ consumer}}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ std::make\_unique<CSVConsumerData>();}
+\DoxyCodeLine{00043\ \ \ \ \ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ Create\ Agent\ using\ function-\/based\ composition}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{//\ CSV\ consumer\ is\ configured\ as\ consumer\ for\ CSV\_VEHICLE\_DATA}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<Agent>(}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ can,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CAN\ bus}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ agentName,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Agent\ name}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5741db806a83b5979f7c4bba47a191c9}{DataTypes::CSV\_VEHICLE\_DATA}}),\ \ \ \ \ \ \ \textcolor{comment}{//\ CSV\ vehicle\ data\ type}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ Agent::Type::RESPONSE,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Consumer\ handles\ RESPONSE\ messages}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ addr,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Network\ address}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{csv__consumer__functions_8hpp_a6f088f8a9b4babc29c1d1e7abc090a23}{csv\_consumer\_producer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Empty\ producer\ function}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{csv__consumer__functions_8hpp_a3fa016dba40799955a6c072ae823e1b1}{csv\_consumer\_consumer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CSV\ data\ processing\ function}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Consumer\ tracking\ data}}
+\DoxyCodeLine{00055\ \ \ \ \ );}
+\DoxyCodeLine{00056\ \}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00070\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{csv__consumer__factory_8hpp_a91b26a83367b7de23c7375d13aa1c5c7}{create\_external\_csv\_consumer}}(}
+\DoxyCodeLine{00071\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}ExternalCSVConsumer"{}}}
+\DoxyCodeLine{00074\ )\ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{//\ Parameter\ validation}}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{if}\ (!can)\ \{}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}CAN\ bus\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00078\ \ \ \ \ \}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{//\ Use\ default\ name\ if\ an\ empty\ string\ is\ provided}}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ agentName\ =\ name.empty()\ ?\ \textcolor{stringliteral}{"{}ExternalCSVConsumer"{}}\ :\ name;}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{comment}{//\ Create\ component\ data}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ std::make\_unique<CSVConsumerData>();}
+\DoxyCodeLine{00085\ \ \ \ \ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{comment}{//\ Create\ Agent\ using\ function-\/based\ composition}}
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<Agent>(}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ can,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CAN\ bus}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ agentName,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Agent\ name}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fac76d728d26a812ef0db44a38afc0c513}{DataTypes::EXTERNAL\_CSV\_VEHICLE\_DATA}}),\ \textcolor{comment}{//\ External\ CSV\ vehicle\ data}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ Agent::Type::RESPONSE,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Consumer\ handles\ RESPONSE\ messages}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ addr,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Network\ address}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{csv__consumer__functions_8hpp_a6f088f8a9b4babc29c1d1e7abc090a23}{csv\_consumer\_producer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Empty\ producer\ function}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{csv__consumer__functions_8hpp_a3fa016dba40799955a6c072ae823e1b1}{csv\_consumer\_consumer}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CSV\ data\ processing\ function}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Consumer\ tracking\ data}}
+\DoxyCodeLine{00096\ \ \ \ \ );}
+\DoxyCodeLine{00097\ \}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ CSV\_CONSUMER\_FACTORY\_HPP\ }}
+
+\end{DoxyCode}

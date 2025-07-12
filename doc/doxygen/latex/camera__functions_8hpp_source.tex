@@ -1,0 +1,102 @@
+\doxysection{camera\+\_\+functions.\+hpp}
+\hypertarget{camera__functions_8hpp_source}{}\label{camera__functions_8hpp_source}\index{include/app/components/camera\_functions.hpp@{include/app/components/camera\_functions.hpp}}
+\mbox{\hyperlink{camera__functions_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ CAMERA\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ CAMERA\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{camera__data_8hpp}{camera\_data.hpp}}"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__functions_8hpp}{../../api/framework/component\_functions.hpp}}"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{../../api/util/debug.h}}"{}}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00027\ \textcolor{keyword}{inline}\ std::vector<std::uint8\_t>\ \mbox{\hyperlink{camera__functions_8hpp_ab9948fc07180be7663ec16b9ead998f5}{camera\_producer}}(std::uint32\_t\ unit,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00028\ \ \ \ \ \mbox{\hyperlink{struct_camera_data}{CameraData}}*\ camera\_data\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{struct_camera_data}{CameraData}}*\textcolor{keyword}{>}(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00029\ \ \ \ \ }
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[CameraComponent]\ Received\ null\ data\ pointer\(\backslash\)n"{}};}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::vector<std::uint8\_t>();}
+\DoxyCodeLine{00033\ \ \ \ \ \}}
+\DoxyCodeLine{00034\ \ \ \ \ }
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{comment}{//\ Static\ message\ counter\ (function-\/local,\ maintains\ state\ between\ calls)}}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ message\_counter\ =\ 0;}
+\DoxyCodeLine{00037\ \ \ \ \ message\_counter++;}
+\DoxyCodeLine{00038\ \ \ \ \ }
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{comment}{//\ Get\ image\ dimensions\ and\ calculate\ total\ size}}
+\DoxyCodeLine{00040\ \ \ \ \ std::size\_t\ image\_size\ =\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a719c0ac2dc9c53ac66c9d0d7c0e3750d}{get\_image\_size}}();}
+\DoxyCodeLine{00041\ \ \ \ \ }
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{//\ Create\ pixel\ matrix\ data\ array}}
+\DoxyCodeLine{00043\ \ \ \ \ std::vector<std::uint8\_t>\ pixel\_matrix(image\_size);}
+\DoxyCodeLine{00044\ \ \ \ \ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{//\ Generate\ pixel\ matrix\ data\ (same\ logic\ as\ original\ CameraComponent)}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{//\ Create\ a\ simple\ pattern\ with\ noise\ for\ realistic\ image\ simulation}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{int}\ frame\_variation\ =\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a134a23f90adc381163cf0ba8c08ee393}{frame\_dist}}(camera\_data-\/>\mbox{\hyperlink{struct_camera_data_aab80829a34a8f93c0aa7c47133f14a2c}{gen}});}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordtype}{double}\ pattern\_factor\ =\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a7b2a14383feda3f559bc2b998930fac4}{pattern\_dist}}(camera\_data-\/>\mbox{\hyperlink{struct_camera_data_aab80829a34a8f93c0aa7c47133f14a2c}{gen}});}
+\DoxyCodeLine{00049\ \ \ \ \ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ y\ =\ 0;\ y\ <\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a62b8abe06bbddfe829f4214fbec720b8}{image\_height}};\ ++y)\ \{}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ x\ =\ 0;\ x\ <\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a70f210cc29181357d7b1090c0842cc0f}{image\_width}};\ ++x)\ \{}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ c\ =\ 0;\ c\ <\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_ac381a7c24a4c29cb4b312f6d495068e8}{bytes\_per\_pixel}};\ ++c)\ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Generate\ base\ pixel\ value\ with\ pattern}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ a\ simple\ gradient\ pattern\ with\ some\ variation}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ normalized\_x\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(x)\ /\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a70f210cc29181357d7b1090c0842cc0f}{image\_width}};}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ normalized\_y\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(y)\ /\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a62b8abe06bbddfe829f4214fbec720b8}{image\_height}};}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Simple\ pattern:\ diagonal\ gradient\ with\ frame\ variation}}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ base\_value\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (normalized\_x\ +\ normalized\_y)\ *\ 127.5\ *\ pattern\_factor\ +}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ frame\_variation\ *\ 0.5}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ );}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Add\ noise}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ noise\ =\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a4f3ba41dcbcd9980bf11740c44d07710}{noise\_dist}}(camera\_data-\/>\mbox{\hyperlink{struct_camera_data_aab80829a34a8f93c0aa7c47133f14a2c}{gen}});}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ pixel\_value\ =\ base\_value\ +\ noise;}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Clamp\ to\ valid\ range\ (0-\/255)}}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pixel\_value\ =\ std::max(0,\ std::min(255,\ pixel\_value));}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Store\ pixel\ value}}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::size\_t\ pixel\_index\ =\ (y\ *\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a70f210cc29181357d7b1090c0842cc0f}{image\_width}}\ +\ x)\ *\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_ac381a7c24a4c29cb4b312f6d495068e8}{bytes\_per\_pixel}}\ +\ c;}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pixel\_matrix[pixel\_index]\ =\ \textcolor{keyword}{static\_cast<}std::uint8\_t\textcolor{keyword}{>}(pixel\_value);}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00076\ \ \ \ \ \}}
+\DoxyCodeLine{00077\ \ \ \ \ }
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{comment}{//\ Simulate\ processing\ delay\ (same\ as\ original\ CameraComponent)}}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordtype}{int}\ delay\_ms\ =\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a039545221c38e20253948078ff798676}{delay\_dist}}(camera\_data-\/>\mbox{\hyperlink{struct_camera_data_aab80829a34a8f93c0aa7c47133f14a2c}{gen}});}
+\DoxyCodeLine{00080\ \ \ \ \ std::this\_thread::sleep\_for(std::chrono::milliseconds(delay\_ms));}
+\DoxyCodeLine{00081\ \ \ \ \ }
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{comment}{//\ Log\ pixel\ matrix\ generation\ (same\ format\ as\ original)}}
+\DoxyCodeLine{00083\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[CameraComponent]\ Generated\ pixel\ matrix\ \#"{}}\ <<\ message\_counter}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ ("{}}\ <<\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a70f210cc29181357d7b1090c0842cc0f}{image\_width}}\ <<\ \textcolor{stringliteral}{"{}x"{}}\ <<\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_a62b8abe06bbddfe829f4214fbec720b8}{image\_height}}\ }
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}x"{}}\ <<\ camera\_data-\/>\mbox{\hyperlink{struct_camera_data_ac381a7c24a4c29cb4b312f6d495068e8}{bytes\_per\_pixel}}\ <<\ \textcolor{stringliteral}{"{})"{}}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ size:\ "{}}\ <<\ image\_size\ <<\ \textcolor{stringliteral}{"{}\ bytes"{}}}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ pattern:\ "{}}\ <<\ pattern\_factor}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ frame\_var:\ "{}}\ <<\ frame\_variation}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (delay:\ "{}}\ <<\ delay\_ms\ <<\ \textcolor{stringliteral}{"{}ms)\(\backslash\)n"{}};}
+\DoxyCodeLine{00090\ \ \ \ \ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{comment}{//\ Additional\ detailed\ logging\ for\ debugging\ (sample\ pixel\ values)}}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordflow}{if}\ (image\_size\ >=\ 4)\ \{}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[CameraComponent]\ Sample\ pixels:\ "{}}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}("{}}\ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(pixel\_matrix[0])\ <<\ \textcolor{stringliteral}{"{},\ "{}}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(pixel\_matrix[1])\ <<\ \textcolor{stringliteral}{"{},\ "{}}}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(pixel\_matrix[2])\ <<\ \textcolor{stringliteral}{"{},\ "{}}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(pixel\_matrix[3])\ <<\ \textcolor{stringliteral}{"{})\(\backslash\)n"{}};}
+\DoxyCodeLine{00098\ \ \ \ \ \}}
+\DoxyCodeLine{00099\ \ \ \ \ }
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keywordflow}{return}\ pixel\_matrix;}
+\DoxyCodeLine{00101\ \}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00113\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{camera__functions_8hpp_aa785985e0fd37f906bfd1d3b9882202f}{camera\_consumer}}(\textcolor{keywordtype}{void}*\ msg,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{comment}{//\ Camera\ is\ producer-\/only\ -\/\ no\ response\ handling\ needed}}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{comment}{//\ This\ function\ exists\ for\ interface\ compatibility}}
+\DoxyCodeLine{00116\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[CameraComponent]\ Consumer\ function\ called\ (Camera\ is\ producer-\/only)\(\backslash\)n"{}};}
+\DoxyCodeLine{00117\ \}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ CAMERA\_FUNCTIONS\_HPP\ }}
+
+\end{DoxyCode}

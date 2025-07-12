@@ -1,0 +1,55 @@
+\doxysection{unit\+\_\+a\+\_\+functions.\+hpp}
+\hypertarget{unit__a__functions_8hpp_source}{}\label{unit__a__functions_8hpp_source}\index{include/app/components/unit\_a\_functions.hpp@{include/app/components/unit\_a\_functions.hpp}}
+\mbox{\hyperlink{unit__a__functions_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ UNIT\_A\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ UNIT\_A\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{unit__a__data_8hpp}{unit\_a\_data.hpp}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__functions_8hpp}{../../api/framework/component\_functions.hpp}}"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{../../api/util/debug.h}}"{}}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00022\ \textcolor{keyword}{inline}\ std::vector<std::uint8\_t>\ \mbox{\hyperlink{unit__a__functions_8hpp_ae81e68d682f1c67978000ce03630f152}{basic\_producer\_a}}(std::uint32\_t\ unit,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00023\ \ \ \ \ \mbox{\hyperlink{struct_unit_a_data}{UnitAData}}*\ unit\_data\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{struct_unit_a_data}{UnitAData}}*\textcolor{keyword}{>}(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00024\ \ \ \ \ }
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{comment}{//\ Generate\ a\ random\ float\ value\ (same\ logic\ as\ BasicProducerA::get())}}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordtype}{float}\ value\ =\ unit\_data-\/>\mbox{\hyperlink{struct_unit_a_data_abf781a63fc85800597bf8a1f1212b35a}{dist}}(unit\_data-\/>\mbox{\hyperlink{struct_unit_a_data_a8228626c7602b7e28125aedb89b3da80}{gen}});}
+\DoxyCodeLine{00027\ \ \ \ \ }
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{comment}{//\ Log\ the\ generated\ value\ (same\ as\ BasicProducerA)}}
+\DoxyCodeLine{00029\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[BasicProducerA]\ generated\ value:\ "{}}\ <<\ value\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00030\ \ \ \ \ }
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{comment}{//\ Convert\ float\ to\ bytes\ for\ the\ message\ value\ (same\ as\ BasicProducerA)}}
+\DoxyCodeLine{00032\ \ \ \ \ std::vector<std::uint8\_t>\ result(\textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00033\ \ \ \ \ std::memcpy(result.data(),\ \&value,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00034\ \ \ \ \ }
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00036\ \}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00048\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{unit__a__functions_8hpp_aab0c7601ad8a2a35d701779ec0124737}{basic\_consumer\_a}}(\textcolor{keywordtype}{void}*\ msg,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00049\ \ \ \ \ \mbox{\hyperlink{struct_unit_a_data}{UnitAData}}*\ unit\_data\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{struct_unit_a_data}{UnitAData}}*\textcolor{keyword}{>}(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00050\ \ \ \ \ }
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{//\ Note:\ In\ real\ implementation,\ msg\ would\ be\ cast\ to\ Agent::Message*}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{//\ For\ now,\ we\ simulate\ the\ behavior\ from\ BasicConsumerA::handle\_response()}}
+\DoxyCodeLine{00053\ \ \ \ \ }
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{//\ Cast\ message\ pointer\ (following\ BasicConsumerA\ pattern)}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{//\ Agent::Message*\ message\ =\ static\_cast<Agent::Message*>(msg);}}
+\DoxyCodeLine{00056\ \ \ \ \ }
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{//\ Extract\ float\ value\ (same\ logic\ as\ BasicConsumerA::handle\_response())}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{comment}{//\ const\ std::uint8\_t*\ received\_value\ =\ message-\/>value();}}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{//\ unit\_data-\/>last\_received\_value\ =\ *reinterpret\_cast<const\ float*>(received\_value);}}
+\DoxyCodeLine{00060\ \ \ \ \ }
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{//\ For\ testing\ purposes,\ we\ simulate\ the\ extraction}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{comment}{//\ This\ will\ be\ properly\ implemented\ when\ Agent::Message\ is\ available}}
+\DoxyCodeLine{00063\ \ \ \ \ unit\_data-\/>\mbox{\hyperlink{struct_unit_a_data_ac09f6191a5caf0e7c6daa709281e0b62}{last\_received\_value}}\ =\ 42.0f;\ \textcolor{comment}{//\ Placeholder}}
+\DoxyCodeLine{00064\ \ \ \ \ }
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{//\ Log\ the\ received\ message\ (same\ as\ BasicConsumerA)}}
+\DoxyCodeLine{00066\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[BasicConsumerA]\ received\ RESPONSE\ message\ with\ value:\ "{}}\ }
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ unit\_data-\/>\mbox{\hyperlink{struct_unit_a_data_ac09f6191a5caf0e7c6daa709281e0b62}{last\_received\_value}}\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00068\ \}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ UNIT\_A\_FUNCTIONS\_HPP\ }}
+
+\end{DoxyCode}

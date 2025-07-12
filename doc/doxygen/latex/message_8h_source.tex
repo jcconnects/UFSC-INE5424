@@ -1,0 +1,493 @@
+\doxysection{message.\+h}
+\hypertarget{message_8h_source}{}\label{message_8h_source}\index{include/api/network/message.h@{include/api/network/message.h}}
+\mbox{\hyperlink{message_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ MESSAGE\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ MESSAGE\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{clock_8h}{api/framework/clock.h}}"{}}\ \ \textcolor{comment}{//\ Include\ Clock\ for\ synchronized\ timestamps}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00031\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_message_ad59adc2b9f638117ca4004b3ea86d386}{Message}}\ \{}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Definitions\ */}}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum\ class}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}\ :\ std::uint8\_t\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a696b031073e74bf2cb98e5ef201d4aa3}{UNKNOWN}}\ =\ 0,}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4accc0377a8afbf50e7094f5c23a8af223}{INVALID}}\ =\ 1,}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ac1833ca6521c2a6c481c6dbe9671738d}{INTEREST}},}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a4fa1a4d2e48aa765093ca6aae57a5150}{RESPONSE}},}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a5f241c8c8f985b3c51e05d39cf030f4c}{STATUS}},}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ace4e1a7286ff585e08bf30898cf6b3eb}{REQ}},\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Request\ for\ neighbor\ RSU\ key}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a43fc76e7030d9b4f29c4862987a061f4}{KEY\_RESPONSE}},\ \ \ \ \ \ \ \textcolor{comment}{//\ Response\ with\ neighbor\ RSU\ key}}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Channel::Address\ \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}};}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Channel::Physical\_Address\ \mbox{\hyperlink{class_message_a570a57cb42cbc97977feda17972dde87}{Physical\_Address}};}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Channel::Port\ \mbox{\hyperlink{class_message_a70773c9c1cf139e2fe11c502d1d0cdee}{Port}};}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ std::uint32\_t\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}};}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ std::vector<std::uint8\_t>\ \mbox{\hyperlink{class_message_a6a16dfdcb8a3f35650440459b673ebbe}{Array}};}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ std::chrono::microseconds\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}};}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\ \mbox{\hyperlink{class_message_ad04a4699ab611dddc70590532b236bf0}{ZERO}}\ =\ Microseconds::zero();}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ static\ const\ unsigned\ int\ MAC\_SIZE;}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Methods\ */}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_ad59adc2b9f638117ca4004b3ea86d386}{Message}}(\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}\ \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}}\&\ \mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}},\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}}\ \mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}},\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\ \mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}\ =\ \mbox{\hyperlink{class_message_ad04a4699ab611dddc70590532b236bf0}{ZERO}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ value\_data\ =\ \textcolor{keyword}{nullptr},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\_size}}\ =\ 0);}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_a5bf54d9aff7f328102f3872fd47dc1b2}{Message}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_ad59adc2b9f638117ca4004b3ea86d386}{Message}}\&\ other);}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_abe6ffb6c739ad77afe0d0603ade7cd01}{Message}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_a80ef7c17301775057bf90e7e5b77c558}{\string~Message}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Getters}}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}\&\ \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}}\&\ \mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\&\ \mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{timestamp}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}}\&\ \mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\&\ \mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::uint8\_t*\ \mbox{\hyperlink{class_message_aaf1cab965242de0422e0bd2ad3de2a69}{value}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\_size}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{data}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_message_a5e1b63e51a32c96c04178a30859edbfc}{external}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_message_ad59adc2b9f638117ca4004b3ea86d386}{Message}}\ \mbox{\hyperlink{class_message_ab8169b9a5a41c7aecf8c2b65a864643d}{deserialize}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ serialized,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}});}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Clock\ integration\ utilities}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\ \mbox{\hyperlink{class_message_a6e77e8a3dd4ffc3e33f03e8754d330cd}{getSynchronizedTimestamp}}();}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_message_ac64c57149efd21464b04986553a17650}{isClockSynchronized}}();}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Public\ Setters}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_a5105651558cae34d8076e11240b6669b}{message\_type}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}\ \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}});}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_a21fcaa4a1fb1b1fa2ebe08dcc59fecfe}{origin}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}}\ addr);}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_aea20253de0dade4fd3b092e7eb96065c}{timestamp}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\ \mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{timestamp}});}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_aac0416746dc6505d0d6fd1ca7f1bb839}{unit}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}}\ type);}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_a6cee6082e977df193e798b183b9f2dee}{period}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\ \mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}});}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_aacf4553c7def85bfe8bdd7ff2d8bf7d9}{value}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{data}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}});}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_ae38ef6f1926d671626d0fe5f8730547f}{external}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_message_a5e1b63e51a32c96c04178a30859edbfc}{external}});}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Internal\ helper}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ serialize();}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Serialization\ auxiliar\ methods}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ append\_origin();}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ append\_type();}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ append\_unit();}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ append\_microseconds(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\&\ \mbox{\hyperlink{class_message_aaf1cab965242de0422e0bd2ad3de2a69}{value}});\ }
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ append\_value();}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Deserialization\ auxiliar\ methods}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}}\ extract\_origin(\textcolor{keyword}{const}\ std::uint8\_t*\ \mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\&\ offset,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}});}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}\ extract\_type(\textcolor{keyword}{const}\ std::uint8\_t*\ \mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\&\ offset,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}});}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}}\ extract\_unit(\textcolor{keyword}{const}\ std::uint8\_t*\ \mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\&\ offset,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}});}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\ extract\_microseconds(\textcolor{keyword}{const}\ std::uint8\_t*\ \mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\&\ offset,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}});}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Attributes\ */}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}\ \_message\_type;}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}}\ \_origin;}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\ \_timestamp;}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}}\ \_unit;}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\ \_period;\ \ \ \ \ \textcolor{comment}{//\ INTEREST}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_a6a16dfdcb8a3f35650440459b673ebbe}{Array}}\ \_value;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ RESPONSE}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Array\ \_mac;\ \ \ \ \ \ \ \ \ \ \ \ //\ INTEREST\ and\ RESPONSE}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Serialized\ message\ buffer}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_a6a16dfdcb8a3f35650440459b673ebbe}{Array}}\ \_serialized\_data;}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \_external;}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \};}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{comment}{/*********\ Message\ Implementation\ *********/}}
+\DoxyCodeLine{00120\ \textcolor{comment}{//\ const\ unsigned\ int\ Message::MAC\_SIZE\ =\ Traits<Message>::MAC\_SIZE;}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00123\ \mbox{\hyperlink{class_message_abe6ffb6c739ad77afe0d0603ade7cd01}{Message<Channel>::Message}}(\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}\ \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}}\&\ \mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}},\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}}\ \mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}},\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\ \mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ value\_data,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\_size}})\ :}
+\DoxyCodeLine{00124\ \ \ \ \ \_message\_type(\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}::\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a696b031073e74bf2cb98e5ef201d4aa3}{UNKNOWN}}),}
+\DoxyCodeLine{00125\ \ \ \ \ \_origin(),}
+\DoxyCodeLine{00126\ \ \ \ \ \_timestamp(\mbox{\hyperlink{class_message_ad04a4699ab611dddc70590532b236bf0}{ZERO}}),}
+\DoxyCodeLine{00127\ \ \ \ \ \_period(\mbox{\hyperlink{class_message_ad04a4699ab611dddc70590532b236bf0}{ZERO}}),}
+\DoxyCodeLine{00128\ \ \ \ \ \_value(),}
+\DoxyCodeLine{00129\ \ \ \ \ \_external(false)}
+\DoxyCodeLine{00130\ \{}
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{comment}{//\ Use\ Clock\ singleton\ for\ synchronized\ timestamps\ instead\ of\ system\_clock}}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keyword}{auto}\&\ clock\ =\ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}();}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordtype}{bool}\ is\_synchronized;}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keyword}{auto}\ synchronized\_time\ =\ clock.getSynchronizedTime(\&is\_synchronized);}
+\DoxyCodeLine{00135\ \ \ \ \ \_timestamp\ =\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}(std::chrono::duration\_cast<std::chrono::microseconds>(synchronized\_time.time\_since\_epoch()).count());}
+\DoxyCodeLine{00136\ \ \ \ \ \_message\_type\ =\ \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}};}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Message<Channel>}}>(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Message::Message()\ called\ with\ type:\ "{}}\ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(\_message\_type)\ }
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ origin:\ "{}}\ <<\ \mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}}.to\_string()\ }
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ unit:\ "{}}\ <<\ \mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}\ }
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ period:\ "{}}\ <<\ \mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}.count()\ }
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ value\_size:\ "{}}\ <<\ \mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\_size}}\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00143\ \ \ \ \ }
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_message\_type\ !=\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a696b031073e74bf2cb98e5ef201d4aa3}{Type::UNKNOWN}}\ \&\&\ \_message\_type\ !=\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4accc0377a8afbf50e7094f5c23a8af223}{Type::INVALID}})\ \{}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ this-\/>\mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}}(origin);}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ this-\/>\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}(unit);}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{switch}\ (\_message\_type)\ \{}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ac1833ca6521c2a6c481c6dbe9671738d}{Type::INTEREST}}:}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>\mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}(period);}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a4fa1a4d2e48aa765093ca6aae57a5150}{Type::RESPONSE}}:}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a5f241c8c8f985b3c51e05d39cf030f4c}{Type::STATUS}}:\ \ \textcolor{comment}{//\ STATUS\ messages\ also\ use\ value\ data}}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ace4e1a7286ff585e08bf30898cf6b3eb}{Type::REQ}}:\ \ \ \ \ \textcolor{comment}{//\ REQ\ messages\ contain\ failed\ message\ data}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a43fc76e7030d9b4f29c4862987a061f4}{Type::KEY\_RESPONSE}}:\ \ \ \ \textcolor{comment}{//\ KEY\_RESPONSE\ messages\ contain\ neighbor\ RSU\ key}}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>\mbox{\hyperlink{class_message_aaf1cab965242de0422e0bd2ad3de2a69}{value}}(value\_data,\ \mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\_size}});}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00160\ \ \ \ \ \}}
+\DoxyCodeLine{00161\ \}}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00164\ \mbox{\hyperlink{class_message_abe6ffb6c739ad77afe0d0603ade7cd01}{Message<Channel>::Message}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_ad59adc2b9f638117ca4004b3ea86d386}{Message}}\&\ other)\ \{}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{comment}{//\ Copy\ all\ basic\ fields\ first}}
+\DoxyCodeLine{00166\ \ \ \ \ \_message\_type\ =\ other.\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}();}
+\DoxyCodeLine{00167\ \ \ \ \ \_origin\ =\ other.\mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}}();}
+\DoxyCodeLine{00168\ \ \ \ \ \_timestamp\ =\ other.\mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{timestamp}}();}
+\DoxyCodeLine{00169\ \ \ \ \ \_period\ =\ other.\mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}();}
+\DoxyCodeLine{00170\ \ \ \ \ \_unit\ =\ other.\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}();}
+\DoxyCodeLine{00171\ \ \ \ \ \_external\ =\ other.\mbox{\hyperlink{class_message_a5e1b63e51a32c96c04178a30859edbfc}{external}}();}
+\DoxyCodeLine{00172\ \ \ \ \ }
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{comment}{//\ Copy\ value\ data\ if\ present}}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keywordflow}{if}\ (other.\mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\_size}}()\ >\ 0)\ \{}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_aaf1cab965242de0422e0bd2ad3de2a69}{value}}(other.\mbox{\hyperlink{class_message_aaf1cab965242de0422e0bd2ad3de2a69}{value}}(),\ other.\mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\_size}}());}
+\DoxyCodeLine{00176\ \ \ \ \ \}}
+\DoxyCodeLine{00177\ \ \ \ \ }
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{comment}{//\ Clear\ and\ regenerate\ serialized\ data\ to\ ensure\ consistency}}
+\DoxyCodeLine{00179\ \ \ \ \ \_serialized\_data.clear();}
+\DoxyCodeLine{00180\ \ \ \ \ }
+\DoxyCodeLine{00181\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Message<Channel>}}>(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Message::Message(const\ Message\&)\ called\ with\ type:\ "{}}\ }
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(\_message\_type)\ }
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ origin:\ "{}}\ <<\ \_origin.to\_string()\ }
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ unit:\ "{}}\ <<\ \_unit\ }
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ period:\ "{}}\ <<\ \_period.count()\ }
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ value\_size:\ "{}}\ <<\ \_value.size()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00188\ \ \ \ \ \textcolor{comment}{//\ Validate\ the\ copied\ message\ to\ detect\ corruption}}
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_message\_type\ !=\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a696b031073e74bf2cb98e5ef201d4aa3}{Type::UNKNOWN}}\ \&\&\ \_message\_type\ !=\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4accc0377a8afbf50e7094f5c23a8af223}{Type::INVALID}}\ \&\&}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \_message\_type\ !=\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ac1833ca6521c2a6c481c6dbe9671738d}{Type::INTEREST}}\ \&\&\ \_message\_type\ !=\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a4fa1a4d2e48aa765093ca6aae57a5150}{Type::RESPONSE}}\ \&\&}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \_message\_type\ !=\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a5f241c8c8f985b3c51e05d39cf030f4c}{Type::STATUS}}\ \&\&\ \_message\_type\ !=\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ace4e1a7286ff585e08bf30898cf6b3eb}{Type::REQ}}\ \&\&}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \_message\_type\ !=\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a43fc76e7030d9b4f29c4862987a061f4}{Type::KEY\_RESPONSE}})\ \{}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Message<Channel>}}>(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}Message\ copy\ constructor\ detected\ corrupted\ message\ type:\ "{}}\ }
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(\_message\_type)\ <<\ \textcolor{stringliteral}{"{}\ -\/\ marking\ as\ INVALID\(\backslash\)n"{}};}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \_message\_type\ =\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4accc0377a8afbf50e7094f5c23a8af223}{Type::INVALID}};}
+\DoxyCodeLine{00196\ \ \ \ \ \}}
+\DoxyCodeLine{00197\ \}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00200\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Message<Channel>::Type}}\&\ \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{Message<Channel>::message\_type}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keywordflow}{return}\ \_message\_type;}
+\DoxyCodeLine{00202\ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00205\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Message<Channel>::Origin}}\&\ \mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{Message<Channel>::origin}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{keywordflow}{return}\ \_origin;}
+\DoxyCodeLine{00207\ \}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00210\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Message<Channel>::Microseconds}}\&\ \mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{Message<Channel>::timestamp}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00211\ \ \ \ \ \textcolor{keywordflow}{return}\ \_timestamp;}
+\DoxyCodeLine{00212\ \}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00215\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message<Channel>::Unit}}\&\ \mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{Message<Channel>::unit}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{keywordflow}{return}\ \_unit;}
+\DoxyCodeLine{00217\ \}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00220\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Message<Channel>::Microseconds}}\&\ \mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{Message<Channel>::period}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00221\ \ \ \ \ \textcolor{keywordflow}{return}\ \_period;}
+\DoxyCodeLine{00222\ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00225\ \textcolor{keyword}{const}\ std::uint8\_t*\ \mbox{\hyperlink{class_message_aaf1cab965242de0422e0bd2ad3de2a69}{Message<Channel>::value}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00226\ \ \ \ \ \textcolor{keywordflow}{return}\ \_value.data();}
+\DoxyCodeLine{00227\ \}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00230\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{Message<Channel>::value\_size}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{keywordflow}{return}\ \_value.size();}
+\DoxyCodeLine{00232\ \}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00235\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{Message<Channel>::data}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{comment}{//\ Ensures\ message\ is\ serialized}}
+\DoxyCodeLine{00237\ \ \ \ \ \textcolor{keyword}{const\_cast<}\mbox{\hyperlink{class_message_ad59adc2b9f638117ca4004b3ea86d386}{Message}}*\textcolor{keyword}{>}(\textcolor{keyword}{this})-\/>serialize();}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{comment}{//\ Returns\ serialized\ message}}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{void}*\textcolor{keyword}{>}(\_serialized\_data.data());}
+\DoxyCodeLine{00241\ \}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00244\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{Message<Channel>::size}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00245\ \ \ \ \ \textcolor{comment}{//\ Ensure\ message\ is\ serialized}}
+\DoxyCodeLine{00246\ \ \ \ \ \textcolor{keyword}{const\_cast<}\mbox{\hyperlink{class_message_ad59adc2b9f638117ca4004b3ea86d386}{Message}}*\textcolor{keyword}{>}(\textcolor{keyword}{this})-\/>serialize();}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \ \ \textcolor{comment}{//\ Returns\ serialized\ message\ size}}
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(\_serialized\_data.size());}
+\DoxyCodeLine{00250\ \}}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00253\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_message_a5e1b63e51a32c96c04178a30859edbfc}{Message<Channel>::external}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00254\ \ \ \ \ \textcolor{keywordflow}{return}\ \_external;}
+\DoxyCodeLine{00255\ \}}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00258\ \mbox{\hyperlink{class_message_ad59adc2b9f638117ca4004b3ea86d386}{Message<Channel>}}\ \mbox{\hyperlink{class_message_ab8169b9a5a41c7aecf8c2b65a864643d}{Message<Channel>::deserialize}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ serialized,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}})\ \{}
+\DoxyCodeLine{00259\ \ \ \ \ \textcolor{keyword}{const}\ std::uint8\_t*\ bytes\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }std::uint8\_t*\textcolor{keyword}{>}(serialized);}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \ \ \mbox{\hyperlink{class_message_ad59adc2b9f638117ca4004b3ea86d386}{Message}}\ msg;}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ offset\ =\ 0;}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \ \ msg.\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}(extract\_type(bytes,\ offset,\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}}));}
+\DoxyCodeLine{00265\ \ \ \ \ \textcolor{keywordflow}{if}\ (msg.\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}()\ !=\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a696b031073e74bf2cb98e5ef201d4aa3}{Type::UNKNOWN}}\ \&\&\ msg.\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}()\ !=\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4accc0377a8afbf50e7094f5c23a8af223}{Type::INVALID}})\ \{}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ msg.\mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}}(extract\_origin(bytes,\ offset,\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}}));}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ msg.\mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{timestamp}}(extract\_microseconds(bytes,\ offset,\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}}));}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ msg.\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}(extract\_unit(bytes,\ offset,\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}}));}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{switch}\ (msg.\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}())\ \{}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ac1833ca6521c2a6c481c6dbe9671738d}{Type::INTEREST}}:\ \{}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg.\mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}(extract\_microseconds(bytes,\ offset,\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}}));}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a4fa1a4d2e48aa765093ca6aae57a5150}{Type::RESPONSE}}:\ }
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a5f241c8c8f985b3c51e05d39cf030f4c}{Type::STATUS}}:\ \ \textcolor{comment}{//\ STATUS\ messages\ also\ have\ value\ data}}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ace4e1a7286ff585e08bf30898cf6b3eb}{Type::REQ}}:\ \ \ \ \ \textcolor{comment}{//\ REQ\ messages\ contain\ failed\ message\ data}}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a43fc76e7030d9b4f29c4862987a061f4}{Type::KEY\_RESPONSE}}:\ \{\ \ \textcolor{comment}{//\ KEY\_RESPONSE\ messages\ contain\ neighbor\ RSU\ key}}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ value\_len\ =\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}}\ -\/\ offset;}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (value\_len\ >\ 0)\ \{}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg.\mbox{\hyperlink{class_message_aaf1cab965242de0422e0bd2ad3de2a69}{value}}(bytes\ +\ offset,\ value\_len);}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ offset\ +=\ value\_len;}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Message>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Non\ positive\ value\ length\ set:\ Message\ marked\ INVALID\ \(\backslash\)n"{}};}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msg.\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}(\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4accc0377a8afbf50e7094f5c23a8af223}{Type::INVALID}});}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ msg.serialize();}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Message<Channel>}}>(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Message::deserialize()\ -\/\ type:\ "{}}\ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(msg.\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}())\ }
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ origin:\ "{}}\ <<\ msg.\mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}}().to\_string()\ }
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ unit:\ "{}}\ <<\ msg.\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}()\ }
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ input\ size:\ "{}}\ <<\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}}\ }
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ final\ offset:\ "{}}\ <<\ offset\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00300\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Message<Channel>}}>(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}Message::deserialize()\ -\/\ failed\ to\ deserialize\ message\ of\ size\ "{}}\ <<\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}}\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00302\ \ \ \ \ \}}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \ \ \ \ \textcolor{keywordflow}{return}\ msg;}
+\DoxyCodeLine{00305\ \}}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00308\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{Message<Channel>::message\_type}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Type}}\ \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}})\ \{}
+\DoxyCodeLine{00309\ \ \ \ \ \_message\_type\ =\ \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}};}
+\DoxyCodeLine{00310\ \}}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00313\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{Message<Channel>::origin}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Origin}}\ addr)\ \{}
+\DoxyCodeLine{00314\ \ \ \ \ \_origin\ =\ addr;}
+\DoxyCodeLine{00315\ \}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00318\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{Message<Channel>::timestamp}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\ \mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{timestamp}})\ \{}
+\DoxyCodeLine{00319\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{timestamp}}\ <=\ \mbox{\hyperlink{class_message_ad04a4699ab611dddc70590532b236bf0}{ZERO}})\ \{}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Message>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Negative\ timestamp\ set:\ Message\ marked\ INVALID\ \(\backslash\)n"{}};}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}(\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4accc0377a8afbf50e7094f5c23a8af223}{Type::INVALID}});}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00323\ \ \ \ \ \}}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \ \ \ \ \_timestamp\ =\ \mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{timestamp}};}
+\DoxyCodeLine{00326\ \}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00329\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{Message<Channel>::unit}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Unit}}\ \mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}})\ \{}
+\DoxyCodeLine{00330\ \ \ \ \ \_unit\ =\ \mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}};}
+\DoxyCodeLine{00331\ \}}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00334\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{Message<Channel>::period}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}\ \mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}})\ \{}
+\DoxyCodeLine{00335\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}\ <=\ \mbox{\hyperlink{class_message_ad04a4699ab611dddc70590532b236bf0}{ZERO}})\ \{}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Message>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Negative\ PERIOD\ set:\ Message\ marked\ INVALID\ \(\backslash\)n"{}};}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}(\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4accc0377a8afbf50e7094f5c23a8af223}{Type::INVALID}});}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00339\ \ \ \ \ \}}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \ \ \ \ \_period\ =\ \mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}};}
+\DoxyCodeLine{00342\ \}}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00344\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00345\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_aaf1cab965242de0422e0bd2ad3de2a69}{Message<Channel>::value}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{data}},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}})\ \{}
+\DoxyCodeLine{00346\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{data}}\ ||\ !\mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}})\ \{}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00348\ \ \ \ \ \}}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \ \ \ \ \_value.resize(\mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}});}
+\DoxyCodeLine{00351\ \ \ \ \ std::memcpy(\_value.data(),\ \mbox{\hyperlink{class_message_af4a12921a8a6818b391da4ebc0ee0d4d}{data}},\ \mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}});}
+\DoxyCodeLine{00352\ \}}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00355\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_message_a5e1b63e51a32c96c04178a30859edbfc}{Message<Channel>::external}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_message_a5e1b63e51a32c96c04178a30859edbfc}{external}})\ \{}
+\DoxyCodeLine{00356\ \ \ \ \ \_external\ =\ \mbox{\hyperlink{class_message_a5e1b63e51a32c96c04178a30859edbfc}{external}};}
+\DoxyCodeLine{00357\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Message<Channel>}}>(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Message::external()\ called\ with\ external:\ "{}}\ <<\ \_external\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00358\ \}}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00361\ \textcolor{keywordtype}{void}\ Message<Channel>::serialize()\ \{}
+\DoxyCodeLine{00362\ \ \ \ \ \textcolor{comment}{//\ Clear\ before\ any\ operations}}
+\DoxyCodeLine{00363\ \ \ \ \ \_serialized\_data.clear();}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \ \ \ \ append\_type();}
+\DoxyCodeLine{00366\ \ \ \ \ append\_origin();}
+\DoxyCodeLine{00367\ \ \ \ \ append\_microseconds(\_timestamp);}
+\DoxyCodeLine{00368\ \ \ \ \ append\_unit();}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_message\_type\ ==\ Type::INTEREST)}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ append\_microseconds(\_period);}
+\DoxyCodeLine{00372\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (\_message\_type\ ==\ Type::RESPONSE\ ||\ \_message\_type\ ==\ Type::STATUS\ ||\ }
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \_message\_type\ ==\ Type::REQ\ ||\ \_message\_type\ ==\ Type::KEY\_RESPONSE)}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ append\_value();}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00376\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Message<Channel>}}>(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Message::serialize()\ -\/\ type:\ "{}}\ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(\_message\_type)\ }
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ origin:\ "{}}\ <<\ \_origin.to\_string()\ }
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ unit:\ "{}}\ <<\ \_unit\ }
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ serialized\ size:\ "{}}\ <<\ \_serialized\_data.size()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00380\ \}}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00383\ \textcolor{keywordtype}{void}\ Message<Channel>::append\_origin()\ \{}
+\DoxyCodeLine{00384\ \ \ \ \ \textcolor{comment}{//\ Serialize\ physical\ address}}
+\DoxyCodeLine{00385\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ paddr\ =\ \_origin.paddr();}
+\DoxyCodeLine{00386\ \ \ \ \ \textcolor{keyword}{const}\ std::uint8\_t*\ paddr\_bytes\ =\ \textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }std::uint8\_t*\textcolor{keyword}{>}(\&paddr);}
+\DoxyCodeLine{00387\ \ \ \ \ \_serialized\_data.insert(\_serialized\_data.end(),\ paddr\_bytes,\ paddr\_bytes\ +\ \textcolor{keyword}{sizeof}(Physical\_Address));}
+\DoxyCodeLine{00388\ \ \ \ \ }
+\DoxyCodeLine{00389\ \ \ \ \ \textcolor{comment}{//\ Serialize\ port}}
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ port\ =\ \_origin.port();}
+\DoxyCodeLine{00391\ \ \ \ \ \textcolor{keyword}{const}\ std::uint8\_t*\ port\_bytes\ =\ \textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }std::uint8\_t*\textcolor{keyword}{>}(\&port);}
+\DoxyCodeLine{00392\ \ \ \ \ \_serialized\_data.insert(\_serialized\_data.end(),\ port\_bytes,\ port\_bytes\ +\ \textcolor{keyword}{sizeof}(Port));}
+\DoxyCodeLine{00393\ \}}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00396\ \textcolor{keywordtype}{void}\ Message<Channel>::append\_type()\ \{}
+\DoxyCodeLine{00397\ \ \ \ \ \_serialized\_data.push\_back(\textcolor{keyword}{static\_cast<}std::uint8\_t\textcolor{keyword}{>}(\_message\_type));}
+\DoxyCodeLine{00398\ \}}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00401\ \textcolor{keywordtype}{void}\ Message<Channel>::append\_unit()\ \{}
+\DoxyCodeLine{00402\ \ \ \ \ \textcolor{keyword}{const}\ std::uint8\_t*\ unit\_bytes\ =\ \textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }std::uint8\_t*\textcolor{keyword}{>}(\&\_unit);}
+\DoxyCodeLine{00403\ \ \ \ \ \_serialized\_data.insert(\_serialized\_data.end(),\ unit\_bytes,\ unit\_bytes\ +\ \textcolor{keyword}{sizeof}(Unit));}
+\DoxyCodeLine{00404\ \}}
+\DoxyCodeLine{00405\ }
+\DoxyCodeLine{00406\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00407\ \textcolor{keywordtype}{void}\ Message<Channel>::append\_microseconds(\textcolor{keyword}{const}\ Microseconds\&\ value)\ \{}
+\DoxyCodeLine{00408\ \ \ \ \ \textcolor{keyword}{auto}\ raw\_value\ =\ value.count();}
+\DoxyCodeLine{00409\ \ \ \ \ \textcolor{keyword}{const}\ std::uint8\_t*\ value\_bytes\ =\ \textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }std::uint8\_t*\textcolor{keyword}{>}(\&raw\_value);}
+\DoxyCodeLine{00410\ \ \ \ \ \_serialized\_data.insert(\_serialized\_data.end(),\ value\_bytes,\ value\_bytes\ +\ \textcolor{keyword}{sizeof}(Microseconds::rep));}
+\DoxyCodeLine{00411\ \}}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00414\ \textcolor{keywordtype}{void}\ Message<Channel>::append\_value()\ \{}
+\DoxyCodeLine{00415\ \ \ \ \ \_serialized\_data.insert(\_serialized\_data.end(),\ \_value.begin(),\ \_value.end());}
+\DoxyCodeLine{00416\ \}}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00419\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Message<Channel>::Origin}}\ Message<Channel>::extract\_origin(\textcolor{keyword}{const}\ std::uint8\_t*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\&\ offset,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \{}
+\DoxyCodeLine{00420\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ paddr\_size\ =\ \textcolor{keyword}{sizeof}(Physical\_Address);}
+\DoxyCodeLine{00421\ \ \ \ \ \textcolor{keywordflow}{if}\ (offset\ +\ paddr\_size\ >\ size)}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Origin();}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \ \ \ \ Physical\_Address\ addr;}
+\DoxyCodeLine{00425\ \ \ \ \ std::memcpy(\&addr,\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ +\ offset,\ paddr\_size);}
+\DoxyCodeLine{00426\ \ \ \ \ offset\ +=\ paddr\_size;}
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ port\_size\ =\ \textcolor{keyword}{sizeof}(Port);}
+\DoxyCodeLine{00429\ \ \ \ \ \textcolor{keywordflow}{if}\ (offset\ +\ port\_size\ >\ size)}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Origin();}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00432\ \ \ \ \ Port\ port;}
+\DoxyCodeLine{00433\ \ \ \ \ std::memcpy(\&port,\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ +\ offset,\ port\_size);}
+\DoxyCodeLine{00434\ \ \ \ \ offset\ +=\ port\_size;}
+\DoxyCodeLine{00435\ }
+\DoxyCodeLine{00436\ \ \ \ \ \textcolor{keywordflow}{return}\ Origin(addr,\ port);}
+\DoxyCodeLine{00437\ \}}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00440\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Message<Channel>::Type}}\ Message<Channel>::extract\_type(\textcolor{keyword}{const}\ std::uint8\_t*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\&\ offset,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \{}
+\DoxyCodeLine{00441\ \ \ \ \ \textcolor{keywordflow}{if}\ (offset\ +\ \textcolor{keyword}{sizeof}(std::uint8\_t)\ >\ size)}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Type::UNKNOWN;}
+\DoxyCodeLine{00443\ }
+\DoxyCodeLine{00444\ \ \ \ \ std::uint8\_t\ raw\_type\ =\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}[offset++];}
+\DoxyCodeLine{00445\ \ \ \ \ Type\ extracted\_type\ =\ \textcolor{keyword}{static\_cast<}Type\textcolor{keyword}{>}(raw\_type);}
+\DoxyCodeLine{00446\ \ \ \ \ }
+\DoxyCodeLine{00447\ \ \ \ \ \textcolor{comment}{//\ Validate\ the\ extracted\ type\ to\ detect\ corruption}}
+\DoxyCodeLine{00448\ \ \ \ \ \textcolor{keywordflow}{if}\ (extracted\_type\ !=\ Type::UNKNOWN\ \&\&\ extracted\_type\ !=\ Type::INVALID\ \&\&}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ extracted\_type\ !=\ Type::INTEREST\ \&\&\ extracted\_type\ !=\ Type::RESPONSE\ \&\&}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ extracted\_type\ !=\ Type::STATUS\ \&\&\ extracted\_type\ !=\ Type::REQ\ \&\&}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ extracted\_type\ !=\ Type::KEY\_RESPONSE)\ \{}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Message<Channel>}}>(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}Message::extract\_type()\ detected\ corrupted\ type\ value:\ "{}}\ }
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(raw\_type)\ <<\ \textcolor{stringliteral}{"{}\ -\/\ marking\ as\ INVALID\(\backslash\)n"{}};}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Type::INVALID;}
+\DoxyCodeLine{00455\ \ \ \ \ \}}
+\DoxyCodeLine{00456\ \ \ \ \ }
+\DoxyCodeLine{00457\ \ \ \ \ \textcolor{keywordflow}{return}\ extracted\_type;}
+\DoxyCodeLine{00458\ \}}
+\DoxyCodeLine{00459\ }
+\DoxyCodeLine{00460\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00461\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message<Channel>::Unit}}\ Message<Channel>::extract\_unit(\textcolor{keyword}{const}\ std::uint8\_t*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\&\ offset,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \{}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ unit\_size\ =\ \textcolor{keyword}{sizeof}(Unit);}
+\DoxyCodeLine{00463\ }
+\DoxyCodeLine{00464\ \ \ \ \ \textcolor{keywordflow}{if}\ (offset\ +\ unit\_size\ >\ size)}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Unit();}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \ \ \ \ Unit\ unit;}
+\DoxyCodeLine{00468\ \ \ \ \ std::memcpy(\&unit,\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ +\ offset,\ unit\_size);}
+\DoxyCodeLine{00469\ \ \ \ \ offset\ +=\ unit\_size;}
+\DoxyCodeLine{00470\ }
+\DoxyCodeLine{00471\ \ \ \ \ \textcolor{keywordflow}{return}\ unit;}
+\DoxyCodeLine{00472\ \}}
+\DoxyCodeLine{00473\ }
+\DoxyCodeLine{00474\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00475\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Message<Channel>::Microseconds}}\ Message<Channel>::extract\_microseconds(\textcolor{keyword}{const}\ std::uint8\_t*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\&\ offset,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \{}
+\DoxyCodeLine{00476\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ rep\_size\ =\ \textcolor{keyword}{sizeof}(Microseconds::rep);}
+\DoxyCodeLine{00477\ }
+\DoxyCodeLine{00478\ \ \ \ \ \textcolor{keywordflow}{if}\ (offset\ +\ rep\_size\ >\ size)}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ZERO;}
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00481\ \ \ \ \ Microseconds::rep\ raw\_value;}
+\DoxyCodeLine{00482\ \ \ \ \ std::memcpy(\&raw\_value,\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ +\ offset,\ rep\_size);}
+\DoxyCodeLine{00483\ \ \ \ \ offset\ +=\ rep\_size;}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \ \ \ \ \textcolor{keywordflow}{return}\ Microseconds(raw\_value);}
+\DoxyCodeLine{00486\ \}}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \textcolor{comment}{//\ Clock\ integration\ utility\ method\ implementations}}
+\DoxyCodeLine{00489\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Protocol>}
+\DoxyCodeLine{00490\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Message<Protocol>::Microseconds}}\ \mbox{\hyperlink{class_message_a6e77e8a3dd4ffc3e33f03e8754d330cd}{Message<Protocol>::getSynchronizedTimestamp}}()\ \{}
+\DoxyCodeLine{00491\ \ \ \ \ \textcolor{keyword}{auto}\&\ clock\ =\ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}();}
+\DoxyCodeLine{00492\ \ \ \ \ \textcolor{keywordtype}{bool}\ sync;}
+\DoxyCodeLine{00493\ \ \ \ \ \textcolor{keyword}{auto}\ synchronized\_time\ =\ clock.getSynchronizedTime(\&sync);}
+\DoxyCodeLine{00494\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Microseconds}}(std::chrono::duration\_cast<std::chrono::microseconds>(synchronized\_time.time\_since\_epoch()).count());}
+\DoxyCodeLine{00495\ \}}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Protocol>}
+\DoxyCodeLine{00498\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_message_ac64c57149efd21464b04986553a17650}{Message<Protocol>::isClockSynchronized}}()\ \{}
+\DoxyCodeLine{00499\ \ \ \ \ \textcolor{keyword}{auto}\&\ clock\ =\ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}();}
+\DoxyCodeLine{00500\ \ \ \ \ \textcolor{keywordflow}{return}\ clock.isFullySynchronized();}
+\DoxyCodeLine{00501\ \}}
+\DoxyCodeLine{00502\ }
+\DoxyCodeLine{00503\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ MESSAGE\_H}}
+
+\end{DoxyCode}

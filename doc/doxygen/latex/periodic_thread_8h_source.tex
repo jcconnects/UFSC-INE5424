@@ -1,0 +1,251 @@
+\doxysection{periodic\+Thread.\+h}
+\hypertarget{periodic_thread_8h_source}{}\label{periodic_thread_8h_source}\index{include/api/framework/periodicThread.h@{include/api/framework/periodicThread.h}}
+\mbox{\hyperlink{periodic_thread_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ PERIODIC\_THREAD}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ PERIODIC\_THREAD}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <pthread.h>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <signal.h>}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#ifndef\ \_GNU\_SOURCE}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#define\ \_GNU\_SOURCE}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <unistd.h>}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <sys/syscall.h>}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <linux/sched.h>}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ Definition\ of\ sched\_attr\ structure\ (only\ if\ not\ already\ defined)}}
+\DoxyCodeLine{00023\ \textcolor{comment}{//\ Robust\ \_\_has\_include\ detection\ for\ cross-\/platform\ compatibility}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#ifdef\ \_\_has\_include}}
+\DoxyCodeLine{00025\ \ \ \textcolor{comment}{//\ Compiler\ supports\ \_\_has\_include\ builtin}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\ \ \#if\ \_\_has\_include(<linux/sched/types.h>)}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\ \ \ \ \#include\ <linux/sched/types.h>}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\ \ \ \ \#define\ \_\_SCHED\_ATTR\_AVAILABLE\_\_\ 1}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00031\ \ \ \textcolor{comment}{//\ Compiler\ doesn't\ support\ \_\_has\_include,\ define\ fallback}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\ \ \#define\ \_\_has\_include(x)\ 0}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#if\ !defined(\_\_SCHED\_ATTR\_AVAILABLE\_\_)\ \&\&\ !defined(\_\_SCHED\_ATTR\_SIZE\_\_)}}
+\DoxyCodeLine{00036\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structsched__attr}{sched\_attr}}\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ uint32\_t\ \mbox{\hyperlink{structsched__attr_a4610c4d7b153c6d1dc7aee7cc93e5136}{size}};}
+\DoxyCodeLine{00038\ \ \ \ \ uint32\_t\ \mbox{\hyperlink{structsched__attr_afea9068588bd9c4c0fbffd5117bc47d7}{sched\_policy}};}
+\DoxyCodeLine{00039\ \ \ \ \ uint64\_t\ \mbox{\hyperlink{structsched__attr_a78ed556ae90e89809210516594e5c266}{sched\_flags}};}
+\DoxyCodeLine{00040\ \ \ \ \ int32\_t\ \ \mbox{\hyperlink{structsched__attr_a241368a95e100c72f2e25b7f49443d67}{sched\_nice}};}
+\DoxyCodeLine{00041\ \ \ \ \ uint32\_t\ \mbox{\hyperlink{structsched__attr_aad70092adf71d7f99734a73fba4f45f6}{sched\_priority}};}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{//\ SCHED\_DEADLINE\ specific\ fields}}
+\DoxyCodeLine{00043\ \ \ \ \ uint64\_t\ \mbox{\hyperlink{structsched__attr_aabe762892ad8e6574d99d717d17d4474}{sched\_runtime}};}
+\DoxyCodeLine{00044\ \ \ \ \ uint64\_t\ \mbox{\hyperlink{structsched__attr_a11a8f9ede7e2af92f63537424e0fc04b}{sched\_deadline}};}
+\DoxyCodeLine{00045\ \ \ \ \ uint64\_t\ \mbox{\hyperlink{structsched__attr_a25b0735a17ec148910f88305d6e8373c}{sched\_period}};}
+\DoxyCodeLine{00046\ \};}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#include\ <linux/sched/types.h>}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{comment}{//\ Signal\ handler\ for\ thread\ interruption}}
+\DoxyCodeLine{00052\ \textcolor{comment}{//\ Use\ a\ single\ static\ handler\ for\ the\ entire\ component\ system}}
+\DoxyCodeLine{00053\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{periodic_thread_8h_a6475cba9e17a7391f5424d13690660bf}{component\_signal\_handler}}(\textcolor{keywordtype}{int}\ sig)\ \{}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{//\ Simply\ wake\ up\ the\ thread\ to\ check\ its\ running\ state}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordflow}{if}\ (sig\ ==\ SIGUSR1)\ \{}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ No\ action\ needed,\ just\ unblock\ from\ system\ calls}}
+\DoxyCodeLine{00057\ \ \ \ \ \}}
+\DoxyCodeLine{00058\ \}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \textcolor{comment}{//\ Wrapper\ for\ the\ sched\_setattr\ system\ call\ (only\ if\ not\ already\ available)}}
+\DoxyCodeLine{00061\ \textcolor{comment}{//\ \#ifndef\ SYS\_sched\_setattr}}
+\DoxyCodeLine{00062\ \textcolor{comment}{//\ \#define\ SYS\_sched\_setattr\ 314}}
+\DoxyCodeLine{00063\ \textcolor{comment}{//\ \#endif}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#if\ !defined(HAVE\_SCHED\_SETATTR)}}
+\DoxyCodeLine{00066\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{periodic_thread_8h_a72da35186caf241b139a434497ff3e9c}{sched\_setattr}}(pid\_t\ pid,\ \textcolor{keyword}{const}\ \textcolor{keyword}{struct}\ \mbox{\hyperlink{structsched__attr}{sched\_attr}}\ *attr,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ flags)\ \{}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordflow}{return}\ syscall(SYS\_sched\_setattr,\ pid,\ attr,\ flags);}
+\DoxyCodeLine{00068\ \}}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Owner>}
+\DoxyCodeLine{00072\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_periodic___thread_a685e10ab7e8846f8f1dbb60b3e176a9d}{Periodic\_Thread}}\ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_periodic___thread_a685e10ab7e8846f8f1dbb60b3e176a9d}{Periodic\_Thread}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ...Tn>}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_periodic___thread_a123d095402ea6bee2aa89ce3da652657}{Periodic\_Thread}}(Owner*\ owner,\ \textcolor{keywordtype}{void}\ (Owner::*task)(Tn...),\ Tn...an);}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_periodic___thread_a855ada8f70f8dbfdb376118e55411d44}{\string~Periodic\_Thread}}();}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_periodic___thread_a6beeb5b2b7f915df5c28fe215fa21d28}{start}}(std::int64\_t\ \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}});}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_periodic___thread_a7f833c6eaf6ff5649f160d3ec7ac8427}{join}}();}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_periodic___thread_a4a6ba5ffa3dff30f9d42e2824d4a9465}{adjust\_period}}(std::int64\_t\ \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}});}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Directly\ overwrite\ current\ period\ (no\ GCD)}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_periodic___thread_a8b965e166a7c7a27f1bc354528ba642e}{set\_period}}(std::int64\_t\ \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}});}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ std::int64\_t\ \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{class_periodic___thread_ad08b3b9bc13cd526a5ab3ac7396ebe71}{run}}(\textcolor{keywordtype}{void}*\ arg);}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_periodic___thread_aefa911df002f2897aab63a43d4555ec1}{running}}();}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_periodic___thread_a7b94d4437fb09e1496642240b1091396}{Periodic\_Thread}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_periodic___thread_a685e10ab7e8846f8f1dbb60b3e176a9d}{Periodic\_Thread}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_periodic___thread_a685e10ab7e8846f8f1dbb60b3e176a9d}{Periodic\_Thread}}\&\ \mbox{\hyperlink{class_periodic___thread_ad6d3505e6bcfc5c15e33f5ca292b7776}{operator=}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_periodic___thread_a685e10ab7e8846f8f1dbb60b3e176a9d}{Periodic\_Thread}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ std::int64\_t\ mdc(std::int64\_t\ a,\ std::int64\_t\ b);}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ std::atomic<std::int64\_t>\ \_period;}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ std::atomic<bool>\ \_running;}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ pthread\_t\ \_thread;}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ std::function<void()>\ \_task;}
+\DoxyCodeLine{00100\ \};}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{comment}{/*****\ Periodic\ Thread\ Implementation\ *****/}}
+\DoxyCodeLine{00103\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Owner>}
+\DoxyCodeLine{00104\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ...Tn>}
+\DoxyCodeLine{00105\ \mbox{\hyperlink{class_periodic___thread_a685e10ab7e8846f8f1dbb60b3e176a9d}{Periodic\_Thread<Owner>::Periodic\_Thread}}(Owner*\ owner,\ \textcolor{keywordtype}{void}\ (Owner::*task)(Tn...),\ Tn...an)\ :\ \_running(false),\ \_thread(0)\ \{}
+\DoxyCodeLine{00106\ \ \ \ \ \_task\ =\ std::bind(task,\ owner,\ std::forward<Tn>(an)...);}
+\DoxyCodeLine{00107\ \ \ \ \ \_period.store(0,\ std::memory\_order\_release);}
+\DoxyCodeLine{00108\ \}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Owner>}
+\DoxyCodeLine{00111\ \mbox{\hyperlink{class_periodic___thread_a855ada8f70f8dbfdb376118e55411d44}{Periodic\_Thread<Owner>::\string~Periodic\_Thread}}()\ \{}
+\DoxyCodeLine{00112\ \ \ \ \ \mbox{\hyperlink{class_periodic___thread_a7f833c6eaf6ff5649f160d3ec7ac8427}{join}}();}
+\DoxyCodeLine{00113\ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Owner>}
+\DoxyCodeLine{00116\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_periodic___thread_a7f833c6eaf6ff5649f160d3ec7ac8427}{Periodic\_Thread<Owner>::join}}()\ \{}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{class_periodic___thread_aefa911df002f2897aab63a43d4555ec1}{running}}())\ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \_running.store(\textcolor{keyword}{false},\ std::memory\_order\_release);}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Send\ a\ signal\ to\ interrupt\ any\ blocked\ thread\ (critical\ for\ proper\ thread\ termination)}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_thread\ !=\ 0)\ \{}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ pthread\_kill(\_thread,\ SIGUSR1);}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Actually\ join\ the\ thread}}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ pthread\_join(\_thread,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \_thread\ =\ 0;}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00126\ \ \ \ \ \}}
+\DoxyCodeLine{00127\ \}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Owner>}
+\DoxyCodeLine{00130\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_periodic___thread_a6beeb5b2b7f915df5c28fe215fa21d28}{Periodic\_Thread<Owner>::start}}(std::int64\_t\ \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}})\ \{}
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_periodic___thread_aefa911df002f2897aab63a43d4555ec1}{running}}())\ \{}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Install\ the\ global\ signal\ handler\ for\ thread\ interruption\ (only\ once)}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ std::atomic<bool>\ signal\_handler\_installed\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!signal\_handler\_installed.exchange(\textcolor{keyword}{true}))\ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }sigaction\ sa;}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ std::memset(\&sa,\ 0,\ \textcolor{keyword}{sizeof}(sa));}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ sa.sa\_handler\ =\ \mbox{\hyperlink{periodic_thread_8h_a6475cba9e17a7391f5424d13690660bf}{component\_signal\_handler}};}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ sigemptyset(\&sa.sa\_mask);}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ sa.sa\_flags\ =\ 0;}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ sigaction(SIGUSR1,\ \&sa,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \_period.store(\mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}},\ std::memory\_order\_release);}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \_running.store(\textcolor{keyword}{true},\ std::memory\_order\_release);}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Fix:\ pthread\_create\ returns\ error\ code,\ not\ thread\ ID}}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ pthread\_create(\&\_thread,\ \textcolor{keyword}{nullptr},\ \mbox{\hyperlink{class_periodic___thread_ad08b3b9bc13cd526a5ab3ac7396ebe71}{Periodic\_Thread::run}},\ \textcolor{keyword}{this});}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ !=\ 0)\ \{}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \_running.store(\textcolor{keyword}{false},\ std::memory\_order\_release);}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Failed\ to\ create\ periodic\ thread"{}});}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00151\ \ \ \ \ \}}
+\DoxyCodeLine{00152\ \}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Owner>}
+\DoxyCodeLine{00155\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_periodic___thread_a4a6ba5ffa3dff30f9d42e2824d4a9465}{Periodic\_Thread<Owner>::adjust\_period}}(std::int64\_t\ \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}})\ \{}
+\DoxyCodeLine{00156\ \ \ \ \ \_period.store(mdc(\_period.load(std::memory\_order\_acquire),\ \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}}),\ std::memory\_order\_release);}
+\DoxyCodeLine{00157\ \}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Owner>}
+\DoxyCodeLine{00160\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_periodic___thread_a8b965e166a7c7a27f1bc354528ba642e}{Periodic\_Thread<Owner>::set\_period}}(std::int64\_t\ \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}})\ \{}
+\DoxyCodeLine{00161\ \ \ \ \ \_period.store(\mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}},\ std::memory\_order\_release);}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{comment}{//\ Wake\ the\ thread\ so\ the\ new\ period\ takes\ effect\ promptly}}
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{class_periodic___thread_aefa911df002f2897aab63a43d4555ec1}{running}}())\ \{}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ pthread\_kill(\_thread,\ SIGUSR1);}
+\DoxyCodeLine{00165\ \ \ \ \ \}}
+\DoxyCodeLine{00166\ \}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Owner>}
+\DoxyCodeLine{00169\ std::int64\_t\ \mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{Periodic\_Thread<Owner>::period}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{keywordflow}{return}\ \_period.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00171\ \}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Owner>}
+\DoxyCodeLine{00174\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{class_periodic___thread_ad08b3b9bc13cd526a5ab3ac7396ebe71}{Periodic\_Thread<Owner>::run}}(\textcolor{keywordtype}{void}*\ arg)\ \{}
+\DoxyCodeLine{00175\ \ \ \ \ \mbox{\hyperlink{class_periodic___thread_a685e10ab7e8846f8f1dbb60b3e176a9d}{Periodic\_Thread}}*\ thread\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{class_periodic___thread_a685e10ab7e8846f8f1dbb60b3e176a9d}{Periodic\_Thread}}*\textcolor{keyword}{>}(arg);}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{comment}{//\ SCHED\_DEADLINE\ limits\ (conservative\ estimates\ for\ portability)}}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ uint64\_t\ MAX\_DEADLINE\_PERIOD\_US\ =\ 1000000ULL;\ \ \ \ \textcolor{comment}{//\ 1\ second\ in\ microseconds}}
+\DoxyCodeLine{00179\ \ \ \ \ }
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keywordtype}{bool}\ use\_deadline\_scheduling\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structsched__attr}{sched\_attr}}\ attr\_dl;}
+\DoxyCodeLine{00182\ \ \ \ \ }
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keywordflow}{while}\ (thread-\/>\mbox{\hyperlink{class_periodic___thread_aefa911df002f2897aab63a43d4555ec1}{running}}())\ \{}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ uint64\_t\ current\_period\_us\ =\ thread-\/>\mbox{\hyperlink{class_periodic___thread_a74c6da3ed2632d02364dbd1387711927}{period}}();}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Determine\ if\ we\ should\ use\ SCHED\_DEADLINE\ based\ on\ period\ length}}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ should\_use\_deadline\ =\ (current\_period\_us\ <=\ MAX\_DEADLINE\_PERIOD\_US);}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Only\ attempt\ SCHED\_DEADLINE\ for\ periods\ <=\ 1\ second}}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (should\_use\_deadline\ \&\&\ !use\_deadline\_scheduling)\ \{}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ memset(\&attr\_dl,\ 0,\ \textcolor{keyword}{sizeof}(attr\_dl));}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ attr\_dl.\mbox{\hyperlink{structsched__attr_a4610c4d7b153c6d1dc7aee7cc93e5136}{size}}\ =\ \textcolor{keyword}{sizeof}(attr\_dl);}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ attr\_dl.\mbox{\hyperlink{structsched__attr_afea9068588bd9c4c0fbffd5117bc47d7}{sched\_policy}}\ =\ SCHED\_DEADLINE;}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ attr\_dl.\mbox{\hyperlink{structsched__attr_a78ed556ae90e89809210516594e5c266}{sched\_flags}}\ =\ 0;}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Convert\ microseconds\ to\ nanoseconds\ for\ SCHED\_DEADLINE}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ uint64\_t\ period\_ns\ =\ current\_period\_us\ *\ 1000;}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ attr\_dl.\mbox{\hyperlink{structsched__attr_aabe762892ad8e6574d99d717d17d4474}{sched\_runtime}}\ =\ period\_ns\ /\ 2;\ \ \textcolor{comment}{//\ 50\%\ of\ period\ for\ execution}}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ attr\_dl.\mbox{\hyperlink{structsched__attr_a11a8f9ede7e2af92f63537424e0fc04b}{sched\_deadline}}\ =\ period\_ns;\ \ \ \ \ \textcolor{comment}{//\ Deadline\ equals\ period}}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ attr\_dl.\mbox{\hyperlink{structsched__attr_a25b0735a17ec148910f88305d6e8373c}{sched\_period}}\ =\ period\_ns;\ \ \ \ \ \ \ \textcolor{comment}{//\ Period\ in\ nanoseconds}}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ \mbox{\hyperlink{periodic_thread_8h_a72da35186caf241b139a434497ff3e9c}{sched\_setattr}}(0,\ \&attr\_dl,\ 0);}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ ==\ 0)\ \{}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ use\_deadline\_scheduling\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ use\_deadline\_scheduling\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (!should\_use\_deadline\ \&\&\ use\_deadline\_scheduling)\ \{}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Switch\ back\ to\ regular\ scheduling\ for\ long\ periods}}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }sched\_param\ param;}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ param.sched\_priority\ =\ 0;}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ pthread\_setschedparam(pthread\_self(),\ SCHED\_OTHER,\ \&param);}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ ==\ 0)\ \{}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ use\_deadline\_scheduling\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Double-\/check\ running\ status\ before\ calling\ task}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (thread-\/>\mbox{\hyperlink{class_periodic___thread_aefa911df002f2897aab63a43d4555ec1}{running}}())\ \{}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ thread-\/>\_task();}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Sleep\ for\ the\ specified\ period\ (convert\ microseconds\ to\ milliseconds)}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ std::this\_thread::sleep\_for(std::chrono::microseconds(current\_period\_us));}
+\DoxyCodeLine{00225\ \ \ \ \ \}}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00228\ \}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Owner>}
+\DoxyCodeLine{00231\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_periodic___thread_aefa911df002f2897aab63a43d4555ec1}{Periodic\_Thread<Owner>::running}}()\ \{}
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{keywordflow}{return}\ \_running.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00233\ \}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Owner>}
+\DoxyCodeLine{00236\ std::int64\_t\ Periodic\_Thread<Owner>::mdc(std::int64\_t\ a,\ std::int64\_t\ b)\ \{}
+\DoxyCodeLine{00237\ \ \ \ \ \textcolor{keywordflow}{while}\ (b\ !=\ 0)\ \{}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ std::int64\_t\ temp\ =\ b;}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ b\ =\ a\ \%\ b;}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ a\ =\ temp;}
+\DoxyCodeLine{00241\ \ \ \ \ \}}
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{keywordflow}{return}\ a;}
+\DoxyCodeLine{00243\ \}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ PERIODIC\_THREAD}}
+
+\end{DoxyCode}

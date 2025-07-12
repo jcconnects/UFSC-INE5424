@@ -1,0 +1,316 @@
+\doxysection{vehicle.\+h}
+\hypertarget{vehicle_8h_source}{}\label{vehicle_8h_source}\index{include/app/vehicle.h@{include/app/vehicle.h}}
+\mbox{\hyperlink{vehicle_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ VEHICLE\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ VEHICLE\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <atomic>}\ \textcolor{comment}{//\ for\ std::atomic}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <csignal>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <vector>}\ \textcolor{comment}{//\ for\ std::vector}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <memory>}\ \textcolor{comment}{//\ for\ std::unique\_ptr}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <string>}\ \textcolor{comment}{//\ for\ std::string}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{csv__logger_8h}{api/util/csv\_logger.h}}"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{gateway_8h}{api/framework/gateway.h}}"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{agent_8h}{api/framework/agent.h}}"{}}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{clock_8h}{api/framework/clock.h}}"{}}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{leader_key_storage_8h}{api/framework/leaderKeyStorage.h}}"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ethernet_8h}{api/network/ethernet.h}}"{}}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{vehicle_r_s_u_manager_8h}{api/framework/vehicleRSUManager.h}}"{}}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{comment}{//\ Include\ all\ component\ factory\ headers\ for\ Phase\ 4.3}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{camera__factory_8hpp}{components/camera\_factory.hpp}}"{}}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{lidar__factory_8hpp}{components/lidar\_factory.hpp}}"{}}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ecu__factory_8hpp}{components/ecu\_factory.hpp}}"{}}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ins__factory_8hpp}{components/ins\_factory.hpp}}"{}}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{basic__producer__a__factory_8hpp}{components/basic\_producer\_a\_factory.hpp}}"{}}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{basic__producer__b__factory_8hpp}{components/basic\_producer\_b\_factory.hpp}}"{}}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{basic__consumer__a__factory_8hpp}{components/basic\_consumer\_a\_factory.hpp}}"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{basic__consumer__b__factory_8hpp}{components/basic\_consumer\_b\_factory.hpp}}"{}}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{csv__component__factory_8hpp}{components/csv\_component\_factory.hpp}}"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{csv__consumer__factory_8hpp}{components/csv\_consumer\_factory.hpp}}"{}}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{comment}{//\ Component\ type\ identifiers\ for\ template\ specialization}}
+\DoxyCodeLine{00031\ \textcolor{comment}{//\ These\ replace\ the\ old\ inheritance-\/based\ component\ classes}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_e_c_u_component}{ECUComponent}}\ \{\};}
+\DoxyCodeLine{00033\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_camera_component}{CameraComponent}}\ \{\};}
+\DoxyCodeLine{00034\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_lidar_component}{LidarComponent}}\ \{\};}
+\DoxyCodeLine{00035\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_i_n_s_component}{INSComponent}}\ \{\};}
+\DoxyCodeLine{00036\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_basic_producer_a}{BasicProducerA}}\ \{\};}
+\DoxyCodeLine{00037\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_basic_producer_b}{BasicProducerB}}\ \{\};}
+\DoxyCodeLine{00038\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_basic_consumer_a}{BasicConsumerA}}\ \{\};}
+\DoxyCodeLine{00039\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_basic_consumer_b}{BasicConsumerB}}\ \{\};}
+\DoxyCodeLine{00040\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_c_s_v_component}{CSVComponent}}\ \{\};}
+\DoxyCodeLine{00041\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_c_s_v_consumer_component}{CSVConsumerComponent}}\ \{\};}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{comment}{//\ Vehicle\ class\ definition}}
+\DoxyCodeLine{00044\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_vehicle_adf79faad3cc596453698bcf29d4a4ab7}{Vehicle}}\ \{}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum\ class}\ \mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228}{Port}}\ :\ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Gateway::Protocol::Port}}\ \{}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a81d741a35dc8a42c885b7cc031afd17f}{BROADCAST}}\ =\ 0,}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228addf0d6b21537d984fea6544f58101fa8}{CAMERA}},}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a1e5ac0fa08197d653644e05515386402}{ECU}},}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228ad65de5dfebb084344726074547490cc4}{LIDAR}},}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a77dd7b24e2c968c0215779e4152c8d67}{INS}},}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Update\ constructor\ signature\ to\ use\ the\ concrete\ types/aliases}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_adf79faad3cc596453698bcf29d4a4ab7}{Vehicle}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_a61ab140c755b8e0e824d54117cf4546f}{\string~Vehicle}}();}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_vehicle_a176ed0e2dab3ded173d379797b158f0a}{id}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_vehicle_adc0c8644a2fb3432b7c7c7fe61ebf7b6}{running}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a3ccb19e449f184280cae484d2ee0e7c3}{start}}();}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a837e3c110672946892026ca6bfd21b27}{stop}}();}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ComponentType>}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{create\_component}}(\textcolor{keyword}{const}\ std::string\&\ name);}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ComponentType>}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ ComponentType*\ \mbox{\hyperlink{class_vehicle_adb69b59f011c8a861f2ff5a0ef3979b9}{get\_component}}(\textcolor{keyword}{const}\ std::string\&\ name);}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Special\ method\ for\ CSV\ component\ creation\ with\ file\ path}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a678b6629d25694c236329fddfe59b7e8}{create\_csv\_component\_with\_file}}(\textcolor{keyword}{const}\ std::string\&\ name,\ \textcolor{keyword}{const}\ std::string\&\ csv\_file\_path);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CSV\ logging\ setup}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a6e6c02f6d721e504e5f6ca2d6cc76c96}{setup\_csv\_logging}}();}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Expose\ RSU\ manager\ for\ testing/debugging}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_r_s_u_manager}{VehicleRSUManager<Gateway::Protocol>}}*\ \mbox{\hyperlink{class_vehicle_a9c5e4ecebbdf19a237553e90b7c998d5}{rsu\_manager}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_rsu\_manager.get();\ \}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Set\ transmission\ radius}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a47cea19aa9a16e2c9cbbedc8a682ff51}{setTransmissionRadius}}(\textcolor{keywordtype}{double}\ radius\_m);}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \mbox{\hyperlink{class_vehicle_a71f24825f1a30ca8be99d1a5501c7660}{component\_count}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \_id;}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_gateway}{Gateway}}*\ \_gateway;}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ std::atomic<bool>\ \_running;}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ std::vector<std::unique\_ptr<Agent>>\ \_components;}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ std::string\ \_log\_dir;}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ std::unique\_ptr<VehicleRSUManager<Gateway::Protocol>>\ \_rsu\_manager;}
+\DoxyCodeLine{00095\ \};}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \textcolor{comment}{/********\ Vehicle\ Implementation\ *********/}}
+\DoxyCodeLine{00098\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_vehicle_adf79faad3cc596453698bcf29d4a4ab7}{Vehicle::Vehicle}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id})\ :\ \_id(\mbox{\hyperlink{class_vehicle_a176ed0e2dab3ded173d379797b158f0a}{id}}),\ \_running(false)}
+\DoxyCodeLine{00099\ \{}
+\DoxyCodeLine{00100\ \ \ \ \ \_gateway\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_gateway}{Gateway}}(\_id,\ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2}{Network::EntityType::VEHICLE}});}
+\DoxyCodeLine{00101\ \ \ \ \ \_rsu\_manager\ =\ std::make\_unique<VehicleRSUManager<Gateway::Protocol>>(\_id);}
+\DoxyCodeLine{00102\ \ \ \ \ \_gateway-\/>network()-\/>set\_vehicle\_rsu\_manager(\_rsu\_manager.get());}
+\DoxyCodeLine{00103\ \ \ \ \ }
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{comment}{//\ Set\ up\ CSV\ logging\ directory}}
+\DoxyCodeLine{00105\ \ \ \ \ \_log\_dir\ =\ \mbox{\hyperlink{class_c_s_v_logger_a486ab0c6a8bbd9505b088223d43bdff6}{CSVLogger::create\_vehicle\_log\_dir}}(\_id);}
+\DoxyCodeLine{00106\ \ \ \ \ \mbox{\hyperlink{class_vehicle_a6e6c02f6d721e504e5f6ca2d6cc76c96}{setup\_csv\_logging}}();}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{comment}{//\ Set\ self\ ID\ for\ the\ Clock\ instance\ (will\ be\ updated\ by\ RSU\ manager\ when\ leader\ is\ selected)}}
+\DoxyCodeLine{00109\ \ \ \ \ \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ self\_leader\_id\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\textcolor{keyword}{>}(\_gateway-\/>address().paddr().bytes[5]);}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keywordflow}{if}\ (self\_leader\_id\ !=\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}})\ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}().\mbox{\hyperlink{class_clock_a2cc3f3a5fe94bcdfcd45e83936f6c513}{setSelfId}}(self\_leader\_id);}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Vehicle>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Vehicle\ "{}}\ <<\ \_id\ <<\ \textcolor{stringliteral}{"{}]\ registered\ self\_id\ "{}}\ <<\ self\_leader\_id\ <<\ \textcolor{stringliteral}{"{}\ with\ Clock.\(\backslash\)n"{}};}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}().\mbox{\hyperlink{class_clock_a5cc4fda803bea0fe083ecd7cfebca43c}{activate}}(\textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00114\ \ \ \ \ \}}
+\DoxyCodeLine{00115\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Vehicle>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Vehicle\ "{}}\ <<\ \_id\ <<\ \textcolor{stringliteral}{"{}]\ initialized\ with\ RSU\ management\(\backslash\)n"{}};}
+\DoxyCodeLine{00116\ \}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_vehicle_a61ab140c755b8e0e824d54117cf4546f}{Vehicle::\string~Vehicle}}()\ \{}
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{comment}{//\ Ensure\ vehicle\ is\ stopped\ first}}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{class_vehicle_adc0c8644a2fb3432b7c7c7fe61ebf7b6}{running}}())\ \{}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_vehicle_a837e3c110672946892026ca6bfd21b27}{stop}}();}
+\DoxyCodeLine{00122\ \ \ \ \ \}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{comment}{//\ Components\ are\ managed\ by\ unique\_ptr,\ destruction\ is\ automatic.}}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{comment}{//\ But\ we\ clear\ them\ explicitly\ to\ ensure\ proper\ destruction\ order}}
+\DoxyCodeLine{00126\ \ \ \ \ \_components.clear();}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{comment}{//\ Protocol\ and\ NIC\ are\ owned\ by\ Vehicle\ in\ this\ design}}
+\DoxyCodeLine{00129\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Vehicle>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Vehicle::\string~Vehicle()\ called\ for\ ID\ "{}}\ <<\ \_id\ <<\ \textcolor{stringliteral}{"{}!\(\backslash\)n"{}};}
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{keyword}{delete}\ \_gateway;}
+\DoxyCodeLine{00131\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Vehicle>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Vehicle\ "{}}\ <<\ \_id\ <<\ \textcolor{stringliteral}{"{}]\ destroyed\ successfully.\(\backslash\)n"{}};}
+\DoxyCodeLine{00132\ \}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a3ccb19e449f184280cae484d2ee0e7c3}{Vehicle::start}}()\ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Vehicle>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Vehicle::start()\ called\ for\ ID\ "{}}\ <<\ \_id\ <<\ \textcolor{stringliteral}{"{}!\(\backslash\)n"{}};}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{class_vehicle_adc0c8644a2fb3432b7c7c7fe61ebf7b6}{running}}())\ \{}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Vehicle>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Vehicle\ "{}}\ <<\ \_id\ <<\ \textcolor{stringliteral}{"{}]\ start()\ called\ but\ already\ running.\(\backslash\)n"{}};}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00139\ \ \ \ \ \}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ \_running.store(\textcolor{keyword}{true},\ std::memory\_order\_release);}
+\DoxyCodeLine{00142\ \ \ \ \ \_gateway-\/>start();}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Vehicle>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Vehicle\ "{}}\ <<\ \_id\ <<\ \textcolor{stringliteral}{"{}]\ started.\(\backslash\)n"{}};}
+\DoxyCodeLine{00145\ \}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a837e3c110672946892026ca6bfd21b27}{Vehicle::stop}}()\ \{}
+\DoxyCodeLine{00148\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Vehicle>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Vehicle::stop()\ called\ for\ ID\ "{}}\ <<\ \_id\ <<\ \textcolor{stringliteral}{"{}!\(\backslash\)n"{}};}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_vehicle_adc0c8644a2fb3432b7c7c7fe61ebf7b6}{running}}())\ \{}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Vehicle>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Vehicle\ "{}}\ <<\ \_id\ <<\ \textcolor{stringliteral}{"{}]\ stop()\ called\ but\ not\ running.\(\backslash\)n"{}};}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00153\ \ \ \ \ \}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \_running.store(\textcolor{keyword}{false},\ std::memory\_order\_release);\ \textcolor{comment}{//\ Mark\ vehicle\ as\ stopped}}
+\DoxyCodeLine{00156\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Vehicle>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Vehicle\ "{}}\ <<\ \_id\ <<\ \textcolor{stringliteral}{"{}]\ stopped.\(\backslash\)n"{}};}
+\DoxyCodeLine{00157\ \}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00166\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ComponentType>}
+\DoxyCodeLine{00167\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{Vehicle::create\_component}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keyword}{static\_assert}(\textcolor{keyword}{sizeof}(ComponentType)\ ==\ 0,\ }
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Unsupported\ component\ type.\ Supported\ types:\ ECUComponent,\ CameraComponent,\ LidarComponent,\ INSComponent,\ BasicProducerA,\ BasicProducerB,\ BasicConsumerA,\ BasicConsumerB,\ CSVComponent,\ CSVConsumerComponent"{}});}
+\DoxyCodeLine{00170\ \}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00180\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00181\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{Vehicle::create\_component<ECUComponent>}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ component\_counter\ =\ 1;}
+\DoxyCodeLine{00183\ \ \ \ \ \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway::Address}}\ component\_addr(\_gateway-\/>address().paddr(),\ component\_counter++);}
+\DoxyCodeLine{00184\ \ \ \ \ }
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keyword}{auto}\ component\ =\ \mbox{\hyperlink{ecu__factory_8hpp_afd42ad1f823fb5044d5c3c2ffc6282d8}{create\_ecu\_component}}(\_gateway-\/>bus(),\ component\_addr,\ name);}
+\DoxyCodeLine{00186\ \ \ \ \ component-\/>set\_csv\_logger(\_log\_dir);}
+\DoxyCodeLine{00187\ \ \ \ \ \_components.push\_back(std::move(component));}
+\DoxyCodeLine{00188\ \}}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00198\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00199\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{Vehicle::create\_component<CameraComponent>}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ component\_counter\ =\ 1;}
+\DoxyCodeLine{00201\ \ \ \ \ \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway::Address}}\ component\_addr(\_gateway-\/>address().paddr(),\ component\_counter++);}
+\DoxyCodeLine{00202\ \ \ \ \ }
+\DoxyCodeLine{00203\ \ \ \ \ \textcolor{keyword}{auto}\ component\ =\ \mbox{\hyperlink{camera__factory_8hpp_a87b1496052046c9aaf29f55537a62f69}{create\_camera\_component}}(\_gateway-\/>bus(),\ component\_addr,\ name);}
+\DoxyCodeLine{00204\ \ \ \ \ component-\/>set\_csv\_logger(\_log\_dir);}
+\DoxyCodeLine{00205\ \ \ \ \ \_components.push\_back(std::move(component));}
+\DoxyCodeLine{00206\ \}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00216\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00217\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{Vehicle::create\_component<LidarComponent>}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ component\_counter\ =\ 1;}
+\DoxyCodeLine{00219\ \ \ \ \ \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway::Address}}\ component\_addr(\_gateway-\/>address().paddr(),\ component\_counter++);}
+\DoxyCodeLine{00220\ \ \ \ \ }
+\DoxyCodeLine{00221\ \ \ \ \ \textcolor{keyword}{auto}\ component\ =\ \mbox{\hyperlink{lidar__factory_8hpp_a3c346f997e0aa0b0be3cae50aade7399}{create\_lidar\_component}}(\_gateway-\/>bus(),\ component\_addr,\ name);}
+\DoxyCodeLine{00222\ \ \ \ \ component-\/>set\_csv\_logger(\_log\_dir);}
+\DoxyCodeLine{00223\ \ \ \ \ \_components.push\_back(std::move(component));}
+\DoxyCodeLine{00224\ \}}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00234\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00235\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{Vehicle::create\_component<INSComponent>}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ component\_counter\ =\ 1;}
+\DoxyCodeLine{00237\ \ \ \ \ \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway::Address}}\ component\_addr(\_gateway-\/>address().paddr(),\ component\_counter++);}
+\DoxyCodeLine{00238\ \ \ \ \ }
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keyword}{auto}\ component\ =\ \mbox{\hyperlink{ins__factory_8hpp_a837bf8f6449a0d1b4b4c97c9b1ceeec5}{create\_ins\_component}}(\_gateway-\/>bus(),\ component\_addr,\ name);}
+\DoxyCodeLine{00240\ \ \ \ \ component-\/>set\_csv\_logger(\_log\_dir);}
+\DoxyCodeLine{00241\ \ \ \ \ \_components.push\_back(std::move(component));}
+\DoxyCodeLine{00242\ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00252\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00253\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{Vehicle::create\_component<BasicProducerA>}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00254\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ component\_counter\ =\ 1;}
+\DoxyCodeLine{00255\ \ \ \ \ \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway::Address}}\ component\_addr(\_gateway-\/>address().paddr(),\ component\_counter++);}
+\DoxyCodeLine{00256\ \ \ \ \ }
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keyword}{auto}\ component\ =\ \mbox{\hyperlink{basic__producer__a__factory_8hpp_ad23909c148d39e676cf74e27cd724c49}{create\_basic\_producer\_a}}(\_gateway-\/>bus(),\ component\_addr,\ name);}
+\DoxyCodeLine{00258\ \ \ \ \ component-\/>set\_csv\_logger(\_log\_dir);}
+\DoxyCodeLine{00259\ \ \ \ \ \_components.push\_back(std::move(component));}
+\DoxyCodeLine{00260\ \}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00270\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00271\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{Vehicle::create\_component<BasicProducerB>}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ component\_counter\ =\ 1;}
+\DoxyCodeLine{00273\ \ \ \ \ \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway::Address}}\ component\_addr(\_gateway-\/>address().paddr(),\ component\_counter++);}
+\DoxyCodeLine{00274\ \ \ \ \ }
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{keyword}{auto}\ component\ =\ \mbox{\hyperlink{basic__producer__b__factory_8hpp_aa5079893f8ac7a6d86b6324e6fbdce29}{create\_basic\_producer\_b}}(\_gateway-\/>bus(),\ component\_addr,\ name);}
+\DoxyCodeLine{00276\ \ \ \ \ component-\/>set\_csv\_logger(\_log\_dir);}
+\DoxyCodeLine{00277\ \ \ \ \ \_components.push\_back(std::move(component));}
+\DoxyCodeLine{00278\ \}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00288\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00289\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{Vehicle::create\_component<BasicConsumerA>}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ component\_counter\ =\ 1;}
+\DoxyCodeLine{00291\ \ \ \ \ \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway::Address}}\ component\_addr(\_gateway-\/>address().paddr(),\ component\_counter++);}
+\DoxyCodeLine{00292\ \ \ \ \ }
+\DoxyCodeLine{00293\ \ \ \ \ \textcolor{keyword}{auto}\ component\ =\ \mbox{\hyperlink{basic__consumer__a__factory_8hpp_a2402085b452474be73365ef22b298c11}{create\_basic\_consumer\_a}}(\_gateway-\/>bus(),\ component\_addr,\ name);}
+\DoxyCodeLine{00294\ \ \ \ \ component-\/>set\_csv\_logger(\_log\_dir);}
+\DoxyCodeLine{00295\ \ \ \ \ \_components.push\_back(std::move(component));}
+\DoxyCodeLine{00296\ \}}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00306\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00307\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{Vehicle::create\_component<BasicConsumerB>}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00308\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ component\_counter\ =\ 1;}
+\DoxyCodeLine{00309\ \ \ \ \ \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway::Address}}\ component\_addr(\_gateway-\/>address().paddr(),\ component\_counter++);}
+\DoxyCodeLine{00310\ \ \ \ \ }
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{keyword}{auto}\ component\ =\ \mbox{\hyperlink{basic__consumer__b__factory_8hpp_a3293843e2f79e5fd91db46a917276394}{create\_basic\_consumer\_b}}(\_gateway-\/>bus(),\ component\_addr,\ name);}
+\DoxyCodeLine{00312\ \ \ \ \ component-\/>set\_csv\_logger(\_log\_dir);}
+\DoxyCodeLine{00313\ \ \ \ \ \_components.push\_back(std::move(component));}
+\DoxyCodeLine{00314\ \}}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00325\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00326\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{Vehicle::create\_component<CSVComponent>}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00327\ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}CSVComponent\ requires\ a\ CSV\ file\ path.\ Use\ this\ method\ instead:\(\backslash\)n"{}}}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}-\/\ create\_csv\_component\_with\_file(name,\ csv\_file\_path)"{}});}
+\DoxyCodeLine{00329\ \}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00339\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00340\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{Vehicle::create\_component<CSVConsumerComponent>}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00341\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ component\_counter\ =\ 1;}
+\DoxyCodeLine{00342\ \ \ \ \ \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway::Address}}\ component\_addr(\_gateway-\/>address().paddr(),\ component\_counter++);}
+\DoxyCodeLine{00343\ \ \ \ \ }
+\DoxyCodeLine{00344\ \ \ \ \ \textcolor{keyword}{auto}\ component\ =\ \mbox{\hyperlink{csv__consumer__factory_8hpp_af18465fb5dca5593fe4c4bd93f5bd016}{create\_csv\_consumer}}(\_gateway-\/>bus(),\ component\_addr,\ name);}
+\DoxyCodeLine{00345\ \ \ \ \ component-\/>set\_csv\_logger(\_log\_dir);}
+\DoxyCodeLine{00346\ \ \ \ \ \_components.push\_back(std::move(component));}
+\DoxyCodeLine{00347\ \}}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00359\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a678b6629d25694c236329fddfe59b7e8}{Vehicle::create\_csv\_component\_with\_file}}(\textcolor{keyword}{const}\ std::string\&\ name,\ \textcolor{keyword}{const}\ std::string\&\ csv\_file\_path)\ \{}
+\DoxyCodeLine{00360\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ component\_counter\ =\ 1;}
+\DoxyCodeLine{00361\ \ \ \ \ \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway::Address}}\ component\_addr(\_gateway-\/>address().paddr(),\ component\_counter++);}
+\DoxyCodeLine{00362\ \ \ \ \ }
+\DoxyCodeLine{00363\ \ \ \ \ \textcolor{keyword}{auto}\ component\ =\ \mbox{\hyperlink{csv__component__factory_8hpp_a6e282462652386604968347604dbbd07}{create\_csv\_component}}(\_gateway-\/>bus(),\ component\_addr,\ csv\_file\_path,\ name);}
+\DoxyCodeLine{00364\ \ \ \ \ component-\/>set\_csv\_logger(\_log\_dir);}
+\DoxyCodeLine{00365\ \ \ \ \ \_components.push\_back(std::move(component));}
+\DoxyCodeLine{00366\ \}}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ComponentType>}
+\DoxyCodeLine{00369\ \textcolor{keyword}{inline}\ ComponentType*\ \mbox{\hyperlink{class_vehicle_adb69b59f011c8a861f2ff5a0ef3979b9}{Vehicle::get\_component}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00370\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ component\ :\ \_components)\ \{}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (component-\/>name()\ ==\ name)\ \{}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}ComponentType*\textcolor{keyword}{>}(component.get());}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00374\ \ \ \ \ \}}
+\DoxyCodeLine{00375\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00376\ \}}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00387\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00388\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_agent}{Agent}}*\ \mbox{\hyperlink{class_vehicle_adb69b59f011c8a861f2ff5a0ef3979b9}{Vehicle::get\_component<Agent>}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \{}
+\DoxyCodeLine{00389\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ component\ :\ \_components)\ \{}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (component-\/>name()\ ==\ name)\ \{}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ component.get();}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00393\ \ \ \ \ \}}
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00395\ \}}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_vehicle_a176ed0e2dab3ded173d379797b158f0a}{Vehicle::id}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00398\ \ \ \ \ \textcolor{keywordflow}{return}\ \_id;}
+\DoxyCodeLine{00399\ \}}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_vehicle_adc0c8644a2fb3432b7c7c7fe61ebf7b6}{Vehicle::running}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00402\ \ \ \ \ \textcolor{keywordflow}{return}\ \_running.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00403\ \}}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00405\ \textcolor{comment}{//\ CSV\ logging\ setup}}
+\DoxyCodeLine{00406\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a6e6c02f6d721e504e5f6ca2d6cc76c96}{Vehicle::setup\_csv\_logging}}()\ \{}
+\DoxyCodeLine{00407\ \ \ \ \ \textcolor{comment}{//\ Set\ up\ CSV\ logging\ for\ the\ gateway}}
+\DoxyCodeLine{00408\ \ \ \ \ \_gateway-\/>setup\_csv\_logging(\_log\_dir);}
+\DoxyCodeLine{00409\ \}}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \textcolor{comment}{//\ Set\ transmission\ radius}}
+\DoxyCodeLine{00412\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_vehicle_a47cea19aa9a16e2c9cbbedc8a682ff51}{Vehicle::setTransmissionRadius}}(\textcolor{keywordtype}{double}\ radius\_m)\ \{}
+\DoxyCodeLine{00413\ \ \ \ \ \_gateway-\/>network()-\/>channel()-\/>setRadius(radius\_m);}
+\DoxyCodeLine{00414\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Vehicle>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Vehicle\ "{}}\ <<\ \_id\ <<\ \textcolor{stringliteral}{"{}]\ transmission\ radius\ set\ to\ "{}}\ <<\ radius\_m\ <<\ \textcolor{stringliteral}{"{}m\(\backslash\)n"{}};}
+\DoxyCodeLine{00415\ \}}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00422\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}\ \mbox{\hyperlink{class_vehicle_a71f24825f1a30ca8be99d1a5501c7660}{Vehicle::component\_count}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00423\ \ \ \ \ \textcolor{keywordflow}{return}\ \_components.size();}
+\DoxyCodeLine{00424\ \}}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ VEHICLE\_H}}
+
+\end{DoxyCode}

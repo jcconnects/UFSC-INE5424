@@ -1,0 +1,433 @@
+\doxysection{map\+\_\+config.\+h}
+\hypertarget{map__config_8h_source}{}\label{map__config_8h_source}\index{include/api/framework/map\_config.h@{include/api/framework/map\_config.h}}
+\mbox{\hyperlink{map__config_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ MAP\_CONFIG\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ MAP\_CONFIG\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{comment}{//\ Simplified\ configuration\ structures\ for\ waypoint-\/based\ trajectory\ generation}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_waypoint}{Waypoint}}\ \{}
+\DoxyCodeLine{00013\ \ \ \ \ std::string\ \mbox{\hyperlink{struct_waypoint_a343ecafdd07d39dec100b26844d6aed3}{name}};}
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_waypoint_a6126f079540befbbedc2b3f5f830c0d1}{x}};}
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_waypoint_a1790dd445030f6ba5d4932816cd0701f}{y}};}
+\DoxyCodeLine{00016\ \};}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_route}{Route}}\ \{}
+\DoxyCodeLine{00019\ \ \ \ \ std::string\ \mbox{\hyperlink{struct_route_a892cceaead1c1602577ddfa5f9b1df32}{name}};}
+\DoxyCodeLine{00020\ \ \ \ \ std::vector<std::string>\ \mbox{\hyperlink{struct_route_abb8b824ff3899a1fb58fb925380132a9}{waypoint\_names}};}
+\DoxyCodeLine{00021\ \};}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_r_s_u_config}{RSUConfig}}\ \{}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_r_s_u_config_a37b1f3b42f8cbf6bad5662270a491ee3}{id}};}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_r_s_u_config_acfb5c65224821911dc78ab851f37b666}{x}};}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_r_s_u_config_af8fd1def7f37515efc365f0a01d704b5}{y}};}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_r_s_u_config_aa9c06edc0cc559fac316e1ab9ace82eb}{unit}};}
+\DoxyCodeLine{00028\ \ \ \ \ std::chrono::milliseconds\ \mbox{\hyperlink{struct_r_s_u_config_a0775a244440d6d6839f155193cbb5158}{broadcast\_period}};}
+\DoxyCodeLine{00029\ \};}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_vehicle_config}{VehicleConfig}}\ \{}
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_vehicle_config_afbd68a144f0c886a4a9e281e5bada141}{default\_count}};}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_vehicle_config_afc15e730e8314132573b4acf6c698c7b}{speed\_kmh}};}
+\DoxyCodeLine{00034\ \};}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_simulation_config}{SimulationConfig}}\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_simulation_config_a973464cf2c11c92455af0532457c37ec}{duration\_s}};}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_simulation_config_a01a6125ebf38a129a3024531c47298d8}{update\_interval\_ms}};}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_simulation_config_a65dd1bd73c9335f3aa883654e6fe3d3d}{default\_transmission\_radius\_m}};}
+\DoxyCodeLine{00040\ \ \ \ \ std::string\ \mbox{\hyperlink{struct_simulation_config_a592eca1891f04238722e79b056db7bf8}{trajectory\_generator\_script}};}
+\DoxyCodeLine{00041\ \};}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_logging_config}{LoggingConfig}}\ \{}
+\DoxyCodeLine{00044\ \ \ \ \ std::string\ \mbox{\hyperlink{struct_logging_config_a652f4b5fb357bacd3fd6b1f9bd5d6f79}{trajectory\_dir}};}
+\DoxyCodeLine{00045\ \};}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_map_config_a6ddb7bd40412504ca82a971617392c17}{MapConfig}}\ \{}
+\DoxyCodeLine{00048\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00049\ \ \ \ \ \mbox{\hyperlink{class_map_config_a6ddb7bd40412504ca82a971617392c17}{MapConfig}}(\textcolor{keyword}{const}\ std::string\&\ config\_file\_path);}
+\DoxyCodeLine{00050\ \ \ \ \ }
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{//\ Accessors}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<Waypoint>\&\ \mbox{\hyperlink{class_map_config_a55e8a86552bd4599eebd2b7d44c27cff}{waypoints}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_waypoints;\ \}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<Route>\&\ \mbox{\hyperlink{class_map_config_ae7ec1369e3e1ba8e995973b6d0d8824f}{routes}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_routes;\ \}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_r_s_u_config}{RSUConfig}}\&\ \mbox{\hyperlink{class_map_config_a429282fbc35a1c3c15c462adf56c28bc}{rsu\_config}}()\textcolor{keyword}{\ const\ }\{\ }
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_rsu\_configs.empty())\ \{}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \_single\_rsu\_config;}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \_rsu\_configs[0];\ }
+\DoxyCodeLine{00059\ \ \ \ \ \}}
+\DoxyCodeLine{00060\ \ \ \ \ std::vector<RSUConfig>\ \mbox{\hyperlink{class_map_config_a434a3bd4b5135e1083f6b281aaa8f177}{get\_all\_rsu\_configs}}()\textcolor{keyword}{\ const\ }\{\ }
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_rsu\_configs.empty())\ \{}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::vector<RSUConfig>\{\_single\_rsu\_config\};}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \_rsu\_configs;\ }
+\DoxyCodeLine{00065\ \ \ \ \ \}}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_vehicle_config}{VehicleConfig}}\&\ \mbox{\hyperlink{class_map_config_a28eec4c3bf57abb5bff1d3e04cbfe94f}{vehicle\_config}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_vehicle\_config;\ \}}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_simulation_config}{SimulationConfig}}\&\ \mbox{\hyperlink{class_map_config_a7614e6e276e6104c8521d5e5e3a3b301}{simulation}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_simulation;\ \}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_logging_config}{LoggingConfig}}\&\ \mbox{\hyperlink{class_map_config_a1433bc9adeaf3713c6f719f1a1971275}{logging}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_logging;\ \}}
+\DoxyCodeLine{00069\ \ \ \ \ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{comment}{//\ Helper\ methods}}
+\DoxyCodeLine{00071\ \ \ \ \ \mbox{\hyperlink{struct_waypoint}{Waypoint}}\ \mbox{\hyperlink{class_map_config_a31cc7b46ddf699eee47568a195453200}{get\_waypoint}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00072\ \ \ \ \ \mbox{\hyperlink{struct_route}{Route}}\ \mbox{\hyperlink{class_map_config_ac1b6f327f97378b4bfebe3f664546d52}{get\_route}}(\textcolor{keyword}{const}\ std::string\&\ name)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00073\ \ \ \ \ std::string\ \mbox{\hyperlink{class_map_config_a079d04d236b5d9ff4a0ef8169d6978dc}{get\_trajectory\_file\_path}}(\textcolor{keyword}{const}\ std::string\&\ entity\_type,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ entity\_id)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{class_map_config_a4f69575239f0501306a0a8364dc61f28}{get\_transmission\_radius}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_simulation.default\_transmission\_radius\_m;\ \}}
+\DoxyCodeLine{00075\ \ \ \ \ std::string\ \mbox{\hyperlink{class_map_config_a22accca445347be53f34e79b85f1b961}{get\_trajectory\_generator\_script}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_simulation.trajectory\_generator\_script;\ \}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordtype}{void}\ parse\_config\_file(\textcolor{keyword}{const}\ std::string\&\ file\_path);}
+\DoxyCodeLine{00079\ \ \ \ \ std::string\ extract\_json\_section(\textcolor{keyword}{const}\ std::string\&\ content,\ \textcolor{keyword}{const}\ std::string\&\ section\_name)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordtype}{double}\ extract\_double\_value(\textcolor{keyword}{const}\ std::string\&\ content,\ \textcolor{keyword}{const}\ std::string\&\ key)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ extract\_uint\_value(\textcolor{keyword}{const}\ std::string\&\ content,\ \textcolor{keyword}{const}\ std::string\&\ key)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00082\ \ \ \ \ std::string\ extract\_string\_value(\textcolor{keyword}{const}\ std::string\&\ content,\ \textcolor{keyword}{const}\ std::string\&\ key)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordtype}{void}\ parse\_waypoints(\textcolor{keyword}{const}\ std::string\&\ content);}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordtype}{void}\ parse\_routes(\textcolor{keyword}{const}\ std::string\&\ content);}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordtype}{void}\ parse\_single\_rsu(\textcolor{keyword}{const}\ std::string\&\ content);}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordtype}{void}\ parse\_multiple\_rsus(\textcolor{keyword}{const}\ std::string\&\ content);}
+\DoxyCodeLine{00087\ \ \ \ \ }
+\DoxyCodeLine{00088\ \ \ \ \ std::vector<Waypoint>\ \_waypoints;}
+\DoxyCodeLine{00089\ \ \ \ \ std::vector<Route>\ \_routes;}
+\DoxyCodeLine{00090\ \ \ \ \ \mbox{\hyperlink{struct_r_s_u_config}{RSUConfig}}\ \_single\_rsu\_config\{\};\ \ \textcolor{comment}{//\ For\ single\ RSU\ configs\ (map\_1)\ -\/\ zero-\/initialized}}
+\DoxyCodeLine{00091\ \ \ \ \ std::vector<RSUConfig>\ \_rsu\_configs;\ \ \textcolor{comment}{//\ For\ multiple\ RSU\ configs\ (map\_2rsu)}}
+\DoxyCodeLine{00092\ \ \ \ \ VehicleConfig\ \_vehicle\_config\{\};}
+\DoxyCodeLine{00093\ \ \ \ \ SimulationConfig\ \_simulation\{\};}
+\DoxyCodeLine{00094\ \ \ \ \ LoggingConfig\ \_logging\{\};}
+\DoxyCodeLine{00095\ \};}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \textcolor{comment}{//\ Implementation}}
+\DoxyCodeLine{00098\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_map_config_a6ddb7bd40412504ca82a971617392c17}{MapConfig::MapConfig}}(\textcolor{keyword}{const}\ std::string\&\ config\_file\_path)\ \{}
+\DoxyCodeLine{00099\ \ \ \ \ parse\_config\_file(config\_file\_path);}
+\DoxyCodeLine{00100\ \}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ MapConfig::parse\_config\_file(\textcolor{keyword}{const}\ std::string\&\ file\_path)\ \{}
+\DoxyCodeLine{00103\ \ \ \ \ std::ifstream\ file(file\_path);}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordflow}{if}\ (!file.is\_open())\ \{}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Cannot\ open\ configuration\ file:\ "{}}\ +\ file\_path);}
+\DoxyCodeLine{00106\ \ \ \ \ \}}
+\DoxyCodeLine{00107\ \ \ \ \ }
+\DoxyCodeLine{00108\ \ \ \ \ std::string\ content((std::istreambuf\_iterator<char>(file)),}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::istreambuf\_iterator<char>());}
+\DoxyCodeLine{00110\ \ \ \ \ }
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{comment}{//\ Try\ to\ parse\ RSU\ configurations\ -\/\ first\ try\ multiple\ RSUs,\ then\ single\ RSU}}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keywordflow}{if}\ (content.find(\textcolor{stringliteral}{"{}\(\backslash\)"{}rsus\(\backslash\)"{}:"{}})\ !=\ std::string::npos)\ \{}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Multiple\ RSUs\ configuration\ (array)}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ parse\_multiple\_rsus(content);}
+\DoxyCodeLine{00115\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (content.find(\textcolor{stringliteral}{"{}\(\backslash\)"{}rsu\(\backslash\)"{}:"{}})\ !=\ std::string::npos)\ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Single\ RSU\ configuration\ (object)}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ rsu\_section\ =\ extract\_json\_section(content,\ \textcolor{stringliteral}{"{}rsu"{}});}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ parse\_single\_rsu(rsu\_section);}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ std::exception\&\ e)\ \{}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Error\ parsing\ single\ RSU\ section:\ "{}}\ +\ std::string(e.what()));}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00123\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Neither\ 'rsu'\ nor\ 'rsus'\ section\ found\ in\ config\ file"{}});}
+\DoxyCodeLine{00125\ \ \ \ \ \}}
+\DoxyCodeLine{00126\ \ \ \ \ }
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{comment}{//\ Parse\ vehicle\ config\ section}}
+\DoxyCodeLine{00128\ \ \ \ \ std::string\ vehicle\_section\ =\ extract\_json\_section(content,\ \textcolor{stringliteral}{"{}vehicles"{}});}
+\DoxyCodeLine{00129\ \ \ \ \ \_vehicle\_config.default\_count\ =\ extract\_uint\_value(vehicle\_section,\ \textcolor{stringliteral}{"{}default\_count"{}});}
+\DoxyCodeLine{00130\ \ \ \ \ \_vehicle\_config.speed\_kmh\ =\ extract\_double\_value(vehicle\_section,\ \textcolor{stringliteral}{"{}speed\_kmh"{}});}
+\DoxyCodeLine{00131\ \ \ \ \ }
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{comment}{//\ Parse\ simulation\ config\ section}}
+\DoxyCodeLine{00133\ \ \ \ \ std::string\ simulation\_section\ =\ extract\_json\_section(content,\ \textcolor{stringliteral}{"{}simulation"{}});}
+\DoxyCodeLine{00134\ \ \ \ \ \_simulation.duration\_s\ =\ extract\_uint\_value(simulation\_section,\ \textcolor{stringliteral}{"{}duration\_s"{}});}
+\DoxyCodeLine{00135\ \ \ \ \ \_simulation.update\_interval\_ms\ =\ extract\_uint\_value(simulation\_section,\ \textcolor{stringliteral}{"{}update\_interval\_ms"{}});}
+\DoxyCodeLine{00136\ \ \ \ \ \_simulation.default\_transmission\_radius\_m\ =\ extract\_double\_value(simulation\_section,\ \textcolor{stringliteral}{"{}default\_transmission\_radius\_m"{}});}
+\DoxyCodeLine{00137\ \ \ \ \ }
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{comment}{//\ trajectory\_generator\_script\ is\ optional,\ provide\ default\ if\ not\ found}}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \_simulation.trajectory\_generator\_script\ =\ extract\_string\_value(simulation\_section,\ \textcolor{stringliteral}{"{}trajectory\_generator\_script"{}});}
+\DoxyCodeLine{00141\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ std::exception\&)\ \{}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \_simulation.trajectory\_generator\_script\ =\ \textcolor{stringliteral}{"{}scripts/trajectory\_generator\_map\_1.py"{}};\ \textcolor{comment}{//\ Default\ fallback}}
+\DoxyCodeLine{00143\ \ \ \ \ \}}
+\DoxyCodeLine{00144\ \ \ \ \ }
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{comment}{//\ Parse\ logging\ config\ section}}
+\DoxyCodeLine{00146\ \ \ \ \ std::string\ logging\_section\ =\ extract\_json\_section(content,\ \textcolor{stringliteral}{"{}logging"{}});}
+\DoxyCodeLine{00147\ \ \ \ \ \_logging.trajectory\_dir\ =\ extract\_string\_value(logging\_section,\ \textcolor{stringliteral}{"{}trajectory\_dir"{}});}
+\DoxyCodeLine{00148\ \ \ \ \ }
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{comment}{//\ Parse\ waypoints\ and\ routes}}
+\DoxyCodeLine{00150\ \ \ \ \ parse\_waypoints(content);}
+\DoxyCodeLine{00151\ \ \ \ \ parse\_routes(content);}
+\DoxyCodeLine{00152\ \}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ MapConfig::parse\_waypoints(\textcolor{keyword}{const}\ std::string\&\ content)\ \{}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{comment}{//\ Simple\ parser\ for\ waypoints\ array}}
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ waypoints\_start\ =\ content.find(\textcolor{stringliteral}{"{}\(\backslash\)"{}waypoints\(\backslash\)"{}:"{}});}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keywordflow}{if}\ (waypoints\_start\ ==\ std::string::npos)\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00158\ \ \ \ \ }
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ array\_start\ =\ content.find(\textcolor{stringliteral}{"{}["{}},\ waypoints\_start);}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ array\_end\ =\ content.find(\textcolor{stringliteral}{"{}]"{}},\ array\_start);}
+\DoxyCodeLine{00161\ \ \ \ \ }
+\DoxyCodeLine{00162\ \ \ \ \ std::string\ waypoints\_section\ =\ content.substr(array\_start\ +\ 1,\ array\_end\ -\/\ array\_start\ -\/\ 1);}
+\DoxyCodeLine{00163\ \ \ \ \ }
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{comment}{//\ Parse\ each\ waypoint\ object}}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ pos\ =\ 0;}
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{keywordflow}{while}\ (pos\ <\ waypoints\_section.length())\ \{}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ obj\_start\ =\ waypoints\_section.find(\textcolor{stringliteral}{"{}\{"{}},\ pos);}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (obj\_start\ ==\ std::string::npos)\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ obj\_end\ =\ waypoints\_section.find(\textcolor{stringliteral}{"{}\}"{}},\ obj\_start);}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (obj\_end\ ==\ std::string::npos)\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ std::string\ waypoint\_obj\ =\ waypoints\_section.substr(obj\_start,\ obj\_end\ -\/\ obj\_start\ +\ 1);}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ Waypoint\ wp;}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ wp.\mbox{\hyperlink{struct_waypoint_a343ecafdd07d39dec100b26844d6aed3}{name}}\ =\ extract\_string\_value(waypoint\_obj,\ \textcolor{stringliteral}{"{}name"{}});}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ wp.\mbox{\hyperlink{struct_waypoint_a6126f079540befbbedc2b3f5f830c0d1}{x}}\ =\ extract\_double\_value(waypoint\_obj,\ \textcolor{stringliteral}{"{}x"{}});}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ wp.\mbox{\hyperlink{struct_waypoint_a1790dd445030f6ba5d4932816cd0701f}{y}}\ =\ extract\_double\_value(waypoint\_obj,\ \textcolor{stringliteral}{"{}y"{}});}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \_waypoints.push\_back(wp);}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ pos\ =\ obj\_end\ +\ 1;}
+\DoxyCodeLine{00182\ \ \ \ \ \}}
+\DoxyCodeLine{00183\ \}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ MapConfig::parse\_routes(\textcolor{keyword}{const}\ std::string\&\ content)\ \{}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{comment}{//\ Simple\ parser\ for\ routes\ array}}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ routes\_start\ =\ content.find(\textcolor{stringliteral}{"{}\(\backslash\)"{}routes\(\backslash\)"{}:"{}});}
+\DoxyCodeLine{00188\ \ \ \ \ \textcolor{keywordflow}{if}\ (routes\_start\ ==\ std::string::npos)\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00189\ \ \ \ \ }
+\DoxyCodeLine{00190\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ array\_start\ =\ content.find(\textcolor{stringliteral}{"{}["{}},\ routes\_start);}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ array\_end\ =\ content.find(\textcolor{stringliteral}{"{}]"{}},\ array\_start);}
+\DoxyCodeLine{00192\ \ \ \ \ }
+\DoxyCodeLine{00193\ \ \ \ \ std::string\ routes\_section\ =\ content.substr(array\_start\ +\ 1,\ array\_end\ -\/\ array\_start\ -\/\ 1);}
+\DoxyCodeLine{00194\ \ \ \ \ }
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{comment}{//\ Parse\ each\ route\ object}}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ pos\ =\ 0;}
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{keywordflow}{while}\ (pos\ <\ routes\_section.length())\ \{}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ obj\_start\ =\ routes\_section.find(\textcolor{stringliteral}{"{}\{"{}},\ pos);}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (obj\_start\ ==\ std::string::npos)\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ obj\_end\ =\ routes\_section.find(\textcolor{stringliteral}{"{}\}"{}},\ obj\_start);}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (obj\_end\ ==\ std::string::npos)\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ std::string\ route\_obj\ =\ routes\_section.substr(obj\_start,\ obj\_end\ -\/\ obj\_start\ +\ 1);}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ Route\ route;}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ route.\mbox{\hyperlink{struct_route_a892cceaead1c1602577ddfa5f9b1df32}{name}}\ =\ extract\_string\_value(route\_obj,\ \textcolor{stringliteral}{"{}name"{}});}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Parse\ waypoints\ array\ within\ route}}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ wp\_array\_start\ =\ route\_obj.find(\textcolor{stringliteral}{"{}["{}});}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ wp\_array\_end\ =\ route\_obj.find(\textcolor{stringliteral}{"{}]"{}},\ wp\_array\_start);}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wp\_array\_start\ !=\ std::string::npos\ \&\&\ wp\_array\_end\ !=\ std::string::npos)\ \{}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ wp\_list\ =\ route\_obj.substr(wp\_array\_start\ +\ 1,\ wp\_array\_end\ -\/\ wp\_array\_start\ -\/\ 1);}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Simple\ comma-\/separated\ parsing}}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ wp\_pos\ =\ 0;}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (wp\_pos\ <\ wp\_list.length())\ \{}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ quote\_start\ =\ wp\_list.find(\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}},\ wp\_pos);}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (quote\_start\ ==\ std::string::npos)\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ quote\_end\ =\ wp\_list.find(\textcolor{stringliteral}{"{}\(\backslash\)"{}"{}},\ quote\_start\ +\ 1);}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (quote\_end\ ==\ std::string::npos)\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ waypoint\_name\ =\ wp\_list.substr(quote\_start\ +\ 1,\ quote\_end\ -\/\ quote\_start\ -\/\ 1);}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ route.\mbox{\hyperlink{struct_route_abb8b824ff3899a1fb58fb925380132a9}{waypoint\_names}}.push\_back(waypoint\_name);}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wp\_pos\ =\ quote\_end\ +\ 1;}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \_routes.push\_back(route);}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ pos\ =\ obj\_end\ +\ 1;}
+\DoxyCodeLine{00234\ \ \ \ \ \}}
+\DoxyCodeLine{00235\ \}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ MapConfig::parse\_single\_rsu(\textcolor{keyword}{const}\ std::string\&\ rsu\_section)\ \{}
+\DoxyCodeLine{00238\ \ \ \ \ \_single\_rsu\_config.id\ =\ extract\_uint\_value(rsu\_section,\ \textcolor{stringliteral}{"{}id"{}});}
+\DoxyCodeLine{00239\ \ \ \ \ \_single\_rsu\_config.unit\ =\ extract\_uint\_value(rsu\_section,\ \textcolor{stringliteral}{"{}unit"{}});}
+\DoxyCodeLine{00240\ \ \ \ \ \_single\_rsu\_config.broadcast\_period\ =\ std::chrono::milliseconds(extract\_uint\_value(rsu\_section,\ \textcolor{stringliteral}{"{}broadcast\_period\_ms"{}}));}
+\DoxyCodeLine{00241\ \ \ \ \ }
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{comment}{//\ Parse\ RSU\ position\ subsection}}
+\DoxyCodeLine{00243\ \ \ \ \ std::string\ rsu\_position\_section\ =\ extract\_json\_section(rsu\_section,\ \textcolor{stringliteral}{"{}position"{}});}
+\DoxyCodeLine{00244\ \ \ \ \ \_single\_rsu\_config.x\ =\ extract\_double\_value(rsu\_position\_section,\ \textcolor{stringliteral}{"{}x"{}});}
+\DoxyCodeLine{00245\ \ \ \ \ \_single\_rsu\_config.y\ =\ extract\_double\_value(rsu\_position\_section,\ \textcolor{stringliteral}{"{}y"{}});}
+\DoxyCodeLine{00246\ \}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ MapConfig::parse\_multiple\_rsus(\textcolor{keyword}{const}\ std::string\&\ content)\ \{}
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{comment}{//\ Simple\ parser\ for\ rsus\ array}}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ rsus\_start\ =\ content.find(\textcolor{stringliteral}{"{}\(\backslash\)"{}rsus\(\backslash\)"{}:"{}});}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keywordflow}{if}\ (rsus\_start\ ==\ std::string::npos)\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00252\ \ \ \ \ }
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ array\_start\ =\ content.find(\textcolor{stringliteral}{"{}["{}},\ rsus\_start);}
+\DoxyCodeLine{00254\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ array\_end\ =\ content.find(\textcolor{stringliteral}{"{}]"{}},\ array\_start);}
+\DoxyCodeLine{00255\ \ \ \ \ }
+\DoxyCodeLine{00256\ \ \ \ \ \textcolor{keywordflow}{if}\ (array\_start\ ==\ std::string::npos\ ||\ array\_end\ ==\ std::string::npos)\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00257\ \ \ \ \ }
+\DoxyCodeLine{00258\ \ \ \ \ std::string\ rsus\_section\ =\ content.substr(array\_start\ +\ 1,\ array\_end\ -\/\ array\_start\ -\/\ 1);}
+\DoxyCodeLine{00259\ \ \ \ \ }
+\DoxyCodeLine{00260\ \ \ \ \ \textcolor{comment}{//\ Parse\ each\ RSU\ object}}
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ pos\ =\ 0;}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordflow}{while}\ (pos\ <\ rsus\_section.length())\ \{}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ obj\_start\ =\ rsus\_section.find(\textcolor{stringliteral}{"{}\{"{}},\ pos);}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (obj\_start\ ==\ std::string::npos)\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Find\ matching\ closing\ brace\ using\ proper\ brace\ counting}}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ obj\_end\ =\ obj\_start;}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ brace\_count\ =\ 0;}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (obj\_end\ <\ rsus\_section.length())\ \{}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rsus\_section[obj\_end]\ ==\ \textcolor{charliteral}{'\{'})\ \{}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ brace\_count++;}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (rsus\_section[obj\_end]\ ==\ \textcolor{charliteral}{'\}'})\ \{}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ brace\_count-\/-\/;}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (brace\_count\ ==\ 0)\ \{}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ obj\_end++;}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (brace\_count\ !=\ 0\ ||\ obj\_end\ >=\ rsus\_section.length())\ \{}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};\ \textcolor{comment}{//\ Malformed\ JSON}}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ std::string\ rsu\_obj\ =\ rsus\_section.substr(obj\_start,\ obj\_end\ -\/\ obj\_start\ +\ 1);}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ RSUConfig\ \mbox{\hyperlink{class_map_config_a429282fbc35a1c3c15c462adf56c28bc}{rsu\_config}};}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_map_config_a429282fbc35a1c3c15c462adf56c28bc}{rsu\_config}}.id\ =\ extract\_uint\_value(rsu\_obj,\ \textcolor{stringliteral}{"{}id"{}});}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_map_config_a429282fbc35a1c3c15c462adf56c28bc}{rsu\_config}}.unit\ =\ extract\_uint\_value(rsu\_obj,\ \textcolor{stringliteral}{"{}unit"{}});}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_map_config_a429282fbc35a1c3c15c462adf56c28bc}{rsu\_config}}.broadcast\_period\ =\ std::chrono::milliseconds(extract\_uint\_value(rsu\_obj,\ \textcolor{stringliteral}{"{}broadcast\_period\_ms"{}}));}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Parse\ RSU\ position\ subsection}}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ std::string\ rsu\_position\_section\ =\ extract\_json\_section(rsu\_obj,\ \textcolor{stringliteral}{"{}position"{}});}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_map_config_a429282fbc35a1c3c15c462adf56c28bc}{rsu\_config}}.x\ =\ extract\_double\_value(rsu\_position\_section,\ \textcolor{stringliteral}{"{}x"{}});}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_map_config_a429282fbc35a1c3c15c462adf56c28bc}{rsu\_config}}.y\ =\ extract\_double\_value(rsu\_position\_section,\ \textcolor{stringliteral}{"{}y"{}});}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \_rsu\_configs.push\_back(\mbox{\hyperlink{class_map_config_a429282fbc35a1c3c15c462adf56c28bc}{rsu\_config}});}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ pos\ =\ obj\_end\ +\ 1;}
+\DoxyCodeLine{00299\ \ \ \ \ \}}
+\DoxyCodeLine{00300\ \}}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ \textcolor{keyword}{inline}\ std::string\ MapConfig::extract\_json\_section(\textcolor{keyword}{const}\ std::string\&\ content,\ \textcolor{keyword}{const}\ std::string\&\ section\_name)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00303\ \ \ \ \ std::string\ search\_pattern\ =\ \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}\ +\ section\_name\ +\ \textcolor{stringliteral}{"{}\(\backslash\)"{}:"{}};}
+\DoxyCodeLine{00304\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ pos\ =\ content.find(search\_pattern);}
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{keywordflow}{if}\ (pos\ ==\ std::string::npos)\ \{}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Section\ not\ found\ in\ config:\ "{}}\ +\ section\_name);}
+\DoxyCodeLine{00307\ \ \ \ \ \}}
+\DoxyCodeLine{00308\ \ \ \ \ }
+\DoxyCodeLine{00309\ \ \ \ \ pos\ +=\ search\_pattern.length();}
+\DoxyCodeLine{00310\ \ \ \ \ }
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{comment}{//\ Skip\ whitespace\ and\ find\ opening\ brace}}
+\DoxyCodeLine{00312\ \ \ \ \ \textcolor{keywordflow}{while}\ (pos\ <\ content.length()\ \&\&\ std::isspace(content[pos]))\ \{}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ pos++;}
+\DoxyCodeLine{00314\ \ \ \ \ \}}
+\DoxyCodeLine{00315\ \ \ \ \ }
+\DoxyCodeLine{00316\ \ \ \ \ \textcolor{keywordflow}{if}\ (pos\ >=\ content.length()\ ||\ content[pos]\ !=\ \textcolor{charliteral}{'\{'})\ \{}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Invalid\ JSON\ structure\ for\ section:\ "{}}\ +\ section\_name);}
+\DoxyCodeLine{00318\ \ \ \ \ \}}
+\DoxyCodeLine{00319\ \ \ \ \ }
+\DoxyCodeLine{00320\ \ \ \ \ \textcolor{comment}{//\ Find\ matching\ closing\ brace}}
+\DoxyCodeLine{00321\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ start\_pos\ =\ pos;}
+\DoxyCodeLine{00322\ \ \ \ \ \textcolor{keywordtype}{int}\ brace\_count\ =\ 0;}
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{keywordflow}{while}\ (pos\ <\ content.length())\ \{}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (content[pos]\ ==\ \textcolor{charliteral}{'\{'})\ \{}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ brace\_count++;}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (content[pos]\ ==\ \textcolor{charliteral}{'\}'})\ \{}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ brace\_count-\/-\/;}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (brace\_count\ ==\ 0)\ \{}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ pos++;}
+\DoxyCodeLine{00333\ \ \ \ \ \}}
+\DoxyCodeLine{00334\ \ \ \ \ }
+\DoxyCodeLine{00335\ \ \ \ \ \textcolor{keywordflow}{if}\ (brace\_count\ !=\ 0)\ \{}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Unmatched\ braces\ in\ section:\ "{}}\ +\ section\_name);}
+\DoxyCodeLine{00337\ \ \ \ \ \}}
+\DoxyCodeLine{00338\ \ \ \ \ }
+\DoxyCodeLine{00339\ \ \ \ \ \textcolor{keywordflow}{return}\ content.substr(start\_pos,\ pos\ -\/\ start\_pos\ +\ 1);}
+\DoxyCodeLine{00340\ \}}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00342\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ MapConfig::extract\_double\_value(\textcolor{keyword}{const}\ std::string\&\ content,\ \textcolor{keyword}{const}\ std::string\&\ key)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00343\ \ \ \ \ std::string\ search\_pattern\ =\ \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}\ +\ key\ +\ \textcolor{stringliteral}{"{}\(\backslash\)"{}:"{}};}
+\DoxyCodeLine{00344\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ pos\ =\ content.find(search\_pattern);}
+\DoxyCodeLine{00345\ \ \ \ \ \textcolor{keywordflow}{if}\ (pos\ ==\ std::string::npos)\ \{}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Key\ not\ found\ in\ config:\ "{}}\ +\ key);}
+\DoxyCodeLine{00347\ \ \ \ \ \}}
+\DoxyCodeLine{00348\ \ \ \ \ }
+\DoxyCodeLine{00349\ \ \ \ \ pos\ +=\ search\_pattern.length();}
+\DoxyCodeLine{00350\ \ \ \ \ }
+\DoxyCodeLine{00351\ \ \ \ \ \textcolor{comment}{//\ Skip\ whitespace}}
+\DoxyCodeLine{00352\ \ \ \ \ \textcolor{keywordflow}{while}\ (pos\ <\ content.length()\ \&\&\ std::isspace(content[pos]))\ \{}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ pos++;}
+\DoxyCodeLine{00354\ \ \ \ \ \}}
+\DoxyCodeLine{00355\ \ \ \ \ }
+\DoxyCodeLine{00356\ \ \ \ \ \textcolor{comment}{//\ Extract\ the\ numeric\ value}}
+\DoxyCodeLine{00357\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ end\_pos\ =\ pos;}
+\DoxyCodeLine{00358\ \ \ \ \ \textcolor{keywordflow}{while}\ (end\_pos\ <\ content.length()\ \&\&\ }
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \ \ \ (std::isdigit(content[end\_pos])\ ||\ content[end\_pos]\ ==\ \textcolor{charliteral}{'.'}\ ||\ content[end\_pos]\ ==\ \textcolor{charliteral}{'-\/'}))\ \{}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ end\_pos++;}
+\DoxyCodeLine{00361\ \ \ \ \ \}}
+\DoxyCodeLine{00362\ \ \ \ \ }
+\DoxyCodeLine{00363\ \ \ \ \ \textcolor{keywordflow}{if}\ (pos\ ==\ end\_pos)\ \{}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Invalid\ numeric\ value\ for\ key:\ "{}}\ +\ key);}
+\DoxyCodeLine{00365\ \ \ \ \ \}}
+\DoxyCodeLine{00366\ \ \ \ \ }
+\DoxyCodeLine{00367\ \ \ \ \ \textcolor{keywordflow}{return}\ std::stod(content.substr(pos,\ end\_pos\ -\/\ pos));}
+\DoxyCodeLine{00368\ \}}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ MapConfig::extract\_uint\_value(\textcolor{keyword}{const}\ std::string\&\ content,\ \textcolor{keyword}{const}\ std::string\&\ key)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00371\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(extract\_double\_value(content,\ key));}
+\DoxyCodeLine{00372\ \}}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \textcolor{keyword}{inline}\ std::string\ MapConfig::extract\_string\_value(\textcolor{keyword}{const}\ std::string\&\ content,\ \textcolor{keyword}{const}\ std::string\&\ key)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00375\ \ \ \ \ std::string\ search\_pattern\ =\ \textcolor{stringliteral}{"{}\(\backslash\)"{}"{}}\ +\ key\ +\ \textcolor{stringliteral}{"{}\(\backslash\)"{}:"{}};}
+\DoxyCodeLine{00376\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ pos\ =\ content.find(search\_pattern);}
+\DoxyCodeLine{00377\ \ \ \ \ \textcolor{keywordflow}{if}\ (pos\ ==\ std::string::npos)\ \{}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Key\ not\ found\ in\ config:\ "{}}\ +\ key);}
+\DoxyCodeLine{00379\ \ \ \ \ \}}
+\DoxyCodeLine{00380\ \ \ \ \ }
+\DoxyCodeLine{00381\ \ \ \ \ pos\ +=\ search\_pattern.length();}
+\DoxyCodeLine{00382\ \ \ \ \ }
+\DoxyCodeLine{00383\ \ \ \ \ \textcolor{comment}{//\ Skip\ whitespace\ and\ find\ opening\ quote}}
+\DoxyCodeLine{00384\ \ \ \ \ \textcolor{keywordflow}{while}\ (pos\ <\ content.length()\ \&\&\ (std::isspace(content[pos])\ ||\ content[pos]\ ==\ \textcolor{charliteral}{'"{}'}))\ \{}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (content[pos]\ ==\ \textcolor{charliteral}{'"{}'})\ \{}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \ \ \ pos++;}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ pos++;}
+\DoxyCodeLine{00390\ \ \ \ \ \}}
+\DoxyCodeLine{00391\ \ \ \ \ }
+\DoxyCodeLine{00392\ \ \ \ \ \textcolor{comment}{//\ Find\ closing\ quote}}
+\DoxyCodeLine{00393\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ end\_pos\ =\ pos;}
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{keywordflow}{while}\ (end\_pos\ <\ content.length()\ \&\&\ content[end\_pos]\ !=\ \textcolor{charliteral}{'"{}'})\ \{}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ end\_pos++;}
+\DoxyCodeLine{00396\ \ \ \ \ \}}
+\DoxyCodeLine{00397\ \ \ \ \ }
+\DoxyCodeLine{00398\ \ \ \ \ \textcolor{keywordflow}{if}\ (end\_pos\ ==\ content.length())\ \{}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Unterminated\ string\ value\ for\ key:\ "{}}\ +\ key);}
+\DoxyCodeLine{00400\ \ \ \ \ \}}
+\DoxyCodeLine{00401\ \ \ \ \ }
+\DoxyCodeLine{00402\ \ \ \ \ \textcolor{keywordflow}{return}\ content.substr(pos,\ end\_pos\ -\/\ pos);}
+\DoxyCodeLine{00403\ \}}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00405\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{struct_waypoint}{Waypoint}}\ \mbox{\hyperlink{class_map_config_a31cc7b46ddf699eee47568a195453200}{MapConfig::get\_waypoint}}(\textcolor{keyword}{const}\ std::string\&\ name)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00406\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ wp\ :\ \_waypoints)\ \{}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wp.name\ ==\ name)\ \{}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ wp;}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00410\ \ \ \ \ \}}
+\DoxyCodeLine{00411\ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Waypoint\ not\ found:\ "{}}\ +\ name);}
+\DoxyCodeLine{00412\ \}}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00414\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{struct_route}{Route}}\ \mbox{\hyperlink{class_map_config_ac1b6f327f97378b4bfebe3f664546d52}{MapConfig::get\_route}}(\textcolor{keyword}{const}\ std::string\&\ name)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00415\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ route\ :\ \_routes)\ \{}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (route.\mbox{\hyperlink{struct_route_a892cceaead1c1602577ddfa5f9b1df32}{name}}\ ==\ name)\ \{}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ route;}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00419\ \ \ \ \ \}}
+\DoxyCodeLine{00420\ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Route\ not\ found:\ "{}}\ +\ name);}
+\DoxyCodeLine{00421\ \}}
+\DoxyCodeLine{00422\ }
+\DoxyCodeLine{00423\ \textcolor{keyword}{inline}\ std::string\ \mbox{\hyperlink{class_map_config_a079d04d236b5d9ff4a0ef8169d6978dc}{MapConfig::get\_trajectory\_file\_path}}(\textcolor{keyword}{const}\ std::string\&\ entity\_type,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ entity\_id)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00424\ \ \ \ \ \textcolor{keywordflow}{return}\ \_logging.trajectory\_dir\ +\ \textcolor{stringliteral}{"{}/"{}}\ +\ entity\_type\ +\ \textcolor{stringliteral}{"{}\_"{}}\ +\ std::to\_string(entity\_id)\ +\ \textcolor{stringliteral}{"{}\_trajectory.csv"{}};}
+\DoxyCodeLine{00425\ \}}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ MAP\_CONFIG\_H}}
+
+\end{DoxyCode}

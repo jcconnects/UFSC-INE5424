@@ -1,0 +1,74 @@
+\doxysection{include/api/framework/periodic\+Thread.h File Reference}
+\hypertarget{periodic_thread_8h}{}\label{periodic_thread_8h}\index{include/api/framework/periodicThread.h@{include/api/framework/periodicThread.h}}
+{\ttfamily \#include $<$pthread.\+h$>$}\newline
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$thread$>$}\newline
+{\ttfamily \#include $<$functional$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include $<$signal.\+h$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include $<$sys/syscall.\+h$>$}\newline
+{\ttfamily \#include $<$linux/sched.\+h$>$}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structsched__attr}{sched\+\_\+attr}}
+\item 
+class \mbox{\hyperlink{class_periodic___thread}{Periodic\+\_\+\+Thread$<$ Owner $>$}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{periodic_thread_8h_a369266c24eacffb87046522897a570d5}{\+\_\+\+GNU\+\_\+\+SOURCE}}
+\item 
+\#define \mbox{\hyperlink{periodic_thread_8h_ae5510d82e4946f1656f4969911c54736}{\+\_\+\+\_\+has\+\_\+include}}(x)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{periodic_thread_8h_a6475cba9e17a7391f5424d13690660bf}{component\+\_\+signal\+\_\+handler}} (int sig)
+\item 
+int \mbox{\hyperlink{periodic_thread_8h_a72da35186caf241b139a434497ff3e9c}{sched\+\_\+setattr}} (pid\+\_\+t pid, const struct \mbox{\hyperlink{structsched__attr}{sched\+\_\+attr}} \texorpdfstring{$\ast$}{*}attr, unsigned int flags)
+\end{DoxyCompactItemize}
+
+
+\label{doc-define-members}
+\Hypertarget{periodic_thread_8h_doc-define-members}
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{periodic_thread_8h_ae5510d82e4946f1656f4969911c54736}\index{periodicThread.h@{periodicThread.h}!\_\_has\_include@{\_\_has\_include}}
+\index{\_\_has\_include@{\_\_has\_include}!periodicThread.h@{periodicThread.h}}
+\doxysubsubsection{\texorpdfstring{\_\_has\_include}{\_\_has\_include}}
+{\footnotesize\ttfamily \label{periodic_thread_8h_ae5510d82e4946f1656f4969911c54736} 
+\#define \+\_\+\+\_\+has\+\_\+include(\begin{DoxyParamCaption}\item[{}]{x}{}\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{0}
+
+\end{DoxyCode}
+\Hypertarget{periodic_thread_8h_a369266c24eacffb87046522897a570d5}\index{periodicThread.h@{periodicThread.h}!\_GNU\_SOURCE@{\_GNU\_SOURCE}}
+\index{\_GNU\_SOURCE@{\_GNU\_SOURCE}!periodicThread.h@{periodicThread.h}}
+\doxysubsubsection{\texorpdfstring{\_GNU\_SOURCE}{\_GNU\_SOURCE}}
+{\footnotesize\ttfamily \label{periodic_thread_8h_a369266c24eacffb87046522897a570d5} 
+\#define \+\_\+\+GNU\+\_\+\+SOURCE}
+
+
+
+\label{doc-func-members}
+\Hypertarget{periodic_thread_8h_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{periodic_thread_8h_a6475cba9e17a7391f5424d13690660bf}\index{periodicThread.h@{periodicThread.h}!component\_signal\_handler@{component\_signal\_handler}}
+\index{component\_signal\_handler@{component\_signal\_handler}!periodicThread.h@{periodicThread.h}}
+\doxysubsubsection{\texorpdfstring{component\_signal\_handler()}{component\_signal\_handler()}}
+{\footnotesize\ttfamily \label{periodic_thread_8h_a6475cba9e17a7391f5424d13690660bf} 
+void component\+\_\+signal\+\_\+handler (\begin{DoxyParamCaption}\item[{int}]{sig}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{periodic_thread_8h_a72da35186caf241b139a434497ff3e9c}\index{periodicThread.h@{periodicThread.h}!sched\_setattr@{sched\_setattr}}
+\index{sched\_setattr@{sched\_setattr}!periodicThread.h@{periodicThread.h}}
+\doxysubsubsection{\texorpdfstring{sched\_setattr()}{sched\_setattr()}}
+{\footnotesize\ttfamily \label{periodic_thread_8h_a72da35186caf241b139a434497ff3e9c} 
+int sched\+\_\+setattr (\begin{DoxyParamCaption}\item[{pid\+\_\+t}]{pid}{, }\item[{const struct \mbox{\hyperlink{structsched__attr}{sched\+\_\+attr}} \texorpdfstring{$\ast$}{*}}]{attr}{, }\item[{unsigned int}]{flags}{}\end{DoxyParamCaption})}
+

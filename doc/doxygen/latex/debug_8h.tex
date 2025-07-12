@@ -1,0 +1,182 @@
+\doxysection{include/api/util/debug.h File Reference}
+\hypertarget{debug_8h}{}\label{debug_8h}\index{include/api/util/debug.h@{include/api/util/debug.h}}
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+{\ttfamily \#include $<$sstream$>$}\newline
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$pthread.\+h$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include $<$iomanip$>$}\newline
+{\ttfamily \#include $<$sys/syscall.\+h$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include "{}api/traits.\+h"{}}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_debug}{Debug}}
+\item 
+struct \mbox{\hyperlink{struct_debug_1_1_begl}{Debug\+::\+Begl}}
+\item 
+struct \mbox{\hyperlink{struct_debug_1_1_err}{Debug\+::\+Err}}
+\item 
+class \mbox{\hyperlink{class_null___debug}{Null\+\_\+\+Debug}}
+\item 
+struct \mbox{\hyperlink{struct_null___debug_1_1_begl}{Null\+\_\+\+Debug\+::\+Begl}}
+\item 
+struct \mbox{\hyperlink{struct_null___debug_1_1_err}{Null\+\_\+\+Debug\+::\+Err}}
+\item 
+class \mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug$<$ debugged $>$}}
+\item 
+class \mbox{\hyperlink{class_select___debug_3_01false_01_4}{Select\+\_\+\+Debug$<$ false $>$}}
+\item 
+class \mbox{\hyperlink{class_debug_initializer}{Debug\+Initializer}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbb}{Debug\+\_\+\+Error}} \{ \mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}} = 1
+ \}
+\item 
+enum \mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76}{Debug\+\_\+\+Warning}} \{ \mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}} = 2
+ \}
+\item 
+enum \mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94}{Debug\+\_\+\+Info}} \{ \mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}} = 3
+ \}
+\item 
+enum \mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747}{Debug\+\_\+\+Trace}} \{ \mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}} = 4
+ \}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename T$>$ }\\\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$(\mbox{\hyperlink{struct_traits}{Traits}}$<$ T $>$\+::debugged \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::error)$>$ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db}} (\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbb}{Debug\+\_\+\+Error}} l)
+\item 
+{\footnotesize template$<$typename T1, typename T2$>$ }\\\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$((\mbox{\hyperlink{struct_traits}{Traits}}$<$ T1 $>$\+::debugged\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}\mbox{\hyperlink{struct_traits}{Traits}}$<$ T2 $>$\+::debugged) \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::error)$>$ \mbox{\hyperlink{debug_8h_a8c7bcd97e057f77d00787c84ff3637c1}{db}} (\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbb}{Debug\+\_\+\+Error}} l)
+\item 
+{\footnotesize template$<$typename T$>$ }\\\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$(\mbox{\hyperlink{struct_traits}{Traits}}$<$ T $>$\+::debugged \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::warning)$>$ \mbox{\hyperlink{debug_8h_a06c226ccaa6c6f75a8b6275f221ba490}{db}} (\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76}{Debug\+\_\+\+Warning}} l)
+\item 
+{\footnotesize template$<$typename T1, typename T2$>$ }\\\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$((\mbox{\hyperlink{struct_traits}{Traits}}$<$ T1 $>$\+::debugged\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}\mbox{\hyperlink{struct_traits}{Traits}}$<$ T2 $>$\+::debugged) \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::warning)$>$ \mbox{\hyperlink{debug_8h_a748ea7a6c7dc2cc50ca883f59bd9cc00}{db}} (\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76}{Debug\+\_\+\+Warning}} l)
+\item 
+{\footnotesize template$<$typename T$>$ }\\\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$(\mbox{\hyperlink{struct_traits}{Traits}}$<$ T $>$\+::debugged \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::info)$>$ \mbox{\hyperlink{debug_8h_aebf43bd1e2365416189008c12de6e858}{db}} (\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94}{Debug\+\_\+\+Info}} l)
+\item 
+{\footnotesize template$<$typename T1, typename T2$>$ }\\\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$((\mbox{\hyperlink{struct_traits}{Traits}}$<$ T1 $>$\+::debugged\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}\mbox{\hyperlink{struct_traits}{Traits}}$<$ T2 $>$\+::debugged) \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::info)$>$ \mbox{\hyperlink{debug_8h_a25a7609de33225d084dc9f6417c9dfa6}{db}} (\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94}{Debug\+\_\+\+Info}} l)
+\item 
+{\footnotesize template$<$typename T$>$ }\\\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$(\mbox{\hyperlink{struct_traits}{Traits}}$<$ T $>$\+::debugged \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::trace)$>$ \mbox{\hyperlink{debug_8h_a4746886a79b47b9ee6559eb52e824766}{db}} (\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747}{Debug\+\_\+\+Trace}} l)
+\item 
+{\footnotesize template$<$typename T1, typename T2$>$ }\\\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$((\mbox{\hyperlink{struct_traits}{Traits}}$<$ T1 $>$\+::debugged\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}\mbox{\hyperlink{struct_traits}{Traits}}$<$ T2 $>$\+::debugged) \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::trace)$>$ \mbox{\hyperlink{debug_8h_ad8e9f49b43886f197f67c5f49cf0d975}{db}} (\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747}{Debug\+\_\+\+Trace}} l)
+\end{DoxyCompactItemize}
+
+
+\label{doc-enum-members}
+\Hypertarget{debug_8h_doc-enum-members}
+\doxysubsection{Enumeration Type Documentation}
+\Hypertarget{debug_8h_a703fe3296c8c842877446fe15f1bddbb}\index{debug.h@{debug.h}!Debug\_Error@{Debug\_Error}}
+\index{Debug\_Error@{Debug\_Error}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{Debug\_Error}{Debug\_Error}}
+{\footnotesize\ttfamily \label{debug_8h_a703fe3296c8c842877446fe15f1bddbb} 
+enum \mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbb}{Debug\+\_\+\+Error}}}
+
+\begin{DoxyEnumFields}[2]{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERR@{ERR}!debug.h@{debug.h}}\index{debug.h@{debug.h}!ERR@{ERR}}}\Hypertarget{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}\label{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e} 
+ERR&\\
+\hline
+
+\end{DoxyEnumFields}
+\Hypertarget{debug_8h_a652e158e58e6fa8494e9137c8dafcf94}\index{debug.h@{debug.h}!Debug\_Info@{Debug\_Info}}
+\index{Debug\_Info@{Debug\_Info}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{Debug\_Info}{Debug\_Info}}
+{\footnotesize\ttfamily \label{debug_8h_a652e158e58e6fa8494e9137c8dafcf94} 
+enum \mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94}{Debug\+\_\+\+Info}}}
+
+\begin{DoxyEnumFields}[2]{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INF@{INF}!debug.h@{debug.h}}\index{debug.h@{debug.h}!INF@{INF}}}\Hypertarget{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}\label{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8} 
+INF&\\
+\hline
+
+\end{DoxyEnumFields}
+\Hypertarget{debug_8h_a897a262bdd244180d7aba71cd004b747}\index{debug.h@{debug.h}!Debug\_Trace@{Debug\_Trace}}
+\index{Debug\_Trace@{Debug\_Trace}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{Debug\_Trace}{Debug\_Trace}}
+{\footnotesize\ttfamily \label{debug_8h_a897a262bdd244180d7aba71cd004b747} 
+enum \mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747}{Debug\+\_\+\+Trace}}}
+
+\begin{DoxyEnumFields}[2]{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{TRC@{TRC}!debug.h@{debug.h}}\index{debug.h@{debug.h}!TRC@{TRC}}}\Hypertarget{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}\label{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c} 
+TRC&\\
+\hline
+
+\end{DoxyEnumFields}
+\Hypertarget{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76}\index{debug.h@{debug.h}!Debug\_Warning@{Debug\_Warning}}
+\index{Debug\_Warning@{Debug\_Warning}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{Debug\_Warning}{Debug\_Warning}}
+{\footnotesize\ttfamily \label{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76} 
+enum \mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76}{Debug\+\_\+\+Warning}}}
+
+\begin{DoxyEnumFields}[2]{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{WRN@{WRN}!debug.h@{debug.h}}\index{debug.h@{debug.h}!WRN@{WRN}}}\Hypertarget{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}\label{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8} 
+WRN&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\label{doc-func-members}
+\Hypertarget{debug_8h_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{debug_8h_a660fc0a5d907ebe2af475e96bd544090}\index{debug.h@{debug.h}!db@{db}}
+\index{db@{db}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{db()}{db()}\hspace{0.1cm}{\footnotesize\ttfamily [1/8]}}
+{\footnotesize\ttfamily \label{debug_8h_a660fc0a5d907ebe2af475e96bd544090} 
+template$<$typename T$>$ \\
+\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$(\mbox{\hyperlink{struct_traits}{Traits}}$<$ T $>$\+::debugged \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::error)$>$ db (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbb}{Debug\+\_\+\+Error}}}]{l}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{debug_8h_a8c7bcd97e057f77d00787c84ff3637c1}\index{debug.h@{debug.h}!db@{db}}
+\index{db@{db}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{db()}{db()}\hspace{0.1cm}{\footnotesize\ttfamily [2/8]}}
+{\footnotesize\ttfamily \label{debug_8h_a8c7bcd97e057f77d00787c84ff3637c1} 
+template$<$typename T1, typename T2$>$ \\
+\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$((\mbox{\hyperlink{struct_traits}{Traits}}$<$ T1 $>$\+::debugged\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}\mbox{\hyperlink{struct_traits}{Traits}}$<$ T2 $>$\+::debugged) \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::error)$>$ db (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbb}{Debug\+\_\+\+Error}}}]{l}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{debug_8h_aebf43bd1e2365416189008c12de6e858}\index{debug.h@{debug.h}!db@{db}}
+\index{db@{db}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{db()}{db()}\hspace{0.1cm}{\footnotesize\ttfamily [3/8]}}
+{\footnotesize\ttfamily \label{debug_8h_aebf43bd1e2365416189008c12de6e858} 
+template$<$typename T$>$ \\
+\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$(\mbox{\hyperlink{struct_traits}{Traits}}$<$ T $>$\+::debugged \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::info)$>$ db (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94}{Debug\+\_\+\+Info}}}]{l}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{debug_8h_a25a7609de33225d084dc9f6417c9dfa6}\index{debug.h@{debug.h}!db@{db}}
+\index{db@{db}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{db()}{db()}\hspace{0.1cm}{\footnotesize\ttfamily [4/8]}}
+{\footnotesize\ttfamily \label{debug_8h_a25a7609de33225d084dc9f6417c9dfa6} 
+template$<$typename T1, typename T2$>$ \\
+\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$((\mbox{\hyperlink{struct_traits}{Traits}}$<$ T1 $>$\+::debugged\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}\mbox{\hyperlink{struct_traits}{Traits}}$<$ T2 $>$\+::debugged) \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::info)$>$ db (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94}{Debug\+\_\+\+Info}}}]{l}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{debug_8h_a4746886a79b47b9ee6559eb52e824766}\index{debug.h@{debug.h}!db@{db}}
+\index{db@{db}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{db()}{db()}\hspace{0.1cm}{\footnotesize\ttfamily [5/8]}}
+{\footnotesize\ttfamily \label{debug_8h_a4746886a79b47b9ee6559eb52e824766} 
+template$<$typename T$>$ \\
+\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$(\mbox{\hyperlink{struct_traits}{Traits}}$<$ T $>$\+::debugged \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::trace)$>$ db (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747}{Debug\+\_\+\+Trace}}}]{l}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{debug_8h_ad8e9f49b43886f197f67c5f49cf0d975}\index{debug.h@{debug.h}!db@{db}}
+\index{db@{db}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{db()}{db()}\hspace{0.1cm}{\footnotesize\ttfamily [6/8]}}
+{\footnotesize\ttfamily \label{debug_8h_ad8e9f49b43886f197f67c5f49cf0d975} 
+template$<$typename T1, typename T2$>$ \\
+\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$((\mbox{\hyperlink{struct_traits}{Traits}}$<$ T1 $>$\+::debugged\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}\mbox{\hyperlink{struct_traits}{Traits}}$<$ T2 $>$\+::debugged) \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::trace)$>$ db (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747}{Debug\+\_\+\+Trace}}}]{l}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{debug_8h_a06c226ccaa6c6f75a8b6275f221ba490}\index{debug.h@{debug.h}!db@{db}}
+\index{db@{db}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{db()}{db()}\hspace{0.1cm}{\footnotesize\ttfamily [7/8]}}
+{\footnotesize\ttfamily \label{debug_8h_a06c226ccaa6c6f75a8b6275f221ba490} 
+template$<$typename T$>$ \\
+\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$(\mbox{\hyperlink{struct_traits}{Traits}}$<$ T $>$\+::debugged \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::warning)$>$ db (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76}{Debug\+\_\+\+Warning}}}]{l}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{debug_8h_a748ea7a6c7dc2cc50ca883f59bd9cc00}\index{debug.h@{debug.h}!db@{db}}
+\index{db@{db}!debug.h@{debug.h}}
+\doxysubsubsection{\texorpdfstring{db()}{db()}\hspace{0.1cm}{\footnotesize\ttfamily [8/8]}}
+{\footnotesize\ttfamily \label{debug_8h_a748ea7a6c7dc2cc50ca883f59bd9cc00} 
+template$<$typename T1, typename T2$>$ \\
+\mbox{\hyperlink{class_select___debug}{Select\+\_\+\+Debug}}$<$((\mbox{\hyperlink{struct_traits}{Traits}}$<$ T1 $>$\+::debugged\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}\mbox{\hyperlink{struct_traits}{Traits}}$<$ T2 $>$\+::debugged) \&\&\mbox{\hyperlink{struct_traits}{Traits}}$<$ \mbox{\hyperlink{class_debug}{Debug}} $>$\+::warning)$>$ db (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76}{Debug\+\_\+\+Warning}}}]{l}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+

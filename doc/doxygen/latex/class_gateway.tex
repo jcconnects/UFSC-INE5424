@@ -1,0 +1,230 @@
+\doxysection{Gateway Class Reference}
+\hypertarget{class_gateway}{}\label{class_gateway}\index{Gateway@{Gateway}}
+
+
+{\ttfamily \#include $<$gateway.\+h$>$}
+
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef \mbox{\hyperlink{class_network_a638cca85e6d97e60e28b9bbb310aa1e2}{Network\+::\+Communicator}} \mbox{\hyperlink{class_gateway_a76edea483e2423073e893eceba9a0c92}{Communicator}}
+\item 
+typedef \mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Network\+::\+Protocol}} \mbox{\hyperlink{class_gateway_ac5412e35f863e71e02d5179f3996ff0d}{Protocol}}
+\item 
+typedef \mbox{\hyperlink{class_protocol_1_1_address}{Protocol\+::\+Address}} \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Address}}
+\item 
+typedef \mbox{\hyperlink{class_network_ace8ef437586a78c43b82d6d4b5ae6410}{Network\+::\+Message}} \mbox{\hyperlink{class_gateway_a238d2852576bf41444ae2a1a84e50d53}{Message}}
+\item 
+typedef \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message\+::\+Unit}} \mbox{\hyperlink{class_gateway_af981fe90f3ace162953b3f5c52e87d1b}{Unit}}
+\item 
+typedef \mbox{\hyperlink{class_c_a_n_a359d8413dfaf202bdaa027d33286fd4f}{CAN\+::\+Observer}} \mbox{\hyperlink{class_gateway_ab76a33c2110ad476a86c73ed4a265ceb}{Observer}}
+\item 
+typedef std\+::unordered\+\_\+map$<$ \mbox{\hyperlink{class_gateway_af981fe90f3ace162953b3f5c52e87d1b}{Unit}}, std\+::unordered\+\_\+set$<$ \mbox{\hyperlink{class_gateway_ab76a33c2110ad476a86c73ed4a265ceb}{Observer}} \texorpdfstring{$\ast$}{*} $>$ $>$ \mbox{\hyperlink{class_gateway_ab6ce65b195618088cd9964104a130e94}{Map}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_gateway_a2c1f64b1635c44121618ba9456302f9f}{Gateway}} (const unsigned int id, \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852a}{Network\+::\+Entity\+Type}} entity\+\_\+type=\mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2}{Network\+::\+Entity\+Type\+::\+VEHICLE}})
+\item 
+\mbox{\hyperlink{class_gateway_a7a86ddccd1e942aa584a4e8c42f82e0b}{\texorpdfstring{$\sim$}{\string~}\+Gateway}} ()
+\item 
+void \mbox{\hyperlink{class_gateway_ac2b912b4419b787d22cbf1044adc9b09}{start}} ()
+\item 
+bool \mbox{\hyperlink{class_gateway_adce87b6d4437bf838a96d5c1f49fd00e}{send}} (\mbox{\hyperlink{class_gateway_a238d2852576bf41444ae2a1a84e50d53}{Message}} \texorpdfstring{$\ast$}{*}message)
+\item 
+bool \mbox{\hyperlink{class_gateway_a147a0d9f720175e22ff07a9d88062208}{receive}} (\mbox{\hyperlink{class_gateway_a238d2852576bf41444ae2a1a84e50d53}{Message}} \texorpdfstring{$\ast$}{*}msg)
+\item 
+bool \mbox{\hyperlink{class_gateway_ae214631a4279aa252fe047db0f3674d1}{internal\+Receive}} (\mbox{\hyperlink{class_gateway_a238d2852576bf41444ae2a1a84e50d53}{Message}} \texorpdfstring{$\ast$}{*}msg)
+\item 
+bool \mbox{\hyperlink{class_gateway_aa699d63a59873a2fd734ad1589d7bac3}{running}} () const
+\item 
+const \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Address}} \& \mbox{\hyperlink{class_gateway_a0cfa8003cefbe287da06a97f6539cd1a}{address}} ()
+\item 
+\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_gateway_adcfdc41879c428b4a0d15524f6e44638}{bus}} ()
+\item 
+\mbox{\hyperlink{class_network}{Network}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_gateway_a3fc2f28569c2f73a542c743862f50559}{network}} ()
+\item 
+void \mbox{\hyperlink{class_gateway_a64ff0b83488d7bf17ffc1bb9e439df87}{setup\+\_\+csv\+\_\+logging}} (const std\+::string \&log\+\_\+dir)
+\item 
+void \mbox{\hyperlink{class_gateway_a20131aa2cc26d43572c8ac19629736ee}{log\+\_\+message}} (const \mbox{\hyperlink{class_gateway_a238d2852576bf41444ae2a1a84e50d53}{Message}} \&msg, const std\+::string \&direction)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_gateway_a457ea83a125378da10de5abd808fb84b}{mainloop}} (void \texorpdfstring{$\ast$}{*}arg)
+\item 
+static void \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_gateway_a3c27f9d6b08792b882f48d52abd96387}{internal\+Loop}} (void \texorpdfstring{$\ast$}{*}arg)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+const unsigned int \mbox{\hyperlink{class_gateway_a21819630f9a231d5640f3e8e43940932}{PORT}} = 0
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static const unsigned int \mbox{\hyperlink{class_gateway_ac0b94dec600bdd1c62d3e0cb70218b9d}{MAX\+\_\+\+MESSAGE\+\_\+\+SIZE}} = \mbox{\hyperlink{class_protocol_abb9a16075a603f1bb1fd353b30bfdd24}{Protocol\+::\+MTU}} -\/ sizeof(\mbox{\hyperlink{class_protocol_1_1_header}{Protocol\+::\+Header}}) -\/ sizeof(\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{Protocol\+::\+Timestamp\+Fields}})
+\end{DoxyCompactItemize}
+
+
+\label{doc-typedef-members}
+\Hypertarget{class_gateway_doc-typedef-members}
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_gateway_a8870ecac85c6ef2130172409529f3e4b}\index{Gateway@{Gateway}!Address@{Address}}
+\index{Address@{Address}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{Address}{Address}}
+{\footnotesize\ttfamily \label{class_gateway_a8870ecac85c6ef2130172409529f3e4b} 
+typedef \mbox{\hyperlink{class_protocol_1_1_address}{Protocol\+::\+Address}} \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway\+::\+Address}}}
+
+\Hypertarget{class_gateway_a76edea483e2423073e893eceba9a0c92}\index{Gateway@{Gateway}!Communicator@{Communicator}}
+\index{Communicator@{Communicator}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{Communicator}{Communicator}}
+{\footnotesize\ttfamily \label{class_gateway_a76edea483e2423073e893eceba9a0c92} 
+typedef \mbox{\hyperlink{class_network_a638cca85e6d97e60e28b9bbb310aa1e2}{Network\+::\+Communicator}} \mbox{\hyperlink{class_gateway_a76edea483e2423073e893eceba9a0c92}{Gateway\+::\+Communicator}}}
+
+\Hypertarget{class_gateway_ab6ce65b195618088cd9964104a130e94}\index{Gateway@{Gateway}!Map@{Map}}
+\index{Map@{Map}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{Map}{Map}}
+{\footnotesize\ttfamily \label{class_gateway_ab6ce65b195618088cd9964104a130e94} 
+typedef std\+::unordered\+\_\+map$<$\mbox{\hyperlink{class_gateway_af981fe90f3ace162953b3f5c52e87d1b}{Unit}}, std\+::unordered\+\_\+set$<$\mbox{\hyperlink{class_gateway_ab76a33c2110ad476a86c73ed4a265ceb}{Observer}}\texorpdfstring{$\ast$}{*}$>$ $>$ \mbox{\hyperlink{class_gateway_ab6ce65b195618088cd9964104a130e94}{Gateway\+::\+Map}}}
+
+\Hypertarget{class_gateway_a238d2852576bf41444ae2a1a84e50d53}\index{Gateway@{Gateway}!Message@{Message}}
+\index{Message@{Message}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{Message}{Message}}
+{\footnotesize\ttfamily \label{class_gateway_a238d2852576bf41444ae2a1a84e50d53} 
+typedef \mbox{\hyperlink{class_network_ace8ef437586a78c43b82d6d4b5ae6410}{Network\+::\+Message}} \mbox{\hyperlink{class_gateway_a238d2852576bf41444ae2a1a84e50d53}{Gateway\+::\+Message}}}
+
+\Hypertarget{class_gateway_ab76a33c2110ad476a86c73ed4a265ceb}\index{Gateway@{Gateway}!Observer@{Observer}}
+\index{Observer@{Observer}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{Observer}{Observer}}
+{\footnotesize\ttfamily \label{class_gateway_ab76a33c2110ad476a86c73ed4a265ceb} 
+typedef \mbox{\hyperlink{class_c_a_n_a359d8413dfaf202bdaa027d33286fd4f}{CAN\+::\+Observer}} \mbox{\hyperlink{class_gateway_ab76a33c2110ad476a86c73ed4a265ceb}{Gateway\+::\+Observer}}}
+
+\Hypertarget{class_gateway_ac5412e35f863e71e02d5179f3996ff0d}\index{Gateway@{Gateway}!Protocol@{Protocol}}
+\index{Protocol@{Protocol}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{Protocol}{Protocol}}
+{\footnotesize\ttfamily \label{class_gateway_ac5412e35f863e71e02d5179f3996ff0d} 
+typedef \mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Network\+::\+Protocol}} \mbox{\hyperlink{class_gateway_ac5412e35f863e71e02d5179f3996ff0d}{Gateway\+::\+Protocol}}}
+
+\Hypertarget{class_gateway_af981fe90f3ace162953b3f5c52e87d1b}\index{Gateway@{Gateway}!Unit@{Unit}}
+\index{Unit@{Unit}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{Unit}{Unit}}
+{\footnotesize\ttfamily \label{class_gateway_af981fe90f3ace162953b3f5c52e87d1b} 
+typedef \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message\+::\+Unit}} \mbox{\hyperlink{class_gateway_af981fe90f3ace162953b3f5c52e87d1b}{Gateway\+::\+Unit}}}
+
+
+
+\label{doc-constructors}
+\Hypertarget{class_gateway_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_gateway_a2c1f64b1635c44121618ba9456302f9f}\index{Gateway@{Gateway}!Gateway@{Gateway}}
+\index{Gateway@{Gateway}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{Gateway()}{Gateway()}}
+{\footnotesize\ttfamily \label{class_gateway_a2c1f64b1635c44121618ba9456302f9f} 
+Gateway\+::\+Gateway (\begin{DoxyParamCaption}\item[{const unsigned int}]{id}{, }\item[{\mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852a}{Network\+::\+Entity\+Type}}}]{entity\+\_\+type}{ = {\ttfamily \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2}{Network\+::\+Entity\+Type\+::\+VEHICLE}}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_gateway_a7a86ddccd1e942aa584a4e8c42f82e0b}\index{Gateway@{Gateway}!````~Gateway@{\texorpdfstring{$\sim$}{\string~}Gateway}}
+\index{````~Gateway@{\texorpdfstring{$\sim$}{\string~}Gateway}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Gateway()}{\string~Gateway()}}
+{\footnotesize\ttfamily \label{class_gateway_a7a86ddccd1e942aa584a4e8c42f82e0b} 
+Gateway\+::\texorpdfstring{$\sim$}{\string~}\+Gateway (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_gateway_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_gateway_a0cfa8003cefbe287da06a97f6539cd1a}\index{Gateway@{Gateway}!address@{address}}
+\index{address@{address}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{address()}{address()}}
+{\footnotesize\ttfamily \label{class_gateway_a0cfa8003cefbe287da06a97f6539cd1a} 
+const \mbox{\hyperlink{class_gateway_a8870ecac85c6ef2130172409529f3e4b}{Gateway\+::\+Address}} \& Gateway\+::address (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_gateway_adcfdc41879c428b4a0d15524f6e44638}\index{Gateway@{Gateway}!bus@{bus}}
+\index{bus@{bus}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{bus()}{bus()}}
+{\footnotesize\ttfamily \label{class_gateway_adcfdc41879c428b4a0d15524f6e44638} 
+\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*} Gateway\+::bus (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_gateway_a3c27f9d6b08792b882f48d52abd96387}\index{Gateway@{Gateway}!internalLoop@{internalLoop}}
+\index{internalLoop@{internalLoop}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{internalLoop()}{internalLoop()}}
+{\footnotesize\ttfamily \label{class_gateway_a3c27f9d6b08792b882f48d52abd96387} 
+void \texorpdfstring{$\ast$}{*} Gateway\+::internal\+Loop (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{arg}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{class_gateway_ae214631a4279aa252fe047db0f3674d1}\index{Gateway@{Gateway}!internalReceive@{internalReceive}}
+\index{internalReceive@{internalReceive}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{internalReceive()}{internalReceive()}}
+{\footnotesize\ttfamily \label{class_gateway_ae214631a4279aa252fe047db0f3674d1} 
+bool Gateway\+::internal\+Receive (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_gateway_a238d2852576bf41444ae2a1a84e50d53}{Message}} \texorpdfstring{$\ast$}{*}}]{msg}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_gateway_a20131aa2cc26d43572c8ac19629736ee}\index{Gateway@{Gateway}!log\_message@{log\_message}}
+\index{log\_message@{log\_message}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{log\_message()}{log\_message()}}
+{\footnotesize\ttfamily \label{class_gateway_a20131aa2cc26d43572c8ac19629736ee} 
+void Gateway\+::log\+\_\+message (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_gateway_a238d2852576bf41444ae2a1a84e50d53}{Message}} \&}]{msg}{, }\item[{const std\+::string \&}]{direction}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_gateway_a457ea83a125378da10de5abd808fb84b}\index{Gateway@{Gateway}!mainloop@{mainloop}}
+\index{mainloop@{mainloop}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{mainloop()}{mainloop()}}
+{\footnotesize\ttfamily \label{class_gateway_a457ea83a125378da10de5abd808fb84b} 
+void \texorpdfstring{$\ast$}{*} Gateway\+::mainloop (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{arg}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{class_gateway_a3fc2f28569c2f73a542c743862f50559}\index{Gateway@{Gateway}!network@{network}}
+\index{network@{network}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{network()}{network()}}
+{\footnotesize\ttfamily \label{class_gateway_a3fc2f28569c2f73a542c743862f50559} 
+\mbox{\hyperlink{class_network}{Network}} \texorpdfstring{$\ast$}{*} Gateway\+::network (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_gateway_a147a0d9f720175e22ff07a9d88062208}\index{Gateway@{Gateway}!receive@{receive}}
+\index{receive@{receive}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{receive()}{receive()}}
+{\footnotesize\ttfamily \label{class_gateway_a147a0d9f720175e22ff07a9d88062208} 
+bool Gateway\+::receive (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_gateway_a238d2852576bf41444ae2a1a84e50d53}{Message}} \texorpdfstring{$\ast$}{*}}]{msg}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_gateway_aa699d63a59873a2fd734ad1589d7bac3}\index{Gateway@{Gateway}!running@{running}}
+\index{running@{running}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{running()}{running()}}
+{\footnotesize\ttfamily \label{class_gateway_aa699d63a59873a2fd734ad1589d7bac3} 
+bool Gateway\+::running (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_gateway_adce87b6d4437bf838a96d5c1f49fd00e}\index{Gateway@{Gateway}!send@{send}}
+\index{send@{send}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{send()}{send()}}
+{\footnotesize\ttfamily \label{class_gateway_adce87b6d4437bf838a96d5c1f49fd00e} 
+bool Gateway\+::send (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_gateway_a238d2852576bf41444ae2a1a84e50d53}{Message}} \texorpdfstring{$\ast$}{*}}]{message}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_gateway_a64ff0b83488d7bf17ffc1bb9e439df87}\index{Gateway@{Gateway}!setup\_csv\_logging@{setup\_csv\_logging}}
+\index{setup\_csv\_logging@{setup\_csv\_logging}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{setup\_csv\_logging()}{setup\_csv\_logging()}}
+{\footnotesize\ttfamily \label{class_gateway_a64ff0b83488d7bf17ffc1bb9e439df87} 
+void Gateway\+::setup\+\_\+csv\+\_\+logging (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{log\+\_\+dir}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_gateway_ac2b912b4419b787d22cbf1044adc9b09}\index{Gateway@{Gateway}!start@{start}}
+\index{start@{start}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{start()}{start()}}
+{\footnotesize\ttfamily \label{class_gateway_ac2b912b4419b787d22cbf1044adc9b09} 
+void Gateway\+::start (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-variable-members}
+\Hypertarget{class_gateway_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_gateway_ac0b94dec600bdd1c62d3e0cb70218b9d}\index{Gateway@{Gateway}!MAX\_MESSAGE\_SIZE@{MAX\_MESSAGE\_SIZE}}
+\index{MAX\_MESSAGE\_SIZE@{MAX\_MESSAGE\_SIZE}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{MAX\_MESSAGE\_SIZE}{MAX\_MESSAGE\_SIZE}}
+{\footnotesize\ttfamily \label{class_gateway_ac0b94dec600bdd1c62d3e0cb70218b9d} 
+const unsigned int Gateway\+::\+MAX\+\_\+\+MESSAGE\+\_\+\+SIZE = \mbox{\hyperlink{class_protocol_abb9a16075a603f1bb1fd353b30bfdd24}{Protocol\+::\+MTU}} -\/ sizeof(\mbox{\hyperlink{class_protocol_1_1_header}{Protocol\+::\+Header}}) -\/ sizeof(\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{Protocol\+::\+Timestamp\+Fields}})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{class_gateway_a21819630f9a231d5640f3e8e43940932}\index{Gateway@{Gateway}!PORT@{PORT}}
+\index{PORT@{PORT}!Gateway@{Gateway}}
+\doxysubsubsection{\texorpdfstring{PORT}{PORT}}
+{\footnotesize\ttfamily \label{class_gateway_a21819630f9a231d5640f3e8e43940932} 
+const unsigned int Gateway\+::\+PORT = 0}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/framework/\mbox{\hyperlink{gateway_8h}{gateway.\+h}}\end{DoxyCompactItemize}

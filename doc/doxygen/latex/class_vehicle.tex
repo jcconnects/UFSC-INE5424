@@ -1,0 +1,422 @@
+\doxysection{Vehicle Class Reference}
+\hypertarget{class_vehicle}{}\label{class_vehicle}\index{Vehicle@{Vehicle}}
+
+
+{\ttfamily \#include $<$vehicle.\+h$>$}
+
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+enum class \mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228}{Port}} \+: Gateway\+::\+Protocol\+::\+Port \{ \newline
+\mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a81d741a35dc8a42c885b7cc031afd17f}{BROADCAST}} = 0
+, \mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228addf0d6b21537d984fea6544f58101fa8}{CAMERA}}
+, \mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a1e5ac0fa08197d653644e05515386402}{ECU}}
+, \mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228ad65de5dfebb084344726074547490cc4}{LIDAR}}
+, \newline
+\mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a77dd7b24e2c968c0215779e4152c8d67}{INS}}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_vehicle_adf79faad3cc596453698bcf29d4a4ab7}{Vehicle}} (unsigned int \mbox{\hyperlink{class_vehicle_a176ed0e2dab3ded173d379797b158f0a}{id}})
+\item 
+\mbox{\hyperlink{class_vehicle_a61ab140c755b8e0e824d54117cf4546f}{\texorpdfstring{$\sim$}{\string~}\+Vehicle}} ()
+\item 
+const unsigned int \mbox{\hyperlink{class_vehicle_a176ed0e2dab3ded173d379797b158f0a}{id}} () const
+\item 
+const bool \mbox{\hyperlink{class_vehicle_adc0c8644a2fb3432b7c7c7fe61ebf7b6}{running}} () const
+\item 
+void \mbox{\hyperlink{class_vehicle_a3ccb19e449f184280cae484d2ee0e7c3}{start}} ()
+\item 
+void \mbox{\hyperlink{class_vehicle_a837e3c110672946892026ca6bfd21b27}{stop}} ()
+\item 
+{\footnotesize template$<$typename Component\+Type$>$ }\\void \mbox{\hyperlink{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}{create\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Generic template with compile-\/time error for unsupported types. \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename Component\+Type$>$ }\\Component\+Type \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_vehicle_adb69b59f011c8a861f2ff5a0ef3979b9}{get\+\_\+component}} (const std\+::string \&name)
+\item 
+void \mbox{\hyperlink{class_vehicle_a678b6629d25694c236329fddfe59b7e8}{create\+\_\+csv\+\_\+component\+\_\+with\+\_\+file}} (const std\+::string \&name, const std\+::string \&csv\+\_\+file\+\_\+path)
+\begin{DoxyCompactList}\small\item\em Create CSV component with specific file path. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_vehicle_a6e6c02f6d721e504e5f6ca2d6cc76c96}{setup\+\_\+csv\+\_\+logging}} ()
+\item 
+\mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ \mbox{\hyperlink{class_gateway_ac5412e35f863e71e02d5179f3996ff0d}{Gateway\+::\+Protocol}} $>$ \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_vehicle_a9c5e4ecebbdf19a237553e90b7c998d5}{rsu\+\_\+manager}} () const
+\item 
+void \mbox{\hyperlink{class_vehicle_a47cea19aa9a16e2c9cbbedc8a682ff51}{set\+Transmission\+Radius}} (double radius\+\_\+m)
+\item 
+size\+\_\+t \mbox{\hyperlink{class_vehicle_a71f24825f1a30ca8be99d1a5501c7660}{component\+\_\+count}} () const
+\begin{DoxyCompactList}\small\item\em Get the number of components in this vehicle. \end{DoxyCompactList}\item 
+template$<$$>$ void \mbox{\hyperlink{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}{create\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Template specialization for ECU component creation. \end{DoxyCompactList}\item 
+template$<$$>$ void \mbox{\hyperlink{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}{create\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Template specialization for Camera component creation. \end{DoxyCompactList}\item 
+template$<$$>$ void \mbox{\hyperlink{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}{create\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Template specialization for Lidar component creation. \end{DoxyCompactList}\item 
+template$<$$>$ void \mbox{\hyperlink{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}{create\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Template specialization for INS component creation. \end{DoxyCompactList}\item 
+template$<$$>$ void \mbox{\hyperlink{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}{create\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Template specialization for \doxylink{struct_basic_producer_a}{Basic\+ProducerA} component creation. \end{DoxyCompactList}\item 
+template$<$$>$ void \mbox{\hyperlink{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}{create\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Template specialization for \doxylink{struct_basic_producer_b}{Basic\+ProducerB} component creation. \end{DoxyCompactList}\item 
+template$<$$>$ void \mbox{\hyperlink{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}{create\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Template specialization for \doxylink{struct_basic_consumer_a}{Basic\+ConsumerA} component creation. \end{DoxyCompactList}\item 
+template$<$$>$ void \mbox{\hyperlink{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}{create\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Template specialization for \doxylink{struct_basic_consumer_b}{Basic\+ConsumerB} component creation. \end{DoxyCompactList}\item 
+template$<$$>$ void \mbox{\hyperlink{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}{create\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Template specialization for CSV component creation. \end{DoxyCompactList}\item 
+template$<$$>$ void \mbox{\hyperlink{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}{create\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Template specialization for CSV consumer component creation. \end{DoxyCompactList}\item 
+template$<$$>$ \mbox{\hyperlink{class_agent}{Agent}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_vehicle_ab75e660a8e799720c5fb4c128893ff62}{get\+\_\+component}} (const std\+::string \&name)
+\begin{DoxyCompactList}\small\item\em Template specialization for \doxylink{class_agent}{Agent} component retrieval. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-enum-members}
+\Hypertarget{class_vehicle_doc-enum-members}
+\doxysubsection{Member Enumeration Documentation}
+\Hypertarget{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228}\index{Vehicle@{Vehicle}!Port@{Port}}
+\index{Port@{Port}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{Port}{Port}}
+{\footnotesize\ttfamily \label{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228} 
+enum class \mbox{\hyperlink{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228}{Vehicle\+::\+Port}} \+: \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Gateway\+::\+Protocol\+::\+Port}}\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}[2]{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{BROADCAST@{BROADCAST}!Vehicle@{Vehicle}}\index{Vehicle@{Vehicle}!BROADCAST@{BROADCAST}}}\Hypertarget{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a81d741a35dc8a42c885b7cc031afd17f}\label{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a81d741a35dc8a42c885b7cc031afd17f} 
+BROADCAST&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CAMERA@{CAMERA}!Vehicle@{Vehicle}}\index{Vehicle@{Vehicle}!CAMERA@{CAMERA}}}\Hypertarget{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228addf0d6b21537d984fea6544f58101fa8}\label{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228addf0d6b21537d984fea6544f58101fa8} 
+CAMERA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ECU@{ECU}!Vehicle@{Vehicle}}\index{Vehicle@{Vehicle}!ECU@{ECU}}}\Hypertarget{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a1e5ac0fa08197d653644e05515386402}\label{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a1e5ac0fa08197d653644e05515386402} 
+ECU&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LIDAR@{LIDAR}!Vehicle@{Vehicle}}\index{Vehicle@{Vehicle}!LIDAR@{LIDAR}}}\Hypertarget{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228ad65de5dfebb084344726074547490cc4}\label{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228ad65de5dfebb084344726074547490cc4} 
+LIDAR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INS@{INS}!Vehicle@{Vehicle}}\index{Vehicle@{Vehicle}!INS@{INS}}}\Hypertarget{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a77dd7b24e2c968c0215779e4152c8d67}\label{class_vehicle_ac472fc90eadd51dbbb7962b8b1296228a77dd7b24e2c968c0215779e4152c8d67} 
+INS&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\label{doc-constructors}
+\Hypertarget{class_vehicle_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_vehicle_adf79faad3cc596453698bcf29d4a4ab7}\index{Vehicle@{Vehicle}!Vehicle@{Vehicle}}
+\index{Vehicle@{Vehicle}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{Vehicle()}{Vehicle()}}
+{\footnotesize\ttfamily \label{class_vehicle_adf79faad3cc596453698bcf29d4a4ab7} 
+Vehicle\+::\+Vehicle (\begin{DoxyParamCaption}\item[{unsigned int}]{id}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_a61ab140c755b8e0e824d54117cf4546f}\index{Vehicle@{Vehicle}!````~Vehicle@{\texorpdfstring{$\sim$}{\string~}Vehicle}}
+\index{````~Vehicle@{\texorpdfstring{$\sim$}{\string~}Vehicle}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Vehicle()}{\string~Vehicle()}}
+{\footnotesize\ttfamily \label{class_vehicle_a61ab140c755b8e0e824d54117cf4546f} 
+Vehicle\+::\texorpdfstring{$\sim$}{\string~}\+Vehicle (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_vehicle_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_vehicle_a71f24825f1a30ca8be99d1a5501c7660}\index{Vehicle@{Vehicle}!component\_count@{component\_count}}
+\index{component\_count@{component\_count}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{component\_count()}{component\_count()}}
+{\footnotesize\ttfamily \label{class_vehicle_a71f24825f1a30ca8be99d1a5501c7660} 
+size\+\_\+t Vehicle\+::component\+\_\+count (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get the number of components in this vehicle. 
+
+\begin{DoxyReturn}{Returns}
+The number of components currently attached to this vehicle 
+\end{DoxyReturn}
+\Hypertarget{class_vehicle_a57e939255f53f7f775bdcf39922b5a12}\index{Vehicle@{Vehicle}!create\_component@{create\_component}}
+\index{create\_component@{create\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_component()}{create\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [1/11]}}
+{\footnotesize\ttfamily \label{class_vehicle_a57e939255f53f7f775bdcf39922b5a12} 
+template$<$typename Component\+Type$>$ \\
+void Vehicle\+::create\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Generic template with compile-\/time error for unsupported types. 
+
+This template provides a compile-\/time error message for unsupported component types. Only the specialized templates below should be used for actual component creation. Following EPOS principles of compile-\/time type safety. \Hypertarget{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}\index{Vehicle@{Vehicle}!create\_component@{create\_component}}
+\index{create\_component@{create\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_component()}{create\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [2/11]}}
+{\footnotesize\ttfamily \label{class_vehicle_ac2aed44763da3314eed4bd762583bd7c} 
+template$<$$>$ \\
+void Vehicle\+::create\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Template specialization for ECU component creation. 
+
+Creates an ECU component using the factory function instead of direct instantiation. This eliminates the inheritance-\/based approach and uses function-\/based composition.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}\index{Vehicle@{Vehicle}!create\_component@{create\_component}}
+\index{create\_component@{create\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_component()}{create\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [3/11]}}
+{\footnotesize\ttfamily \label{class_vehicle_ac2aed44763da3314eed4bd762583bd7c} 
+template$<$$>$ \\
+void Vehicle\+::create\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Template specialization for Camera component creation. 
+
+Creates a Camera component using the factory function instead of direct instantiation. This eliminates the inheritance-\/based approach and uses function-\/based composition.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}\index{Vehicle@{Vehicle}!create\_component@{create\_component}}
+\index{create\_component@{create\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_component()}{create\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [4/11]}}
+{\footnotesize\ttfamily \label{class_vehicle_ac2aed44763da3314eed4bd762583bd7c} 
+template$<$$>$ \\
+void Vehicle\+::create\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Template specialization for Lidar component creation. 
+
+Creates a Lidar component using the factory function instead of direct instantiation. This eliminates the inheritance-\/based approach and uses function-\/based composition.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}\index{Vehicle@{Vehicle}!create\_component@{create\_component}}
+\index{create\_component@{create\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_component()}{create\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [5/11]}}
+{\footnotesize\ttfamily \label{class_vehicle_ac2aed44763da3314eed4bd762583bd7c} 
+template$<$$>$ \\
+void Vehicle\+::create\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Template specialization for INS component creation. 
+
+Creates an INS component using the factory function instead of direct instantiation. This eliminates the inheritance-\/based approach and uses function-\/based composition.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}\index{Vehicle@{Vehicle}!create\_component@{create\_component}}
+\index{create\_component@{create\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_component()}{create\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [6/11]}}
+{\footnotesize\ttfamily \label{class_vehicle_ac2aed44763da3314eed4bd762583bd7c} 
+template$<$$>$ \\
+void Vehicle\+::create\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Template specialization for \doxylink{struct_basic_producer_a}{Basic\+ProducerA} component creation. 
+
+Creates a \doxylink{struct_basic_producer_a}{Basic\+ProducerA} component using the factory function instead of direct instantiation. This eliminates the inheritance-\/based approach and uses function-\/based composition.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}\index{Vehicle@{Vehicle}!create\_component@{create\_component}}
+\index{create\_component@{create\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_component()}{create\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [7/11]}}
+{\footnotesize\ttfamily \label{class_vehicle_ac2aed44763da3314eed4bd762583bd7c} 
+template$<$$>$ \\
+void Vehicle\+::create\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Template specialization for \doxylink{struct_basic_producer_b}{Basic\+ProducerB} component creation. 
+
+Creates a \doxylink{struct_basic_producer_b}{Basic\+ProducerB} component using the factory function instead of direct instantiation. This eliminates the inheritance-\/based approach and uses function-\/based composition.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}\index{Vehicle@{Vehicle}!create\_component@{create\_component}}
+\index{create\_component@{create\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_component()}{create\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [8/11]}}
+{\footnotesize\ttfamily \label{class_vehicle_ac2aed44763da3314eed4bd762583bd7c} 
+template$<$$>$ \\
+void Vehicle\+::create\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Template specialization for \doxylink{struct_basic_consumer_a}{Basic\+ConsumerA} component creation. 
+
+Creates a \doxylink{struct_basic_consumer_a}{Basic\+ConsumerA} component using the factory function instead of direct instantiation. This eliminates the inheritance-\/based approach and uses function-\/based composition.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}\index{Vehicle@{Vehicle}!create\_component@{create\_component}}
+\index{create\_component@{create\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_component()}{create\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [9/11]}}
+{\footnotesize\ttfamily \label{class_vehicle_ac2aed44763da3314eed4bd762583bd7c} 
+template$<$$>$ \\
+void Vehicle\+::create\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Template specialization for \doxylink{struct_basic_consumer_b}{Basic\+ConsumerB} component creation. 
+
+Creates a \doxylink{struct_basic_consumer_b}{Basic\+ConsumerB} component using the factory function instead of direct instantiation. This eliminates the inheritance-\/based approach and uses function-\/based composition.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}\index{Vehicle@{Vehicle}!create\_component@{create\_component}}
+\index{create\_component@{create\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_component()}{create\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [10/11]}}
+{\footnotesize\ttfamily \label{class_vehicle_ac2aed44763da3314eed4bd762583bd7c} 
+template$<$$>$ \\
+void Vehicle\+::create\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Template specialization for CSV component creation. 
+
+\doxylink{struct_c_s_v_component}{CSVComponent} requires a CSV file path parameter that cannot be provided through the standard template interface. This template specialization provides a clear compile-\/time error directing users to the appropriate creation method.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_vehicle_ac2aed44763da3314eed4bd762583bd7c}\index{Vehicle@{Vehicle}!create\_component@{create\_component}}
+\index{create\_component@{create\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_component()}{create\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [11/11]}}
+{\footnotesize\ttfamily \label{class_vehicle_ac2aed44763da3314eed4bd762583bd7c} 
+template$<$$>$ \\
+void Vehicle\+::create\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Template specialization for CSV consumer component creation. 
+
+Creates a CSV consumer component using the factory function instead of direct instantiation. This eliminates the inheritance-\/based approach and uses function-\/based composition.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_vehicle_a678b6629d25694c236329fddfe59b7e8}\index{Vehicle@{Vehicle}!create\_csv\_component\_with\_file@{create\_csv\_component\_with\_file}}
+\index{create\_csv\_component\_with\_file@{create\_csv\_component\_with\_file}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{create\_csv\_component\_with\_file()}{create\_csv\_component\_with\_file()}}
+{\footnotesize\ttfamily \label{class_vehicle_a678b6629d25694c236329fddfe59b7e8} 
+void Vehicle\+::create\+\_\+csv\+\_\+component\+\_\+with\+\_\+file (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{, }\item[{const std\+::string \&}]{csv\+\_\+file\+\_\+path}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Create CSV component with specific file path. 
+
+Creates a CSV component using the provided CSV file path. This method handles the file path parameter that the template version cannot.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+{\em csv\+\_\+file\+\_\+path} & Path to the CSV file to load \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_vehicle_adb69b59f011c8a861f2ff5a0ef3979b9}\index{Vehicle@{Vehicle}!get\_component@{get\_component}}
+\index{get\_component@{get\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{get\_component()}{get\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_vehicle_adb69b59f011c8a861f2ff5a0ef3979b9} 
+template$<$typename Component\+Type$>$ \\
+Component\+Type \texorpdfstring{$\ast$}{*} Vehicle\+::get\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_ab75e660a8e799720c5fb4c128893ff62}\index{Vehicle@{Vehicle}!get\_component@{get\_component}}
+\index{get\_component@{get\_component}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{get\_component()}{get\_component()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_vehicle_ab75e660a8e799720c5fb4c128893ff62} 
+template$<$$>$ \\
+\mbox{\hyperlink{class_agent}{Agent}} \texorpdfstring{$\ast$}{*} Vehicle\+::get\+\_\+component (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Template specialization for \doxylink{class_agent}{Agent} component retrieval. 
+
+Returns the \doxylink{class_agent}{Agent} pointer directly without casting, since all components are stored as \doxylink{class_agent}{Agent} instances in the factory-\/based approach.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Component name for identification \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Pointer to \doxylink{class_agent}{Agent} component or nullptr if not found 
+\end{DoxyReturn}
+\Hypertarget{class_vehicle_a176ed0e2dab3ded173d379797b158f0a}\index{Vehicle@{Vehicle}!id@{id}}
+\index{id@{id}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{id()}{id()}}
+{\footnotesize\ttfamily \label{class_vehicle_a176ed0e2dab3ded173d379797b158f0a} 
+const unsigned int Vehicle\+::id (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_a9c5e4ecebbdf19a237553e90b7c998d5}\index{Vehicle@{Vehicle}!rsu\_manager@{rsu\_manager}}
+\index{rsu\_manager@{rsu\_manager}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{rsu\_manager()}{rsu\_manager()}}
+{\footnotesize\ttfamily \label{class_vehicle_a9c5e4ecebbdf19a237553e90b7c998d5} 
+\mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ \mbox{\hyperlink{class_gateway_ac5412e35f863e71e02d5179f3996ff0d}{Gateway\+::\+Protocol}} $>$ \texorpdfstring{$\ast$}{*} Vehicle\+::rsu\+\_\+manager (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_adc0c8644a2fb3432b7c7c7fe61ebf7b6}\index{Vehicle@{Vehicle}!running@{running}}
+\index{running@{running}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{running()}{running()}}
+{\footnotesize\ttfamily \label{class_vehicle_adc0c8644a2fb3432b7c7c7fe61ebf7b6} 
+const bool Vehicle\+::running (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_a47cea19aa9a16e2c9cbbedc8a682ff51}\index{Vehicle@{Vehicle}!setTransmissionRadius@{setTransmissionRadius}}
+\index{setTransmissionRadius@{setTransmissionRadius}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{setTransmissionRadius()}{setTransmissionRadius()}}
+{\footnotesize\ttfamily \label{class_vehicle_a47cea19aa9a16e2c9cbbedc8a682ff51} 
+void Vehicle\+::set\+Transmission\+Radius (\begin{DoxyParamCaption}\item[{double}]{radius\+\_\+m}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_a6e6c02f6d721e504e5f6ca2d6cc76c96}\index{Vehicle@{Vehicle}!setup\_csv\_logging@{setup\_csv\_logging}}
+\index{setup\_csv\_logging@{setup\_csv\_logging}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{setup\_csv\_logging()}{setup\_csv\_logging()}}
+{\footnotesize\ttfamily \label{class_vehicle_a6e6c02f6d721e504e5f6ca2d6cc76c96} 
+void Vehicle\+::setup\+\_\+csv\+\_\+logging (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_a3ccb19e449f184280cae484d2ee0e7c3}\index{Vehicle@{Vehicle}!start@{start}}
+\index{start@{start}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{start()}{start()}}
+{\footnotesize\ttfamily \label{class_vehicle_a3ccb19e449f184280cae484d2ee0e7c3} 
+void Vehicle\+::start (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_a837e3c110672946892026ca6bfd21b27}\index{Vehicle@{Vehicle}!stop@{stop}}
+\index{stop@{stop}!Vehicle@{Vehicle}}
+\doxysubsubsection{\texorpdfstring{stop()}{stop()}}
+{\footnotesize\ttfamily \label{class_vehicle_a837e3c110672946892026ca6bfd21b27} 
+void Vehicle\+::stop (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/app/\mbox{\hyperlink{vehicle_8h}{vehicle.\+h}}\end{DoxyCompactItemize}

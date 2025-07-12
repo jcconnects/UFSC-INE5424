@@ -1,0 +1,214 @@
+\doxysection{location\+\_\+service.\+h}
+\hypertarget{location__service_8h_source}{}\label{location__service_8h_source}\index{include/api/framework/location\_service.h@{include/api/framework/location\_service.h}}
+\mbox{\hyperlink{location__service_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ LOCATION\_SERVICE\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ LOCATION\_SERVICE\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{comment}{//\ Enhanced\ LocationService\ that\ reads\ trajectory\ data\ from\ CSV\ files}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ as\ described\ in\ IdeaP5Enzo.md.\ Falls\ back\ to\ manual\ coordinates\ if\ no\ trajectory\ file\ is\ loaded.}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <sstream>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_coordinates}{Coordinates}}\ \{}
+\DoxyCodeLine{00016\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_coordinates_a858fd248e4b9ae45cbceeb6bdc7d011b}{x}};}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_coordinates_ab89961ba893566971c26e8bf5f377d49}{y}};}
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_coordinates_a9da513ed4d7be0bcb560e3987ae09c69}{radius}};}
+\DoxyCodeLine{00019\ \};}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_trajectory_point_a40161a8ce29660945ad566488cb1236a}{TrajectoryPoint}}\ \{}
+\DoxyCodeLine{00022\ \ \ \ \ std::chrono::milliseconds\ \mbox{\hyperlink{struct_trajectory_point_af71a54623c4a7ead681c7deca4c94b3c}{timestamp}};}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_trajectory_point_aab3057e54d7b25565acf948add736055}{x}};}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_trajectory_point_a4545b1f057c9ddb9fe63d1c2faee33b4}{y}};}
+\DoxyCodeLine{00025\ \ \ \ \ }
+\DoxyCodeLine{00026\ \ \ \ \ \mbox{\hyperlink{struct_trajectory_point_a40161a8ce29660945ad566488cb1236a}{TrajectoryPoint}}(\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ ts\_ms,\ \textcolor{keywordtype}{double}\ x\_coord,\ \textcolor{keywordtype}{double}\ y\_coord)\ :\ \mbox{\hyperlink{struct_trajectory_point_af71a54623c4a7ead681c7deca4c94b3c}{timestamp}}(ts\_ms),\ \mbox{\hyperlink{struct_trajectory_point_aab3057e54d7b25565acf948add736055}{x}}(x\_coord),\ \mbox{\hyperlink{struct_trajectory_point_a4545b1f057c9ddb9fe63d1c2faee33b4}{y}}(y\_coord)\ \{\}}
+\DoxyCodeLine{00027\ \};}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_location_service}{LocationService}}\ \{}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Load\ trajectory\ from\ CSV\ file\ for\ time-\/based\ positioning}}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_location_service_a65ebade635a5f172144ab5856eec7da2}{loadTrajectory}}(\textcolor{keyword}{const}\ std::string\&\ csv\_filename);}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Get\ coordinates\ at\ specific\ timestamp\ (reads\ from\ trajectory\ if\ loaded)}}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_location_service_ad11354246a6ad14ce40d4002d45f3f38}{getCoordinates}}(\textcolor{keywordtype}{double}\&\ x,\ \textcolor{keywordtype}{double}\&\ y,\ std::chrono::milliseconds\ timestamp\ =\ std::chrono::milliseconds::zero());}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Backward\ compatibility:\ get\ coordinates\ at\ current\ system\ time}}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_location_service_a47a113762a9a60846db63b02cb62abf8}{getCurrentCoordinates}}(\textcolor{keywordtype}{double}\&\ x,\ \textcolor{keywordtype}{double}\&\ y);}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Set\ manual\ coordinates\ (used\ when\ no\ trajectory\ is\ loaded)}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_location_service_a60a9212286654d7d7656a6e97f901239}{setCurrentCoordinates}}(\textcolor{keywordtype}{double}\ x,\ \textcolor{keywordtype}{double}\ y);}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Check\ if\ trajectory\ is\ loaded}}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_location_service_ab6c51f90d5245e776162086cb1283496}{hasTrajectory}}();}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Get\ trajectory\ duration}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ std::chrono::milliseconds\ \mbox{\hyperlink{class_location_service_a8c97008e2668e008b4a3b7e942930e2a}{getTrajectoryDuration}}();}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ loadTrajectoryFromCSV(\textcolor{keyword}{const}\ std::string\&\ filename);}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ getCoordinatesAtTime(std::chrono::milliseconds\ timestamp,\ \textcolor{keywordtype}{double}\&\ x,\ \textcolor{keywordtype}{double}\&\ y);}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ std::vector<TrajectoryPoint>\ \_trajectory;}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \_manual\_x,\ \_manual\_y;}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ std::mutex\ \_mutex;}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ std::chrono::milliseconds\ \_start\_time;}
+\DoxyCodeLine{00061\ \};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ std::mutex\ LocationService::\_mutex;}
+\DoxyCodeLine{00064\ std::vector<TrajectoryPoint>\ LocationService::\_trajectory;}
+\DoxyCodeLine{00065\ \textcolor{keywordtype}{double}\ LocationService::\_manual\_x\ =\ 0;}
+\DoxyCodeLine{00066\ \textcolor{keywordtype}{double}\ LocationService::\_manual\_y\ =\ 0;}
+\DoxyCodeLine{00067\ std::chrono::milliseconds\ LocationService::\_start\_time\ =\ std::chrono::milliseconds::zero();}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_location_service_a65ebade635a5f172144ab5856eec7da2}{LocationService::loadTrajectory}}(\textcolor{keyword}{const}\ std::string\&\ csv\_filename)\ \{}
+\DoxyCodeLine{00070\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{if}(loadTrajectoryFromCSV(csv\_filename))\{}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \_start\_time\ =\ std::chrono::duration\_cast<std::chrono::milliseconds>(std::chrono::system\_clock::now().time\_since\_epoch());}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00074\ \ \ \ \ \};}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00076\ \}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_location_service_ad11354246a6ad14ce40d4002d45f3f38}{LocationService::getCoordinates}}(\textcolor{keywordtype}{double}\&\ x,\ \textcolor{keywordtype}{double}\&\ y,\ std::chrono::milliseconds\ timestamp)\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_trajectory.empty()\ ||\ timestamp\ ==\ std::chrono::milliseconds::zero())\ \{}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Use\ manual\ coordinates\ if\ no\ trajectory\ or\ no\ timestamp\ provided}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ x\ =\ \_manual\_x;}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ y\ =\ \_manual\_y;}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00086\ \ \ \ \ \}}
+\DoxyCodeLine{00087\ \ \ \ \ }
+\DoxyCodeLine{00088\ \ \ \ \ getCoordinatesAtTime(timestamp,\ x,\ y);}
+\DoxyCodeLine{00089\ \}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_location_service_a47a113762a9a60846db63b02cb62abf8}{LocationService::getCurrentCoordinates}}(\textcolor{keywordtype}{double}\&\ x,\ \textcolor{keywordtype}{double}\&\ y)\ \{}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keyword}{auto}\ now\ =\ std::chrono::duration\_cast<std::chrono::milliseconds>(std::chrono::system\_clock::now().time\_since\_epoch());}
+\DoxyCodeLine{00093\ \ \ \ \ \mbox{\hyperlink{class_location_service_ad11354246a6ad14ce40d4002d45f3f38}{getCoordinates}}(x,\ y,\ now\ -\/\ \_start\_time);}
+\DoxyCodeLine{00094\ \}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_location_service_a60a9212286654d7d7656a6e97f901239}{LocationService::setCurrentCoordinates}}(\textcolor{keywordtype}{double}\ x,\ \textcolor{keywordtype}{double}\ y)\ \{}
+\DoxyCodeLine{00097\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00098\ \ \ \ \ \_manual\_x\ =\ x;}
+\DoxyCodeLine{00099\ \ \ \ \ \_manual\_y\ =\ y;}
+\DoxyCodeLine{00100\ \}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_location_service_ab6c51f90d5245e776162086cb1283496}{LocationService::hasTrajectory}}()\ \{}
+\DoxyCodeLine{00103\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordflow}{return}\ !\_trajectory.empty();}
+\DoxyCodeLine{00105\ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ std::chrono::milliseconds\ \mbox{\hyperlink{class_location_service_a8c97008e2668e008b4a3b7e942930e2a}{LocationService::getTrajectoryDuration}}()\ \{}
+\DoxyCodeLine{00108\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_trajectory.empty())\ \textcolor{keywordflow}{return}\ std::chrono::milliseconds::zero();}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keywordflow}{return}\ \_trajectory.back().timestamp\ -\/\ \_trajectory.front().timestamp;}
+\DoxyCodeLine{00111\ \}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \textcolor{keywordtype}{bool}\ LocationService::loadTrajectoryFromCSV(\textcolor{keyword}{const}\ std::string\&\ filename)\ \{}
+\DoxyCodeLine{00114\ \ \ \ \ std::ifstream\ file(filename);}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordflow}{if}\ (!file.is\_open())\ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00117\ \ \ \ \ \}}
+\DoxyCodeLine{00118\ \ \ \ \ }
+\DoxyCodeLine{00119\ \ \ \ \ \_trajectory.clear();}
+\DoxyCodeLine{00120\ \ \ \ \ std::string\ line;}
+\DoxyCodeLine{00121\ \ \ \ \ }
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{comment}{//\ Skip\ header\ if\ present}}
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keywordflow}{if}\ (std::getline(file,\ line)\ \&\&\ line.find(\textcolor{stringliteral}{"{}timestamp"{}})\ !=\ std::string::npos)\ \{}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Header\ detected,\ continue\ to\ next\ line}}
+\DoxyCodeLine{00125\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ No\ header,\ reset\ to\ beginning}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ file.clear();}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ file.seekg(0);}
+\DoxyCodeLine{00129\ \ \ \ \ \}}
+\DoxyCodeLine{00130\ \ \ \ \ }
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keywordflow}{while}\ (std::getline(file,\ line))\ \{}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (line.empty())\ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ std::stringstream\ ss(line);}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ std::string\ cell;}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ std::vector<std::string>\ values;}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Parse\ CSV\ line}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (std::getline(ss,\ cell,\ \textcolor{charliteral}{','}))\ \{}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ values.push\_back(cell);}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (values.size()\ >=\ 3)\ \{}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ timestamp\_ms\ =\ std::stoll(values[0]);}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ x\_coord\ =\ std::stod(values[1]);}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ y\_coord\ =\ std::stod(values[2]);}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_trajectory.emplace\_back(timestamp\_ms,\ x\_coord,\ y\_coord);}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ std::exception\&)\ \{}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Skip\ malformed\ lines}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00155\ \ \ \ \ \}}
+\DoxyCodeLine{00156\ \ \ \ \ }
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{comment}{//\ Sort\ trajectory\ by\ timestamp}}
+\DoxyCodeLine{00158\ \ \ \ \ std::sort(\_trajectory.begin(),\ \_trajectory.end(),\ }
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ [](\textcolor{keyword}{const}\ TrajectoryPoint\&\ a,\ \textcolor{keyword}{const}\ TrajectoryPoint\&\ b)\ \{}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ a.timestamp\ <\ b.timestamp;}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00162\ \ \ \ \ }
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{keywordflow}{return}\ !\_trajectory.empty();}
+\DoxyCodeLine{00164\ \}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \textcolor{keywordtype}{void}\ LocationService::getCoordinatesAtTime(std::chrono::milliseconds\ timestamp,\ \textcolor{keywordtype}{double}\&\ x,\ \textcolor{keywordtype}{double}\&\ y)\ \{}
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_trajectory.empty())\ \{}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ x\ =\ \_manual\_x;}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ y\ =\ \_manual\_y;}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00171\ \ \ \ \ \}}
+\DoxyCodeLine{00172\ \ \ \ \ }
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{comment}{//\ Find\ the\ first\ timestamp\ that\ is\ higher\ than\ the\ given\ one}}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keyword}{auto}\ it\ =\ std::upper\_bound(\_trajectory.begin(),\ \_trajectory.end(),\ timestamp,}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ [](std::chrono::milliseconds\ ts,\ \textcolor{keyword}{const}\ TrajectoryPoint\&\ point)\ \{}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ ts\ <\ point.timestamp;}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00178\ \ \ \ \ }
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keywordflow}{if}\ (it\ ==\ \_trajectory.begin())\ \{}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Timestamp\ is\ before\ trajectory\ start\ -\/\ use\ first\ point}}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ x\ =\ \_trajectory.front().x;}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ y\ =\ \_trajectory.front().y;}
+\DoxyCodeLine{00183\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (it\ ==\ \_trajectory.end())\ \{}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Timestamp\ is\ after\ trajectory\ end\ -\/\ use\ last\ point}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ x\ =\ \_trajectory.back().x;}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ y\ =\ \_trajectory.back().y;}
+\DoxyCodeLine{00187\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Interpolate\ between\ two\ points\ for\ smoother\ movement}}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ curr\ =\ it;}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ prev\ =\ it\ -\/\ 1;}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ dt\_total\ =\ curr-\/>timestamp\ -\/\ prev-\/>timestamp;}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ dt\_elapsed\ =\ timestamp\ -\/\ prev-\/>timestamp;}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dt\_total.count()\ ==\ 0)\ \{}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Same\ timestamp,\ use\ current\ point}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ x\ =\ curr-\/>x;}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ y\ =\ curr-\/>y;}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Linear\ interpolation}}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ ratio\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(dt\_elapsed.count())\ /\ dt\_total.count();}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ x\ =\ prev-\/>x\ +\ ratio\ *\ (curr-\/>x\ -\/\ prev-\/>x);}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ y\ =\ prev-\/>y\ +\ ratio\ *\ (curr-\/>y\ -\/\ prev-\/>y);}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00205\ \ \ \ \ \}}
+\DoxyCodeLine{00206\ \}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LOCATION\_SERVICE\_H\ }}
+
+\end{DoxyCode}

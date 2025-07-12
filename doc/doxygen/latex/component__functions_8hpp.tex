@@ -1,0 +1,58 @@
+\doxysection{include/api/framework/component\+\_\+functions.hpp File Reference}
+\hypertarget{component__functions_8hpp}{}\label{component__functions_8hpp}\index{include/api/framework/component\_functions.hpp@{include/api/framework/component\_functions.hpp}}
+{\ttfamily \#include "{}api/framework/component\+\_\+types.\+hpp"{}}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef std\+::vector$<$ std\+::uint8\+\_\+t $>$(\texorpdfstring{$\ast$}{*} \mbox{\hyperlink{component__functions_8hpp_a09035d123daa3e7131b0f583a140371c}{Data\+Producer}}) (std\+::uint32\+\_\+t unit, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Function pointer type for data production. \end{DoxyCompactList}\item 
+typedef void(\texorpdfstring{$\ast$}{*} \mbox{\hyperlink{component__functions_8hpp_a53233b5baa21df43948d115fa1f102a1}{Response\+Handler}}) (void \texorpdfstring{$\ast$}{*}msg, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Function pointer type for response handling. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-typedef-members}
+\Hypertarget{component__functions_8hpp_doc-typedef-members}
+\doxysubsection{Typedef Documentation}
+\Hypertarget{component__functions_8hpp_a09035d123daa3e7131b0f583a140371c}\index{component\_functions.hpp@{component\_functions.hpp}!DataProducer@{DataProducer}}
+\index{DataProducer@{DataProducer}!component\_functions.hpp@{component\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{DataProducer}{DataProducer}}
+{\footnotesize\ttfamily \label{component__functions_8hpp_a09035d123daa3e7131b0f583a140371c} 
+typedef std\+::vector$<$ std\+::uint8\+\_\+t $>$(\texorpdfstring{$\ast$}{*} Data\+Producer) (std\+::uint32\+\_\+t unit, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})}
+
+
+
+Function pointer type for data production. 
+
+This function is called when an \doxylink{class_agent}{Agent} needs to generate data in response to an INTEREST message. Following EPOS Smart\+Data principles, this allows pure function-\/based data generation without inheritance.
+
+
+\begin{DoxyParams}{Parameters}
+{\em unit} & The data unit being requested \\
+\hline
+{\em data} & Pointer to component-\/specific data structure \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Value containing the generated data 
+\end{DoxyReturn}
+\Hypertarget{component__functions_8hpp_a53233b5baa21df43948d115fa1f102a1}\index{component\_functions.hpp@{component\_functions.hpp}!ResponseHandler@{ResponseHandler}}
+\index{ResponseHandler@{ResponseHandler}!component\_functions.hpp@{component\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{ResponseHandler}{ResponseHandler}}
+{\footnotesize\ttfamily \label{component__functions_8hpp_a53233b5baa21df43948d115fa1f102a1} 
+typedef void(\texorpdfstring{$\ast$}{*} Response\+Handler) (void \texorpdfstring{$\ast$}{*}msg, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})}
+
+
+
+Function pointer type for response handling. 
+
+This function is called when an \doxylink{class_agent}{Agent} receives a RESPONSE message. Following EPOS Smart\+Data principles, this allows pure function-\/based response processing without inheritance.
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to the received message \\
+\hline
+{\em data} & Pointer to component-\/specific data structure \\
+\hline
+\end{DoxyParams}

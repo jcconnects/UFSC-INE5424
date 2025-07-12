@@ -1,0 +1,61 @@
+\doxysection{include/app/components/unit\+\_\+a\+\_\+functions.hpp File Reference}
+\hypertarget{unit__a__functions_8hpp}{}\label{unit__a__functions_8hpp}\index{include/app/components/unit\_a\_functions.hpp@{include/app/components/unit\_a\_functions.hpp}}
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include "{}unit\+\_\+a\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/framework/component\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/util/debug.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ \mbox{\hyperlink{unit__a__functions_8hpp_ae81e68d682f1c67978000ce03630f152}{basic\+\_\+producer\+\_\+a}} (std\+::uint32\+\_\+t unit, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Producer function for UNIT\+\_\+A data generation. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{unit__a__functions_8hpp_aab0c7601ad8a2a35d701779ec0124737}{basic\+\_\+consumer\+\_\+a}} (void \texorpdfstring{$\ast$}{*}msg, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Consumer function for UNIT\+\_\+A response handling. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{unit__a__functions_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{unit__a__functions_8hpp_aab0c7601ad8a2a35d701779ec0124737}\index{unit\_a\_functions.hpp@{unit\_a\_functions.hpp}!basic\_consumer\_a@{basic\_consumer\_a}}
+\index{basic\_consumer\_a@{basic\_consumer\_a}!unit\_a\_functions.hpp@{unit\_a\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{basic\_consumer\_a()}{basic\_consumer\_a()}}
+{\footnotesize\ttfamily \label{unit__a__functions_8hpp_aab0c7601ad8a2a35d701779ec0124737} 
+void basic\+\_\+consumer\+\_\+a (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{msg}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Consumer function for UNIT\+\_\+A response handling. 
+
+Replaces Basic\+Consumer\+A\+::handle\+\_\+response() virtual method with direct function call. Extracts float value from received message, stores it in component data, and logs the reception (matching original behavior).
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to the received message (cast to \doxylink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Agent\+::\+Message}\texorpdfstring{$\ast$}{*}) \\
+\hline
+{\em data} & Pointer to \doxylink{struct_unit_a_data}{Unit\+AData} structure for storing received value \\
+\hline
+\end{DoxyParams}
+\Hypertarget{unit__a__functions_8hpp_ae81e68d682f1c67978000ce03630f152}\index{unit\_a\_functions.hpp@{unit\_a\_functions.hpp}!basic\_producer\_a@{basic\_producer\_a}}
+\index{basic\_producer\_a@{basic\_producer\_a}!unit\_a\_functions.hpp@{unit\_a\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{basic\_producer\_a()}{basic\_producer\_a()}}
+{\footnotesize\ttfamily \label{unit__a__functions_8hpp_ae81e68d682f1c67978000ce03630f152} 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ basic\+\_\+producer\+\_\+a (\begin{DoxyParamCaption}\item[{std\+::uint32\+\_\+t}]{unit}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Producer function for UNIT\+\_\+A data generation. 
+
+Replaces Basic\+Producer\+A\+::get() virtual method with direct function call. Generates random float values in the range 0.\+0f to 100.\+0f and returns them as a byte vector for message transmission.
+
+
+\begin{DoxyParams}{Parameters}
+{\em unit} & The data unit being requested (should be \doxylink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504face5ae617b7a277d02a8dccc786c7e4e7}{Data\+Types\+::\+UNIT\+\_\+A}) \\
+\hline
+{\em data} & Pointer to \doxylink{struct_unit_a_data}{Unit\+AData} structure containing random number generator \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Vector of bytes containing the generated float value 
+\end{DoxyReturn}

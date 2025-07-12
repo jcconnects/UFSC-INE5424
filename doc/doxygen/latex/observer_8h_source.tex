@@ -1,0 +1,165 @@
+\doxysection{observer.\+h}
+\hypertarget{observer_8h_source}{}\label{observer_8h_source}\index{include/api/util/observer.h@{include/api/util/observer.h}}
+\mbox{\hyperlink{observer_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ OBSERVER\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ OBSERVER\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <semaphore.h>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{list_8h}{api/util/list.h}}"{}}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ Forward\ declarations\ for\ Conditionally\_Data\_Observed\ class}}
+\DoxyCodeLine{00008\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Condition>}
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\_Data\_Observed}};}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ Fundamentals\ for\ Observer\ X\ Observed}}
+\DoxyCodeLine{00012\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Condition>}
+\DoxyCodeLine{00013\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_conditional___data___observer_a8f22e1849f82ea76db69f69cfbd3fe6e}{Conditional\_Data\_Observer}}\ \{}
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\_Data\_Observed}}<T,\ \mbox{\hyperlink{class_condition}{Condition}}>;}
+\DoxyCodeLine{00015\ \ \ \ \ }
+\DoxyCodeLine{00016\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ T\ \mbox{\hyperlink{class_conditional___data___observer_a0b16b8ce9623817ce37695912e1ff310}{Observed\_Data}};}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_condition}{Condition}}\ \mbox{\hyperlink{class_conditional___data___observer_a2f93f9437c93539cc17e8cd2380dbb16}{Observing\_Condition}};}
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\_Data\_Observed<T,\ Condition>}}\ \mbox{\hyperlink{class_conditional___data___observer_ab6c4d2e0d793e10224ed356058430fa1}{Observed}};}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_conditional___data___observer_a8f22e1849f82ea76db69f69cfbd3fe6e}{Conditional\_Data\_Observer}}(\mbox{\hyperlink{class_condition}{Condition}}\ c);}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{class_conditional___data___observer_a5ceffc5f4ca4f4ac107b793e9d06456c}{\string~Conditional\_Data\_Observer}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_conditional___data___observer_aac139fa7c42f527f37675d5b565ae82e}{update}}(\mbox{\hyperlink{class_condition}{Condition}}\ c,\ \mbox{\hyperlink{class_conditional___data___observer_a0b16b8ce9623817ce37695912e1ff310}{Observed\_Data}}*\ d);}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ T*\ \mbox{\hyperlink{class_conditional___data___observer_a53d476613ed076f3f3673c307d9b170a}{updated}}();}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_condition}{Condition}}\ \mbox{\hyperlink{class_conditional___data___observer_a3874329125ab0c3e3675ccd0ad1729b6}{rank}}()\ \{\ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_conditional___data___observer_aa4acb207eaeed3fbaf57207e6b84d4a8}{\_rank}};\ \};}
+\DoxyCodeLine{00028\ \ \ \ \ }
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_condition}{Condition}}\ \mbox{\hyperlink{class_conditional___data___observer_aa4acb207eaeed3fbaf57207e6b84d4a8}{\_rank}};}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_list}{List<T>}}\ \mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}};}
+\DoxyCodeLine{00032\ \};}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{comment}{/***********************\ CONDITIONAL\_DATA\_OBSERVER\ IMPLEMENTATION\ ************************/}}
+\DoxyCodeLine{00035\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Condition>}
+\DoxyCodeLine{00036\ \mbox{\hyperlink{class_conditional___data___observer_a8f22e1849f82ea76db69f69cfbd3fe6e}{Conditional\_Data\_Observer<T,\ Condition>::Conditional\_Data\_Observer}}(\mbox{\hyperlink{class_condition}{Condition}}\ c)\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \mbox{\hyperlink{class_conditional___data___observer_aa4acb207eaeed3fbaf57207e6b84d4a8}{\_rank}}\ =\ c;}
+\DoxyCodeLine{00038\ \}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Condition>}
+\DoxyCodeLine{00041\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_conditional___data___observer_aac139fa7c42f527f37675d5b565ae82e}{Conditional\_Data\_Observer<T,\ Condition>::update}}(\mbox{\hyperlink{class_condition}{Condition}}\ c,\ \mbox{\hyperlink{class_conditional___data___observer_a0b16b8ce9623817ce37695912e1ff310}{Observed\_Data}}*\ d)\ \{}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordflow}{if}\ (c\ ==\ \mbox{\hyperlink{class_conditional___data___observer_aa4acb207eaeed3fbaf57207e6b84d4a8}{\_rank}})\ \{}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}}.insert(d);}
+\DoxyCodeLine{00044\ \ \ \ \ \}}
+\DoxyCodeLine{00045\ \}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Condition>}
+\DoxyCodeLine{00048\ T*\ \mbox{\hyperlink{class_conditional___data___observer_a53d476613ed076f3f3673c307d9b170a}{Conditional\_Data\_Observer<T,\ Condition>::updated}}()\ \{}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}}.empty()\ ?\ nullptr\ :\ \mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}}.remove();}
+\DoxyCodeLine{00050\ \}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{comment}{//\ Specificaton\ for\ when\ Condition\ =\ void}}
+\DoxyCodeLine{00053\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00054\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_conditional___data___observer}{Conditional\_Data\_Observer}}<T,\ void>\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\_Data\_Observed}}<T,\ void>;}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ T\ \mbox{\hyperlink{class_conditional___data___observer_a0b16b8ce9623817ce37695912e1ff310}{Observed\_Data}};}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\_Data\_Observed<T,\ void>}}\ \mbox{\hyperlink{class_conditional___data___observer_ab6c4d2e0d793e10224ed356058430fa1}{Observed}};}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_conditional___data___observer_a8f22e1849f82ea76db69f69cfbd3fe6e}{Conditional\_Data\_Observer}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{class_conditional___data___observer_a5ceffc5f4ca4f4ac107b793e9d06456c}{\string~Conditional\_Data\_Observer}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_conditional___data___observer_aac139fa7c42f527f37675d5b565ae82e}{update}}(\mbox{\hyperlink{class_conditional___data___observer_a0b16b8ce9623817ce37695912e1ff310}{Observed\_Data}}*\ d)\ \{\ \_data.insert(d);\ \}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ T*\ \mbox{\hyperlink{class_conditional___data___observer_a53d476613ed076f3f3673c307d9b170a}{updated}}()\ \{\ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}}.empty()\ ?\ nullptr\ :\ \mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}}.remove();\ \}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_list}{List<T>}}\ \mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}};}
+\DoxyCodeLine{00069\ \};}
+\DoxyCodeLine{00070\ \textcolor{comment}{/*****************************************************************************************/}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{comment}{//\ Foward\ declaration\ for\ Concurrent\_Observed\ class;}}
+\DoxyCodeLine{00074\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D,\ \textcolor{keyword}{typename}\ C>}
+\DoxyCodeLine{00075\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_concurrent___observed}{Concurrent\_Observed}};}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{comment}{//\ Conditional\ Observer\ x\ Conditionally\ Observed\ with\ Data\ decoupled\ by\ a\ Semaphore}}
+\DoxyCodeLine{00078\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ D,\ \textcolor{keyword}{typename}\ C>}
+\DoxyCodeLine{00079\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_concurrent___observer_a97e91bd686c32f17f73d971b29fbf835}{Concurrent\_Observer}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{class_conditional___data___observer_a8f22e1849f82ea76db69f69cfbd3fe6e}{Conditional\_Data\_Observer}}<D,\ C>\ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_concurrent___observed}{Concurrent\_Observed}}<D,\ C>;}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ D\ \mbox{\hyperlink{class_concurrent___observer_a20cca23de0ab1069fb5894d2240a8f71}{Observed\_Data}};}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ C\ \mbox{\hyperlink{class_concurrent___observer_a06fad56d0e1bc34113eaed3aedff1cd6}{Observing\_Condition}};}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_concurrent___observed}{Concurrent\_Observed<D,\ C>}}\ \mbox{\hyperlink{class_concurrent___observer_a468eb5233f5c956182c62addc2de0a2f}{Observed}};}
+\DoxyCodeLine{00086\ \ \ \ \ }
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_concurrent___observer_a97e91bd686c32f17f73d971b29fbf835}{Concurrent\_Observer}}(C\ \mbox{\hyperlink{class_conditional___data___observer_a3874329125ab0c3e3675ccd0ad1729b6}{rank}});}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_concurrent___observer_a111935d37fa6937b34b93969d86cd064}{\string~Concurrent\_Observer}}();}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_concurrent___observer_a44a610e26d760bd97bbfbdc90ca5cf2c}{update}}(C\ c,\ D*\ d)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ D*\ \mbox{\hyperlink{class_concurrent___observer_a3e04ae68a99e56ea92c1690333b186eb}{updated}}();}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Signal\ detach\ to\ unblock\ any\ waiting\ threads}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_concurrent___observer_a3d73cf9d52eb2b081208d60dc9356592}{detach\_signal}}()\ \{}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ sem\_post(\&\_semaphore);}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ sem\_t\ \_semaphore;}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \_is\_detached\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00102\ \};}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \textcolor{comment}{/*****************\ CONCURRENT\_OBSERVER\ IMPLEMENTATION\ *************************/}}
+\DoxyCodeLine{00105\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D,\ \textcolor{keyword}{typename}\ C>}
+\DoxyCodeLine{00106\ \mbox{\hyperlink{class_concurrent___observer_a97e91bd686c32f17f73d971b29fbf835}{Concurrent\_Observer<D,\ C>::Concurrent\_Observer}}(C\ \mbox{\hyperlink{class_conditional___data___observer_a3874329125ab0c3e3675ccd0ad1729b6}{rank}})\ :\ \mbox{\hyperlink{class_conditional___data___observer_a8f22e1849f82ea76db69f69cfbd3fe6e}{Conditional\_Data\_Observer}}<D,\ C>(\mbox{\hyperlink{class_conditional___data___observer_a3874329125ab0c3e3675ccd0ad1729b6}{rank}})\ \{}
+\DoxyCodeLine{00107\ \ \ \ \ sem\_init(\&\_semaphore,\ 0,\ 0);}
+\DoxyCodeLine{00108\ \}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D,\ \textcolor{keyword}{typename}\ C>}
+\DoxyCodeLine{00111\ \mbox{\hyperlink{class_concurrent___observer_a111935d37fa6937b34b93969d86cd064}{Concurrent\_Observer<D,\ C>::\string~Concurrent\_Observer}}()\ \{}
+\DoxyCodeLine{00112\ \ \ \ \ sem\_destroy(\&\_semaphore);}
+\DoxyCodeLine{00113\ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D,\ \textcolor{keyword}{typename}\ C>}
+\DoxyCodeLine{00116\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_concurrent___observer_a44a610e26d760bd97bbfbdc90ca5cf2c}{Concurrent\_Observer<D,\ C>::update}}(C\ c,\ D*\ d)\ \{}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keywordflow}{if}\ (c\ ==\ this-\/>\mbox{\hyperlink{class_conditional___data___observer_aa4acb207eaeed3fbaf57207e6b84d4a8}{\_rank}})\ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ this-\/>\mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}}.insert(d);}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ sem\_post(\&\_semaphore);}
+\DoxyCodeLine{00120\ \ \ \ \ \}}
+\DoxyCodeLine{00121\ \}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D,\ \textcolor{keyword}{typename}\ C>}
+\DoxyCodeLine{00124\ D*\ \mbox{\hyperlink{class_concurrent___observer_a3e04ae68a99e56ea92c1690333b186eb}{Concurrent\_Observer<D,\ C>::updated}}()\ \{}
+\DoxyCodeLine{00125\ \ \ \ \ sem\_wait(\&\_semaphore);}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_is\_detached)\ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00128\ \ \ \ \ \}}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>\mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}}.remove();}
+\DoxyCodeLine{00130\ \}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \textcolor{comment}{//\ Specification\ for\ when\ Condition\ =\ void}}
+\DoxyCodeLine{00133\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ D>}
+\DoxyCodeLine{00134\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_concurrent___observer}{Concurrent\_Observer}}<D,\ void>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{class_conditional___data___observer}{Conditional\_Data\_Observer}}<D,\ void>\ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_concurrent___observed}{Concurrent\_Observed}}<D,\ void>;}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ D\ \mbox{\hyperlink{class_concurrent___observer_a20cca23de0ab1069fb5894d2240a8f71}{Observed\_Data}};}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_concurrent___observed}{Concurrent\_Observed<D,\ void>}}\ \mbox{\hyperlink{class_concurrent___observer_a468eb5233f5c956182c62addc2de0a2f}{Observed}};}
+\DoxyCodeLine{00140\ \ \ \ \ }
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_concurrent___observer_a97e91bd686c32f17f73d971b29fbf835}{Concurrent\_Observer}}()\ \{\ sem\_init(\&\_semaphore,\ 0,\ 0);\ \};}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_concurrent___observer_a111935d37fa6937b34b93969d86cd064}{\string~Concurrent\_Observer}}()\ \{\ sem\_destroy(\&\_semaphore);\ \};}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_concurrent___observer_a44a610e26d760bd97bbfbdc90ca5cf2c}{update}}(D*\ d)\ \{}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>\mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}}.insert(d);}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ sem\_post(\&\_semaphore);}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ D*\ \mbox{\hyperlink{class_concurrent___observer_a3e04ae68a99e56ea92c1690333b186eb}{updated}}()\ \{}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ sem\_wait(\&\_semaphore);}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>\mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}}.remove();}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00153\ \ \ \ \ }
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ sem\_t\ \_semaphore;}
+\DoxyCodeLine{00156\ \};}
+\DoxyCodeLine{00157\ \textcolor{comment}{/*******************************************************************************/}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ OBSERVER\_H}}
+
+\end{DoxyCode}

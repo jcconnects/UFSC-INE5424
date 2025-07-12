@@ -1,0 +1,130 @@
+\doxysection{Unit\+AData Struct Reference}
+\hypertarget{struct_unit_a_data}{}\label{struct_unit_a_data}\index{UnitAData@{UnitAData}}
+
+
+Data structure for UNIT\+\_\+A components.  
+
+
+
+
+{\ttfamily \#include $<$unit\+\_\+a\+\_\+data.\+hpp$>$}
+
+Inheritance diagram for Unit\+AData\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{struct_unit_a_data}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{struct_unit_a_data_ac2a90d43bbb5072eec6de17446e93e30}{Unit\+AData}} ()
+\begin{DoxyCompactList}\small\item\em Constructor initializes random number generation and consumer state. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_unit_a_data_a91ee97e27506ce71f166d4245e32f3e0}{reset\+\_\+consumer\+\_\+state}} ()
+\begin{DoxyCompactList}\small\item\em Reset consumer state for testing purposes. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_unit_a_data_a4705a9e53faf5a1d92679fd89cd1da12}{update\+\_\+range}} (float min\+\_\+val, float max\+\_\+val)
+\begin{DoxyCompactList}\small\item\em Update the random number generation range. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{struct_component_data}{Component\+Data}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual \mbox{\hyperlink{struct_component_data_a9d2f13c283f7f17eee8f4283c04f519d}{\texorpdfstring{$\sim$}{\string~}\+Component\+Data}} ()=default
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::random\+\_\+device \mbox{\hyperlink{struct_unit_a_data_af2a2a9392f71477cb85a3783fb64e5c4}{rd}}
+\item 
+std\+::mt19937 \mbox{\hyperlink{struct_unit_a_data_a8228626c7602b7e28125aedb89b3da80}{gen}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution$<$ float $>$ \mbox{\hyperlink{struct_unit_a_data_abf781a63fc85800597bf8a1f1212b35a}{dist}}
+\item 
+float \mbox{\hyperlink{struct_unit_a_data_ac09f6191a5caf0e7c6daa709281e0b62}{last\+\_\+received\+\_\+value}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Data structure for UNIT\+\_\+A components. 
+
+Following EPOS Smart\+Data principles, this structure contains all the data needed for both \doxylink{struct_basic_producer_a}{Basic\+ProducerA} and \doxylink{struct_basic_consumer_a}{Basic\+ConsumerA} functionality. Replaces inheritance-\/based data storage with pure composition. 
+
+\label{doc-constructors}
+\Hypertarget{struct_unit_a_data_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{struct_unit_a_data_ac2a90d43bbb5072eec6de17446e93e30}\index{UnitAData@{UnitAData}!UnitAData@{UnitAData}}
+\index{UnitAData@{UnitAData}!UnitAData@{UnitAData}}
+\doxysubsubsection{\texorpdfstring{UnitAData()}{UnitAData()}}
+{\footnotesize\ttfamily \label{struct_unit_a_data_ac2a90d43bbb5072eec6de17446e93e30} 
+Unit\+AData\+::\+Unit\+AData (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Constructor initializes random number generation and consumer state. 
+
+Sets up the same random distribution as \doxylink{struct_basic_producer_a}{Basic\+ProducerA} (0.\+0f to 100.\+0f) and initializes consumer tracking variables. 
+
+\label{doc-func-members}
+\Hypertarget{struct_unit_a_data_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{struct_unit_a_data_a91ee97e27506ce71f166d4245e32f3e0}\index{UnitAData@{UnitAData}!reset\_consumer\_state@{reset\_consumer\_state}}
+\index{reset\_consumer\_state@{reset\_consumer\_state}!UnitAData@{UnitAData}}
+\doxysubsubsection{\texorpdfstring{reset\_consumer\_state()}{reset\_consumer\_state()}}
+{\footnotesize\ttfamily \label{struct_unit_a_data_a91ee97e27506ce71f166d4245e32f3e0} 
+void Unit\+AData\+::reset\+\_\+consumer\+\_\+state (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Reset consumer state for testing purposes. 
+
+\Hypertarget{struct_unit_a_data_a4705a9e53faf5a1d92679fd89cd1da12}\index{UnitAData@{UnitAData}!update\_range@{update\_range}}
+\index{update\_range@{update\_range}!UnitAData@{UnitAData}}
+\doxysubsubsection{\texorpdfstring{update\_range()}{update\_range()}}
+{\footnotesize\ttfamily \label{struct_unit_a_data_a4705a9e53faf5a1d92679fd89cd1da12} 
+void Unit\+AData\+::update\+\_\+range (\begin{DoxyParamCaption}\item[{float}]{min\+\_\+val}{, }\item[{float}]{max\+\_\+val}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update the random number generation range. 
+
+Allows dynamic reconfiguration of the value generation range. Useful for testing different scenarios or runtime configuration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em min\+\_\+val} & New minimum value \\
+\hline
+{\em max\+\_\+val} & New maximum value \\
+\hline
+\end{DoxyParams}
+
+
+\label{doc-variable-members}
+\Hypertarget{struct_unit_a_data_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{struct_unit_a_data_abf781a63fc85800597bf8a1f1212b35a}\index{UnitAData@{UnitAData}!dist@{dist}}
+\index{dist@{dist}!UnitAData@{UnitAData}}
+\doxysubsubsection{\texorpdfstring{dist}{dist}}
+{\footnotesize\ttfamily \label{struct_unit_a_data_abf781a63fc85800597bf8a1f1212b35a} 
+std\+::uniform\+\_\+real\+\_\+distribution$<$float$>$ Unit\+AData\+::dist}
+
+\Hypertarget{struct_unit_a_data_a8228626c7602b7e28125aedb89b3da80}\index{UnitAData@{UnitAData}!gen@{gen}}
+\index{gen@{gen}!UnitAData@{UnitAData}}
+\doxysubsubsection{\texorpdfstring{gen}{gen}}
+{\footnotesize\ttfamily \label{struct_unit_a_data_a8228626c7602b7e28125aedb89b3da80} 
+std\+::mt19937 Unit\+AData\+::gen}
+
+\Hypertarget{struct_unit_a_data_ac09f6191a5caf0e7c6daa709281e0b62}\index{UnitAData@{UnitAData}!last\_received\_value@{last\_received\_value}}
+\index{last\_received\_value@{last\_received\_value}!UnitAData@{UnitAData}}
+\doxysubsubsection{\texorpdfstring{last\_received\_value}{last\_received\_value}}
+{\footnotesize\ttfamily \label{struct_unit_a_data_ac09f6191a5caf0e7c6daa709281e0b62} 
+float Unit\+AData\+::last\+\_\+received\+\_\+value}
+
+\Hypertarget{struct_unit_a_data_af2a2a9392f71477cb85a3783fb64e5c4}\index{UnitAData@{UnitAData}!rd@{rd}}
+\index{rd@{rd}!UnitAData@{UnitAData}}
+\doxysubsubsection{\texorpdfstring{rd}{rd}}
+{\footnotesize\ttfamily \label{struct_unit_a_data_af2a2a9392f71477cb85a3783fb64e5c4} 
+std\+::random\+\_\+device Unit\+AData\+::rd}
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/app/components/\mbox{\hyperlink{unit__a__data_8hpp}{unit\+\_\+a\+\_\+data.\+hpp}}\end{DoxyCompactItemize}

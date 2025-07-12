@@ -1,0 +1,153 @@
+\doxysection{Debug Class Reference}
+\hypertarget{class_debug}{}\label{class_debug}\index{Debug@{Debug}}
+
+
+{\ttfamily \#include $<$debug.\+h$>$}
+
+Inheritance diagram for Debug\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_debug}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_debug_1_1_begl}{Begl}}
+\item 
+struct \mbox{\hyperlink{struct_debug_1_1_err}{Err}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_debug_a5b453c195c4cfffed2702c3330f53a64}{Debug}} ()
+\item 
+\mbox{\hyperlink{class_debug_a911a84a0f56b770724e09a049399dc30}{\texorpdfstring{$\sim$}{\string~}\+Debug}} ()
+\item 
+{\footnotesize template$<$typename T$>$ }\\\mbox{\hyperlink{class_debug}{Debug}} \& \mbox{\hyperlink{class_debug_a94f15514e075a0c98064ffe0b1796b09}{operator$<$$<$}} (T p)
+\item 
+\mbox{\hyperlink{class_debug}{Debug}} \& \mbox{\hyperlink{class_debug_abd54b536f00fa5cdfc71354cb204aa74}{operator$<$$<$}} (const \mbox{\hyperlink{struct_debug_1_1_begl}{Begl}} \&\mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{begl}})
+\item 
+\mbox{\hyperlink{class_debug}{Debug}} \& \mbox{\hyperlink{class_debug_a74fa809fe500f5a29c0c0a0b29785412}{operator$<$$<$}} (const \mbox{\hyperlink{struct_debug_1_1_err}{Err}} \&err)
+\item 
+\mbox{\hyperlink{class_debug}{Debug}} \& \mbox{\hyperlink{class_debug_ab7ad7ae17b0b6a2f9b900b3a216da0f8}{operator$<$$<$}} (const char \texorpdfstring{$\ast$}{*}str)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \mbox{\hyperlink{class_debug_a9bfe570886f0f6ab505ad6b23f86b5e9}{set\+\_\+log\+\_\+file}} (const std\+::string \&filename)
+\item 
+static void \mbox{\hyperlink{class_debug_aa8bcebc197197417abe10613ca589842}{close\+\_\+log\+\_\+file}} ()
+\item 
+static \mbox{\hyperlink{class_debug}{Debug}} \& \mbox{\hyperlink{class_debug_a70964d17e1daca55292dc58ba4b9514c}{instance}} ()
+\item 
+static void \mbox{\hyperlink{class_debug_a78d150c839996e50479cbb56fa7e6e41}{init}} ()
+\item 
+static void \mbox{\hyperlink{class_debug_a327c8ca24e6252b74bd7646ce47ae625}{cleanup}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{struct_debug_1_1_begl}{Begl}} \mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{begl}}
+\item 
+static \mbox{\hyperlink{struct_debug_1_1_err}{Err}} \mbox{\hyperlink{class_debug_a3dd23d53e41d133cb0e6c08c9269e935}{error}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-constructors}
+\Hypertarget{class_debug_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_debug_a5b453c195c4cfffed2702c3330f53a64}\index{Debug@{Debug}!Debug@{Debug}}
+\index{Debug@{Debug}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{Debug()}{Debug()}}
+{\footnotesize\ttfamily \label{class_debug_a5b453c195c4cfffed2702c3330f53a64} 
+Debug\+::\+Debug (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_debug_a911a84a0f56b770724e09a049399dc30}\index{Debug@{Debug}!````~Debug@{\texorpdfstring{$\sim$}{\string~}Debug}}
+\index{````~Debug@{\texorpdfstring{$\sim$}{\string~}Debug}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Debug()}{\string~Debug()}}
+{\footnotesize\ttfamily \label{class_debug_a911a84a0f56b770724e09a049399dc30} 
+Debug\+::\texorpdfstring{$\sim$}{\string~}\+Debug (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_debug_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_debug_a327c8ca24e6252b74bd7646ce47ae625}\index{Debug@{Debug}!cleanup@{cleanup}}
+\index{cleanup@{cleanup}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{cleanup()}{cleanup()}}
+{\footnotesize\ttfamily \label{class_debug_a327c8ca24e6252b74bd7646ce47ae625} 
+void Debug\+::cleanup (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{class_debug_aa8bcebc197197417abe10613ca589842}\index{Debug@{Debug}!close\_log\_file@{close\_log\_file}}
+\index{close\_log\_file@{close\_log\_file}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{close\_log\_file()}{close\_log\_file()}}
+{\footnotesize\ttfamily \label{class_debug_aa8bcebc197197417abe10613ca589842} 
+void Debug\+::close\+\_\+log\+\_\+file (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{class_debug_a78d150c839996e50479cbb56fa7e6e41}\index{Debug@{Debug}!init@{init}}
+\index{init@{init}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily \label{class_debug_a78d150c839996e50479cbb56fa7e6e41} 
+void Debug\+::init (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{class_debug_a70964d17e1daca55292dc58ba4b9514c}\index{Debug@{Debug}!instance@{instance}}
+\index{instance@{instance}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{instance()}{instance()}}
+{\footnotesize\ttfamily \label{class_debug_a70964d17e1daca55292dc58ba4b9514c} 
+\mbox{\hyperlink{class_debug}{Debug}} \& Debug\+::instance (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{class_debug_abd54b536f00fa5cdfc71354cb204aa74}\index{Debug@{Debug}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{operator$<$$<$()}{operator<<()}\hspace{0.1cm}{\footnotesize\ttfamily [1/4]}}
+{\footnotesize\ttfamily \label{class_debug_abd54b536f00fa5cdfc71354cb204aa74} 
+\mbox{\hyperlink{class_debug}{Debug}} \& Debug\+::operator$<$$<$ (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{struct_debug_1_1_begl}{Begl}} \&}]{begl}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_debug_ab7ad7ae17b0b6a2f9b900b3a216da0f8}\index{Debug@{Debug}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{operator$<$$<$()}{operator<<()}\hspace{0.1cm}{\footnotesize\ttfamily [2/4]}}
+{\footnotesize\ttfamily \label{class_debug_ab7ad7ae17b0b6a2f9b900b3a216da0f8} 
+\mbox{\hyperlink{class_debug}{Debug}} \& Debug\+::operator$<$$<$ (\begin{DoxyParamCaption}\item[{const char \texorpdfstring{$\ast$}{*}}]{str}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_debug_a74fa809fe500f5a29c0c0a0b29785412}\index{Debug@{Debug}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{operator$<$$<$()}{operator<<()}\hspace{0.1cm}{\footnotesize\ttfamily [3/4]}}
+{\footnotesize\ttfamily \label{class_debug_a74fa809fe500f5a29c0c0a0b29785412} 
+\mbox{\hyperlink{class_debug}{Debug}} \& Debug\+::operator$<$$<$ (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{struct_debug_1_1_err}{Err}} \&}]{err}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_debug_a94f15514e075a0c98064ffe0b1796b09}\index{Debug@{Debug}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{operator$<$$<$()}{operator<<()}\hspace{0.1cm}{\footnotesize\ttfamily [4/4]}}
+{\footnotesize\ttfamily \label{class_debug_a94f15514e075a0c98064ffe0b1796b09} 
+template$<$typename T$>$ \\
+\mbox{\hyperlink{class_debug}{Debug}} \& Debug\+::operator$<$$<$ (\begin{DoxyParamCaption}\item[{T}]{p}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_debug_a9bfe570886f0f6ab505ad6b23f86b5e9}\index{Debug@{Debug}!set\_log\_file@{set\_log\_file}}
+\index{set\_log\_file@{set\_log\_file}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{set\_log\_file()}{set\_log\_file()}}
+{\footnotesize\ttfamily \label{class_debug_a9bfe570886f0f6ab505ad6b23f86b5e9} 
+void Debug\+::set\+\_\+log\+\_\+file (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{filename}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+\label{doc-variable-members}
+\Hypertarget{class_debug_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_debug_aa57266a1575244047fa9f1cf49e6b065}\index{Debug@{Debug}!begl@{begl}}
+\index{begl@{begl}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{begl}{begl}}
+{\footnotesize\ttfamily \label{class_debug_aa57266a1575244047fa9f1cf49e6b065} 
+\mbox{\hyperlink{struct_debug_1_1_begl}{Begl}} Debug\+::begl\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+\Hypertarget{class_debug_a3dd23d53e41d133cb0e6c08c9269e935}\index{Debug@{Debug}!error@{error}}
+\index{error@{error}!Debug@{Debug}}
+\doxysubsubsection{\texorpdfstring{error}{error}}
+{\footnotesize\ttfamily \label{class_debug_a3dd23d53e41d133cb0e6c08c9269e935} 
+\mbox{\hyperlink{struct_debug_1_1_err}{Err}} Debug\+::error\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/util/\mbox{\hyperlink{debug_8h}{debug.\+h}}\end{DoxyCompactItemize}

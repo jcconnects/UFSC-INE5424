@@ -1,0 +1,79 @@
+\doxysection{include/api/network/ethernet.h File Reference}
+\hypertarget{ethernet_8h}{}\label{ethernet_8h}\index{include/api/network/ethernet.h@{include/api/network/ethernet.h}}
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$sstream$>$}\newline
+{\ttfamily \#include $<$iomanip$>$}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_ethernet}{Ethernet}}
+\item 
+struct \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}}
+\item 
+struct \mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet\+::\+Frame}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{ethernet_8h_a0aff0182a6568f8a9789aae0310566f0}{operator==}} (const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&a, const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&b)
+\item 
+bool \mbox{\hyperlink{ethernet_8h_a0c746c5b64d97594d9226b8c81960692}{operator!=}} (const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&a, const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&b)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+Address \mbox{\hyperlink{ethernet_8h_ae9e64022f058d62d91908bab02c491ff}{dst}}
+\item 
+Address \mbox{\hyperlink{ethernet_8h_a5b03b18b26c1245af9d4a1dab1a1dc37}{src}}
+\item 
+\mbox{\hyperlink{class_protocol}{Protocol}} \mbox{\hyperlink{ethernet_8h_a238bf641c59c4900e20286010351f46e}{prot}}
+\item 
+std\+::uint8\+\_\+t \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}} \mbox{[}MTU\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{ethernet_8h_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{ethernet_8h_a0c746c5b64d97594d9226b8c81960692}\index{ethernet.h@{ethernet.h}!operator"!=@{operator"!=}}
+\index{operator"!=@{operator"!=}!ethernet.h@{ethernet.h}}
+\doxysubsubsection{\texorpdfstring{operator"!=()}{operator!=()}}
+{\footnotesize\ttfamily \label{ethernet_8h_a0c746c5b64d97594d9226b8c81960692} 
+bool operator!= (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&}]{a}{, }\item[{const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&}]{b}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{ethernet_8h_a0aff0182a6568f8a9789aae0310566f0}\index{ethernet.h@{ethernet.h}!operator==@{operator==}}
+\index{operator==@{operator==}!ethernet.h@{ethernet.h}}
+\doxysubsubsection{\texorpdfstring{operator==()}{operator==()}}
+{\footnotesize\ttfamily \label{ethernet_8h_a0aff0182a6568f8a9789aae0310566f0} 
+bool operator== (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&}]{a}{, }\item[{const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&}]{b}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-var-members}
+\Hypertarget{ethernet_8h_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{ethernet_8h_ae9e64022f058d62d91908bab02c491ff}\index{ethernet.h@{ethernet.h}!dst@{dst}}
+\index{dst@{dst}!ethernet.h@{ethernet.h}}
+\doxysubsubsection{\texorpdfstring{dst}{dst}}
+{\footnotesize\ttfamily \label{ethernet_8h_ae9e64022f058d62d91908bab02c491ff} 
+Address dst}
+
+\Hypertarget{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}\index{ethernet.h@{ethernet.h}!payload@{payload}}
+\index{payload@{payload}!ethernet.h@{ethernet.h}}
+\doxysubsubsection{\texorpdfstring{payload}{payload}}
+{\footnotesize\ttfamily \label{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a} 
+std\+::uint8\+\_\+t payload\mbox{[}MTU\mbox{]}}
+
+\Hypertarget{ethernet_8h_a238bf641c59c4900e20286010351f46e}\index{ethernet.h@{ethernet.h}!prot@{prot}}
+\index{prot@{prot}!ethernet.h@{ethernet.h}}
+\doxysubsubsection{\texorpdfstring{prot}{prot}}
+{\footnotesize\ttfamily \label{ethernet_8h_a238bf641c59c4900e20286010351f46e} 
+\mbox{\hyperlink{class_protocol}{Protocol}} prot}
+
+\Hypertarget{ethernet_8h_a5b03b18b26c1245af9d4a1dab1a1dc37}\index{ethernet.h@{ethernet.h}!src@{src}}
+\index{src@{src}!ethernet.h@{ethernet.h}}
+\doxysubsubsection{\texorpdfstring{src}{src}}
+{\footnotesize\ttfamily \label{ethernet_8h_a5b03b18b26c1245af9d4a1dab1a1dc37} 
+Address src}
+

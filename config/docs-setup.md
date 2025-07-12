@@ -55,7 +55,7 @@ The automated workflow:
 ### Configuration Files
 
 - **`Doxyfile`**: Main Doxygen configuration
-- **`doc/footer.html`**: Custom footer with GitHub links
+- **`doc/assets/footer.html`**: Custom footer with GitHub links
 - **`doc/.nojekyll`**: Tells GitHub Pages to serve files as-is (not process with Jekyll)
 
 ### Key Features Enabled
@@ -70,7 +70,7 @@ The automated workflow:
 
 ### Modify Footer Links
 
-Edit `doc/footer.html` to change:
+Edit `doc/assets/footer.html` to change:
 - Repository URL
 - Issue tracker link
 - Additional navigation links

@@ -1,0 +1,83 @@
+\doxysection{include/app/components/basic\+\_\+consumer\+\_\+a\+\_\+factory.hpp File Reference}
+\hypertarget{basic__consumer__a__factory_8hpp}{}\label{basic__consumer__a__factory_8hpp}\index{include/app/components/basic\_consumer\_a\_factory.hpp@{include/app/components/basic\_consumer\_a\_factory.hpp}}
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include "{}api/framework/agent.\+h"{}}\newline
+{\ttfamily \#include "{}../../api/framework/component\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}unit\+\_\+a\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}unit\+\_\+a\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../datatypes.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{basic__consumer__a__factory_8hpp_a2402085b452474be73365ef22b298c11}{create\+\_\+basic\+\_\+consumer\+\_\+a}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, const std\+::string \&name="{}Basic\+Consumer\+A"{})
+\begin{DoxyCompactList}\small\item\em Creates a \doxylink{struct_basic_consumer_a}{Basic\+ConsumerA} agent using function-\/based composition. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{basic__consumer__a__factory_8hpp_a46c764934ef1842f8ef8999d68c4214e}{create\+\_\+basic\+\_\+consumer\+\_\+a\+\_\+with\+\_\+period}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent\+::\+Microseconds}} period=\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent\+::\+Microseconds}}(1000000), const std\+::string \&name="{}Basic\+Consumer\+A"{})
+\begin{DoxyCompactList}\small\item\em Convenience function to create \doxylink{struct_basic_consumer_a}{Basic\+ConsumerA} and start consuming. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{basic__consumer__a__factory_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{basic__consumer__a__factory_8hpp_a2402085b452474be73365ef22b298c11}\index{basic\_consumer\_a\_factory.hpp@{basic\_consumer\_a\_factory.hpp}!create\_basic\_consumer\_a@{create\_basic\_consumer\_a}}
+\index{create\_basic\_consumer\_a@{create\_basic\_consumer\_a}!basic\_consumer\_a\_factory.hpp@{basic\_consumer\_a\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_basic\_consumer\_a()}{create\_basic\_consumer\_a()}}
+{\footnotesize\ttfamily \label{basic__consumer__a__factory_8hpp_a2402085b452474be73365ef22b298c11} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+basic\+\_\+consumer\+\_\+a (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}BasicConsumerA"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a \doxylink{struct_basic_consumer_a}{Basic\+ConsumerA} agent using function-\/based composition. 
+
+Replaces the inheritance-\/based \doxylink{struct_basic_consumer_a}{Basic\+ConsumerA} class with EPOS Smart\+Data principles. Eliminates vtable race conditions during destruction by using function pointers instead of virtual methods.
+
+This factory function creates a complete \doxylink{class_agent}{Agent} configured as a consumer for UNIT\+\_\+A data, ready to receive and process RESPONSE messages.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Basic\+Consumer\+A"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} ready for operation 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null or name is empty \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{basic__consumer__a__factory_8hpp_a46c764934ef1842f8ef8999d68c4214e}\index{basic\_consumer\_a\_factory.hpp@{basic\_consumer\_a\_factory.hpp}!create\_basic\_consumer\_a\_with\_period@{create\_basic\_consumer\_a\_with\_period}}
+\index{create\_basic\_consumer\_a\_with\_period@{create\_basic\_consumer\_a\_with\_period}!basic\_consumer\_a\_factory.hpp@{basic\_consumer\_a\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_basic\_consumer\_a\_with\_period()}{create\_basic\_consumer\_a\_with\_period()}}
+{\footnotesize\ttfamily \label{basic__consumer__a__factory_8hpp_a46c764934ef1842f8ef8999d68c4214e} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+basic\+\_\+consumer\+\_\+a\+\_\+with\+\_\+period (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent\+::\+Microseconds}}}]{period}{ = {\ttfamily \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent\+::\+Microseconds}}(1000000)}, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}BasicConsumerA"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Convenience function to create \doxylink{struct_basic_consumer_a}{Basic\+ConsumerA} and start consuming. 
+
+Creates a \doxylink{struct_basic_consumer_a}{Basic\+ConsumerA} agent and immediately starts periodic interest for the specified period. Equivalent to the original start\+\_\+consuming() method.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em period} & Desired response period from producers (default\+: 1 second) \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Basic\+Consumer\+A"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} with periodic interest started 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null or name is empty \\
+\hline
+\end{DoxyExceptions}

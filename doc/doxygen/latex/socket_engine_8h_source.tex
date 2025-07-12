@@ -1,0 +1,358 @@
+\doxysection{socket\+Engine.\+h}
+\hypertarget{socket_engine_8h_source}{}\label{socket_engine_8h_source}\index{include/api/network/socketEngine.h@{include/api/network/socketEngine.h}}
+\mbox{\hyperlink{socket_engine_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ SOCKETENGINE\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ SOCKETENGINE\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cerrno>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <unistd.h>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <sys/types.h>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <sys/socket.h>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <sys/epoll.h>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <sys/eventfd.h>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <netinet/in.h>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <linux/if\_packet.h>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <net/ethernet.h>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <net/if.h>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <fcntl.h>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <sys/ioctl.h>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <pthread.h>}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <stdio.h>}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ethernet_8h}{ethernet.h}}"{}}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{traits_8h}{api/traits.h}}"{}}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_socket_engine_a797adbf4ef594d984448c3ed116bda2e}{SocketEngine}}\{}
+\DoxyCodeLine{00028\ \ \ \ \ }
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \mbox{\hyperlink{class_socket_engine_ab09fbcacb0e90ee39047b30037ff8ee6}{INTERFACE}}()\ \{\ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_traits}{Traits<SocketEngine>::INTERFACE\_NAME}}();\ \}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_socket_engine_a797adbf4ef594d984448c3ed116bda2e}{SocketEngine}}();}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \mbox{\hyperlink{class_socket_engine_a0c7d3e6612d76e2d49ef2954d3d317e8}{\string~SocketEngine}}();}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_socket_engine_af47f2634e12c58bb5836ef7eac74cbec}{start}}();}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_socket_engine_adadb5f685a08e20862c1807b9a29cc02}{stop}}();}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_socket_engine_a2dc521686d479336a9a42a78d0945d91}{running}}();}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_socket_engine_a191e7364b2bbe08efd7d6c2e47505daf}{send}}(\mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet::Frame}}*\ frame,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size);}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{class_socket_engine_a8e8dd03b26c7f2663d296588b1cf5f78}{run}}(\textcolor{keywordtype}{void}*\ arg);}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\&\ \mbox{\hyperlink{class_socket_engine_aabcf3c5a0d0d91b4d8373f77df64d810}{mac\_address}}();}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ setUpSocket();}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ setUpEpoll();}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ This\ is\ the\ new\ epoll\ signal\ handler}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ receive();}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Signal\ handler}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ handle(\mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet::Frame}}*\ frame,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ =\ 0;}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}};}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_socket_engine_a3e62fe8545db3cbc682901d3e8ec70a5}{\_ep\_fd}};}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_socket_engine_a5f6edb79b1a8b186f92d62e7ef66dc7f}{\_if\_index}};}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ \mbox{\hyperlink{class_socket_engine_a0dfdf262299d8de4b58f1661bac1ea39}{\_mac\_address}};}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ \_stop\_ev;}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ pthread\_t\ \_receive\_thread;}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ std::atomic<bool>\ \_running;}
+\DoxyCodeLine{00070\ \};}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{comment}{/**********\ SocketEngine\ Implementation\ **********/}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \mbox{\hyperlink{class_socket_engine_a797adbf4ef594d984448c3ed116bda2e}{SocketEngine::SocketEngine}}()\ :\ \_stop\_ev(eventfd(0,\ EFD\_NONBLOCK)),\ \_running(false)\ \{}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{comment}{//\ Do\ NOT\ auto-\/start\ -\/\ let\ NIC\ control\ when\ to\ start}}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{//\ Initialize\ socket\ and\ epoll\ setup\ only}}
+\DoxyCodeLine{00078\ \ \ \ \ setUpSocket();}
+\DoxyCodeLine{00079\ \ \ \ \ setUpEpoll();}
+\DoxyCodeLine{00080\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ constructor\ completed\ -\/\ ready\ to\ start\(\backslash\)n"{}};}
+\DoxyCodeLine{00081\ \};}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \mbox{\hyperlink{class_socket_engine_a0c7d3e6612d76e2d49ef2954d3d317e8}{SocketEngine::\string~SocketEngine}}()\ \ \{}
+\DoxyCodeLine{00084\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}SocketEngine::\string~SocketEngine()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \mbox{\hyperlink{class_socket_engine_adadb5f685a08e20862c1807b9a29cc02}{stop}}();}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ close(\mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}});}
+\DoxyCodeLine{00089\ \ \ \ \ close(\mbox{\hyperlink{class_socket_engine_a3e62fe8545db3cbc682901d3e8ec70a5}{\_ep\_fd}});}
+\DoxyCodeLine{00090\ \ \ \ \ close(\_stop\_ev);\ \textcolor{comment}{//\ Also\ close\ the\ eventfd}}
+\DoxyCodeLine{00091\ \};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_socket_engine_af47f2634e12c58bb5836ef7eac74cbec}{SocketEngine::start}}()\ \{}
+\DoxyCodeLine{00094\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}SocketEngine::start()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_running.load())\ \{}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ Already\ running,\ ignoring\ start()\ call\(\backslash\)n"{}};}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00099\ \ \ \ \ \}}
+\DoxyCodeLine{00100\ \ \ \ \ }
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{comment}{//\ Socket\ and\ epoll\ are\ already\ set\ up\ in\ constructor}}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{comment}{//\ Just\ start\ the\ receive\ thread}}
+\DoxyCodeLine{00103\ \ \ \ \ \_running.store(\textcolor{keyword}{true},\ std::memory\_order\_release);}
+\DoxyCodeLine{00104\ \ \ \ \ pthread\_create(\&\_receive\_thread,\ \textcolor{keyword}{nullptr},\ \mbox{\hyperlink{class_socket_engine_a8e8dd03b26c7f2663d296588b1cf5f78}{SocketEngine::run}},\ \textcolor{keyword}{this});}
+\DoxyCodeLine{00105\ \ \ \ \ }
+\DoxyCodeLine{00106\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ receive\ thread\ started\(\backslash\)n"{}};}
+\DoxyCodeLine{00107\ \}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_socket_engine_adadb5f685a08e20862c1807b9a29cc02}{SocketEngine::stop}}()\ \{}
+\DoxyCodeLine{00110\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}SocketEngine::stop()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00111\ \ \ \ \ }
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_socket_engine_a2dc521686d479336a9a42a78d0945d91}{running}}())\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \ \ \_running.store(\textcolor{keyword}{false},\ std::memory\_order\_release);}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \ \ \ \ std::uint64\_t\ u\ =\ 1;}
+\DoxyCodeLine{00117\ \ \ \ \ ssize\_t\ bytes\_written;}
+\DoxyCodeLine{00118\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ sending\ stop\ signal\ to\ receive\ thread\(\backslash\)n"{}};}
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keywordflow}{do}\ \{}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ bytes\_written\ =\ write(\_stop\_ev,\ \&u,\ \textcolor{keyword}{sizeof}(u));}
+\DoxyCodeLine{00121\ \ \ \ \ \}\ \textcolor{keywordflow}{while}\ (bytes\_written\ ==\ -\/1\ \&\&\ errno\ ==\ EINTR);\ \textcolor{comment}{//\ Retry\ only\ on\ EINTR}}
+\DoxyCodeLine{00122\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ stop\ signal\ sent\ to\ receive\ thread\(\backslash\)n"{}};}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{comment}{//\ Join\ the\ receive\ thread\ if\ it\ exists}}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_receive\_thread\ !=\ 0)\ \{}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ ret\ =\ pthread\_join(\_receive\_thread,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ ==\ 0)\ \{}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ successfully\ stopped!\(\backslash\)n"{}};}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ failed\ to\ join\ thread\ with\ error:\ "{}}\ <<\ ret\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00132\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ receive\ thread\ is\ not\ running!\(\backslash\)n"{}};}
+\DoxyCodeLine{00134\ \ \ \ \ \}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ sucessfully\ stopped!\(\backslash\)n"{}};}
+\DoxyCodeLine{00137\ \}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \textcolor{keywordtype}{void}\ SocketEngine::setUpSocket()\ \{}
+\DoxyCodeLine{00140\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}SocketEngine::setUpSocket()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{comment}{//\ 1.\ Creating\ socket}}
+\DoxyCodeLine{00143\ \ \ \ \ \mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}}\ =\ socket(AF\_PACKET,\ SOCK\_RAW,\ htons(ETH\_P\_ALL));}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}}\ <\ 0)\ \{}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ perror(\textcolor{stringliteral}{"{}socket"{}});}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Failed\ to\ create\ SocketEngine::\_sock\_fd!"{}});}
+\DoxyCodeLine{00147\ \ \ \ \ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{comment}{//\ 2.\ Making\ it\ non-\/blocking}}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keywordtype}{int}\ flags\ =\ fcntl(\mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}},\ F\_GETFL,\ 0);}
+\DoxyCodeLine{00151\ \ \ \ \ fcntl(\mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}},\ F\_SETFL,\ flags\ |\ O\_NONBLOCK);}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{comment}{//\ 3.\ Getting\ interface\ index}}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keyword}{struct\ }ifreq\ ifr;}
+\DoxyCodeLine{00155\ \ \ \ \ std::memset(\&ifr,\ 0,\ \textcolor{keyword}{sizeof}(ifr));}
+\DoxyCodeLine{00156\ \ \ \ \ std::strncpy(ifr.ifr\_name,\ \mbox{\hyperlink{class_socket_engine_ab09fbcacb0e90ee39047b30037ff8ee6}{INTERFACE}}(),\ IFNAMSIZ);}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ }
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keywordflow}{if}\ (ioctl(\mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}},\ SIOCGIFINDEX,\ \&ifr)\ <\ 0)\ \{}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ perror(\textcolor{stringliteral}{"{}ioctl\ SIOCGIFINDEX"{}});}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Failed\ to\ retrieve\ interface\ index!"{}});}
+\DoxyCodeLine{00162\ \ \ \ \ \}}
+\DoxyCodeLine{00163\ \ \ \ \ }
+\DoxyCodeLine{00164\ \ \ \ \ \mbox{\hyperlink{class_socket_engine_a5f6edb79b1a8b186f92d62e7ef66dc7f}{\_if\_index}}\ =\ ifr.ifr\_ifindex;}
+\DoxyCodeLine{00165\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ if\_index\ setted:\ "{}}\ <<\ \mbox{\hyperlink{class_socket_engine_a5f6edb79b1a8b186f92d62e7ef66dc7f}{\_if\_index}}\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{comment}{//\ 4.\ Getting\ MAC\ address}}
+\DoxyCodeLine{00168\ \ \ \ \ std::memset(\&ifr,\ 0,\ \textcolor{keyword}{sizeof}(ifr));}
+\DoxyCodeLine{00169\ \ \ \ \ std::strncpy(ifr.ifr\_name,\ \mbox{\hyperlink{class_socket_engine_ab09fbcacb0e90ee39047b30037ff8ee6}{INTERFACE}}(),\ IFNAMSIZ);}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{keywordflow}{if}\ (ioctl(\mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}},\ SIOCGIFHWADDR,\ \&ifr)\ <\ 0)\ \{}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ perror(\textcolor{stringliteral}{"{}ioctl\ SIOCGIFHWADDR"{}});}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Failed\ to\ retrieve\ MAC\ address!"{}});}
+\DoxyCodeLine{00174\ \ \ \ \ \}}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \ \ \ \ std::memcpy(\mbox{\hyperlink{class_socket_engine_a0dfdf262299d8de4b58f1661bac1ea39}{\_mac\_address}}.bytes,\ ifr.ifr\_hwaddr.sa\_data,\ \mbox{\hyperlink{class_ethernet_a4782274332fe011d8fd5d14284ff6a16}{Ethernet::MAC\_SIZE}});}
+\DoxyCodeLine{00177\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ MAC\ address\ setted:\ "{}}\ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(\mbox{\hyperlink{class_socket_engine_a0dfdf262299d8de4b58f1661bac1ea39}{\_mac\_address}})\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{comment}{//\ 5.\ Bind\ socket\ to\ interface}}
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keyword}{struct\ }sockaddr\_ll\ sll;}
+\DoxyCodeLine{00181\ \ \ \ \ std::memset(\&sll,\ 0,\ \textcolor{keyword}{sizeof}(sll));}
+\DoxyCodeLine{00182\ \ \ \ \ sll.sll\_family\ =\ AF\_PACKET;}
+\DoxyCodeLine{00183\ \ \ \ \ sll.sll\_protocol\ =\ htons(ETH\_P\_ALL);}
+\DoxyCodeLine{00184\ \ \ \ \ sll.sll\_ifindex\ =\ \mbox{\hyperlink{class_socket_engine_a5f6edb79b1a8b186f92d62e7ef66dc7f}{\_if\_index}};}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{keywordflow}{if}\ (bind(\mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}},\ \textcolor{keyword}{reinterpret\_cast<}struct\ sockaddr*\textcolor{keyword}{>}(\&sll),\ \textcolor{keyword}{sizeof}(sll))\ <\ 0)\ \{}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ perror(\textcolor{stringliteral}{"{}bind"{}});}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Failed\ to\ bind\ SocketEngine::\_sock\_fd\ to\ interface!"{}});}
+\DoxyCodeLine{00189\ \ \ \ \ \}}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ socket\ setted\(\backslash\)n"{}};}
+\DoxyCodeLine{00192\ \}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \textcolor{keywordtype}{void}\ SocketEngine::setUpEpoll()\ \{}
+\DoxyCodeLine{00195\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}SocketEngine::setUpEpoll()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{comment}{//\ 1.\ Creating\ epoll}}
+\DoxyCodeLine{00198\ \ \ \ \ \mbox{\hyperlink{class_socket_engine_a3e62fe8545db3cbc682901d3e8ec70a5}{\_ep\_fd}}\ =\ epoll\_create1(0);}
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{class_socket_engine_a3e62fe8545db3cbc682901d3e8ec70a5}{\_ep\_fd}}\ <\ 0)\ \{}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ perror(\textcolor{stringliteral}{"{}epoll\_create1"{}});}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Failed\ to\ create\ SocketEngine::\_ep\_fd!"{}});}
+\DoxyCodeLine{00202\ \ \ \ \ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{comment}{//\ 2.\ Binding\ socket\ on\ epoll}}
+\DoxyCodeLine{00205\ \ \ \ \ \textcolor{keyword}{struct\ }epoll\_event\ ev;}
+\DoxyCodeLine{00206\ \ \ \ \ ev.events\ =\ EPOLLIN;}
+\DoxyCodeLine{00207\ \ \ \ \ ev.data.fd\ =\ \mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}};}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \ \ \textcolor{keywordflow}{if}\ (epoll\_ctl(\mbox{\hyperlink{class_socket_engine_a3e62fe8545db3cbc682901d3e8ec70a5}{\_ep\_fd}},\ EPOLL\_CTL\_ADD,\ \mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}},\ \&ev)\ <\ 0)\ \{}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ perror(\textcolor{stringliteral}{"{}epoll\_ctl"{}});}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Failed\ to\ bind\ SocketEngine::\_sock\_fd\ to\ epoll!"{}});}
+\DoxyCodeLine{00212\ \ \ \ \ \}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{comment}{//\ 3.\ Binding\ stop\ event\ on\ epoll}}
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{keyword}{struct\ }epoll\_event\ stop\_ev\ =\ \{\};}
+\DoxyCodeLine{00216\ \ \ \ \ stop\_ev.events\ =\ EPOLLIN;}
+\DoxyCodeLine{00217\ \ \ \ \ stop\_ev.data.fd\ =\ \_stop\_ev;}
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{keywordflow}{if}\ (epoll\_ctl(\mbox{\hyperlink{class_socket_engine_a3e62fe8545db3cbc682901d3e8ec70a5}{\_ep\_fd}},\ EPOLL\_CTL\_ADD,\ \_stop\_ev,\ \&stop\_ev)\ <\ 0)\ \{}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ perror(\textcolor{stringliteral}{"{}epoll\_ctl\ stop\_ev"{}});}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Failed\ to\ bind\ SocketEngine::\_stop\_ev\ to\ epoll!"{}});}
+\DoxyCodeLine{00221\ \ \ \ \ \}}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ epoll\ setted\(\backslash\)n"{}};}
+\DoxyCodeLine{00224\ \}}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_socket_engine_a191e7364b2bbe08efd7d6c2e47505daf}{SocketEngine::send}}(\mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet::Frame}}*\ frame,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \{}
+\DoxyCodeLine{00227\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}SocketEngine::send()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{comment}{//\ Check\ for\ null\ frame\ pointer}}
+\DoxyCodeLine{00230\ \ \ \ \ \textcolor{keywordflow}{if}\ (frame\ ==\ \textcolor{keyword}{nullptr})\ \{}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ Attempted\ to\ send\ null\ frame\ pointer\(\backslash\)n"{}};}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00233\ \ \ \ \ \}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{comment}{//\ Check\ for\ invalid\ size}}
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{keywordflow}{if}\ (size\ ==\ 0\ ||\ size\ <\ \mbox{\hyperlink{class_ethernet_a981bc68d59187910a930f8f446e98c2d}{Ethernet::HEADER\_SIZE}})\ \{}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ Attempted\ to\ send\ frame\ with\ invalid\ size:\ "{}}\ <<\ size\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00239\ \ \ \ \ \}}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{comment}{//\ Check\ if\ engine\ is\ running\ before\ sending}}
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_socket_engine_a2dc521686d479336a9a42a78d0945d91}{running}}())\ \{}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ Attempted\ to\ send\ while\ engine\ is\ stopping/stopped\(\backslash\)n"{}};}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00245\ \ \ \ \ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \ \ sockaddr\_ll\ addr\ =\ \{\};}
+\DoxyCodeLine{00248\ \ \ \ \ addr.sll\_family\ \ \ =\ AF\_PACKET;}
+\DoxyCodeLine{00249\ \ \ \ \ addr.sll\_protocol\ =\ htons(frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_af25c7c0d6f820be184952cf9ea7253f5}{prot}});}
+\DoxyCodeLine{00250\ \ \ \ \ addr.sll\_ifindex\ \ =\ \mbox{\hyperlink{class_socket_engine_a5f6edb79b1a8b186f92d62e7ef66dc7f}{\_if\_index}};}
+\DoxyCodeLine{00251\ \ \ \ \ addr.sll\_halen\ \ \ \ =\ \mbox{\hyperlink{class_ethernet_a4782274332fe011d8fd5d14284ff6a16}{Ethernet::MAC\_SIZE}};}
+\DoxyCodeLine{00252\ \ \ \ \ std::memcpy(addr.sll\_addr,\ \mbox{\hyperlink{class_socket_engine_a0dfdf262299d8de4b58f1661bac1ea39}{\_mac\_address}}.bytes,\ \mbox{\hyperlink{class_ethernet_a4782274332fe011d8fd5d14284ff6a16}{Ethernet::MAC\_SIZE}});}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \ \ \ \ \textcolor{comment}{//\ Make\ sure\ protocol\ field\ is\ in\ network\ byte\ order\ before\ sending}}
+\DoxyCodeLine{00255\ \ \ \ \ frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_af25c7c0d6f820be184952cf9ea7253f5}{prot}}\ =\ htons(frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_af25c7c0d6f820be184952cf9ea7253f5}{prot}});}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ sendto(\mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}},\ frame,\ size,\ 0,\ \textcolor{keyword}{reinterpret\_cast<}sockaddr*\textcolor{keyword}{>}(\&addr),\ \textcolor{keyword}{sizeof}(addr));}
+\DoxyCodeLine{00258\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ sendto()\ returned\ value\ "{}}\ <<\ std::to\_string(result)\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00259\ \ \ \ \ }
+\DoxyCodeLine{00260\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00261\ \}}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{class_socket_engine_a8e8dd03b26c7f2663d296588b1cf5f78}{SocketEngine::run}}(\textcolor{keywordtype}{void}*\ arg)\ \ \{}
+\DoxyCodeLine{00264\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [run()]\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \ \ \ \ \mbox{\hyperlink{class_socket_engine_a797adbf4ef594d984448c3ed116bda2e}{SocketEngine}}*\ engine\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{class_socket_engine_a797adbf4ef594d984448c3ed116bda2e}{SocketEngine}}*\textcolor{keyword}{>}(arg);}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{keyword}{struct\ }epoll\_event\ events[1024];}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \ \ \textcolor{keywordflow}{while}\ (engine-\/>\mbox{\hyperlink{class_socket_engine_a2dc521686d479336a9a42a78d0945d91}{running}}())\ \{}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [run()]\ epoll\_wait()\ called\(\backslash\)n"{}};}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ n\ =\ epoll\_wait(engine-\/>\mbox{\hyperlink{class_socket_engine_a3e62fe8545db3cbc682901d3e8ec70a5}{\_ep\_fd}},\ events,\ 1024,\ -\/1);}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [run()]\ epoll\ event\ detected\(\backslash\)n"{}};}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ <\ 0)\ \{}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [run()]\ epoll\_wait()\ returned\ error:\ "{}}\ <<\ errno\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (errno\ ==\ EINTR)\ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [run()]\ epoll\_wait()\ returned\ error:\ "{}}\ <<\ errno\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ perror(\textcolor{stringliteral}{"{}epoll\_wait"{}});}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Iterates\ over\ all\ events\ detected\ by\ epoll}}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ n;\ ++i)\ \{}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [run()]\ epoll\ event\ "{}}\ <<\ i\ <<\ \textcolor{stringliteral}{"{}\ detected\(\backslash\)n"{}};}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ fd\ =\ events[i].data.fd;}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fd\ ==\ engine-\/>\mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}})\ \{}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [run()]\ epoll\ socket\ event\ detected\(\backslash\)n"{}};}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ engine-\/>receive();}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [run()]\ receive()\ called\(\backslash\)n"{}};}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (fd\ ==\ engine-\/>\_stop\_ev)\ \{}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [run()]\ epoll\ stop\ event\ detected\(\backslash\)n"{}};}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint64\_t\ u;}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ read(engine-\/>\_stop\_ev,\ \&u,\ \textcolor{keyword}{sizeof}(u));\ \textcolor{comment}{//\ clears\ eventfd}}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [run()]\ stop\ event\ cleared\(\backslash\)n"{}};}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};\ \textcolor{comment}{//\ Next\ loop,\ thread\ will\ finish}}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00301\ \ \ \ \ \}}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [run()]\ receive\ thread\ terminated!\(\backslash\)n"{}};}
+\DoxyCodeLine{00304\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00305\ \};}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \textcolor{keywordtype}{void}\ SocketEngine::receive()\ \{}
+\DoxyCodeLine{00308\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [receive()]\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \ \ \ \ \textcolor{comment}{//\ Checks\ weather\ engine\ is\ still\ active}}
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_socket_engine_a2dc521686d479336a9a42a78d0945d91}{running}}())\ \{}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [receive()]\ called\ when\ engine\ is\ inactive\(\backslash\)n"{}};}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00314\ \ \ \ \ \}}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \ \ Ethernet::Frame\ frame;}
+\DoxyCodeLine{00317\ \ \ \ \ \textcolor{keyword}{struct\ }sockaddr\_ll\ src\_addr;}
+\DoxyCodeLine{00318\ \ \ \ \ socklen\_t\ addr\_len\ =\ \textcolor{keyword}{sizeof}(src\_addr);}
+\DoxyCodeLine{00319\ \ \ \ \ }
+\DoxyCodeLine{00320\ \ \ \ \ \textcolor{keywordtype}{int}\ bytes\_received\ =\ recvfrom(this-\/>\mbox{\hyperlink{class_socket_engine_a0bc25251483fc9c9c46f12138d43f773}{\_sock\_fd}},\ \&frame,\ \textcolor{keyword}{sizeof}(frame),\ 0,\ \textcolor{keyword}{reinterpret\_cast<}sockaddr*\textcolor{keyword}{>}(\&src\_addr),\ \&addr\_len);}
+\DoxyCodeLine{00321\ \ \ \ \ }
+\DoxyCodeLine{00322\ \ \ \ \ \textcolor{comment}{//\ Checks\ weather\ receive\ was\ sucessful}}
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{keywordflow}{if}\ (bytes\_received\ <\ 0)\ \{}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [receive()]\ no\ data\ received\(\backslash\)n"{}};}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (errno\ !=\ EAGAIN\ \&\&\ errno\ !=\ EWOULDBLOCK)\ \{}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ perror(\textcolor{stringliteral}{"{}recvfrom"{}});}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00329\ \ \ \ \ \}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \ \ \ \ \textcolor{comment}{//\ Checks\ for\ valid\ Ethernet\ frame\ size\ (at\ least\ header\ size)}}
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(bytes\_received)\ <\ \mbox{\hyperlink{class_ethernet_a981bc68d59187910a930f8f446e98c2d}{Ethernet::HEADER\_SIZE}})\ \{}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [receive()]\ Received\ undersized\ frame\ ("{}}\ <<\ bytes\_received\ <<\ \textcolor{stringliteral}{"{}\ bytes)\(\backslash\)n"{}};}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00335\ \ \ \ \ \}}
+\DoxyCodeLine{00336\ \ \ \ \ }
+\DoxyCodeLine{00337\ \ \ \ \ \textcolor{comment}{//\ Convert\ protocol\ from\ network\ to\ host\ byte\ order}}
+\DoxyCodeLine{00338\ \ \ \ \ frame.\mbox{\hyperlink{struct_ethernet_1_1_frame_af25c7c0d6f820be184952cf9ea7253f5}{prot}}\ =\ ntohs(frame.\mbox{\hyperlink{struct_ethernet_1_1_frame_af25c7c0d6f820be184952cf9ea7253f5}{prot}});}
+\DoxyCodeLine{00339\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<SocketEngine>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[SocketEngine]\ [receive()]\ received\ frame:\ \{src\ =\ "{}}\ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(frame.\mbox{\hyperlink{struct_ethernet_1_1_frame_a7f373f17d7e2aba30dec20d33d46005f}{src}})\ <<\ \textcolor{stringliteral}{"{},\ dst\ =\ "{}}\ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(frame.\mbox{\hyperlink{struct_ethernet_1_1_frame_a5b606cb15a216606af19742e6ca45e33}{dst}})\ <<\ \textcolor{stringliteral}{"{},\ prot\ =\ "{}}\ <<\ frame.\mbox{\hyperlink{struct_ethernet_1_1_frame_af25c7c0d6f820be184952cf9ea7253f5}{prot}}\ <<\ \textcolor{stringliteral}{"{},\ size\ =\ "{}}\ <<\ bytes\_received\ <<\ \textcolor{stringliteral}{"{}\}\(\backslash\)n"{}};}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \ \ \ \ this-\/>handle(\&frame,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(bytes\_received));}
+\DoxyCodeLine{00342\ \}}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00344\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_socket_engine_a2dc521686d479336a9a42a78d0945d91}{SocketEngine::running}}()\ \{}
+\DoxyCodeLine{00345\ \ \ \ \ \textcolor{keywordflow}{return}\ \_running.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00346\ \}}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\&\ \mbox{\hyperlink{class_socket_engine_aabcf3c5a0d0d91b4d8373f77df64d810}{SocketEngine::mac\_address}}()\ \{}
+\DoxyCodeLine{00349\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_socket_engine_a0dfdf262299d8de4b58f1661bac1ea39}{\_mac\_address}};}
+\DoxyCodeLine{00350\ \}}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00352\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ SOCKETENGINE\_H}}
+
+\end{DoxyCode}

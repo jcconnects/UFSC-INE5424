@@ -1,0 +1,64 @@
+\doxysection{include/app/components/camera\+\_\+functions.hpp File Reference}
+\hypertarget{camera__functions_8hpp}{}\label{camera__functions_8hpp}\index{include/app/components/camera\_functions.hpp@{include/app/components/camera\_functions.hpp}}
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$thread$>$}\newline
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include $<$algorithm$>$}\newline
+{\ttfamily \#include "{}camera\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/framework/component\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/util/debug.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ \mbox{\hyperlink{camera__functions_8hpp_ab9948fc07180be7663ec16b9ead998f5}{camera\+\_\+producer}} (std\+::uint32\+\_\+t unit, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Producer function for Camera component -\/ generates pixel matrix data. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{camera__functions_8hpp_aa785985e0fd37f906bfd1d3b9882202f}{camera\+\_\+consumer}} (void \texorpdfstring{$\ast$}{*}msg, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Consumer function for Camera component (not used -\/ Camera is producer-\/only) \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{camera__functions_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{camera__functions_8hpp_aa785985e0fd37f906bfd1d3b9882202f}\index{camera\_functions.hpp@{camera\_functions.hpp}!camera\_consumer@{camera\_consumer}}
+\index{camera\_consumer@{camera\_consumer}!camera\_functions.hpp@{camera\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{camera\_consumer()}{camera\_consumer()}}
+{\footnotesize\ttfamily \label{camera__functions_8hpp_aa785985e0fd37f906bfd1d3b9882202f} 
+void camera\+\_\+consumer (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{msg}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Consumer function for Camera component (not used -\/ Camera is producer-\/only) 
+
+Camera components are typically producer-\/only and don\textquotesingle{}t consume data from other components. This function is provided for interface compatibility but performs no operations.
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to the received message (unused) \\
+\hline
+{\em data} & Pointer to \doxylink{struct_camera_data}{Camera\+Data} structure (unused) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{camera__functions_8hpp_ab9948fc07180be7663ec16b9ead998f5}\index{camera\_functions.hpp@{camera\_functions.hpp}!camera\_producer@{camera\_producer}}
+\index{camera\_producer@{camera\_producer}!camera\_functions.hpp@{camera\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{camera\_producer()}{camera\_producer()}}
+{\footnotesize\ttfamily \label{camera__functions_8hpp_ab9948fc07180be7663ec16b9ead998f5} 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ camera\+\_\+producer (\begin{DoxyParamCaption}\item[{std\+::uint32\+\_\+t}]{unit}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Producer function for Camera component -\/ generates pixel matrix data. 
+
+Replaces Camera\+Component\+::get() virtual method with direct function call. Initially simplified to generate EXTERNAL\+\_\+\+PIXEL\+\_\+\+MATRIX data only. Generates realistic pixel matrix data with configurable dimensions and noise patterns. Can be extended to support RGB\+\_\+\+IMAGE, VIDEO\+\_\+\+STREAM, and CAMERA\+\_\+\+METADATA in future iterations.
+
+
+\begin{DoxyParams}{Parameters}
+{\em unit} & The data unit being requested (should be EXTERNAL\+\_\+\+PIXEL\+\_\+\+MATRIX) \\
+\hline
+{\em data} & Pointer to \doxylink{struct_camera_data}{Camera\+Data} structure containing random generators \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Vector containing pixel matrix data (variable size based on image dimensions) 
+\end{DoxyReturn}

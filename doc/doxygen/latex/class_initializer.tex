@@ -1,0 +1,136 @@
+\doxysection{Initializer Class Reference}
+\hypertarget{class_initializer}{}\label{class_initializer}\index{Initializer@{Initializer}}
+
+
+This class initializes the API.  
+
+
+
+
+{\ttfamily \#include $<$initializer.\+h$>$}
+
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef \mbox{\hyperlink{class_n_i_c}{NIC}}$<$ \mbox{\hyperlink{class_socket_engine}{Socket\+Engine}} $>$ \mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\+\_\+T}}
+\item 
+typedef \mbox{\hyperlink{class_protocol}{Protocol}}$<$ \mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\+\_\+T}} $>$ \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Protocol\+\_\+T}}
+\item 
+typedef \mbox{\hyperlink{class_communicator}{Communicator}}$<$ \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Protocol\+\_\+T}} $>$ \mbox{\hyperlink{class_initializer_a580ff83e3e338f95aa4a918980d1cf87}{Communicator\+\_\+T}}
+\item 
+typedef \mbox{\hyperlink{class_communicator_a99cb97795d5a97176898095bd6ab67c6}{Communicator\+\_\+\+T\+::\+Message\+\_\+T}} \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Message}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_initializer_ac5d64bd63f348d61590f90359ad9c1f7}{Initializer}} ()=default
+\item 
+\mbox{\hyperlink{class_initializer_a54f03287c1835b35b11504dc2db050d3}{\texorpdfstring{$\sim$}{\string~}\+Initializer}} ()=default
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\+\_\+T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_initializer_a27529172beb006f4832d0eb1623d8770}{create\+\_\+nic}} ()
+\begin{DoxyCompactList}\small\item\em Creates a network interface abstraction. \end{DoxyCompactList}\item 
+static \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Protocol\+\_\+T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_initializer_ac55c5c287a384a66d4205ed132e4f53c}{create\+\_\+protocol}} (\mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\+\_\+T}} \texorpdfstring{$\ast$}{*}nic)
+\begin{DoxyCompactList}\small\item\em Creates a protocol for system communication. \end{DoxyCompactList}\item 
+static \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Protocol\+\_\+T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_initializer_a752fd13c9138eb0f13bc23db0ccb5a75}{create\+\_\+protocol}} (\mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\+\_\+T}} \texorpdfstring{$\ast$}{*}nic, \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204b}{Protocol\+\_\+\+T\+::\+Entity\+Type}} entity\+\_\+type)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This class initializes the API. 
+
+This class is only responsible for starting the API. It allows you to create a network interface (\doxylink{class_n_i_c}{NIC}) and a protocol, which will be used in the system. The idea is that it is independent of the application in which the developer will use the API. 
+
+\label{doc-typedef-members}
+\Hypertarget{class_initializer_doc-typedef-members}
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_initializer_a580ff83e3e338f95aa4a918980d1cf87}\index{Initializer@{Initializer}!Communicator\_T@{Communicator\_T}}
+\index{Communicator\_T@{Communicator\_T}!Initializer@{Initializer}}
+\doxysubsubsection{\texorpdfstring{Communicator\_T}{Communicator\_T}}
+{\footnotesize\ttfamily \label{class_initializer_a580ff83e3e338f95aa4a918980d1cf87} 
+typedef \mbox{\hyperlink{class_communicator}{Communicator}}$<$\mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Protocol\+\_\+T}}$>$ \mbox{\hyperlink{class_initializer_a580ff83e3e338f95aa4a918980d1cf87}{Initializer\+::\+Communicator\+\_\+T}}}
+
+\Hypertarget{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}\index{Initializer@{Initializer}!Message@{Message}}
+\index{Message@{Message}!Initializer@{Initializer}}
+\doxysubsubsection{\texorpdfstring{Message}{Message}}
+{\footnotesize\ttfamily \label{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7} 
+typedef \mbox{\hyperlink{class_communicator_a99cb97795d5a97176898095bd6ab67c6}{Communicator\+\_\+\+T\+::\+Message\+\_\+T}} \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer\+::\+Message}}}
+
+\Hypertarget{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}\index{Initializer@{Initializer}!NIC\_T@{NIC\_T}}
+\index{NIC\_T@{NIC\_T}!Initializer@{Initializer}}
+\doxysubsubsection{\texorpdfstring{NIC\_T}{NIC\_T}}
+{\footnotesize\ttfamily \label{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba} 
+typedef \mbox{\hyperlink{class_n_i_c}{NIC}}$<$\mbox{\hyperlink{class_socket_engine}{Socket\+Engine}}$>$ \mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{Initializer\+::\+NIC\+\_\+T}}}
+
+\Hypertarget{class_initializer_a29c887c2c13b4ecbf189222a43a59574}\index{Initializer@{Initializer}!Protocol\_T@{Protocol\_T}}
+\index{Protocol\_T@{Protocol\_T}!Initializer@{Initializer}}
+\doxysubsubsection{\texorpdfstring{Protocol\_T}{Protocol\_T}}
+{\footnotesize\ttfamily \label{class_initializer_a29c887c2c13b4ecbf189222a43a59574} 
+typedef \mbox{\hyperlink{class_protocol}{Protocol}}$<$\mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\+\_\+T}}$>$ \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Initializer\+::\+Protocol\+\_\+T}}}
+
+
+
+\label{doc-constructors}
+\Hypertarget{class_initializer_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_initializer_ac5d64bd63f348d61590f90359ad9c1f7}\index{Initializer@{Initializer}!Initializer@{Initializer}}
+\index{Initializer@{Initializer}!Initializer@{Initializer}}
+\doxysubsubsection{\texorpdfstring{Initializer()}{Initializer()}}
+{\footnotesize\ttfamily \label{class_initializer_ac5d64bd63f348d61590f90359ad9c1f7} 
+Initializer\+::\+Initializer (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+\Hypertarget{class_initializer_a54f03287c1835b35b11504dc2db050d3}\index{Initializer@{Initializer}!````~Initializer@{\texorpdfstring{$\sim$}{\string~}Initializer}}
+\index{````~Initializer@{\texorpdfstring{$\sim$}{\string~}Initializer}!Initializer@{Initializer}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Initializer()}{\string~Initializer()}}
+{\footnotesize\ttfamily \label{class_initializer_a54f03287c1835b35b11504dc2db050d3} 
+Initializer\+::\texorpdfstring{$\sim$}{\string~}\+Initializer (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_initializer_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_initializer_a27529172beb006f4832d0eb1623d8770}\index{Initializer@{Initializer}!create\_nic@{create\_nic}}
+\index{create\_nic@{create\_nic}!Initializer@{Initializer}}
+\doxysubsubsection{\texorpdfstring{create\_nic()}{create\_nic()}}
+{\footnotesize\ttfamily \label{class_initializer_a27529172beb006f4832d0eb1623d8770} 
+\mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{Initializer\+::\+NIC\+\_\+T}} \texorpdfstring{$\ast$}{*} Initializer\+::create\+\_\+nic (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+Creates a network interface abstraction. 
+
+\begin{DoxyReturn}{Returns}
+The created \doxylink{class_n_i_c}{NIC} 
+\end{DoxyReturn}
+\Hypertarget{class_initializer_ac55c5c287a384a66d4205ed132e4f53c}\index{Initializer@{Initializer}!create\_protocol@{create\_protocol}}
+\index{create\_protocol@{create\_protocol}!Initializer@{Initializer}}
+\doxysubsubsection{\texorpdfstring{create\_protocol()}{create\_protocol()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_initializer_ac55c5c287a384a66d4205ed132e4f53c} 
+\mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Initializer\+::\+Protocol\+\_\+T}} \texorpdfstring{$\ast$}{*} Initializer\+::create\+\_\+protocol (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\+\_\+T}} \texorpdfstring{$\ast$}{*}}]{nic}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+Creates a protocol for system communication. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em nic} & a previously created network interface\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The created \doxylink{class_protocol}{Protocol}, associated with the network interface passed as a parameter 
+\end{DoxyReturn}
+\Hypertarget{class_initializer_a752fd13c9138eb0f13bc23db0ccb5a75}\index{Initializer@{Initializer}!create\_protocol@{create\_protocol}}
+\index{create\_protocol@{create\_protocol}!Initializer@{Initializer}}
+\doxysubsubsection{\texorpdfstring{create\_protocol()}{create\_protocol()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_initializer_a752fd13c9138eb0f13bc23db0ccb5a75} 
+\mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Initializer\+::\+Protocol\+\_\+T}} \texorpdfstring{$\ast$}{*} Initializer\+::create\+\_\+protocol (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\+\_\+T}} \texorpdfstring{$\ast$}{*}}]{nic}{, }\item[{\mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204b}{Protocol\+\_\+\+T\+::\+Entity\+Type}}}]{entity\+\_\+type}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/network/\mbox{\hyperlink{initializer_8h}{initializer.\+h}}\end{DoxyCompactItemize}

@@ -1,0 +1,513 @@
+\doxysection{nic.\+h}
+\hypertarget{nic_8h_source}{}\label{nic_8h_source}\index{include/api/network/nic.h@{include/api/network/nic.h}}
+\mbox{\hyperlink{nic_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ NIC\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ NIC\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <semaphore.h>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <pthread.h>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <queue>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <time.h>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{traits_8h}{api/traits.h}}"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ethernet_8h}{api/network/ethernet.h}}"{}}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{observer_8h}{api/util/observer.h}}"{}}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{observed_8h}{api/util/observed.h}}"{}}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{buffer_8h}{api/util/buffer.h}}"{}}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{clock_8h}{api/framework/clock.h}}"{}}\ \ \textcolor{comment}{//\ Include\ Clock\ for\ timestamping}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ Foward\ Declaration}}
+\DoxyCodeLine{00023\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_initializer}{Initializer}};}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{comment}{//\ Network\ Interface\ Card\ implementation}}
+\DoxyCodeLine{00026\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00027\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_n_i_c_ae389666d82284320cbb767c3ef613f60}{NIC}}:\ \textcolor{keyword}{public}\ \mbox{\hyperlink{class_ethernet_a360ed49c9cd592de54486f4f2e41f341}{Ethernet}},\ \textcolor{keyword}{public}\ \mbox{\hyperlink{class_conditionally___data___observed_ad30ddf9fb57ef30ba3bb21cc11f3ff7a}{Conditionally\_Data\_Observed}}<Buffer<Ethernet::Frame>,\ Ethernet::Protocol>,\ \textcolor{keyword}{private}\ Engine}
+\DoxyCodeLine{00028\ \{}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_n_i_c_a5d26a0aa56303737c594b42e7cdad905}{Initializer}};}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_n_i_c_a2b5cd2d926d3915e382830312d5061b3}{N\_BUFFERS}}\ =\ \mbox{\hyperlink{struct_traits}{Traits<NIC<Engine>}}>::SEND\_BUFFERS\ +\ \mbox{\hyperlink{struct_traits}{Traits<NIC<Engine>}}>::RECEIVE\_BUFFERS;}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_n_i_c_acc748ecd6ca2d6a5a59310b889ac0666}{MAX\_FRAME\_SIZE}}\ =\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet::Frame}});}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Address}};}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_ethernet_a7192e74f89cf8ff08d4f28c397891f5c}{Ethernet::Protocol}}\ \mbox{\hyperlink{class_n_i_c_a99ca9377e6702fa33fb0eb0757b6b842}{Protocol\_Number}};}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_buffer}{Buffer<Ethernet::Frame>}}\ \mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}};}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_conditional___data___observer}{Conditional\_Data\_Observer<DataBuffer,\ Protocol\_Number>}}\ \mbox{\hyperlink{class_n_i_c_a54efa859705d1f6b050145d3e35fd7b2}{Observer}};}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_conditionally___data___observed_ad30ddf9fb57ef30ba3bb21cc11f3ff7a}{Conditionally\_Data\_Observed<DataBuffer,\ Protocol\_Number>}}\ \mbox{\hyperlink{class_n_i_c_a54d348024710860af2a1234ec07d0e80}{Observed}};}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Statistics\ for\ network\ operations}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_n_i_c_1_1_statistics_ac7f4d1593036b8cbe224001b166e7c55}{Statistics}}\ \{}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ std::atomic<unsigned\ int>\ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_af3675b340ca97756cf0207e6919c75c2}{packets\_sent}};}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ std::atomic<unsigned\ int>\ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_a9a88660cafcbcd46dfe285e28b976222}{packets\_received}};}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \ std::atomic<unsigned\ int>\ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_a3e08f47fbc665482337f7964bc191051}{bytes\_sent}};}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ std::atomic<unsigned\ int>\ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_addb42bb5c5205be328bfbc581e0b0418}{bytes\_received}};}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ std::atomic<unsigned\ int>\ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_a4f38081693b020ed7065935510f3da13}{tx\_drops}};}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ std::atomic<unsigned\ int>\ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_a4d08ca42d5906b4a98924ce9e8dfcda4}{rx\_drops}};}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_ac7f4d1593036b8cbe224001b166e7c55}{Statistics}}()\ :\ }
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_af3675b340ca97756cf0207e6919c75c2}{packets\_sent}}(0),\ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_a9a88660cafcbcd46dfe285e28b976222}{packets\_received}}(0),}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_a3e08f47fbc665482337f7964bc191051}{bytes\_sent}}(0),\ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_addb42bb5c5205be328bfbc581e0b0418}{bytes\_received}}(0),}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_a4f38081693b020ed7065935510f3da13}{tx\_drops}}(0),\ \mbox{\hyperlink{struct_n_i_c_1_1_statistics_a4d08ca42d5906b4a98924ce9e8dfcda4}{rx\_drops}}(0)\ \{\}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_n_i_c_ae389666d82284320cbb767c3ef613f60}{NIC}}();}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_n_i_c_a56ec5ce8cfd85394c3943fb6f67349e4}{\string~NIC}}();}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Send\ a\ pre-\/allocated\ buffer\ with\ packet\ size\ for\ timestamp\ offset\ calculation}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_n_i_c_a39489b9cd3f1b43c18862627bf1869bd}{send}}(\mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}*\ buf,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ packet\_size);}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Legacy\ send\ method\ for\ backward\ compatibility}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_n_i_c_a4587c07cc45efd07cff2dde3a383c612}{send}}(\mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}*\ buf);}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Process\ a\ received\ buffer}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_n_i_c_aae48c0381338a8af6bd2b028043606c0}{receive}}(\mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}*\ buf,\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Address}}*\ \mbox{\hyperlink{ethernet_8h_a5b03b18b26c1245af9d4a1dab1a1dc37}{src}},\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Address}}*\ \mbox{\hyperlink{ethernet_8h_ae9e64022f058d62d91908bab02c491ff}{dst}},\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size);}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Allocate\ a\ buffer\ for\ sending}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}*\ \mbox{\hyperlink{class_n_i_c_a5efaaa7fd14dcc58a722da04de6c3476}{alloc}}(\mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Address}}\ \mbox{\hyperlink{ethernet_8h_ae9e64022f058d62d91908bab02c491ff}{dst}},\ \mbox{\hyperlink{class_n_i_c_a99ca9377e6702fa33fb0eb0757b6b842}{Protocol\_Number}}\ \mbox{\hyperlink{ethernet_8h_a238bf641c59c4900e20286010351f46e}{prot}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Release\ a\ buffer\ after\ use}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_n_i_c_a57c8d3a5d2dbdea5848e0a2dd569470c}{free}}(\mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}*\ buf);}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Get\ the\ local\ address}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Address}}\&\ \mbox{\hyperlink{class_n_i_c_a0523377d78db71cb0f7ef58b45c9de38}{address}}();}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Set\ the\ local\ address}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_n_i_c_ac1663ac4f5ee2e39781d55c96f2706b2}{setAddress}}(\mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Address}}\ \mbox{\hyperlink{class_n_i_c_a0523377d78db71cb0f7ef58b45c9de38}{address}});}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Get\ network\ statistics}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Statistics\&\ \mbox{\hyperlink{class_n_i_c_aa69d2ab0efa6e3507bf3cbedae256b76}{statistics}}();}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_n_i_c_ad549d4849c20a28fdfe66daaf28d1032}{stop}}();}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{class_n_i_c_a50319e6c31e2f433c77b69e05eec7d08}{radius}}();}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_n_i_c_a09b5a806e2708199f31f5b6c12ba7173}{setRadius}}(\textcolor{keywordtype}{double}\ \mbox{\hyperlink{class_n_i_c_a50319e6c31e2f433c77b69e05eec7d08}{radius}});}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Attach/detach\ observers}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ void\ attach(Observer*\ obs,\ Protocol\_Number\ prot);\ //\ inherited}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ void\ detach(Observer*\ obs,\ Protocol\_Number\ prot);\ //\ inherited}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ handle(\mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet::Frame}}*\ frame,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Helper\ method\ to\ fill\ TX\ timestamp\ in\ packet}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ fillTxTimestamp(\mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}*\ buf,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ packet\_size);}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Helper\ method\ to\ log\ latency\ to\ CSV\ file}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ logLatency(std::int64\_t\ latency\_us);}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Address}}\ \_address;}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ Statistics\ \_statistics;}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}\ \_buffer[\mbox{\hyperlink{class_n_i_c_a2b5cd2d926d3915e382830312d5061b3}{N\_BUFFERS}}];}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ std::queue<DataBuffer*>\ \_free\_buffers;}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ std::atomic<bool>\ \_running;}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ sem\_t\ \_buffer\_sem;}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ sem\_t\ \_binary\_sem;}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \_radius;}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ std::ofstream\ \_latency\_csv\_file;}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ running()\ \{\ \textcolor{keywordflow}{return}\ \_running.load(std::memory\_order\_acquire);\ \}}
+\DoxyCodeLine{00115\ \};}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \textcolor{comment}{/***********\ NIC\ Implementation\ ************/}}
+\DoxyCodeLine{00118\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00119\ \mbox{\hyperlink{class_n_i_c_ae389666d82284320cbb767c3ef613f60}{NIC<Engine>::NIC}}()\ :\ \_running(true),\ \_radius(1000.0)\ \{\ \ \textcolor{comment}{//\ Default\ 1000m\ transmission\ radius}}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{comment}{//\ Initialize\ buffers\ FIRST\ -\/\ before\ starting\ Engine}}
+\DoxyCodeLine{00121\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [constructor]\ initializing\ buffers\ and\ semaphores\(\backslash\)n"{}};}
+\DoxyCodeLine{00122\ \ \ \ \ }
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ \mbox{\hyperlink{class_n_i_c_a2b5cd2d926d3915e382830312d5061b3}{N\_BUFFERS}};\ ++i)\ \{}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \_buffer[i]\ =\ \mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}();}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \_free\_buffers.push(\&\_buffer[i]);}
+\DoxyCodeLine{00126\ \ \ \ \ \}}
+\DoxyCodeLine{00127\ \ \ \ \ }
+\DoxyCodeLine{00128\ \ \ \ \ sem\_init(\&\_buffer\_sem,\ 0,\ \mbox{\hyperlink{class_n_i_c_a2b5cd2d926d3915e382830312d5061b3}{N\_BUFFERS}});}
+\DoxyCodeLine{00129\ \ \ \ \ }
+\DoxyCodeLine{00130\ \ \ \ \ sem\_init(\&\_binary\_sem,\ 0,\ 1);}
+\DoxyCodeLine{00131\ \ \ \ \ }
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{comment}{//\ Setting\ default\ address\ -\/\ must\ be\ done\ before\ starting\ Engine}}
+\DoxyCodeLine{00133\ \ \ \ \ \_address\ =\ Engine::mac\_address();}
+\DoxyCodeLine{00134\ \ \ \ \ }
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{comment}{//\ Initialize\ CSV\ file\ for\ latency\ logging}}
+\DoxyCodeLine{00136\ \ \ \ \ \_latency\_csv\_file.open(\textcolor{stringliteral}{"{}nic\_latency.csv"{}},\ std::ios::out\ |\ std::ios::app);}
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_latency\_csv\_file.is\_open())\ \{}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Check\ if\ file\ is\ empty\ (new\ file)\ to\ write\ header}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ std::ifstream\ test\_file(\textcolor{stringliteral}{"{}nic\_latency.csv"{}});}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ test\_file.seekg(0,\ std::ios::end);}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (test\_file.tellg()\ ==\ 0)\ \{}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \_latency\_csv\_file\ <<\ \textcolor{stringliteral}{"{}latency\_us\(\backslash\)n"{}};}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ test\_file.close();}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [constructor]\ CSV\ latency\ log\ file\ opened\(\backslash\)n"{}};}
+\DoxyCodeLine{00146\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [constructor]\ Failed\ to\ open\ CSV\ latency\ log\ file\(\backslash\)n"{}};}
+\DoxyCodeLine{00148\ \ \ \ \ \}}
+\DoxyCodeLine{00149\ \ \ \ \ }
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{comment}{//\ NOW\ it's\ safe\ to\ start\ the\ Engine\ -\/\ all\ NIC\ infrastructure\ is\ ready}}
+\DoxyCodeLine{00151\ \ \ \ \ Engine::start();}
+\DoxyCodeLine{00152\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [constructor]\ NIC\ fully\ initialized\ and\ Engine\ started\ with\ default\ radius\ "{}}\ <<\ \_radius\ <<\ \textcolor{stringliteral}{"{}m\(\backslash\)n"{}};}
+\DoxyCodeLine{00153\ \}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00156\ \mbox{\hyperlink{class_n_i_c_a56ec5ce8cfd85394c3943fb6f67349e4}{NIC<Engine>::\string~NIC}}()\ \{}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{comment}{//\ Destroy\ engine\ first}}
+\DoxyCodeLine{00158\ \ \ \ \ \mbox{\hyperlink{class_n_i_c_ad549d4849c20a28fdfe66daaf28d1032}{stop}}();}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{comment}{//\ Close\ CSV\ file}}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_latency\_csv\_file.is\_open())\ \{}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \_latency\_csv\_file.close();}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [destructor]\ CSV\ latency\ log\ file\ closed\(\backslash\)n"{}};}
+\DoxyCodeLine{00164\ \ \ \ \ \}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \ \ sem\_destroy(\&\_buffer\_sem);}
+\DoxyCodeLine{00167\ \ \ \ \ sem\_destroy(\&\_binary\_sem);}
+\DoxyCodeLine{00168\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [destructor]\ semaphores\ destroyed\(\backslash\)n"{}};}
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{comment}{//\ Engine\ stops\ itself\ on\ its\ own}}
+\DoxyCodeLine{00170\ \}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00173\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_n_i_c_ad549d4849c20a28fdfe66daaf28d1032}{NIC<Engine>::stop}}()\ \{}
+\DoxyCodeLine{00174\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [stop()]\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00175\ \ \ \ \ \_running.store(\textcolor{keyword}{false},\ std::memory\_order\_release);}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keywordtype}{int}\ sem\_value;}
+\DoxyCodeLine{00177\ \ \ \ \ sem\_getvalue(\&\_buffer\_sem,\ \&sem\_value);}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ \mbox{\hyperlink{class_n_i_c_a2b5cd2d926d3915e382830312d5061b3}{N\_BUFFERS}}\ -\/\ sem\_value;\ ++i)\ \{}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ sem\_post(\&\_buffer\_sem);\ \textcolor{comment}{//\ Release\ the\ semaphore\ for\ each\ buffer}}
+\DoxyCodeLine{00180\ \ \ \ \ \}}
+\DoxyCodeLine{00181\ \ \ \ \ Engine::stop();}
+\DoxyCodeLine{00182\ \}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00185\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_n_i_c_a39489b9cd3f1b43c18862627bf1869bd}{NIC<Engine>::send}}(\mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}*\ buf,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ packet\_size)\ \{}
+\DoxyCodeLine{00186\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}NIC<Engine>::send()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordflow}{if}\ (!running())\ \{}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ send\ called\ when\ NIC\ is\ not\ running\ \(\backslash\)n"{}};}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00190\ \ \ \ \ \}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{keywordflow}{if}\ (!buf)\ \{}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ send()\ called\ with\ a\ null\ buffer\(\backslash\)n"{}};}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \_statistics.tx\_drops++;}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00196\ \ \ \ \ \}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{comment}{//\ Fill\ TX\ timestamp\ before\ sending}}
+\DoxyCodeLine{00199\ \ \ \ \ fillTxTimestamp(buf,\ packet\_size);}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ Engine::send(buf-\/>\mbox{\hyperlink{class_buffer_ae4d2252ca9e14b66f1884480627ae6d3}{data}}(),\ buf-\/>\mbox{\hyperlink{class_buffer_a2240a2d73d91c05ba18a3d4083282f62}{size}}());}
+\DoxyCodeLine{00202\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ Engine::send\ returned\ "{}}\ <<\ result\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ <=\ 0)\ \{}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \_statistics.tx\_drops++;}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ result\ =\ 0;}
+\DoxyCodeLine{00207\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \_statistics.packets\_sent++;}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \_statistics.bytes\_sent\ +=\ result;}
+\DoxyCodeLine{00210\ \ \ \ \ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00213\ \}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00216\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_n_i_c_a39489b9cd3f1b43c18862627bf1869bd}{NIC<Engine>::send}}(\mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}*\ buf)\ \{}
+\DoxyCodeLine{00217\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}NIC<Engine>::send()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ \ \ \textcolor{keywordflow}{if}\ (!running())\ \{}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ send()\ called\ when\ NIC\ is\ inactive\(\backslash\)n"{}};}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00222\ \ \ \ \ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \ \ \textcolor{keywordflow}{if}\ (!buf)\ \{}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ send()\ called\ with\ a\ null\ buffer\(\backslash\)n"{}};}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \_statistics.tx\_drops++;}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00228\ \ \ \ \ \}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ Engine::send(buf-\/>\mbox{\hyperlink{class_buffer_ae4d2252ca9e14b66f1884480627ae6d3}{data}}(),\ buf-\/>\mbox{\hyperlink{class_buffer_a2240a2d73d91c05ba18a3d4083282f62}{size}}());}
+\DoxyCodeLine{00231\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ Engine::send\ returned\ "{}}\ <<\ result\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ <=\ 0)\ \{}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \_statistics.tx\_drops++;}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ result\ =\ 0;}
+\DoxyCodeLine{00236\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \_statistics.packets\_sent++;}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \_statistics.bytes\_sent\ +=\ result;}
+\DoxyCodeLine{00239\ \ \ \ \ \}}
+\DoxyCodeLine{00240\ \ \ \ \ }
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00242\ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00245\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_n_i_c_aae48c0381338a8af6bd2b028043606c0}{NIC<Engine>::receive}}(\mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}*\ buf,\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Address}}*\ \mbox{\hyperlink{ethernet_8h_a5b03b18b26c1245af9d4a1dab1a1dc37}{src}},\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Address}}*\ \mbox{\hyperlink{ethernet_8h_ae9e64022f058d62d91908bab02c491ff}{dst}},\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \{}
+\DoxyCodeLine{00246\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}NIC<Engine>::receive()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \ \ \textcolor{keywordflow}{if}\ (!running())\ \{}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ receive()\ called\ when\ NIC\ is\ inactive\(\backslash\)n"{}};}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00251\ \ \ \ \ \}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{keywordflow}{if}\ (!buf)\ \{}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ receive()\ called\ with\ a\ null\ buffer\(\backslash\)n"{}};}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \_statistics.rx\_drops++;}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00257\ \ \ \ \ \}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \ \ \mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet::Frame}}*\ frame\ =\ buf-\/>\mbox{\hyperlink{class_buffer_ae4d2252ca9e14b66f1884480627ae6d3}{data}}();}
+\DoxyCodeLine{00260\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ frame\ extracted\ from\ buffer:\ \{src\ =\ "{}}\ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_a7f373f17d7e2aba30dec20d33d46005f}{src}})\ <<\ \textcolor{stringliteral}{"{},\ dst\ =\ "{}}\ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_a5b606cb15a216606af19742e6ca45e33}{dst}})\ <<\ \textcolor{stringliteral}{"{},\ prot\ =\ "{}}\ <<\ std::to\_string(frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_af25c7c0d6f820be184952cf9ea7253f5}{prot}})\ <<\ \textcolor{stringliteral}{"{},\ size\ =\ "{}}\ <<\ buf-\/>\mbox{\hyperlink{class_buffer_a2240a2d73d91c05ba18a3d4083282f62}{size}}()\ <<\ \textcolor{stringliteral}{"{}\}\(\backslash\)n"{}};}
+\DoxyCodeLine{00261\ \ \ \ \ }
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{comment}{//\ 1.\ Filling\ src\ and\ dst\ addresses}}
+\DoxyCodeLine{00263\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{ethernet_8h_a5b03b18b26c1245af9d4a1dab1a1dc37}{src}})\ *\mbox{\hyperlink{ethernet_8h_a5b03b18b26c1245af9d4a1dab1a1dc37}{src}}\ =\ frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_a7f373f17d7e2aba30dec20d33d46005f}{src}};}
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{ethernet_8h_ae9e64022f058d62d91908bab02c491ff}{dst}})\ *\mbox{\hyperlink{ethernet_8h_ae9e64022f058d62d91908bab02c491ff}{dst}}\ =\ frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_a5b606cb15a216606af19742e6ca45e33}{dst}};}
+\DoxyCodeLine{00265\ \ \ \ \ }
+\DoxyCodeLine{00266\ \ \ \ \ \textcolor{comment}{//\ 2.\ Payload\ size}}
+\DoxyCodeLine{00267\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ payload\_size\ =\ buf-\/>\mbox{\hyperlink{class_buffer_a2240a2d73d91c05ba18a3d4083282f62}{size}}()\ -\/\ \mbox{\hyperlink{class_ethernet_a981bc68d59187910a930f8f446e98c2d}{Ethernet::HEADER\_SIZE}};}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \ \ \ \ \textcolor{comment}{//\ 3.\ Copies\ payload\ to\ data\ pointer}}
+\DoxyCodeLine{00270\ \ \ \ \ std::memcpy(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_ac835436549beebe9edad68c291f97f74}{payload}},\ payload\_size);}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{comment}{//\ 4.\ Releases\ the\ buffer}}
+\DoxyCodeLine{00273\ \ \ \ \ \mbox{\hyperlink{class_n_i_c_a57c8d3a5d2dbdea5848e0a2dd569470c}{free}}(buf);}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{comment}{//\ 5.\ Return\ size\ of\ copied\ bytes}}
+\DoxyCodeLine{00276\ \ \ \ \ \textcolor{keywordflow}{return}\ payload\_size;}
+\DoxyCodeLine{00277\ \}}
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00280\ \textcolor{keywordtype}{void}\ NIC<Engine>::handle(\mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet::Frame}}*\ frame,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \{}
+\DoxyCodeLine{00281\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{comment}{//\ Additional\ safety\ check\ -\/\ ensure\ we're\ fully\ initialized}}
+\DoxyCodeLine{00284\ \ \ \ \ \textcolor{keywordflow}{if}\ (!running())\ \{}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ called\ but\ NIC\ is\ not\ running\ -\/\ ignoring\ packet\(\backslash\)n"{}};}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00287\ \ \ \ \ \}}
+\DoxyCodeLine{00288\ \ \ \ \ }
+\DoxyCodeLine{00289\ \ \ \ \ \textcolor{comment}{//\ Filter\ check\ (optional,\ engine\ might\ do\ this):\ ignore\ packets\ sent\ by\ self}}
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{keywordflow}{if}\ (frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_a7f373f17d7e2aba30dec20d33d46005f}{src}}\ ==\ \_address)\ \{}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ ignoring\ frame\ from\ self:\ \{src="{}}\ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_a7f373f17d7e2aba30dec20d33d46005f}{src}})\ <<\ \textcolor{stringliteral}{"{}\}\(\backslash\)n"{}};}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00293\ \ \ \ \}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \ \ \ \ \textcolor{comment}{//\ 1.\ Extracting\ frame\ header}}
+\DoxyCodeLine{00296\ \ \ \ \ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ \mbox{\hyperlink{ethernet_8h_ae9e64022f058d62d91908bab02c491ff}{dst}}\ =\ frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_a5b606cb15a216606af19742e6ca45e33}{dst}};}
+\DoxyCodeLine{00297\ \ \ \ \ \mbox{\hyperlink{class_ethernet_a7192e74f89cf8ff08d4f28c397891f5c}{Ethernet::Protocol}}\ proto\ =\ frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_af25c7c0d6f820be184952cf9ea7253f5}{prot}};}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \ \ \textcolor{comment}{//\ 2.\ Allocate\ buffer}}
+\DoxyCodeLine{00300\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ packet\_size\ =\ size\ -\/\ \mbox{\hyperlink{class_ethernet_a981bc68d59187910a930f8f446e98c2d}{Ethernet::HEADER\_SIZE}};}
+\DoxyCodeLine{00301\ \ \ \ \ \textcolor{keywordflow}{if}\ (packet\_size\ ==\ 0)\ \{}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ dropping\ empty\ frame\(\backslash\)n"{}};}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \_statistics.rx\_drops++;}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00305\ \ \ \ \ \}}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ allocating\ buffer\(\backslash\)n"{}};}
+\DoxyCodeLine{00308\ \ \ \ \ DataBuffer\ *\ buf\ =\ alloc(\mbox{\hyperlink{ethernet_8h_ae9e64022f058d62d91908bab02c491ff}{dst}},\ proto,\ packet\_size);}
+\DoxyCodeLine{00309\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ buffer\ allocated\(\backslash\)n"{}};}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{keywordflow}{if}\ (!buf)\ \{}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ alloc\ called,\ but\ NIC\ is\ not\ running\(\backslash\)n"{}};}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00314\ \ \ \ \ \}}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \ \ \textcolor{comment}{//\ 3.\ Fill\ RX\ timestamp\ in\ the\ buffer}}
+\DoxyCodeLine{00317\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ filling\ RX\ timestamp\ in\ the\ buffer\(\backslash\)n"{}};}
+\DoxyCodeLine{00318\ \ \ \ \ \textcolor{keyword}{auto}\&\ clock\ =\ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}();}
+\DoxyCodeLine{00319\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ rx\_time\ =\ clock.getLocalSystemTime();}
+\DoxyCodeLine{00320\ \ \ \ \ std::int64\_t\ timestamp\ =\ rx\_time.time\_since\_epoch().count();}
+\DoxyCodeLine{00321\ \ \ \ \ buf-\/>setRX(timestamp);}
+\DoxyCodeLine{00322\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ RX\ timestamp\ filled\ in\ the\ buffer:\ "{}}\ <<\ timestamp\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \ \ \ \ \textcolor{comment}{//\ 4.\ Copy\ frame\ to\ buffer}}
+\DoxyCodeLine{00325\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ copying\ frame\ to\ buffer\(\backslash\)n"{}};}
+\DoxyCodeLine{00326\ \ \ \ \ buf-\/>setData(frame,\ size);}
+\DoxyCodeLine{00327\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ frame\ copied\ to\ buffer\(\backslash\)n"{}};}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \ \ \ \ \textcolor{comment}{//\ 5.\ Extract\ TX\ timestamp\ and\ calculate\ latency\ for\ logging}}
+\DoxyCodeLine{00330\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ extracting\ TX\ timestamp\ for\ latency\ calculation\(\backslash\)n"{}};}
+\DoxyCodeLine{00331\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ header\_size\ =\ \textcolor{keyword}{sizeof}(std::uint16\_t)\ *\ 2\ +\ \textcolor{keyword}{sizeof}(std::uint32\_t);\ \textcolor{comment}{//\ 8\ bytes}}
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ tx\_timestamp\_offset\ =\ header\_size\ +\ 8;\ \textcolor{comment}{//\ Header\ +\ offsetof(TimestampFields,\ tx\_timestamp)}}
+\DoxyCodeLine{00333\ \ \ \ \ }
+\DoxyCodeLine{00334\ \ \ \ \ \textcolor{keywordflow}{if}\ (packet\_size\ >\ tx\_timestamp\_offset\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}))\ \{}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}*\ tx\_timestamp\_ptr\ =\ \textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}*\textcolor{keyword}{>}(frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_ac835436549beebe9edad68c291f97f74}{payload}}\ +\ tx\_timestamp\_offset);}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ tx\_time\ =\ *tx\_timestamp\_ptr;}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Calculate\ latency\ in\ microseconds}}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ std::int64\_t\ latency\_us\ =\ (rx\_time\ -\/\ tx\_time).count();}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ Latency\ calculated:\ TX="{}}\ <<\ tx\_time.time\_since\_epoch().count()\ }
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}us,\ RX="{}}\ <<\ rx\_time.time\_since\_epoch().count()\ <<\ \textcolor{stringliteral}{"{}us,\ Latency="{}}\ <<\ latency\_us\ <<\ \textcolor{stringliteral}{"{}us\(\backslash\)n"{}};}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Log\ latency\ to\ CSV\ file}}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ logLatency(latency\_us);}
+\DoxyCodeLine{00346\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ Packet\ too\ small\ for\ TX\ timestamp\ extraction.\ Size:\ "{}}\ <<\ packet\_size\ }
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ required:\ "{}}\ <<\ (tx\_timestamp\_offset\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}))\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00349\ \ \ \ \ \}}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \ \ \ \textcolor{keywordflow}{if}\ (!running())\ \{}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ trying\ to\ notify\ protocol\ when\ NIC\ is\ inactive\(\backslash\)n"{}};}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00354\ \ \ \ \ \}}
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00356\ \ \ \ \ \textcolor{comment}{//\ 6.\ Notify\ Observers}}
+\DoxyCodeLine{00357\ \ \ \ \ \textcolor{keywordflow}{if}\ (!notify(buf,\ proto))\ \{}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [handle()]\ data\ received,\ but\ no\ one\ was\ notified\ ("{}}\ <<\ proto\ <<\ \textcolor{stringliteral}{"{})\(\backslash\)n"{}};}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ free(buf);\ \textcolor{comment}{//\ if\ no\ one\ is\ listening,\ release\ buffer}}
+\DoxyCodeLine{00360\ \ \ \ \ \}}
+\DoxyCodeLine{00361\ \}}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00364\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{NIC<Engine>::DataBuffer}}*\ \mbox{\hyperlink{class_n_i_c_a5efaaa7fd14dcc58a722da04de6c3476}{NIC<Engine>::alloc}}(\mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Address}}\ \mbox{\hyperlink{ethernet_8h_ae9e64022f058d62d91908bab02c491ff}{dst}},\ \mbox{\hyperlink{class_n_i_c_a99ca9377e6702fa33fb0eb0757b6b842}{Protocol\_Number}}\ \mbox{\hyperlink{ethernet_8h_a238bf641c59c4900e20286010351f46e}{prot}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \{}
+\DoxyCodeLine{00365\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [alloc()]\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \ \ \textcolor{keywordflow}{if}\ (!running())\ \{}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [alloc()]\ called\ when\ NIC\ is\ inactive\(\backslash\)n"{}};}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00370\ \ \ \ \ \}}
+\DoxyCodeLine{00371\ \ \ \ \ }
+\DoxyCodeLine{00372\ \ \ \ \ \textcolor{comment}{//\ Acquire\ free\ buffers\ counter\ semaphore}}
+\DoxyCodeLine{00373\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [alloc()]\ acquiring\ free\ buffers\ counter\ semaphore\(\backslash\)n"{}};}
+\DoxyCodeLine{00374\ \ \ \ \ sem\_wait(\&\_buffer\_sem);}
+\DoxyCodeLine{00375\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [alloc()]\ free\ buffers\ counter\ semaphore\ acquired\(\backslash\)n"{}};}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \ \ \ \ \textcolor{comment}{//\ Remove\ first\ buffer\ of\ the\ free\ buffers\ queue}}
+\DoxyCodeLine{00378\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [alloc()]\ acquiring\ binary\ semaphore\(\backslash\)n"{}};}
+\DoxyCodeLine{00379\ \ \ \ \ sem\_wait(\&\_binary\_sem);}
+\DoxyCodeLine{00380\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [alloc()]\ binary\ semaphore\ acquired\(\backslash\)n"{}};}
+\DoxyCodeLine{00381\ \ \ \ \ \mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}*\ buf\ =\ \_free\_buffers.front();}
+\DoxyCodeLine{00382\ \ \ \ \ \_free\_buffers.pop();}
+\DoxyCodeLine{00383\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [alloc()]\ buffer\ removed\ from\ free\ buffers\ queue\(\backslash\)n"{}};}
+\DoxyCodeLine{00384\ \ \ \ \ sem\_post(\&\_binary\_sem);}
+\DoxyCodeLine{00385\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [alloc()]\ binary\ semaphore\ released\(\backslash\)n"{}};}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \ \ \textcolor{comment}{//\ Set\ Frame}}
+\DoxyCodeLine{00388\ \ \ \ \ \mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet::Frame}}\ frame;}
+\DoxyCodeLine{00389\ \ \ \ \ frame.\mbox{\hyperlink{struct_ethernet_1_1_frame_a7f373f17d7e2aba30dec20d33d46005f}{src}}\ =\ \mbox{\hyperlink{class_n_i_c_a0523377d78db71cb0f7ef58b45c9de38}{address}}();}
+\DoxyCodeLine{00390\ \ \ \ \ frame.\mbox{\hyperlink{struct_ethernet_1_1_frame_a5b606cb15a216606af19742e6ca45e33}{dst}}\ =\ \mbox{\hyperlink{ethernet_8h_ae9e64022f058d62d91908bab02c491ff}{dst}};}
+\DoxyCodeLine{00391\ \ \ \ \ frame.\mbox{\hyperlink{struct_ethernet_1_1_frame_af25c7c0d6f820be184952cf9ea7253f5}{prot}}\ =\ \mbox{\hyperlink{ethernet_8h_a238bf641c59c4900e20286010351f46e}{prot}};}
+\DoxyCodeLine{00392\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ frame\_size\ =\ size\ +\ \mbox{\hyperlink{class_ethernet_a981bc68d59187910a930f8f446e98c2d}{Ethernet::HEADER\_SIZE}};}
+\DoxyCodeLine{00393\ }
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{comment}{//\ Set\ buffer\ data}}
+\DoxyCodeLine{00395\ \ \ \ \ buf-\/>\mbox{\hyperlink{class_buffer_ac2c0a1a996e5a7635351c6622b1aaecc}{setData}}(\&frame,\ frame\_size);}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [alloc()]\ buffer\ allocated\ for\ frame:\ \{src\ =\ "{}}\ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(frame.\mbox{\hyperlink{struct_ethernet_1_1_frame_a7f373f17d7e2aba30dec20d33d46005f}{src}})\ <<\ \textcolor{stringliteral}{"{},\ dst\ =\ "{}}\ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(frame.\mbox{\hyperlink{struct_ethernet_1_1_frame_a5b606cb15a216606af19742e6ca45e33}{dst}})\ <<\ \textcolor{stringliteral}{"{},\ prot\ =\ "{}}\ <<\ std::to\_string(frame.\mbox{\hyperlink{struct_ethernet_1_1_frame_af25c7c0d6f820be184952cf9ea7253f5}{prot}})\ <<\ \textcolor{stringliteral}{"{},\ size\ =\ "{}}\ <<\ buf-\/>\mbox{\hyperlink{class_buffer_a2240a2d73d91c05ba18a3d4083282f62}{size}}()\ <<\ \textcolor{stringliteral}{"{}\}\(\backslash\)n"{}};}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \ \ \ \ \textcolor{keywordflow}{return}\ buf;}
+\DoxyCodeLine{00400\ \}}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00402\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00403\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_n_i_c_a57c8d3a5d2dbdea5848e0a2dd569470c}{NIC<Engine>::free}}(\mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{DataBuffer}}*\ buf)\ \{}
+\DoxyCodeLine{00404\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}NIC<Engine>::free()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00405\ }
+\DoxyCodeLine{00406\ \ \ \ \ \textcolor{keywordflow}{if}\ (buf\ ==\ \textcolor{keyword}{nullptr})\ \{}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ free()\ called\ with\ a\ null\ buffer\(\backslash\)n"{}};}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00409\ \ \ \ \ \}}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \ \ \ \ \textcolor{keywordflow}{if}\ (!running())\ \{}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ free()\ called\ when\ NIC\ is\ inactive\(\backslash\)n"{}};}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00414\ \ \ \ \ \}}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \ \ \ \ \textcolor{comment}{//\ Debug:\ Check\ semaphore\ state\ before\ freeing}}
+\DoxyCodeLine{00417\ \ \ \ \ \textcolor{keywordtype}{int}\ sem\_value;}
+\DoxyCodeLine{00418\ \ \ \ \ sem\_getvalue(\&\_buffer\_sem,\ \&sem\_value);}
+\DoxyCodeLine{00419\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [free()]\ freeing\ buffer,\ current\ semaphore\ value:\ "{}}\ <<\ sem\_value\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ \ \ \ \ \textcolor{comment}{//\ Clear\ buffer}}
+\DoxyCodeLine{00422\ \ \ \ \ buf-\/>\mbox{\hyperlink{class_buffer_a366dcbac3789eb97c2cd775a449725e2}{clear}}();}
+\DoxyCodeLine{00423\ \ \ \ \ }
+\DoxyCodeLine{00424\ \ \ \ \ \textcolor{comment}{//\ Add\ to\ free\ buffers\ queue}}
+\DoxyCodeLine{00425\ \ \ \ \ sem\_wait(\&\_binary\_sem);}
+\DoxyCodeLine{00426\ \ \ \ \ \_free\_buffers.push(buf);}
+\DoxyCodeLine{00427\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ queue\_size\ =\ \_free\_buffers.size();}
+\DoxyCodeLine{00428\ \ \ \ \ sem\_post(\&\_binary\_sem);}
+\DoxyCodeLine{00429\ \ \ \ \ }
+\DoxyCodeLine{00430\ \ \ \ \ \textcolor{comment}{//\ Increase\ free\ buffers\ counter}}
+\DoxyCodeLine{00431\ \ \ \ \ sem\_post(\&\_buffer\_sem);}
+\DoxyCodeLine{00432\ \ \ \ \ }
+\DoxyCodeLine{00433\ \ \ \ \ \textcolor{comment}{//\ Debug:\ Check\ semaphore\ state\ after\ freeing}}
+\DoxyCodeLine{00434\ \ \ \ \ sem\_getvalue(\&\_buffer\_sem,\ \&sem\_value);}
+\DoxyCodeLine{00435\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ buffer\ released,\ new\ semaphore\ value:\ "{}}\ <<\ sem\_value\ <<\ \textcolor{stringliteral}{"{},\ queue\ size:\ "{}}\ <<\ queue\_size\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00436\ \}}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00439\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC<Engine>::Address}}\&\ \mbox{\hyperlink{class_n_i_c_a0523377d78db71cb0f7ef58b45c9de38}{NIC<Engine>::address}}()\ \{}
+\DoxyCodeLine{00440\ \ \ \ \ \textcolor{keywordflow}{return}\ \_address;}
+\DoxyCodeLine{00441\ \}}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00444\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_n_i_c_ac1663ac4f5ee2e39781d55c96f2706b2}{NIC<Engine>::setAddress}}(\mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Address}}\ \mbox{\hyperlink{class_n_i_c_a0523377d78db71cb0f7ef58b45c9de38}{address}})\ \{}
+\DoxyCodeLine{00445\ \ \ \ \ \_address\ =\ \mbox{\hyperlink{class_n_i_c_a0523377d78db71cb0f7ef58b45c9de38}{address}};}
+\DoxyCodeLine{00446\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ address\ setted:\ "{}}\ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(\mbox{\hyperlink{class_n_i_c_a0523377d78db71cb0f7ef58b45c9de38}{address}})\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00447\ \}}
+\DoxyCodeLine{00448\ }
+\DoxyCodeLine{00449\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00450\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{struct_n_i_c_1_1_statistics}{NIC<Engine>::Statistics}}\&\ \mbox{\hyperlink{class_n_i_c_aa69d2ab0efa6e3507bf3cbedae256b76}{NIC<Engine>::statistics}}()\ \{}
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{keywordflow}{return}\ \_statistics;}
+\DoxyCodeLine{00452\ \}}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00455\ \textcolor{keywordtype}{void}\ NIC<Engine>::fillTxTimestamp(DataBuffer*\ buf,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ packet\_size)\ \{}
+\DoxyCodeLine{00456\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}NIC<Engine>::fillTxTimestamp()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00457\ \ \ \ \ }
+\DoxyCodeLine{00458\ \ \ \ \ \textcolor{comment}{//\ Get\ current\ synchronized\ time\ from\ Clock}}
+\DoxyCodeLine{00459\ \ \ \ \ \textcolor{keyword}{auto}\&\ clock\ =\ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}();}
+\DoxyCodeLine{00460\ \ \ \ \ \textcolor{keywordtype}{bool}\ is\_sync\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00461\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ tx\_time\ =\ clock.getLocalSystemTime();}
+\DoxyCodeLine{00462\ \ \ \ \ }
+\DoxyCodeLine{00463\ \ \ \ \ \textcolor{comment}{//\ Calculate\ correct\ offset\ for\ TX\ timestamp\ accounting\ for\ structure\ alignment}}
+\DoxyCodeLine{00464\ \ \ \ \ \textcolor{comment}{//\ Header:\ 8\ bytes\ (2×uint16\_t\ +\ uint32\_t)}}
+\DoxyCodeLine{00465\ \ \ \ \ \textcolor{comment}{//\ TimestampFields:\ bool\ at\ offset\ 0,\ tx\_timestamp\ at\ offset\ 8\ (due\ to\ alignment)}}
+\DoxyCodeLine{00466\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ header\_size\ =\ \textcolor{keyword}{sizeof}(std::uint16\_t)\ *\ 2\ +\ \textcolor{keyword}{sizeof}(std::uint32\_t);\ \textcolor{comment}{//\ 8\ bytes}}
+\DoxyCodeLine{00467\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ tx\_timestamp\_offset\ =\ header\_size\ +\ 8;\ \textcolor{comment}{//\ Header\ +\ offsetof(TimestampFields,\ tx\_timestamp)}}
+\DoxyCodeLine{00468\ \ \ \ \ }
+\DoxyCodeLine{00469\ \ \ \ \ \textcolor{comment}{//\ Get\ pointer\ to\ the\ packet\ within\ the\ Ethernet\ frame\ payload}}
+\DoxyCodeLine{00470\ \ \ \ \ \mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet::Frame}}*\ frame\ =\ buf-\/>data();}
+\DoxyCodeLine{00471\ \ \ \ \ uint8\_t*\ packet\_start\ =\ frame-\/>\mbox{\hyperlink{struct_ethernet_1_1_frame_ac835436549beebe9edad68c291f97f74}{payload}};}
+\DoxyCodeLine{00472\ \ \ \ \ }
+\DoxyCodeLine{00473\ \ \ \ \ \textcolor{comment}{//\ Fill\ TX\ timestamp\ at\ the\ calculated\ offset}}
+\DoxyCodeLine{00474\ \ \ \ \ \textcolor{keywordflow}{if}\ (packet\_size\ >\ tx\_timestamp\_offset\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}))\ \{}
+\DoxyCodeLine{00475\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}*\ tx\_timestamp\_ptr\ =\ \textcolor{keyword}{reinterpret\_cast<}\mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}*\textcolor{keyword}{>}(packet\_start\ +\ tx\_timestamp\_offset);}
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ *tx\_timestamp\_ptr\ =\ tx\_time;}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ Filled\ TX\ timestamp\ at\ offset\ "{}}\ <<\ tx\_timestamp\_offset\ }
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}:\ "{}}\ <<\ tx\_time.time\_since\_epoch().count()\ <<\ \textcolor{stringliteral}{"{}us\(\backslash\)n"{}};}
+\DoxyCodeLine{00480\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00481\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ Packet\ too\ small\ for\ TX\ timestamp.\ Size:\ "{}}\ <<\ packet\_size\ }
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ required:\ "{}}\ <<\ (tx\_timestamp\_offset\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}))\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00483\ \ \ \ \ \}}
+\DoxyCodeLine{00484\ \}}
+\DoxyCodeLine{00485\ }
+\DoxyCodeLine{00486\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00487\ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{class_n_i_c_a50319e6c31e2f433c77b69e05eec7d08}{NIC<Engine>::radius}}()\ \{}
+\DoxyCodeLine{00488\ \ \ \ \ \textcolor{keywordflow}{return}\ \_radius;}
+\DoxyCodeLine{00489\ \}}
+\DoxyCodeLine{00490\ }
+\DoxyCodeLine{00491\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00492\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_n_i_c_a09b5a806e2708199f31f5b6c12ba7173}{NIC<Engine>::setRadius}}(\textcolor{keywordtype}{double}\ \mbox{\hyperlink{class_n_i_c_a50319e6c31e2f433c77b69e05eec7d08}{radius}})\ \{}
+\DoxyCodeLine{00493\ \ \ \ \ \_radius\ =\ \mbox{\hyperlink{class_n_i_c_a50319e6c31e2f433c77b69e05eec7d08}{radius}};}
+\DoxyCodeLine{00494\ \}}
+\DoxyCodeLine{00495\ }
+\DoxyCodeLine{00501\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00502\ \textcolor{keywordtype}{void}\ NIC<Engine>::logLatency(std::int64\_t\ latency\_us)\ \{}
+\DoxyCodeLine{00503\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_latency\_csv\_file.is\_open())\ \{}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \ \_latency\_csv\_file\ <<\ latency\_us\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \_latency\_csv\_file.flush();\ \textcolor{comment}{//\ Ensure\ data\ is\ written\ immediately}}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [logLatency]\ Logged\ latency:\ "{}}\ <<\ latency\_us\ <<\ \textcolor{stringliteral}{"{}\ us\(\backslash\)n"{}};}
+\DoxyCodeLine{00507\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<NIC>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[NIC]\ [logLatency]\ CSV\ file\ not\ open,\ cannot\ log\ latency\(\backslash\)n"{}};}
+\DoxyCodeLine{00509\ \ \ \ \ \}}
+\DoxyCodeLine{00510\ \}}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ NIC\_H}}
+
+\end{DoxyCode}

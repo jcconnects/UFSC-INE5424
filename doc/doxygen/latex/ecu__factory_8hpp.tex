@@ -1,0 +1,82 @@
+\doxysection{include/app/components/ecu\+\_\+factory.hpp File Reference}
+\hypertarget{ecu__factory_8hpp}{}\label{ecu__factory_8hpp}\index{include/app/components/ecu\_factory.hpp@{include/app/components/ecu\_factory.hpp}}
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include "{}../../api/framework/agent.\+h"{}}\newline
+{\ttfamily \#include "{}ecu\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}ecu\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../datatypes.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{ecu__factory_8hpp_afd42ad1f823fb5044d5c3c2ffc6282d8}{create\+\_\+ecu\+\_\+component}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, const std\+::string \&name="{}ECUComponent"{})
+\begin{DoxyCompactList}\small\item\em Creates an ECU component using function-\/based composition. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{ecu__factory_8hpp_a5b46ef4effc9f234a703ef293417df1f}{create\+\_\+ecu\+\_\+component\+\_\+with\+\_\+period}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent\+::\+Microseconds}} period=\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent\+::\+Microseconds}}(1000000), const std\+::string \&name="{}ECUComponent"{})
+\begin{DoxyCompactList}\small\item\em Convenience function to create ECU and start consuming immediately. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{ecu__factory_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{ecu__factory_8hpp_afd42ad1f823fb5044d5c3c2ffc6282d8}\index{ecu\_factory.hpp@{ecu\_factory.hpp}!create\_ecu\_component@{create\_ecu\_component}}
+\index{create\_ecu\_component@{create\_ecu\_component}!ecu\_factory.hpp@{ecu\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_ecu\_component()}{create\_ecu\_component()}}
+{\footnotesize\ttfamily \label{ecu__factory_8hpp_afd42ad1f823fb5044d5c3c2ffc6282d8} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+ecu\+\_\+component (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}ECUComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates an ECU component using function-\/based composition. 
+
+Replaces the inheritance-\/based \doxylink{struct_e_c_u_component}{ECUComponent} class with EPOS Smart\+Data principles. Eliminates vtable race conditions during destruction by using function pointers instead of virtual methods.
+
+ECU components are consumer-\/only and receive messages from other components (Camera, Lidar, INS) for processing and control decisions. This factory creates a complete \doxylink{class_agent}{Agent} configured as a consumer for EXTERNAL\+\_\+\+POINT\+\_\+\+CLOUD\+\_\+\+XYZ.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+ECUComponent"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} ready for operation 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null or name is empty \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{ecu__factory_8hpp_a5b46ef4effc9f234a703ef293417df1f}\index{ecu\_factory.hpp@{ecu\_factory.hpp}!create\_ecu\_component\_with\_period@{create\_ecu\_component\_with\_period}}
+\index{create\_ecu\_component\_with\_period@{create\_ecu\_component\_with\_period}!ecu\_factory.hpp@{ecu\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_ecu\_component\_with\_period()}{create\_ecu\_component\_with\_period()}}
+{\footnotesize\ttfamily \label{ecu__factory_8hpp_a5b46ef4effc9f234a703ef293417df1f} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+ecu\+\_\+component\+\_\+with\+\_\+period (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent\+::\+Microseconds}}}]{period}{ = {\ttfamily \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent\+::\+Microseconds}}(1000000)}, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}ECUComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Convenience function to create ECU and start consuming immediately. 
+
+Creates an ECU component and immediately starts periodic interest for receiving messages from producers. Useful for scenarios where ECU should start consuming data immediately upon creation.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em period} & Desired response period from producers (default\+: 1 second) \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+ECUComponent"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} with periodic interest started 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null or name is empty \\
+\hline
+\end{DoxyExceptions}

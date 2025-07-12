@@ -1,0 +1,78 @@
+\doxysection{csv\+\_\+consumer\+\_\+data.\+hpp}
+\hypertarget{csv__consumer__data_8hpp_source}{}\label{csv__consumer__data_8hpp_source}\index{include/app/components/csv\_consumer\_data.hpp@{include/app/components/csv\_consumer\_data.hpp}}
+\mbox{\hyperlink{csv__consumer__data_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ CSV\_CONSUMER\_DATA\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ CSV\_CONSUMER\_DATA\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__types_8hpp}{../../api/framework/component\_types.hpp}}"{}}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_c_s_v_consumer_data_ad67e553b95f1cd4fde0e7fd73507418e}{CSVConsumerData}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_component_data}{ComponentData}}\ \{}
+\DoxyCodeLine{00020\ \ \ \ \ \textcolor{comment}{//\ Statistics\ tracking}}
+\DoxyCodeLine{00021\ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a3b122a626d88b18f905280e1248d2ed9}{messages\_received}};}
+\DoxyCodeLine{00022\ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a084c2b6706aa564f50e87e2936e72c40}{total\_bytes\_received}};}
+\DoxyCodeLine{00023\ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a932b2a246058564b7bc1e3cfd72977d2}{invalid\_messages}};}
+\DoxyCodeLine{00024\ \ \ \ \ }
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{comment}{//\ Latest\ received\ data\ tracking}}
+\DoxyCodeLine{00026\ \ \ \ \ std::uint64\_t\ \mbox{\hyperlink{struct_c_s_v_consumer_data_ab0da9825b74b70e2bb08e50fb3679a0e}{last\_csv\_timestamp}};}
+\DoxyCodeLine{00027\ \ \ \ \ std::uint32\_t\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a5b0ec8ff3e5dbb5e0d275da585ef999f}{last\_vehicle\_id}};}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a6963b25aef85fb3833d7c0cfcaf5f9bd}{last\_position\_x}};}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_consumer_data_aa439c5edc257dd4960365fcba8d4d77e}{last\_position\_y}};}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a3977c05127e7cddff88ba5b69427364a}{last\_position\_z}};}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a1bad81d095c4780277a452218379ac24}{last\_speed}};}
+\DoxyCodeLine{00032\ \ \ \ \ }
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{comment}{//\ Component\ timing}}
+\DoxyCodeLine{00034\ \ \ \ \ std::chrono::steady\_clock::time\_point\ \mbox{\hyperlink{struct_c_s_v_consumer_data_ad2410ed37b3d4272113ba0bcbfc516c8}{last\_message\_time}};}
+\DoxyCodeLine{00035\ \ \ \ \ std::chrono::steady\_clock::time\_point\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a51c604c75e8af1a666d6f768d32ce364}{start\_time}};}
+\DoxyCodeLine{00036\ \ \ \ \ }
+\DoxyCodeLine{00043\ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_ad67e553b95f1cd4fde0e7fd73507418e}{CSVConsumerData}}()\ :\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a3b122a626d88b18f905280e1248d2ed9}{messages\_received}}(0),}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a084c2b6706aa564f50e87e2936e72c40}{total\_bytes\_received}}(0),}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a932b2a246058564b7bc1e3cfd72977d2}{invalid\_messages}}(0),}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_ab0da9825b74b70e2bb08e50fb3679a0e}{last\_csv\_timestamp}}(0),}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a5b0ec8ff3e5dbb5e0d275da585ef999f}{last\_vehicle\_id}}(0),}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a6963b25aef85fb3833d7c0cfcaf5f9bd}{last\_position\_x}}(0.0),}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_aa439c5edc257dd4960365fcba8d4d77e}{last\_position\_y}}(0.0),}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a3977c05127e7cddff88ba5b69427364a}{last\_position\_z}}(0.0),}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a1bad81d095c4780277a452218379ac24}{last\_speed}}(0.0),}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a51c604c75e8af1a666d6f768d32ce364}{start\_time}}(std::chrono::steady\_clock::now())\ \{\}}
+\DoxyCodeLine{00053\ \ \ \ \ }
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_c_s_v_consumer_data_ad07b5a76aa39e6f816152527f83fff75}{update\_message\_tracking}}(std::size\_t\ message\_size,\ std::uint64\_t\ csv\_timestamp,}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::uint32\_t\ vehicle\_id,\ \textcolor{keywordtype}{double}\ x,\ \textcolor{keywordtype}{double}\ y,\ \textcolor{keywordtype}{double}\ z,\ \textcolor{keywordtype}{double}\ speed)\ \{}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a3b122a626d88b18f905280e1248d2ed9}{messages\_received}}++;}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a084c2b6706aa564f50e87e2936e72c40}{total\_bytes\_received}}\ +=\ message\_size;}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_ab0da9825b74b70e2bb08e50fb3679a0e}{last\_csv\_timestamp}}\ =\ csv\_timestamp;}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a5b0ec8ff3e5dbb5e0d275da585ef999f}{last\_vehicle\_id}}\ =\ vehicle\_id;}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a6963b25aef85fb3833d7c0cfcaf5f9bd}{last\_position\_x}}\ =\ x;}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_aa439c5edc257dd4960365fcba8d4d77e}{last\_position\_y}}\ =\ y;}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a3977c05127e7cddff88ba5b69427364a}{last\_position\_z}}\ =\ z;}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a1bad81d095c4780277a452218379ac24}{last\_speed}}\ =\ speed;}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_ad2410ed37b3d4272113ba0bcbfc516c8}{last\_message\_time}}\ =\ std::chrono::steady\_clock::now();}
+\DoxyCodeLine{00076\ \ \ \ \ \}}
+\DoxyCodeLine{00077\ \ \ \ \ }
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_c_s_v_consumer_data_abc3158303435a12f53bca08008ee8b3d}{mark\_invalid\_message}}()\ \{}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data_a932b2a246058564b7bc1e3cfd72977d2}{invalid\_messages}}++;}
+\DoxyCodeLine{00083\ \ \ \ \ \}}
+\DoxyCodeLine{00084\ \ \ \ \ }
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a6c4a56ee8c89ab451d3479ea51e53c18}{get\_runtime\_seconds}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ now\ =\ std::chrono::steady\_clock::now();}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ duration\ =\ std::chrono::duration\_cast<std::chrono::seconds>(now\ -\/\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a51c604c75e8af1a666d6f768d32ce364}{start\_time}});}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ duration.count();}
+\DoxyCodeLine{00094\ \ \ \ \ \}}
+\DoxyCodeLine{00095\ \ \ \ \ }
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_consumer_data_aa8ca242f6f7742cd5b1dac2ed93a99bb}{get\_message\_rate}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ runtime\ =\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a6c4a56ee8c89ab451d3479ea51e53c18}{get\_runtime\_seconds}}();}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ runtime\ >\ 0\ ?\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(\mbox{\hyperlink{struct_c_s_v_consumer_data_a3b122a626d88b18f905280e1248d2ed9}{messages\_received}})\ /\ runtime\ :\ 0.0;}
+\DoxyCodeLine{00104\ \ \ \ \ \}}
+\DoxyCodeLine{00105\ \ \ \ \ }
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_consumer_data_adabf0892337c21d63631d58f6d239084}{get\_data\_rate}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ runtime\ =\ \mbox{\hyperlink{struct_c_s_v_consumer_data_a6c4a56ee8c89ab451d3479ea51e53c18}{get\_runtime\_seconds}}();}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ runtime\ >\ 0\ ?\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(\mbox{\hyperlink{struct_c_s_v_consumer_data_a084c2b6706aa564f50e87e2936e72c40}{total\_bytes\_received}})\ /\ runtime\ :\ 0.0;}
+\DoxyCodeLine{00114\ \ \ \ \ \}}
+\DoxyCodeLine{00115\ \};}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ CSV\_CONSUMER\_DATA\_HPP\ }}
+
+\end{DoxyCode}

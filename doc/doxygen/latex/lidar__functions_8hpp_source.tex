@@ -1,0 +1,86 @@
+\doxysection{lidar\+\_\+functions.\+hpp}
+\hypertarget{lidar__functions_8hpp_source}{}\label{lidar__functions_8hpp_source}\index{include/app/components/lidar\_functions.hpp@{include/app/components/lidar\_functions.hpp}}
+\mbox{\hyperlink{lidar__functions_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ LIDAR\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ LIDAR\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{lidar__data_8hpp}{lidar\_data.hpp}}"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__functions_8hpp}{../../api/framework/component\_functions.hpp}}"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{../../api/util/debug.h}}"{}}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{inline}\ std::vector<std::uint8\_t>\ \mbox{\hyperlink{lidar__functions_8hpp_a234a75d14ee5e2bbcc3303107d6dddf3}{lidar\_producer}}(std::uint32\_t\ unit,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00026\ \ \ \ \ \mbox{\hyperlink{struct_lidar_data}{LidarData}}*\ lidar\_data\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{struct_lidar_data}{LidarData}}*\textcolor{keyword}{>}(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00027\ \ \ \ \ }
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[LidarComponent]\ Received\ null\ data\ pointer\(\backslash\)n"{}};}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::vector<std::uint8\_t>();}
+\DoxyCodeLine{00031\ \ \ \ \ \}}
+\DoxyCodeLine{00032\ \ \ \ \ }
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{comment}{//\ Static\ message\ counter\ (function-\/local,\ maintains\ state\ between\ calls)}}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ message\_counter\ =\ 0;}
+\DoxyCodeLine{00035\ \ \ \ \ message\_counter++;}
+\DoxyCodeLine{00036\ \ \ \ \ }
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{comment}{//\ Generate\ number\ of\ points\ for\ this\ scan\ (same\ logic\ as\ LidarComponent::get())}}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordtype}{int}\ num\_points\ =\ lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_aa8ddadf1c8ed7a2f2a40e1d74ca36178}{num\_points\_dist}}(lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_ae75fd8d773e563174b414bcb2f9da605}{gen}});}
+\DoxyCodeLine{00039\ \ \ \ \ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{//\ Create\ point\ cloud\ data\ array}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ Each\ point:\ 4\ floats\ (X,\ Y,\ Z,\ Intensity)\ =\ 16\ bytes\ per\ point}}
+\DoxyCodeLine{00042\ \ \ \ \ std::size\_t\ data\_size\ =\ num\_points\ *\ 4\ *\ \textcolor{keyword}{sizeof}(float);}
+\DoxyCodeLine{00043\ \ \ \ \ std::vector<std::uint8\_t>\ point\_cloud\_data(data\_size);}
+\DoxyCodeLine{00044\ \ \ \ \ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{//\ Generate\ point\ cloud\ data\ (same\ logic\ as\ original\ LidarComponent)}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ num\_points;\ ++i)\ \{}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Generate\ point\ coordinates\ and\ intensity}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ x\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_a7861762e7420eea3b0ce6d31400fe945}{x\_dist}}(lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_ae75fd8d773e563174b414bcb2f9da605}{gen}}));}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ y\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_a289aa9bb4f75ec3141d1506a6af0790b}{y\_dist}}(lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_ae75fd8d773e563174b414bcb2f9da605}{gen}}));}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ z\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_a9d0a37d41d66cd37d13963bbc4fd80d7}{z\_dist}}(lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_ae75fd8d773e563174b414bcb2f9da605}{gen}}));}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ intensity\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_a18361dcacb044e8c72167ca36313bedd}{intensity\_dist}}(lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_ae75fd8d773e563174b414bcb2f9da605}{gen}}));}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Pack\ point\ data\ into\ byte\ array\ (same\ order\ as\ original)}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ std::size\_t\ point\_offset\ =\ i\ *\ 4\ *\ \textcolor{keyword}{sizeof}(float);}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ std::memcpy(point\_cloud\_data.data()\ +\ point\_offset\ +\ 0\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&x,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ std::memcpy(point\_cloud\_data.data()\ +\ point\_offset\ +\ 1\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&y,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ std::memcpy(point\_cloud\_data.data()\ +\ point\_offset\ +\ 2\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&z,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ std::memcpy(point\_cloud\_data.data()\ +\ point\_offset\ +\ 3\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \&intensity,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00059\ \ \ \ \ \}}
+\DoxyCodeLine{00060\ \ \ \ \ }
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{//\ Simulate\ processing\ delay\ (same\ as\ original\ LidarComponent)}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordtype}{int}\ delay\_ms\ =\ lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_a4a71df05971be5cf51b1488a000d780b}{delay\_dist}}(lidar\_data-\/>\mbox{\hyperlink{struct_lidar_data_ae75fd8d773e563174b414bcb2f9da605}{gen}});}
+\DoxyCodeLine{00063\ \ \ \ \ std::this\_thread::sleep\_for(std::chrono::milliseconds(delay\_ms));}
+\DoxyCodeLine{00064\ \ \ \ \ }
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{//\ Log\ point\ cloud\ generation\ (same\ format\ as\ original)}}
+\DoxyCodeLine{00066\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[LidarComponent]\ Generated\ point\ cloud\ \#"{}}\ <<\ message\_counter}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ with\ "{}}\ <<\ num\_points\ <<\ \textcolor{stringliteral}{"{}\ points"{}}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ ("{}}\ <<\ data\_size\ <<\ \textcolor{stringliteral}{"{}\ bytes)"{}}}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (delay:\ "{}}\ <<\ delay\_ms\ <<\ \textcolor{stringliteral}{"{}ms)\(\backslash\)n"{}};}
+\DoxyCodeLine{00070\ \ \ \ \ }
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{//\ Additional\ detailed\ logging\ for\ first\ few\ points\ (debugging)}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{if}\ (num\_points\ >\ 0)\ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ first\_x,\ first\_y,\ first\_z,\ first\_intensity;}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ std::memcpy(\&first\_x,\ point\_cloud\_data.data()\ +\ 0\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ std::memcpy(\&first\_y,\ point\_cloud\_data.data()\ +\ 1\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ std::memcpy(\&first\_z,\ point\_cloud\_data.data()\ +\ 2\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ std::memcpy(\&first\_intensity,\ point\_cloud\_data.data()\ +\ 3\ *\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}),\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[LidarComponent]\ First\ point:\ ("{}}\ <<\ first\_x\ <<\ \textcolor{stringliteral}{"{},\ "{}}\ <<\ first\_y\ }
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ "{}}\ <<\ first\_z\ <<\ \textcolor{stringliteral}{"{})\ intensity:\ "{}}\ <<\ first\_intensity\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00081\ \ \ \ \ \}}
+\DoxyCodeLine{00082\ \ \ \ \ }
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordflow}{return}\ point\_cloud\_data;}
+\DoxyCodeLine{00084\ \}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00096\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{lidar__functions_8hpp_af4ef393a879c2b105661f854b75c1110}{lidar\_consumer}}(\textcolor{keywordtype}{void}*\ msg,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{comment}{//\ Lidar\ is\ producer-\/only\ -\/\ no\ response\ handling\ needed}}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{comment}{//\ This\ function\ exists\ for\ interface\ compatibility}}
+\DoxyCodeLine{00099\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[LidarComponent]\ Consumer\ function\ called\ (Lidar\ is\ producer-\/only)\(\backslash\)n"{}};}
+\DoxyCodeLine{00100\ \}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LIDAR\_FUNCTIONS\_HPP\ }}
+
+\end{DoxyCode}

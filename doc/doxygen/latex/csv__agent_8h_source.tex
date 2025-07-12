@@ -1,0 +1,70 @@
+\doxysection{csv\+\_\+agent.\+h}
+\hypertarget{csv__agent_8h_source}{}\label{csv__agent_8h_source}\index{include/api/framework/csv\_agent.h@{include/api/framework/csv\_agent.h}}
+\mbox{\hyperlink{csv__agent_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ CSV\_AGENT\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ CSV\_AGENT\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{agent_8h}{api/framework/agent.h}}"{}}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_c_s_v_agent_a275de926a3477234fed57eb399b6e675}{CSVAgent}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{class_agent_af463a1789fba270f3c71bbc341497ea0}{Agent}}\ \{}
+\DoxyCodeLine{00009\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00010\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_c_s_v_agent_a275de926a3477234fed57eb399b6e675}{CSVAgent}}(\mbox{\hyperlink{class_c_a_n}{CAN}}*\ bus,\ \textcolor{keyword}{const}\ std::string\&\ \mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}},\ \mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit,\ \mbox{\hyperlink{class_agent_a252b1a14b8f711d1ba6a25a2c80da6f3}{Type}}\ type,\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Address}}\ \mbox{\hyperlink{class_agent_a374fceb89c2d3d53046ac128d2a50415}{address}},}
+\DoxyCodeLine{00011\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{component__functions_8hpp_a09035d123daa3e7131b0f583a140371c}{DataProducer}}\ producer,\ \mbox{\hyperlink{component__functions_8hpp_a53233b5baa21df43948d115fa1f102a1}{ResponseHandler}}\ handler,\ std::unique\_ptr<ComponentData>\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_agent_acbe540cfd323fcd18db620e2265b40d9}{external}});}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_c_s_v_agent_af1702e3e97c115bbf988a3be8bacbbe6}{\string~CSVAgent}}();}
+\DoxyCodeLine{00013\ \ \ \ \ }
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_c_s_v_agent_a63b5cadfd153cb1d6a57780292f857ee}{reply}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit);}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \};}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_c_s_v_agent_a275de926a3477234fed57eb399b6e675}{CSVAgent::CSVAgent}}(\mbox{\hyperlink{class_c_a_n}{CAN}}*\ bus,\ \textcolor{keyword}{const}\ std::string\&\ \mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}},\ \mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit,\ \mbox{\hyperlink{class_agent_a252b1a14b8f711d1ba6a25a2c80da6f3}{Type}}\ type,\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Address}}\ \mbox{\hyperlink{class_agent_a374fceb89c2d3d53046ac128d2a50415}{address}},}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{component__functions_8hpp_a09035d123daa3e7131b0f583a140371c}{DataProducer}}\ producer,\ \mbox{\hyperlink{component__functions_8hpp_a53233b5baa21df43948d115fa1f102a1}{ResponseHandler}}\ handler,\ std::unique\_ptr<ComponentData>\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_agent_acbe540cfd323fcd18db620e2265b40d9}{external}})\ :}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_af463a1789fba270f3c71bbc341497ea0}{Agent}}(bus,\ \mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}},\ unit,\ type,\ \mbox{\hyperlink{class_agent_a374fceb89c2d3d53046ac128d2a50415}{address}},\ producer,\ handler,\ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}),\ \mbox{\hyperlink{class_agent_acbe540cfd323fcd18db620e2265b40d9}{external}})\ \{\}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_c_s_v_agent_af1702e3e97c115bbf988a3be8bacbbe6}{CSVAgent::\string~CSVAgent}}()\ \{\}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_c_s_v_agent_a63b5cadfd153cb1d6a57780292f857ee}{CSVAgent::reply}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit)\ \{}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{comment}{//\ Safety\ check:\ don't\ reply\ if\ agent\ is\ being\ destroyed}}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_agent_a927dadd25d2b8e6172c18ead37c554cf}{running}}())\ \{}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00029\ \ \ \ \ \}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_agent_a475c095d790fd809a4c4f54cdc8eb478}{thread\_running}}())\ \{}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00033\ \ \ \ \ \}}
+\DoxyCodeLine{00034\ \ \ \ \ }
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{comment}{//\ Final\ safety\ check\ before\ calling\ function\ pointer}}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_agent_a927dadd25d2b8e6172c18ead37c554cf}{running}}())\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00038\ \ \ \ \ \}}
+\DoxyCodeLine{00039\ \ \ \ \ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{//\ CRITICAL:\ Call\ function\ pointer\ instead\ of\ virtual\ method}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ This\ eliminates\ the\ race\ condition\ that\ caused\ "{}pure\ virtual\ method\ called"{}}}
+\DoxyCodeLine{00042\ \ \ \ \ \mbox{\hyperlink{class_agent_a18a67129d2455bca64c43adf093567a6}{Value}}\ value\ =\ \mbox{\hyperlink{class_agent_af986ce4308578cfb41ac891fb43477d6}{get}}(unit);}
+\DoxyCodeLine{00043\ \ \ \ \ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ Extract\ timestamp\ from\ the\ beginning\ of\ the\ CSV\ data\ (first\ 8\ bytes)}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordflow}{if}\ (value.size()\ >=\ \textcolor{keyword}{sizeof}(std::uint64\_t))\ \{}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ std::uint64\_t\ csv\_timestamp;}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ std::memcpy(\&csv\_timestamp,\ value.data(),\ \textcolor{keyword}{sizeof}(std::uint64\_t));}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ message\ with\ CSV\ data\ (without\ timestamp)\ and\ set\ timestamp\ separately}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::uint8\_t*\ csv\_data\ =\ value.data()\ +\ \textcolor{keyword}{sizeof}(std::uint64\_t);}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ std::size\_t\ csv\_data\_size\ =\ value.size()\ -\/\ \textcolor{keyword}{sizeof}(std::uint64\_t);}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}\ msg(\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a4fa1a4d2e48aa765093ca6aae57a5150}{Message::Type::RESPONSE}},\ \mbox{\hyperlink{class_agent_a374fceb89c2d3d53046ac128d2a50415}{address}}(),\ unit,\ Microseconds::zero(),\ csv\_data,\ csv\_data\_size);}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ msg.\mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{timestamp}}(\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}(csv\_timestamp));}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ msg.\mbox{\hyperlink{class_message_a5e1b63e51a32c96c04178a30859edbfc}{external}}(\mbox{\hyperlink{class_agent_ab9e9da9e9a66227bca835dab3780d366}{external}}());}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Log\ sent\ message\ to\ CSV}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a7a400be6500ceb7df23bf6d18ebf3a8d}{log\_message}}(msg,\ \textcolor{stringliteral}{"{}SEND"{}});}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_abdd1927b5e75313e89c56dc9eea71929}{can\_send}}(\&msg);}
+\DoxyCodeLine{00061\ \ \ \ \ \}\ }
+\DoxyCodeLine{00062\ \}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

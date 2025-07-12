@@ -1,0 +1,188 @@
+\doxysection{include/app/components/test\+\_\+factories.hpp File Reference}
+\hypertarget{test__factories_8hpp}{}\label{test__factories_8hpp}\index{include/app/components/test\_factories.hpp@{include/app/components/test\_factories.hpp}}
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include "{}../../api/framework/agent.\+h"{}}\newline
+{\ttfamily \#include "{}../../api/framework/component\+\_\+types.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/framework/component\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../datatypes.\+h"{}}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_test_component_data}{Test\+Component\+Data}}
+\begin{DoxyCompactList}\small\item\em Test-\/specific component data structure for predictable testing. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ \mbox{\hyperlink{test__factories_8hpp_a5c8b54a113f492fdb2424c550f7a3530}{test\+\_\+producer\+\_\+function}} (std\+::uint32\+\_\+t unit, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Test producer function that returns predictable values. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{test__factories_8hpp_a449dd988e6ed14029b3c9b33af24afaf}{test\+\_\+consumer\+\_\+function}} (void \texorpdfstring{$\ast$}{*}msg, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Test consumer function that tracks received responses. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{test__factories_8hpp_ab4a2defb7b93438ee9f24c331a8324f9}{create\+\_\+test\+\_\+producer}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, const std\+::string \&name="{}Test\+Producer"{}, float test\+\_\+value=42.\+0f)
+\begin{DoxyCompactList}\small\item\em Creates a test producer agent with predictable behavior. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{test__factories_8hpp_a35a548b6b327aab67f8a85f7ac2f0553}{create\+\_\+test\+\_\+consumer}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, const std\+::string \&name="{}Test\+Consumer"{})
+\begin{DoxyCompactList}\small\item\em Creates a test consumer agent with response tracking. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{test__factories_8hpp_afbd302005369e536571092ddde0cb95b}{create\+\_\+test\+\_\+consumer\+\_\+with\+\_\+period}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent\+::\+Microseconds}} period, const std\+::string \&name="{}Test\+Consumer"{})
+\begin{DoxyCompactList}\small\item\em Creates a test consumer with automatic periodic interest. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{struct_test_component_data}{Test\+Component\+Data}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{test__factories_8hpp_abf74bae185f8892eaa7f499987f180e4}{get\+\_\+test\+\_\+data}} (\mbox{\hyperlink{class_agent}{Agent}} \texorpdfstring{$\ast$}{*}agent)
+\begin{DoxyCompactList}\small\item\em Helper function to access \doxylink{struct_test_component_data}{Test\+Component\+Data} from \doxylink{class_agent}{Agent}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{test__factories_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{test__factories_8hpp_a35a548b6b327aab67f8a85f7ac2f0553}\index{test\_factories.hpp@{test\_factories.hpp}!create\_test\_consumer@{create\_test\_consumer}}
+\index{create\_test\_consumer@{create\_test\_consumer}!test\_factories.hpp@{test\_factories.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_test\_consumer()}{create\_test\_consumer()}}
+{\footnotesize\ttfamily \label{test__factories_8hpp_a35a548b6b327aab67f8a85f7ac2f0553} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+test\+\_\+consumer (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}TestConsumer"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a test consumer agent with response tracking. 
+
+Replaces the inheritance-\/based Test\+Agent consumer with function-\/based composition. Provides the same response tracking capabilities as the original Test\+Agent.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Test\+Consumer"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured test consumer \doxylink{class_agent}{Agent} 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null or name is empty \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{test__factories_8hpp_afbd302005369e536571092ddde0cb95b}\index{test\_factories.hpp@{test\_factories.hpp}!create\_test\_consumer\_with\_period@{create\_test\_consumer\_with\_period}}
+\index{create\_test\_consumer\_with\_period@{create\_test\_consumer\_with\_period}!test\_factories.hpp@{test\_factories.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_test\_consumer\_with\_period()}{create\_test\_consumer\_with\_period()}}
+{\footnotesize\ttfamily \label{test__factories_8hpp_afbd302005369e536571092ddde0cb95b} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+test\+\_\+consumer\+\_\+with\+\_\+period (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent\+::\+Microseconds}}}]{period}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}TestConsumer"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a test consumer with automatic periodic interest. 
+
+Convenience function that creates a test consumer and automatically starts periodic interest for the specified period.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em period} & Period for automatic periodic interest \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Test\+Consumer"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured test consumer \doxylink{class_agent}{Agent} with active periodic interest 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null or name is empty \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{test__factories_8hpp_ab4a2defb7b93438ee9f24c331a8324f9}\index{test\_factories.hpp@{test\_factories.hpp}!create\_test\_producer@{create\_test\_producer}}
+\index{create\_test\_producer@{create\_test\_producer}!test\_factories.hpp@{test\_factories.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_test\_producer()}{create\_test\_producer()}}
+{\footnotesize\ttfamily \label{test__factories_8hpp_ab4a2defb7b93438ee9f24c331a8324f9} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+test\+\_\+producer (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}TestProducer"{}}, }\item[{float}]{test\+\_\+value}{ = {\ttfamily 42.0f}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a test producer agent with predictable behavior. 
+
+Replaces the inheritance-\/based Test\+Agent producer with function-\/based composition. Provides the same predictable test behavior (fixed 42.\+0f values) as the original.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Test\+Producer"{}) \\
+\hline
+{\em test\+\_\+value} & Initial test value (default\+: 42.\+0f) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured test producer \doxylink{class_agent}{Agent} 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null or name is empty \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{test__factories_8hpp_abf74bae185f8892eaa7f499987f180e4}\index{test\_factories.hpp@{test\_factories.hpp}!get\_test\_data@{get\_test\_data}}
+\index{get\_test\_data@{get\_test\_data}!test\_factories.hpp@{test\_factories.hpp}}
+\doxysubsubsection{\texorpdfstring{get\_test\_data()}{get\_test\_data()}}
+{\footnotesize\ttfamily \label{test__factories_8hpp_abf74bae185f8892eaa7f499987f180e4} 
+\mbox{\hyperlink{struct_test_component_data}{Test\+Component\+Data}} \texorpdfstring{$\ast$}{*} get\+\_\+test\+\_\+data (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_agent}{Agent}} \texorpdfstring{$\ast$}{*}}]{agent}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Helper function to access \doxylink{struct_test_component_data}{Test\+Component\+Data} from \doxylink{class_agent}{Agent}. 
+
+Provides a way to access the test-\/specific data for verification in tests. This is a workaround since we can\textquotesingle{}t directly access private component data.
+
+Note\+: This is a test-\/only helper and should not be used in production code.
+
+
+\begin{DoxyParams}{Parameters}
+{\em agent} & Pointer to the test agent \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Pointer to \doxylink{struct_test_component_data}{Test\+Component\+Data} (nullptr if not a test agent) 
+\end{DoxyReturn}
+\Hypertarget{test__factories_8hpp_a449dd988e6ed14029b3c9b33af24afaf}\index{test\_factories.hpp@{test\_factories.hpp}!test\_consumer\_function@{test\_consumer\_function}}
+\index{test\_consumer\_function@{test\_consumer\_function}!test\_factories.hpp@{test\_factories.hpp}}
+\doxysubsubsection{\texorpdfstring{test\_consumer\_function()}{test\_consumer\_function()}}
+{\footnotesize\ttfamily \label{test__factories_8hpp_a449dd988e6ed14029b3c9b33af24afaf} 
+void test\+\_\+consumer\+\_\+function (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{msg}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Test consumer function that tracks received responses. 
+
+Replaces the virtual handle\+\_\+response() method from Test\+Agent with a function pointer. Tracks received values and response counts for test verification.
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to the received message \\
+\hline
+{\em data} & Pointer to \doxylink{struct_test_component_data}{Test\+Component\+Data} \\
+\hline
+\end{DoxyParams}
+\Hypertarget{test__factories_8hpp_a5c8b54a113f492fdb2424c550f7a3530}\index{test\_factories.hpp@{test\_factories.hpp}!test\_producer\_function@{test\_producer\_function}}
+\index{test\_producer\_function@{test\_producer\_function}!test\_factories.hpp@{test\_factories.hpp}}
+\doxysubsubsection{\texorpdfstring{test\_producer\_function()}{test\_producer\_function()}}
+{\footnotesize\ttfamily \label{test__factories_8hpp_a5c8b54a113f492fdb2424c550f7a3530} 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ test\+\_\+producer\+\_\+function (\begin{DoxyParamCaption}\item[{std\+::uint32\+\_\+t}]{unit}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Test producer function that returns predictable values. 
+
+Replaces the virtual get() method from Test\+Agent with a function pointer. Always returns the fixed test\+\_\+value (42.\+0f by default) for predictable testing.
+
+
+\begin{DoxyParams}{Parameters}
+{\em unit} & The data unit being requested \\
+\hline
+{\em data} & Pointer to \doxylink{struct_test_component_data}{Test\+Component\+Data} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Value containing the test data 
+\end{DoxyReturn}

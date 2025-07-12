@@ -1,0 +1,287 @@
+\doxysection{rsu.\+h}
+\hypertarget{rsu_8h_source}{}\label{rsu_8h_source}\index{include/api/framework/rsu.h@{include/api/framework/rsu.h}}
+\mbox{\hyperlink{rsu_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ RSU\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ RSU\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{network_8h}{api/framework/network.h}}"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{periodic_thread_8h}{api/framework/periodicThread.h}}"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{clock_8h}{api/framework/clock.h}}"{}}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{leader_key_storage_8h}{api/framework/leaderKeyStorage.h}}"{}}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_r_s_u_a1ad1a5d7de51603f4341d0a0110ac106}{RSU}}\ \{}
+\DoxyCodeLine{00018\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_network_a638cca85e6d97e60e28b9bbb310aa1e2}{Network::Communicator}}\ \mbox{\hyperlink{class_r_s_u_a6b39b0aa63fca522e4904354f8c3a634}{Communicator}};}
+\DoxyCodeLine{00020\ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Network::Protocol}}\ \mbox{\hyperlink{class_r_s_u_afd0585e0e24b0eb1e89fb4c19b2cbf18}{Protocol}};}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keyword}{typedef}\ Protocol::Address\ \mbox{\hyperlink{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0}{Address}};}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_network_ace8ef437586a78c43b82d6d4b5ae6410}{Network::Message}}\ \mbox{\hyperlink{class_r_s_u_a4f80ca90cc11271d968b43fef64ec0fa}{Message}};}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message::Unit}}\ \mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{Unit}};}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \ \ \ \ \mbox{\hyperlink{class_r_s_u_a1ad1a5d7de51603f4341d0a0110ac106}{RSU}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ rsu\_id,\ \mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{Unit}}\ \mbox{\hyperlink{class_r_s_u_a9c4b19205d3a48f69311cdf853bb6cd4}{unit}},\ std::chrono::milliseconds\ \mbox{\hyperlink{class_r_s_u_a090a82e21305501e60e4e840e53f48e0}{period}},}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ x\ =\ 0.0,\ \textcolor{keywordtype}{double}\ y\ =\ 0.0,\ \textcolor{keywordtype}{double}\ radius\ =\ 400.0,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ \textcolor{keyword}{nullptr},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ data\_size\ =\ 0);}
+\DoxyCodeLine{00027\ \ \ \ \ \mbox{\hyperlink{class_r_s_u_a2de7f2cab75b00188899a9a3ecff0c80}{\string~RSU}}();}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_r_s_u_a7be81f9359d98994f57b9ea7b3d7198b}{start}}();}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_r_s_u_a47c0376b44480b390932a2d79960377b}{stop}}();}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_r_s_u_a27479f45a055be4845f1cead3d42c1cf}{running}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0}{Address}}\&\ \mbox{\hyperlink{class_r_s_u_a170895c1c3e1a9617c8e891516aca401}{address}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00032\ \ \ \ \ \mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{Unit}}\ \mbox{\hyperlink{class_r_s_u_a9c4b19205d3a48f69311cdf853bb6cd4}{unit}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00033\ \ \ \ \ std::chrono::milliseconds\ \mbox{\hyperlink{class_r_s_u_a090a82e21305501e60e4e840e53f48e0}{period}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_r_s_u_a2f583a4621b4e5ff46fa7c20d537d4cf}{adjust\_period}}(std::chrono::milliseconds\ new\_period);}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_r_s_u_a070711958e52f9417cd0a01df694eb88}{broadcast}}();}
+\DoxyCodeLine{00036\ \ \ \ \ }
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{comment}{//\ Neighbor\ RSU\ management\ (directly\ in\ Protocol)}}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_r_s_u_a9c06d0c1b899feca5ca057324451c2aa}{initialize\_neighbor\_rsus}}();\ \textcolor{comment}{//\ Initialize\ neighbor\ RSUs\ directly\ in\ Protocol}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ RSU\ configuration}}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \_rsu\_id;}
+\DoxyCodeLine{00043\ \ \ \ \ \mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{Unit}}\ \_unit;}
+\DoxyCodeLine{00044\ \ \ \ \ std::chrono::milliseconds\ \_period;}
+\DoxyCodeLine{00045\ \ \ \ \ std::vector<std::uint8\_t>\ \_data;}
+\DoxyCodeLine{00046\ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ \_rsu\_key;}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{double}\ \_x;}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordtype}{double}\ \_y;}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordtype}{double}\ \_radius;}
+\DoxyCodeLine{00050\ \ \ \ \ }
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{//\ Note:\ Neighbor\ RSU\ information\ is\ now\ stored\ directly\ in\ Protocol's\ structure}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{//\ No\ need\ for\ RSU-\/level\ duplicate\ storage}}
+\DoxyCodeLine{00053\ \ \ \ \ }
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{//\ Network\ stack}}
+\DoxyCodeLine{00055\ \ \ \ \ \mbox{\hyperlink{class_network}{Network}}*\ \_network;}
+\DoxyCodeLine{00056\ \ \ \ \ \mbox{\hyperlink{class_r_s_u_a6b39b0aa63fca522e4904354f8c3a634}{Communicator}}*\ \_comm;}
+\DoxyCodeLine{00057\ \ \ \ \ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{comment}{//\ Periodic\ broadcasting\ (order\ matters\ for\ initialization)}}
+\DoxyCodeLine{00059\ \ \ \ \ std::atomic<bool>\ \_running;}
+\DoxyCodeLine{00060\ \ \ \ \ \mbox{\hyperlink{class_periodic___thread}{Periodic\_Thread<RSU>}}\ \_periodic\_thread;}
+\DoxyCodeLine{00061\ \ \ \ \ }
+\DoxyCodeLine{00062\ \};}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{comment}{/**********\ RSU\ Implementation\ **********/}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00075\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_r_s_u_a1ad1a5d7de51603f4341d0a0110ac106}{RSU::RSU}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ rsu\_id,\ \mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{Unit}}\ \mbox{\hyperlink{class_r_s_u_a9c4b19205d3a48f69311cdf853bb6cd4}{unit}},\ std::chrono::milliseconds\ \mbox{\hyperlink{class_r_s_u_a090a82e21305501e60e4e840e53f48e0}{period}},\ }
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ x,\ \textcolor{keywordtype}{double}\ y,\ \textcolor{keywordtype}{double}\ radius,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ data\_size)\ }
+\DoxyCodeLine{00077\ \ \ \ \ :\ \_rsu\_id(rsu\_id),\ \_unit(\mbox{\hyperlink{class_r_s_u_a9c4b19205d3a48f69311cdf853bb6cd4}{unit}}),\ \_period(\mbox{\hyperlink{class_r_s_u_a090a82e21305501e60e4e840e53f48e0}{period}}),\ \_x(x),\ \_y(y),\ \_radius(radius),\ \_running(false),}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \_periodic\_thread(this,\ \&\mbox{\hyperlink{class_r_s_u_a1ad1a5d7de51603f4341d0a0110ac106}{RSU}}::\mbox{\hyperlink{class_r_s_u_a070711958e52f9417cd0a01df694eb88}{broadcast}})\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ }
+\DoxyCodeLine{00080\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}RSU::RSU()\ called\ with\ id="{}}\ <<\ rsu\_id\ <<\ \textcolor{stringliteral}{"{},\ unit="{}}\ <<\ \mbox{\hyperlink{class_r_s_u_a9c4b19205d3a48f69311cdf853bb6cd4}{unit}}\ <<\ \textcolor{stringliteral}{"{},\ period="{}}\ <<\ \mbox{\hyperlink{class_r_s_u_a090a82e21305501e60e4e840e53f48e0}{period}}.count()\ <<\ \textcolor{stringliteral}{"{}ms\(\backslash\)n"{}};}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{comment}{//\ Store\ broadcast\ data\ if\ provided}}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ \&\&\ data\_size\ >\ 0)\ \{}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \_data.resize(data\_size);}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ std::memcpy(\_data.data(),\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ data\_size);}
+\DoxyCodeLine{00086\ \ \ \ \ \}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{comment}{//\ Create\ network\ stack\ with\ RSU\ ID\ for\ MAC\ address\ generation}}
+\DoxyCodeLine{00089\ \ \ \ \ \_network\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_network}{Network}}(\_rsu\_id,\ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aa75988ec7a180ed96d48291db84701f84}{Network::EntityType::RSU}});}
+\DoxyCodeLine{00090\ \ \ \ \ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{comment}{//\ Set\ NIC\ radius\ to\ match\ RSU's\ configured\ radius\ for\ consistent\ collision\ domain\ filtering}}
+\DoxyCodeLine{00092\ \ \ \ \ \_network-\/>channel()-\/>setRadius(\_radius);}
+\DoxyCodeLine{00093\ \ \ \ \ }
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{comment}{//\ Create\ communicator\ using\ the\ network's\ protocol\ channel\ and\ RSU's\ address}}
+\DoxyCodeLine{00095\ \ \ \ \ \mbox{\hyperlink{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0}{Address}}\ rsu\_addr(\_network-\/>address(),\ \_rsu\_id);}
+\DoxyCodeLine{00096\ \ \ \ \ \_comm\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_r_s_u_a6b39b0aa63fca522e4904354f8c3a634}{Communicator}}(\_network-\/>channel(),\ rsu\_addr);}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \ \ \_rsu\_key.fill(0);}
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{comment}{//\ Use\ RSU\ ID\ in\ the\ key\ to\ make\ it\ unique}}
+\DoxyCodeLine{00100\ \ \ \ \ \_rsu\_key[0]\ =\ (rsu\_id\ >>\ 8)\ \&\ 0xFF;}
+\DoxyCodeLine{00101\ \ \ \ \ \_rsu\_key[1]\ =\ rsu\_id\ \&\ 0xFF;}
+\DoxyCodeLine{00102\ \ \ \ \ \_rsu\_key[2]\ =\ 0xAA;\ \textcolor{comment}{//\ Marker\ for\ RSU}}
+\DoxyCodeLine{00103\ \ \ \ \ \_rsu\_key[3]\ =\ 0xBB;}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ initialized\ with\ address\ "{}}\ <<\ rsu\_addr.to\_string()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{comment}{//\ Set\ self\ ID\ for\ the\ Clock\ instance}}
+\DoxyCodeLine{00108\ \ \ \ \ \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\ self\_leader\_id\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\textcolor{keyword}{>}(rsu\_addr.paddr().bytes[5]);}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{if}\ (self\_leader\_id\ !=\ \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\_LEADER\_ID}})\ \{}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}().\mbox{\hyperlink{class_clock_a2cc3f3a5fe94bcdfcd45e83936f6c513}{setSelfId}}(self\_leader\_id);}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ registered\ self\_id\ "{}}\ <<\ self\_leader\_id\ <<\ \textcolor{stringliteral}{"{}\ with\ Clock.\(\backslash\)n"{}};}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}().\mbox{\hyperlink{class_clock_a5cc4fda803bea0fe083ecd7cfebca43c}{activate}}(\textcolor{keyword}{nullptr});\ \textcolor{comment}{//\ Activate\ clock\ to\ evaluate\ leader\ state}}
+\DoxyCodeLine{00113\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ has\ an\ INVALID\_LEADER\_ID\ based\ on\ its\ MAC.\ Clock\ self\_id\ not\ set.\(\backslash\)n"{}};}
+\DoxyCodeLine{00115\ \ \ \ \ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{comment}{//\ Set\ RSU\ key\ in\ LeaderKeyStorage\ so\ it\ can\ be\ used\ for\ MAC\ verification}}
+\DoxyCodeLine{00118\ \ \ \ \ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_a209a9826106362df59d13924242abce0}{setLeaderId}}(rsu\_addr.paddr());}
+\DoxyCodeLine{00119\ \ \ \ \ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_ae50fdd2568a695c267a18202792c22c7}{setGroupMacKey}}(\_rsu\_key);}
+\DoxyCodeLine{00120\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ registered\ key\ in\ LeaderKeyStorage\ for\ MAC\ verification.\(\backslash\)n"{}};}
+\DoxyCodeLine{00121\ \ \ \ \ }
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{comment}{//\ Initialize\ neighbor\ RSUs}}
+\DoxyCodeLine{00123\ \ \ \ \ \mbox{\hyperlink{class_r_s_u_a9c06d0c1b899feca5ca057324451c2aa}{initialize\_neighbor\_rsus}}();}
+\DoxyCodeLine{00124\ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00129\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_r_s_u_a2de7f2cab75b00188899a9a3ecff0c80}{RSU::\string~RSU}}()\ \{}
+\DoxyCodeLine{00130\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}RSU::\string~RSU()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00131\ \ \ \ \ }
+\DoxyCodeLine{00132\ \ \ \ \ \mbox{\hyperlink{class_r_s_u_a47c0376b44480b390932a2d79960377b}{stop}}();}
+\DoxyCodeLine{00133\ \ \ \ \ }
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keyword}{delete}\ \_comm;}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keyword}{delete}\ \_network;}
+\DoxyCodeLine{00136\ \ \ \ \ }
+\DoxyCodeLine{00137\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ destroyed\(\backslash\)n"{}};}
+\DoxyCodeLine{00138\ \}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00143\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_r_s_u_a7be81f9359d98994f57b9ea7b3d7198b}{RSU::start}}()\ \{}
+\DoxyCodeLine{00144\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}RSU::start()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00145\ \ \ \ \ }
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_running.load())\ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \_running.store(\textcolor{keyword}{true});}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \_periodic\_thread.start(\textcolor{keyword}{static\_cast<}std::int64\_t\textcolor{keyword}{>}(\_period.count())\ *\ 1000);}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ started\ broadcasting\ every\ "{}}\ <<\ \_period.count()\ <<\ \textcolor{stringliteral}{"{}ms\(\backslash\)n"{}};}
+\DoxyCodeLine{00150\ \ \ \ \ \}}
+\DoxyCodeLine{00151\ \}}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00156\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_r_s_u_a47c0376b44480b390932a2d79960377b}{RSU::stop}}()\ \{}
+\DoxyCodeLine{00157\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}RSU::stop()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00158\ \ \ \ \ }
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_running.load(std::memory\_order\_acquire))\ \{}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Step\ 1:\ Signal\ RSU\ that\ it\ should\ stop\ its\ operations}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \_running.store(\textcolor{keyword}{false},\ std::memory\_order\_release);}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ stopping\ broadcasting\(\backslash\)n"{}};}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Step\ 2:\ Stop\ periodic\ thread\ and\ wait\ for\ it\ to\ finish.}}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ This\ ensures\ RSU::broadcast()\ (and\ thus\ \_comm-\/>send())\ is\ no\ longer\ called.}}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \_periodic\_thread.join();}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ periodic\ thread\ stopped\(\backslash\)n"{}};}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Step\ 3:\ Release\ communicator\ now\ that\ the\ thread\ is\ guaranteed\ to\ not\ use\ it.}}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \_comm-\/>release();}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Step\ 4:\ Stop\ network\ stack\ after\ threads\ are\ fully\ stopped}}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \_network-\/>stop();}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ stopped\ broadcasting\(\backslash\)n"{}};}
+\DoxyCodeLine{00175\ \ \ \ \ \}}
+\DoxyCodeLine{00176\ \}}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00182\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_r_s_u_a27479f45a055be4845f1cead3d42c1cf}{RSU::running}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keywordflow}{return}\ \_running.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00184\ \}}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00190\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0}{RSU::Address}}\&\ \mbox{\hyperlink{class_r_s_u_a170895c1c3e1a9617c8e891516aca401}{RSU::address}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keywordflow}{return}\ \_comm-\/>address();}
+\DoxyCodeLine{00192\ \}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00198\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{RSU::Unit}}\ \mbox{\hyperlink{class_r_s_u_a9c4b19205d3a48f69311cdf853bb6cd4}{RSU::unit}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keywordflow}{return}\ \_unit;}
+\DoxyCodeLine{00200\ \}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00206\ \textcolor{keyword}{inline}\ std::chrono::milliseconds\ \mbox{\hyperlink{class_r_s_u_a090a82e21305501e60e4e840e53f48e0}{RSU::period}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00207\ \ \ \ \ \textcolor{keywordflow}{return}\ \_period;}
+\DoxyCodeLine{00208\ \}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00214\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_r_s_u_a2f583a4621b4e5ff46fa7c20d537d4cf}{RSU::adjust\_period}}(std::chrono::milliseconds\ new\_period)\ \{}
+\DoxyCodeLine{00215\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}RSU::adjust\_period()\ called\ with\ new\_period="{}}\ <<\ new\_period.count()\ <<\ \textcolor{stringliteral}{"{}ms\(\backslash\)n"{}};}
+\DoxyCodeLine{00216\ \ \ \ \ }
+\DoxyCodeLine{00217\ \ \ \ \ \_period\ =\ new\_period;}
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{class_r_s_u_a27479f45a055be4845f1cead3d42c1cf}{running}}())\ \{}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \_periodic\_thread.adjust\_period(\textcolor{keyword}{static\_cast<}std::int64\_t\textcolor{keyword}{>}(new\_period.count())\ *\ 1000);}
+\DoxyCodeLine{00220\ \ \ \ \ \}}
+\DoxyCodeLine{00221\ \ \ \ \ }
+\DoxyCodeLine{00222\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ period\ adjusted\ to\ "{}}\ <<\ new\_period.count()\ <<\ \textcolor{stringliteral}{"{}ms\(\backslash\)n"{}};}
+\DoxyCodeLine{00223\ \}}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00228\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_r_s_u_a070711958e52f9417cd0a01df694eb88}{RSU::broadcast}}()\ \{}
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_r_s_u_a27479f45a055be4845f1cead3d42c1cf}{running}}())\ \{}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00231\ \ \ \ \ \}}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}RSU::broadcast()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{comment}{//\ Create\ STATUS\ message}}
+\DoxyCodeLine{00236\ \ \ \ \ \mbox{\hyperlink{class_r_s_u_a4f80ca90cc11271d968b43fef64ec0fa}{Message}}*\ msg;}
+\DoxyCodeLine{00237\ \ \ \ \ }
+\DoxyCodeLine{00238\ \ \ \ \ \textcolor{comment}{//\ Calculate\ payload\ size\ first}}
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ payload\_size\ =\ \textcolor{keyword}{sizeof}(\_x)\ +\ \textcolor{keyword}{sizeof}(\_y)\ +\ \textcolor{keyword}{sizeof}(\_radius)\ +\ \textcolor{keyword}{sizeof}(\_rsu\_key)\ +\ \_data.size();}
+\DoxyCodeLine{00240\ \ \ \ \ std::vector<uint8\_t>\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}(payload\_size);\ \ \textcolor{comment}{//\ Properly\ size\ the\ vector}}
+\DoxyCodeLine{00241\ \ \ \ \ }
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ offset\ =\ 0;}
+\DoxyCodeLine{00243\ \ \ \ \ std::memcpy(\mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.data()\ +\ offset,\ \&\_x,\ \textcolor{keyword}{sizeof}(\_x));}
+\DoxyCodeLine{00244\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(\_x);}
+\DoxyCodeLine{00245\ \ \ \ \ std::memcpy(\mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.data()\ +\ offset,\ \&\_y,\ \textcolor{keyword}{sizeof}(\_y));}
+\DoxyCodeLine{00246\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(\_y);}
+\DoxyCodeLine{00247\ \ \ \ \ std::memcpy(\mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.data()\ +\ offset,\ \&\_radius,\ \textcolor{keyword}{sizeof}(\_radius));}
+\DoxyCodeLine{00248\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(\_radius);}
+\DoxyCodeLine{00249\ \ \ \ \ std::memcpy(\mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.data()\ +\ offset,\ \&\_rsu\_key,\ \textcolor{keyword}{sizeof}(\_rsu\_key));}
+\DoxyCodeLine{00250\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(\_rsu\_key);}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_data.empty())\ \{}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ std::memcpy(\mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.data()\ +\ offset,\ \_data.data(),\ \_data.size());}
+\DoxyCodeLine{00254\ \ \ \ \ \}\ }
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \ \ \ \ \textcolor{comment}{//\ With\ data\ payload}}
+\DoxyCodeLine{00257\ \ \ \ \ msg\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_r_s_u_a4f80ca90cc11271d968b43fef64ec0fa}{Message}}(\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a5f241c8c8f985b3c51e05d39cf030f4c}{Message::Type::STATUS}},\ \mbox{\hyperlink{class_r_s_u_a170895c1c3e1a9617c8e891516aca401}{address}}(),\ \_unit,\ }
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_message_ad04a4699ab611dddc70590532b236bf0}{Message::ZERO}},\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.data(),\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.size());}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ broadcasting\ STATUS\ for\ unit\ "{}}\ <<\ \_unit\ }
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ with\ data\ size\ "{}}\ <<\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.size()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \ \ \ \ \textcolor{comment}{//\ Send\ broadcast\ message}}
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{keywordtype}{bool}\ sent\ =\ \_comm-\/>send(msg);}
+\DoxyCodeLine{00265\ \ \ \ \ }
+\DoxyCodeLine{00266\ \ \ \ \ \textcolor{keywordflow}{if}\ (sent)\ \{}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ broadcast\ STATUS\ for\ unit\ "{}}\ <<\ \_unit\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00268\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ failed\ to\ broadcast\ STATUS\ for\ unit\ "{}}\ <<\ \_unit\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00270\ \ \ \ \ \}}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{keyword}{delete}\ msg;}
+\DoxyCodeLine{00273\ \}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00281\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_r_s_u_a9c06d0c1b899feca5ca057324451c2aa}{RSU::initialize\_neighbor\_rsus}}()\ \{}
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_network\ ||\ !\_network-\/>channel())\ \{}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ Cannot\ initialize\ protocol\ neighbors\ -\/\ no\ network\ or\ protocol\(\backslash\)n"{}};}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00285\ \ \ \ \ \}}
+\DoxyCodeLine{00286\ \ \ \ \ }
+\DoxyCodeLine{00287\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ Initializing\ neighbor\ RSUs\ directly\ in\ Protocol\ for\ RSU\ "{}}\ <<\ \_rsu\_id\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00288\ \ \ \ \ }
+\DoxyCodeLine{00289\ \ \ \ \ \textcolor{comment}{//\ Clear\ existing\ neighbors\ in\ protocol\ first}}
+\DoxyCodeLine{00290\ \ \ \ \ \_network-\/>channel()-\/>clear\_neighbor\_rsus();}
+\DoxyCodeLine{00291\ \ \ \ \ }
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{comment}{//\ For\ demo\ purposes,\ let's\ assume\ we\ know\ about\ other\ RSUs}}
+\DoxyCodeLine{00293\ \ \ \ \ \textcolor{comment}{//\ In\ practice,\ this\ would\ be\ loaded\ from\ configuration\ or\ discovered}}
+\DoxyCodeLine{00294\ \ \ \ \ }
+\DoxyCodeLine{00295\ \ \ \ \ \textcolor{comment}{//\ Example:\ If\ this\ is\ RSU\ 1000,\ add\ RSU\ 1001,\ 1002,\ etc.}}
+\DoxyCodeLine{00296\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ neighbor\_id\ =\ 1000;\ neighbor\_id\ <\ 1010;\ ++neighbor\_id)\ \{}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (neighbor\_id\ ==\ \_rsu\_id)\ \textcolor{keywordflow}{continue};\ \textcolor{comment}{//\ Skip\ self}}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ neighbor\ RSU\ key\ (similar\ to\ how\ we\ create\ our\ own\ key)}}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ neighbor\_key;}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ neighbor\_key.fill(0);}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ neighbor\_key[0]\ =\ (neighbor\_id\ >>\ 8)\ \&\ 0xFF;}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ neighbor\_key[1]\ =\ neighbor\_id\ \&\ 0xFF;}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ neighbor\_key[2]\ =\ 0xAA;\ \textcolor{comment}{//\ Marker\ for\ RSU}}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ neighbor\_key[3]\ =\ 0xBB;}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ neighbor\ RSU\ address}}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ neighbor\_mac;}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ neighbor\_mac.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[0]\ =\ 0x02;\ \textcolor{comment}{//\ Locally\ administered}}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ neighbor\_mac.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[1]\ =\ 0x00;}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ neighbor\_mac.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[2]\ =\ 0x00;}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ neighbor\_mac.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[3]\ =\ 0x00;}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ neighbor\_mac.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[4]\ =\ (neighbor\_id\ >>\ 8)\ \&\ 0xFF;}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ neighbor\_mac.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[5]\ =\ neighbor\_id\ \&\ 0xFF;}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0}{Address}}\ neighbor\_address(neighbor\_mac,\ neighbor\_id);}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Add\ directly\ to\ Protocol\ structure}}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \_network-\/>channel()-\/>add\_neighbor\_rsu(neighbor\_id,\ neighbor\_key,\ neighbor\_address);}
+\DoxyCodeLine{00320\ \ \ \ \ \}}
+\DoxyCodeLine{00321\ \ \ \ \ }
+\DoxyCodeLine{00322\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<RSU>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[RSU]\ Successfully\ initialized\ neighbor\ RSUs\ directly\ in\ Protocol\(\backslash\)n"{}};}
+\DoxyCodeLine{00323\ \}}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ RSU\_H\ }}
+
+\end{DoxyCode}

@@ -1,0 +1,263 @@
+\doxysection{status\+Manager.\+h}
+\hypertarget{status_manager_8h_source}{}\label{status_manager_8h_source}\index{include/api/framework/statusManager.h@{include/api/framework/statusManager.h}}
+\mbox{\hyperlink{status_manager_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ STATUS\_MANAGER\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ STATUS\_MANAGER\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <array>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <algorithm>}\ \textcolor{comment}{//\ For\ std::max\_element}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <stdexcept>}\ \textcolor{comment}{//\ For\ std::invalid\_argument}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ Assuming\ these\ paths\ are\ correct\ relative\ to\ your\ include\ directories}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{protocol_8h}{api/network/protocol.h}}"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{periodic_thread_8h}{api/framework/periodicThread.h}}"{}}\ \textcolor{comment}{//\ Your\ Periodic\_Thread}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Your\ debug\ logging}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{leader_key_storage_8h}{api/framework/leaderKeyStorage.h}}"{}}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{comment}{//\ Forward\ declaration\ of\ Protocol\ to\ manage\ include\ order\ if\ necessary}}
+\DoxyCodeLine{00020\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC\_TYPE>\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_protocol}{Protocol}};}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ Define\ a\ type\ for\ the\ unique\ key\ of\ a\ vehicle}}
+\DoxyCodeLine{00023\ \textcolor{keyword}{using\ }\mbox{\hyperlink{status_manager_8h_a71b351748e2640037b9e75365d24beda}{UniqueKeyValueType}}\ =\ std::array<uint8\_t,\ 16>;\ \textcolor{comment}{//\ Example:\ 128-\/bit\ key}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00032\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC\_TYPE>}
+\DoxyCodeLine{00033\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_status_manager_ac689338c1ff48e807be06ae2753149cc}{StatusManager}}\ \{}
+\DoxyCodeLine{00034\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keyword}{using\ }\mbox{\hyperlink{class_status_manager_af82a0053f326d3d23ef320f1cc6b3817}{VehicleIdType}}\ =\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_protocol_1_1_address}{Protocol<NIC\_TYPE>::Address}};\ \textcolor{comment}{//\ MAC\ +\ Port}}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{comment}{//\ Define\ the\ port\ used\ for\ STATUS\ messages}}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{comment}{//\ This\ should\ ideally\ come\ from\ a\ central\ traits/configuration\ file.}}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Protocol<NIC\_TYPE>::Port}}\ \mbox{\hyperlink{class_status_manager_a82233c93a26a76c6aa845cb4dbb30629}{STATUS\_PORT}}\ =\ 60000;}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_status_manager_1_1_neighbor_info}{NeighborInfo}}\ \{}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_status_manager_af82a0053f326d3d23ef320f1cc6b3817}{VehicleIdType}}\ \mbox{\hyperlink{struct_status_manager_1_1_neighbor_info_a11d7d5993af8a73d066bc32c0176944e}{id}};}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ std::atomic<uint32\_t>\ \mbox{\hyperlink{struct_status_manager_1_1_neighbor_info_a52cf507b8587df071462a87c42f8aa2f}{age}};\ \ \textcolor{comment}{//\ Made\ atomic\ for\ potential\ concurrent\ updates}}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{status_manager_8h_a71b351748e2640037b9e75365d24beda}{UniqueKeyValueType}}\ \mbox{\hyperlink{struct_status_manager_1_1_neighbor_info_a4ed6f1485128dbb03c67c51b3a656399}{unique\_key}};}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ std::chrono::steady\_clock::time\_point\ \mbox{\hyperlink{struct_status_manager_1_1_neighbor_info_a26d3169da49a8cc148905ef1ee812e41}{last\_seen}};}
+\DoxyCodeLine{00045\ \ \ \ \ \};}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00052\ \ \ \ \ \mbox{\hyperlink{class_status_manager_ac689338c1ff48e807be06ae2753149cc}{StatusManager}}(}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol}{Protocol<NIC\_TYPE>}}*\ owner\_protocol,}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\&\ self\_mac\_address,}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ uint32\_t\ self\_age,}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{status_manager_8h_a71b351748e2640037b9e75365d24beda}{UniqueKeyValueType}}\&\ self\_unique\_key,}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ std::chrono::microseconds\ broadcast\_interval\ =\ std::chrono::seconds(1),}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ std::chrono::microseconds\ prune\_interval\ =\ std::chrono::seconds(3),}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ std::chrono::microseconds\ neighbor\_timeout\ =\ std::chrono::seconds(5)}
+\DoxyCodeLine{00060\ \ \ \ \ )\ :\ \_protocol\_ptr(owner\_protocol),}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \_self\_mac\_address(self\_mac\_address),}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \_self\_id(self\_mac\_address,\ \mbox{\hyperlink{class_status_manager_a82233c93a26a76c6aa845cb4dbb30629}{STATUS\_PORT}}),}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \_self\_age(self\_age),}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \_self\_unique\_key(self\_unique\_key),}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \_broadcast\_interval(broadcast\_interval),}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \_prune\_interval(prune\_interval),}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \_neighbor\_timeout(neighbor\_timeout),}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \_running(true)}
+\DoxyCodeLine{00069\ \ \ \ \ \{}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_protocol\_ptr)\ \{}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<StatusManager>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}StatusManager:\ Owner\ protocol\ cannot\ be\ null\(\backslash\)n"{}};}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}StatusManager:\ Owner\ protocol\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Add\ self\ to\ neighbor\ list}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_neighbor\_list\_mutex);}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \_neighbor\_list[\_self\_id]\ =\ \{\_self\_id,\ self\_age,\ \_self\_unique\_key,\ std::chrono::steady\_clock::now()\};}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Set\ self\ as\ initial\ leader}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_a209a9826106362df59d13924242abce0}{setLeaderId}}(\_self\_mac\_address);}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_ae50fdd2568a695c267a18202792c22c7}{setGroupMacKey}}(\_self\_unique\_key);}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \_broadcast\_thread\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_periodic___thread}{Periodic\_Thread<StatusManager>}}(\textcolor{keyword}{this},\ \&StatusManager::broadcast\_status\_message\_task);}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \_prune\_thread\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_periodic___thread}{Periodic\_Thread<StatusManager>}}(\textcolor{keyword}{this},\ \&StatusManager::prune\_stale\_neighbors\_task);}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \_broadcast\_thread-\/>start(\_broadcast\_interval);}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \_prune\_thread-\/>start(\_prune\_interval);}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<StatusManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}StatusManager\ initialized\ for\ "{}}\ <<\ \_self\_id.to\_string()\ }
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (Age:\ "{}}\ <<\ \_self\_age\ <<\ \textcolor{stringliteral}{"{}).\ Broadcasting\ every\ "{}}\ }
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \_broadcast\_interval.count()\ <<\ \textcolor{stringliteral}{"{}us.\ Pruning\ every\ "{}}\ }
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \_prune\_interval.count()\ <<\ \textcolor{stringliteral}{"{}us.\(\backslash\)n"{}};}
+\DoxyCodeLine{00095\ \ \ \ \ \}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00102\ \ \ \ \ \mbox{\hyperlink{class_status_manager_a04171f1b4e2e81b78ae706a88b0a5ae9}{\string~StatusManager}}()\ \{}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \_running.store(\textcolor{keyword}{false},\ std::memory\_order\_release);}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_broadcast\_thread)\ \{}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \_broadcast\_thread-\/>join();}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ \_broadcast\_thread;}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \_broadcast\_thread\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_prune\_thread)\ \{}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \_prune\_thread-\/>join();}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ \_prune\_thread;}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \_prune\_thread\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<StatusManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}StatusManager\ for\ "{}}\ <<\ \_self\_id.to\_string()\ <<\ \textcolor{stringliteral}{"{}\ shut\ down.\(\backslash\)n"{}};}
+\DoxyCodeLine{00115\ \ \ \ \ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_status_manager_ab6dbc0bd69a7faaf203801ce093fecdf}{process\_incoming\_status}}(}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_status_manager_af82a0053f326d3d23ef320f1cc6b3817}{VehicleIdType}}\&\ sender\_protocol\_address,}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ payload\_data,}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ payload\_size)}
+\DoxyCodeLine{00126\ \ \ \ \ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_running.load(std::memory\_order\_acquire))\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (payload\_size\ <\ (\textcolor{keyword}{sizeof}(uint32\_t)\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{status_manager_8h_a71b351748e2640037b9e75365d24beda}{UniqueKeyValueType}})))\ \{}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<StatusManager>}}(WAR)\ <<\ \textcolor{stringliteral}{"{}StatusManager:\ Received\ undersized\ STATUS\ payload\ from\ "{}}}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ sender\_protocol\_address.to\_string()\ <<\ \textcolor{stringliteral}{"{}.\ Size:\ "{}}\ <<\ payload\_size\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ uint32\_t\ sender\_age;}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{status_manager_8h_a71b351748e2640037b9e75365d24beda}{UniqueKeyValueType}}\ sender\_unique\_key;}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ offset\ =\ 0;}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ std::memcpy(\&sender\_age,\ payload\_data\ +\ offset,\ \textcolor{keyword}{sizeof}(sender\_age));}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(sender\_age);}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ std::memcpy(sender\_unique\_key.data(),\ payload\_data\ +\ offset,\ sender\_unique\_key.size());}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_status_manager_af82a0053f326d3d23ef320f1cc6b3817}{VehicleIdType}}\ consistent\_sender\_id(sender\_protocol\_address.paddr(),\ \mbox{\hyperlink{class_status_manager_a82233c93a26a76c6aa845cb4dbb30629}{STATUS\_PORT}});}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_neighbor\_list\_mutex);}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ it\ =\ \_neighbor\_list.find(consistent\_sender\_id);}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ list\_changed\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (it\ ==\ \_neighbor\_list.end())\ \{}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \_neighbor\_list[consistent\_sender\_id]\ =\ \{consistent\_sender\_id,\ sender\_age,\ sender\_unique\_key,\ std::chrono::steady\_clock::now()\};}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ list\_changed\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<StatusManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}StatusManager:\ New\ neighbor\ "{}}\ <<\ consistent\_sender\_id.to\_string()}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (Age:\ "{}}\ <<\ sender\_age\ <<\ \textcolor{stringliteral}{"{}).\(\backslash\)n"{}};}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (it-\/>second.age\ !=\ sender\_age\ ||\ it-\/>second.unique\_key\ !=\ sender\_unique\_key)\ \{}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ list\_changed\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<StatusManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}StatusManager:\ Updated\ neighbor\ "{}}\ <<\ consistent\_sender\_id.to\_string()}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (Age:\ "{}}\ <<\ sender\_age\ <<\ \textcolor{stringliteral}{"{}).\(\backslash\)n"{}};}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ it-\/>second.age.store(sender\_age,\ std::memory\_order\_release);}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ it-\/>second.unique\_key\ =\ sender\_unique\_key;}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ it-\/>second.last\_seen\ =\ std::chrono::steady\_clock::now();}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (list\_changed)\ \{}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ perform\_leader\_election\_and\_update\_storage\_unsafe();}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00169\ \ \ \ \ \}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ \mbox{\hyperlink{class_status_manager_af74c003a713994791ead3a95931447c0}{StatusManager}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_status_manager_ac689338c1ff48e807be06ae2753149cc}{StatusManager}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00172\ \ \ \ \ \mbox{\hyperlink{class_status_manager_ac689338c1ff48e807be06ae2753149cc}{StatusManager}}\&\ \mbox{\hyperlink{class_status_manager_a234c08530cdda40116105fbf4f33d220}{operator=}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_status_manager_ac689338c1ff48e807be06ae2753149cc}{StatusManager}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keywordtype}{void}\ broadcast\_status\_message\_task()\ \{}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_running.load(std::memory\_order\_acquire))\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ std::vector<uint8\_t>\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}};}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.resize(\textcolor{keyword}{sizeof}(\_self\_age)\ +\ \_self\_unique\_key.size());}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ offset\ =\ 0;}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ std::memcpy(\mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.data()\ +\ offset,\ \&\_self\_age,\ \textcolor{keyword}{sizeof}(\_self\_age));}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(\_self\_age);}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ std::memcpy(\mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.data()\ +\ offset,\ \_self\_unique\_key.data(),\ \_self\_unique\_key.size());}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_protocol_1_1_address}{Protocol<NIC\_TYPE>::Address}}\ broadcast\_dest\_addr(\mbox{\hyperlink{class_ethernet_a4d98569f734c1d3050bd1b85aeb30b51}{Ethernet::BROADCAST}},\ \mbox{\hyperlink{class_status_manager_a82233c93a26a76c6aa845cb4dbb30629}{STATUS\_PORT}});}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_protocol\_mutex);}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \_protocol\_ptr-\/>send(\_self\_id,\ broadcast\_dest\_addr,\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.data(),\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}.size());}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<StatusManager>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}StatusManager:\ Broadcasted\ STATUS\ from\ "{}}\ <<\ \_self\_id.to\_string()\ }
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (Age:\ "{}}\ <<\ \_self\_age\ <<\ \textcolor{stringliteral}{"{}).\(\backslash\)n"{}};}
+\DoxyCodeLine{00200\ \ \ \ \ \}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00207\ \ \ \ \ \textcolor{keywordtype}{void}\ prune\_stale\_neighbors\_task()\ \{}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_running.load(std::memory\_order\_acquire))\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_neighbor\_list\_mutex);}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ list\_changed\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ now\ =\ std::chrono::steady\_clock::now();}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ it\ =\ \_neighbor\_list.begin();\ it\ !=\ \_neighbor\_list.end();\ )\ \{}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (it-\/>first.paddr()\ ==\ \_self\_mac\_address)\ \{}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ it-\/>second.last\_seen\ =\ now;}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ++it;}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((now\ -\/\ it-\/>second.last\_seen)\ >\ \_neighbor\_timeout)\ \{}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<StatusManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}StatusManager:\ Pruning\ stale\ neighbor\ "{}}\ <<\ it-\/>first.to\_string()\ <<\ \textcolor{stringliteral}{"{}.\(\backslash\)n"{}};}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ it\ =\ \_neighbor\_list.erase(it);}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ list\_changed\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ++it;}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (list\_changed)\ \{}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ perform\_leader\_election\_and\_update\_storage\_unsafe();}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00232\ \ \ \ \ \}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keywordtype}{void}\ perform\_leader\_election\_and\_update\_storage\_unsafe()\ \{}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_neighbor\_list.empty())\ \{}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<StatusManager>}}(WAR)\ <<\ \textcolor{stringliteral}{"{}StatusManager:\ Neighbor\ list\ became\ empty.\ Re-\/asserting\ self\ as\ leader.\(\backslash\)n"{}};}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_a209a9826106362df59d13924242abce0}{setLeaderId}}(\_self\_mac\_address);}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_ae50fdd2568a695c267a18202792c22c7}{setGroupMacKey}}(\_self\_unique\_key);}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ leader\_it\ =\ std::max\_element(\_neighbor\_list.begin(),\ \_neighbor\_list.end(),}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ [](\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ a\_pair,\ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ b\_pair)\ \{}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ NeighborInfo\&\ a\ =\ a\_pair.second;}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ NeighborInfo\&\ b\ =\ b\_pair.second;}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ (a.age.load(std::memory\_order\_acquire)\ !=\ b.age.load(std::memory\_order\_acquire))\ \{}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ a.age.load(std::memory\_order\_acquire)\ <\ b.age.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ b.unique\_key\ <\ a.unique\_key;}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ Ethernet::Address\ elected\_leader\_mac\ =\ leader\_it-\/>second.id.paddr();}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{status_manager_8h_a71b351748e2640037b9e75365d24beda}{UniqueKeyValueType}}\&\ elected\_leader\_key\ =\ leader\_it-\/>second.unique\_key;}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<StatusManager>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}StatusManager:\ Leader\ election\ completed.\ New\ leader\ MAC:\ "{}}}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(elected\_leader\_mac)\ }
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (Age:\ "{}}\ <<\ leader\_it-\/>second.age.load(std::memory\_order\_acquire)\ <<\ \textcolor{stringliteral}{"{}).\(\backslash\)n"{}};}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_a209a9826106362df59d13924242abce0}{setLeaderId}}(elected\_leader\_mac);}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_ae50fdd2568a695c267a18202792c22c7}{setGroupMacKey}}(elected\_leader\_key);}
+\DoxyCodeLine{00266\ \ \ \ \ \}}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \ \ \mbox{\hyperlink{class_protocol}{Protocol<NIC\_TYPE>}}*\ \_protocol\_ptr;}
+\DoxyCodeLine{00269\ \ \ \ \ \textcolor{keyword}{mutable}\ std::mutex\ \_protocol\_mutex;\ \ \textcolor{comment}{//\ Protect\ protocol\ access}}
+\DoxyCodeLine{00270\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ \_self\_mac\_address;}
+\DoxyCodeLine{00271\ \ \ \ \ \textcolor{keyword}{const}\ VehicleIdType\ \_self\_id;}
+\DoxyCodeLine{00272\ \ \ \ \ std::atomic<uint32\_t>\ \_self\_age;\ \ \textcolor{comment}{//\ Made\ atomic\ for\ potential\ concurrent\ updates}}
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{status_manager_8h_a71b351748e2640037b9e75365d24beda}{UniqueKeyValueType}}\ \_self\_unique\_key;}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \ \ std::map<VehicleIdType,\ NeighborInfo>\ \_neighbor\_list;}
+\DoxyCodeLine{00276\ \ \ \ \ \textcolor{keyword}{mutable}\ std::mutex\ \_neighbor\_list\_mutex;}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \ \ \ \ \mbox{\hyperlink{class_periodic___thread}{Periodic\_Thread<StatusManager>}}*\ \_broadcast\_thread;}
+\DoxyCodeLine{00279\ \ \ \ \ \mbox{\hyperlink{class_periodic___thread}{Periodic\_Thread<StatusManager>}}*\ \_prune\_thread;}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ \ \ \textcolor{keyword}{const}\ std::chrono::microseconds\ \_broadcast\_interval;}
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{keyword}{const}\ std::chrono::microseconds\ \_prune\_interval;}
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{keyword}{const}\ std::chrono::microseconds\ \_neighbor\_timeout;}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \ \ \ \ std::atomic<bool>\ \_running;}
+\DoxyCodeLine{00286\ \};}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ \textcolor{comment}{//\ Add\ traits\ for\ StatusManager}}
+\DoxyCodeLine{00289\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ NIC\_TYPE>}
+\DoxyCodeLine{00290\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_status_manager}{StatusManager}}<NIC\_TYPE>>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>\ \{}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_status_manager_3_01_n_i_c___t_y_p_e_01_4_01_4_ae9d36d0b3aaa0ecfd8329803b49658ee}{debugged}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00292\ \};}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ STATUS\_MANAGER\_H}}
+
+\end{DoxyCode}

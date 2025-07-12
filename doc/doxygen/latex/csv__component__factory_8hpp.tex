@@ -1,0 +1,52 @@
+\doxysection{include/app/components/csv\+\_\+component\+\_\+factory.hpp File Reference}
+\hypertarget{csv__component__factory_8hpp}{}\label{csv__component__factory_8hpp}\index{include/app/components/csv\_component\_factory.hpp@{include/app/components/csv\_component\_factory.hpp}}
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include "{}../../api/framework/agent.\+h"{}}\newline
+{\ttfamily \#include "{}../../api/framework/csv\+\_\+agent.\+h"{}}\newline
+{\ttfamily \#include "{}csv\+\_\+component\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}csv\+\_\+component\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../datatypes.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{csv__component__factory_8hpp_a6e282462652386604968347604dbbd07}{create\+\_\+csv\+\_\+component}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, const std\+::string \&csv\+\_\+file\+\_\+path, const std\+::string \&name="{}CSVComponent"{})
+\begin{DoxyCompactList}\small\item\em Creates a CSV component using function-\/based composition. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{csv__component__factory_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{csv__component__factory_8hpp_a6e282462652386604968347604dbbd07}\index{csv\_component\_factory.hpp@{csv\_component\_factory.hpp}!create\_csv\_component@{create\_csv\_component}}
+\index{create\_csv\_component@{create\_csv\_component}!csv\_component\_factory.hpp@{csv\_component\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_csv\_component()}{create\_csv\_component()}}
+{\footnotesize\ttfamily \label{csv__component__factory_8hpp_a6e282462652386604968347604dbbd07} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+csv\+\_\+component (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{const std\+::string \&}]{csv\+\_\+file\+\_\+path}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}CSVComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a CSV component using function-\/based composition. 
+
+Replaces inheritance-\/based CSV component with EPOS Smart\+Data principles. Eliminates vtable race conditions during destruction by using function pointers instead of virtual methods.
+
+CSV components are producer-\/only and read data from CSV files in the format\+: timestamp,id,lat,lon,alt,x,y,z,speed,heading,yawrate,acceleration This factory creates a complete \doxylink{class_agent}{Agent} configured as a producer for CSV\+\_\+\+VEHICLE\+\_\+\+DATA.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em csv\+\_\+file\+\_\+path} & Path to the CSV file to read \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+CSVComponent"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} ready for operation 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null, csv\+\_\+file\+\_\+path is empty, or file cannot be loaded \\
+\hline
+\end{DoxyExceptions}

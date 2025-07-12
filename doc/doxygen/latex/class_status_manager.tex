@@ -1,0 +1,132 @@
+\doxysection{Status\+Manager\texorpdfstring{$<$}{<} NIC\+\_\+\+TYPE \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_status_manager}{}\label{class_status_manager}\index{StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}}
+
+
+Thread-\/safe manager for vehicle status and leader election.  
+
+
+
+
+{\ttfamily \#include $<$status\+Manager.\+h$>$}
+
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_status_manager_1_1_neighbor_info}{Neighbor\+Info}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{class_status_manager_af82a0053f326d3d23ef320f1cc6b3817}{Vehicle\+Id\+Type}} = typename \mbox{\hyperlink{class_protocol}{Protocol}}$<$NIC\+\_\+\+TYPE$>$\+::\+Address
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_status_manager_ac689338c1ff48e807be06ae2753149cc}{Status\+Manager}} (\mbox{\hyperlink{class_protocol}{Protocol}}$<$ NIC\+\_\+\+TYPE $>$ \texorpdfstring{$\ast$}{*}owner\+\_\+protocol, const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&self\+\_\+mac\+\_\+address, uint32\+\_\+t self\+\_\+age, const \mbox{\hyperlink{status_manager_8h_a71b351748e2640037b9e75365d24beda}{Unique\+Key\+Value\+Type}} \&self\+\_\+unique\+\_\+key, std\+::chrono\+::microseconds broadcast\+\_\+interval=std\+::chrono\+::seconds(1), std\+::chrono\+::microseconds prune\+\_\+interval=std\+::chrono\+::seconds(3), std\+::chrono\+::microseconds neighbor\+\_\+timeout=std\+::chrono\+::seconds(5))
+\begin{DoxyCompactList}\small\item\em Construct a new Status Manager. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{class_status_manager_a04171f1b4e2e81b78ae706a88b0a5ae9}{\texorpdfstring{$\sim$}{\string~}\+Status\+Manager}} ()
+\begin{DoxyCompactList}\small\item\em Destroy the Status Manager. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_status_manager_ab6dbc0bd69a7faaf203801ce093fecdf}{process\+\_\+incoming\+\_\+status}} (const \mbox{\hyperlink{class_status_manager_af82a0053f326d3d23ef320f1cc6b3817}{Vehicle\+Id\+Type}} \&sender\+\_\+protocol\+\_\+address, const uint8\+\_\+t \texorpdfstring{$\ast$}{*}payload\+\_\+data, unsigned int payload\+\_\+size)
+\begin{DoxyCompactList}\small\item\em Process an incoming status message. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{class_status_manager_af74c003a713994791ead3a95931447c0}{Status\+Manager}} (const \mbox{\hyperlink{class_status_manager}{Status\+Manager}} \&)=delete
+\item 
+\mbox{\hyperlink{class_status_manager}{Status\+Manager}} \& \mbox{\hyperlink{class_status_manager_a234c08530cdda40116105fbf4f33d220}{operator=}} (const \mbox{\hyperlink{class_status_manager}{Status\+Manager}} \&)=delete
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_protocol}{Protocol}}$<$ NIC\+\_\+\+TYPE $>$\+::\+Port \mbox{\hyperlink{class_status_manager_a82233c93a26a76c6aa845cb4dbb30629}{STATUS\+\_\+\+PORT}} = 60000
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename NIC\+\_\+\+TYPE$>$\newline
+class Status\+Manager$<$ NIC\+\_\+\+TYPE $>$}
+Thread-\/safe manager for vehicle status and leader election. 
+
+This class is thread-\/safe and can be accessed from multiple threads. It manages vehicle status broadcasts, neighbor tracking, and leader election. All state access is protected by appropriate synchronization primitives. 
+
+\label{doc-typedef-members}
+\Hypertarget{class_status_manager_doc-typedef-members}
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_status_manager_af82a0053f326d3d23ef320f1cc6b3817}\index{StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}!VehicleIdType@{VehicleIdType}}
+\index{VehicleIdType@{VehicleIdType}!StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}}
+\doxysubsubsection{\texorpdfstring{VehicleIdType}{VehicleIdType}}
+{\footnotesize\ttfamily \label{class_status_manager_af82a0053f326d3d23ef320f1cc6b3817} 
+template$<$typename NIC\+\_\+\+TYPE$>$ \\
+using \mbox{\hyperlink{class_status_manager}{Status\+Manager}}$<$ NIC\+\_\+\+TYPE $>$\+::\+Vehicle\+Id\+Type = typename \mbox{\hyperlink{class_protocol}{Protocol}}$<$NIC\+\_\+\+TYPE$>$\+::\+Address}
+
+
+
+\label{doc-constructors}
+\Hypertarget{class_status_manager_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_status_manager_ac689338c1ff48e807be06ae2753149cc}\index{StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}!StatusManager@{StatusManager}}
+\index{StatusManager@{StatusManager}!StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}}
+\doxysubsubsection{\texorpdfstring{StatusManager()}{StatusManager()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_status_manager_ac689338c1ff48e807be06ae2753149cc} 
+template$<$typename NIC\+\_\+\+TYPE$>$ \\
+\mbox{\hyperlink{class_status_manager}{Status\+Manager}}$<$ NIC\+\_\+\+TYPE $>$\mbox{\hyperlink{class_status_manager}{\+::\+Status\+Manager}} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_protocol}{Protocol}}$<$ NIC\+\_\+\+TYPE $>$ \texorpdfstring{$\ast$}{*}}]{owner\+\_\+protocol}{, }\item[{const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \&}]{self\+\_\+mac\+\_\+address}{, }\item[{uint32\+\_\+t}]{self\+\_\+age}{, }\item[{const \mbox{\hyperlink{status_manager_8h_a71b351748e2640037b9e75365d24beda}{Unique\+Key\+Value\+Type}} \&}]{self\+\_\+unique\+\_\+key}{, }\item[{std\+::chrono\+::microseconds}]{broadcast\+\_\+interval}{ = {\ttfamily std\+:\+:chrono\+:\+:seconds(1)}, }\item[{std\+::chrono\+::microseconds}]{prune\+\_\+interval}{ = {\ttfamily std\+:\+:chrono\+:\+:seconds(3)}, }\item[{std\+::chrono\+::microseconds}]{neighbor\+\_\+timeout}{ = {\ttfamily std\+:\+:chrono\+:\+:seconds(5)}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Construct a new Status Manager. 
+
+Thread-\/safe\+: Constructor is not thread-\/safe, should be called from a single thread \Hypertarget{class_status_manager_a04171f1b4e2e81b78ae706a88b0a5ae9}\index{StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}!````~StatusManager@{\texorpdfstring{$\sim$}{\string~}StatusManager}}
+\index{````~StatusManager@{\texorpdfstring{$\sim$}{\string~}StatusManager}!StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}StatusManager()}{\string~StatusManager()}}
+{\footnotesize\ttfamily \label{class_status_manager_a04171f1b4e2e81b78ae706a88b0a5ae9} 
+template$<$typename NIC\+\_\+\+TYPE$>$ \\
+\mbox{\hyperlink{class_status_manager}{Status\+Manager}}$<$ NIC\+\_\+\+TYPE $>$\+::\texorpdfstring{$\sim$}{\string~}\mbox{\hyperlink{class_status_manager}{Status\+Manager}} (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Destroy the Status Manager. 
+
+Thread-\/safe\+: Destructor is not thread-\/safe, should be called from a single thread \Hypertarget{class_status_manager_af74c003a713994791ead3a95931447c0}\index{StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}!StatusManager@{StatusManager}}
+\index{StatusManager@{StatusManager}!StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}}
+\doxysubsubsection{\texorpdfstring{StatusManager()}{StatusManager()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_status_manager_af74c003a713994791ead3a95931447c0} 
+template$<$typename NIC\+\_\+\+TYPE$>$ \\
+\mbox{\hyperlink{class_status_manager}{Status\+Manager}}$<$ NIC\+\_\+\+TYPE $>$\mbox{\hyperlink{class_status_manager}{\+::\+Status\+Manager}} (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_status_manager}{Status\+Manager}}$<$ NIC\+\_\+\+TYPE $>$ \&}]{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_status_manager_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_status_manager_a234c08530cdda40116105fbf4f33d220}\index{StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}!operator=@{operator=}}
+\index{operator=@{operator=}!StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}}
+\doxysubsubsection{\texorpdfstring{operator=()}{operator=()}}
+{\footnotesize\ttfamily \label{class_status_manager_a234c08530cdda40116105fbf4f33d220} 
+template$<$typename NIC\+\_\+\+TYPE$>$ \\
+\mbox{\hyperlink{class_status_manager}{Status\+Manager}} \& \mbox{\hyperlink{class_status_manager}{Status\+Manager}}$<$ NIC\+\_\+\+TYPE $>$\+::operator= (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_status_manager}{Status\+Manager}}$<$ NIC\+\_\+\+TYPE $>$ \&}]{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+\Hypertarget{class_status_manager_ab6dbc0bd69a7faaf203801ce093fecdf}\index{StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}!process\_incoming\_status@{process\_incoming\_status}}
+\index{process\_incoming\_status@{process\_incoming\_status}!StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}}
+\doxysubsubsection{\texorpdfstring{process\_incoming\_status()}{process\_incoming\_status()}}
+{\footnotesize\ttfamily \label{class_status_manager_ab6dbc0bd69a7faaf203801ce093fecdf} 
+template$<$typename NIC\+\_\+\+TYPE$>$ \\
+void \mbox{\hyperlink{class_status_manager}{Status\+Manager}}$<$ NIC\+\_\+\+TYPE $>$\+::process\+\_\+incoming\+\_\+status (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_status_manager_af82a0053f326d3d23ef320f1cc6b3817}{Vehicle\+Id\+Type}} \&}]{sender\+\_\+protocol\+\_\+address}{, }\item[{const uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{payload\+\_\+data}{, }\item[{unsigned int}]{payload\+\_\+size}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Process an incoming status message. 
+
+Thread-\/safe\+: Protected by mutex for neighbor list access 
+
+\label{doc-variable-members}
+\Hypertarget{class_status_manager_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_status_manager_a82233c93a26a76c6aa845cb4dbb30629}\index{StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}!STATUS\_PORT@{STATUS\_PORT}}
+\index{STATUS\_PORT@{STATUS\_PORT}!StatusManager$<$ NIC\_TYPE $>$@{StatusManager$<$ NIC\_TYPE $>$}}
+\doxysubsubsection{\texorpdfstring{STATUS\_PORT}{STATUS\_PORT}}
+{\footnotesize\ttfamily \label{class_status_manager_a82233c93a26a76c6aa845cb4dbb30629} 
+template$<$typename NIC\+\_\+\+TYPE$>$ \\
+\mbox{\hyperlink{class_protocol}{Protocol}}$<$NIC\+\_\+\+TYPE$>$\+::\+Port \mbox{\hyperlink{class_status_manager}{Status\+Manager}}$<$ NIC\+\_\+\+TYPE $>$\+::\+STATUS\+\_\+\+PORT = 60000}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/framework/\mbox{\hyperlink{status_manager_8h}{status\+Manager.\+h}}\end{DoxyCompactItemize}

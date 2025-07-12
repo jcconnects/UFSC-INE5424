@@ -1,0 +1,90 @@
+\chapter{Communication Library for Autonomous Systems }
+\hypertarget{index}{}\label{index}\index{Communication Library for Autonomous Systems@{Communication Library for Autonomous Systems}}
+\label{index_md__r_e_a_d_m_e}%
+\Hypertarget{index_md__r_e_a_d_m_e}%
+
+
+Reliable, secure and time-\/synchronised data exchange for autonomous vehicles—both {\bfseries{inside a vehicle}} (threads in one process) and {\bfseries{between vehicles}} (raw-\/\+Ethernet broadcast).
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Stage  }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Core Feature  }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Stage  }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Core Feature  }\\\cline{1-2}
+\endhead
+P1  &Raw-\/socket \doxylink{class_ethernet}{Ethernet} stack ({\ttfamily \doxylink{class_socket_engine}{Socket\+Engine}}, {\ttfamily \doxylink{class_n_i_c}{NIC}}, {\ttfamily \doxylink{class_protocol}{Protocol}}, {\ttfamily \doxylink{class_communicator}{Communicator}})  \\\cline{1-2}
+P2  &Shared-\/memory / in-\/process routing  \\\cline{1-2}
+P3  &Time-\/triggered publish–subscribe (Interest/\+Response)  \\\cline{1-2}
+P4  &PTP-\/based clock sync + message MAC authentication  \\\cline{1-2}
+P5  &Virtual collision domains \& \doxylink{class_r_s_u}{RSU} key exchange  \\\cline{1-2}
+P6  &Performance optimisations  \\\cline{1-2}
+P7  &Integration with real world data  \\\cline{1-2}
+\end{longtabu}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md2}{}\doxysection{\texorpdfstring{1. High-\/\+Level Architecture}{1. High-\/\+Level Architecture}}\label{index_autotoc_md2}
+
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Intra-\/vehicle}} messages are sent by the {\ttfamily \doxylink{class_agent}{Agent}} to the {\ttfamily \doxylink{class_c_a_n}{CAN} BUS} and routed to the other {\ttfamily Agents}.
+\item {\bfseries{Inter-\/vehicle}} messages are sent by the {\ttfamily \doxylink{class_agent}{Agent}} to the {\ttfamily \doxylink{class_c_a_n}{CAN} BUS}, routed to the {\ttfamily \doxylink{class_gateway}{Gateway}} where they go down the stack and are broadcasted.
+\item Dual Observer patterns decouple layers and provide thread-\/safe delivery.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md4}{}\doxysection{\texorpdfstring{2. Repository Layout}{2. Repository Layout}}\label{index_autotoc_md4}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Path  }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Contents  }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Path  }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Contents  }\\\cline{1-2}
+\endhead
+{\ttfamily include/}  &Public headers (framework, network, utilities, components)  \\\cline{1-2}
+{\ttfamily doc/}  &Design docs, UML, sequence diagrams, implementation plans  \\\cline{1-2}
+{\ttfamily tests/}  &Unit, integration and system tests (dummy interface {\ttfamily test-\/dummy0})  \\\cline{1-2}
+{\ttfamily tools/}  &Analysis \& helper scripts (latency, threads, trajectories)  \\\cline{1-2}
+{\ttfamily config/}  &Dockerfile, Doxygen config, map configs  \\\cline{1-2}
+\end{longtabu}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md6}{}\doxysection{\texorpdfstring{3. Build \& Test}{3. Build \& Test}}\label{index_autotoc_md6}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#\ Build\ library\ and\ run\ ALL\ tests\ (unit\ →\ integration\ →\ system)}
+\DoxyCodeLine{make}
+
+\end{DoxyCode}
+
+
+The build creates a dummy network interface; real interfaces remain untouched.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md8}{}\doxysection{\texorpdfstring{4. Documentation \& Slides}{4. Documentation \& Slides}}\label{index_autotoc_md8}
+
+\begin{DoxyItemize}
+\item 🌐 {\bfseries{Online API docs}} (Git\+Hub Pages) — auto-\/generated Doxygen\+: ~\newline
+ \href{https://joaopedroschmidtcordeiro.github.io/UFSC-INE5424/}{\texttt{https\+://joaopedroschmidtcordeiro.\+github.\+io/\+UFSC-\/\+INE5424/}}
+\item 📚 {\bfseries{System architecture \& implementation details}}\+: {\ttfamily doc/\+README.md}
+\item 📚 {\bfseries{Test environment}}\+: {\ttfamily tests/\+README.md}
+\item 🎞️ {\bfseries{Stage slides}}\+: {\ttfamily doc/slides.md}
+\item 🏠 {\bfseries{Project root overview}}\+: this file.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md10}{}\doxysection{\texorpdfstring{Acknowledgements}{Acknowledgements}}\label{index_autotoc_md10}
+Created for the Operating Systems II course (INE5424) at UFSC.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md12}{}\doxysection{\texorpdfstring{License}{License}}\label{index_autotoc_md12}
+MIT © 2025 César Augusto Pereira de souza, Enzo Nicolás Spotorno Bieger, João Pedro Perez Resmer \& João Pedro Schmidt Cordeiro 

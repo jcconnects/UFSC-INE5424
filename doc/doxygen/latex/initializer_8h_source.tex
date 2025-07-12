@@ -1,0 +1,54 @@
+\doxysection{initializer.\+h}
+\hypertarget{initializer_8h_source}{}\label{initializer_8h_source}\index{include/api/network/initializer.h@{include/api/network/initializer.h}}
+\mbox{\hyperlink{initializer_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ INITIALIZER\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ INITIALIZER\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{socket_engine_8h}{api/network/socketEngine.h}}"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{nic_8h}{api/network/nic.h}}"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{protocol_8h}{api/network/protocol.h}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{communicator_8h}{api/network/communicator.h}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00020\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_initializer_ac5d64bd63f348d61590f90359ad9c1f7}{Initializer}}\ \{}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_n_i_c}{NIC<SocketEngine>}}\ \mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\_T}};}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_protocol}{Protocol<NIC\_T>}}\ \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Protocol\_T}};}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_communicator}{Communicator<Protocol\_T>}}\ \mbox{\hyperlink{class_initializer_a580ff83e3e338f95aa4a918980d1cf87}{Communicator\_T}};}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_communicator_a99cb97795d5a97176898095bd6ab67c6}{Communicator\_T::Message\_T}}\ \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Message}};}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_initializer_ac5d64bd63f348d61590f90359ad9c1f7}{Initializer}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_initializer_a54f03287c1835b35b11504dc2db050d3}{\string~Initializer}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\_T}}*\ \mbox{\hyperlink{class_initializer_a27529172beb006f4832d0eb1623d8770}{create\_nic}}();}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Protocol\_T}}*\ \mbox{\hyperlink{class_initializer_ac55c5c287a384a66d4205ed132e4f53c}{create\_protocol}}(\mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\_T}}*\ nic);}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Protocol\_T}}*\ \mbox{\hyperlink{class_initializer_ac55c5c287a384a66d4205ed132e4f53c}{create\_protocol}}(\mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\_T}}*\ nic,\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204b}{Protocol\_T::EntityType}}\ entity\_type);}
+\DoxyCodeLine{00046\ \};}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{comment}{/**********\ Initializer\ Implementation\ ***********/}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{Initializer::NIC\_T}}*\ \mbox{\hyperlink{class_initializer_a27529172beb006f4832d0eb1623d8770}{Initializer::create\_nic}}()\ \{}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\_T}}();}
+\DoxyCodeLine{00052\ \}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Initializer::Protocol\_T}}*\ \mbox{\hyperlink{class_initializer_ac55c5c287a384a66d4205ed132e4f53c}{Initializer::create\_protocol}}(\mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\_T}}*\ nic)\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordflow}{if}\ (!nic)\ \{}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}NIC\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00057\ \ \ \ \ \}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_initializer_ac55c5c287a384a66d4205ed132e4f53c}{create\_protocol}}(nic,\ Protocol\_T::EntityType::UNKNOWN);}
+\DoxyCodeLine{00059\ \}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Initializer::Protocol\_T}}*\ \mbox{\hyperlink{class_initializer_ac55c5c287a384a66d4205ed132e4f53c}{Initializer::create\_protocol}}(\mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{NIC\_T}}*\ nic,\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204b}{Protocol\_T::EntityType}}\ entity\_type)\ \{}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordflow}{if}\ (!nic)\ \{}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}NIC\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00064\ \ \ \ \ \}}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Protocol\_T}}(nic,\ entity\_type);}
+\DoxyCodeLine{00066\ \}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ INITIALIZER\_H}}
+
+\end{DoxyCode}

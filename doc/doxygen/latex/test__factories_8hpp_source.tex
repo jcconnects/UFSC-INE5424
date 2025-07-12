@@ -1,0 +1,136 @@
+\doxysection{test\+\_\+factories.\+hpp}
+\hypertarget{test__factories_8hpp_source}{}\label{test__factories_8hpp_source}\index{include/app/components/test\_factories.hpp@{include/app/components/test\_factories.hpp}}
+\mbox{\hyperlink{test__factories_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ TEST\_FACTORIES\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ TEST\_FACTORIES\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{agent_8h}{../../api/framework/agent.h}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__types_8hpp}{../../api/framework/component\_types.hpp}}"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__functions_8hpp}{../../api/framework/component\_functions.hpp}}"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{datatypes_8h}{../datatypes.h}}"{}}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_test_component_data}{TestComponentData}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_component_data}{ComponentData}}\ \{}
+\DoxyCodeLine{00020\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_test_component_data_adedf7b0e98426525b1eda4b668974dd5}{test\_value}}\ =\ 42.0f;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Fixed\ predictable\ value\ (same\ as\ original\ TestAgent)}}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_test_component_data_a47b571d28cd82ae3ad3a6b18a4cc4548}{last\_received\_value}}\ =\ 0.0f;\ \ \ \textcolor{comment}{//\ Track\ received\ values}}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_test_component_data_a2fe283aa0324bc3148950aeed2e7bc4f}{response\_count}}\ =\ 0;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Count\ responses}}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_test_component_data_ae8147450db70aa28896cc01581d46702}{should\_throw}}\ =\ \textcolor{keyword}{false};\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ exception\ testing}}
+\DoxyCodeLine{00024\ \ \ \ \ }
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{comment}{//\ Test-\/specific\ methods\ for\ verification\ (same\ interface\ as\ original\ TestAgent)}}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_test_component_data_afbce7493039c30f9ce6f65d924dc53d8}{get\_test\_value}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_test_component_data_adedf7b0e98426525b1eda4b668974dd5}{test\_value}};\ \}}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_test_component_data_a4e6e6cca388d51de47b690595911e733}{get\_last\_received\_value}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_test_component_data_a47b571d28cd82ae3ad3a6b18a4cc4548}{last\_received\_value}};\ \}}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_test_component_data_ad601363293945ff62c39043152989965}{get\_response\_count}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_test_component_data_a2fe283aa0324bc3148950aeed2e7bc4f}{response\_count}};\ \}}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_test_component_data_a7f6e8b5121af9466ca2086e987af22bd}{set\_test\_value}}(\textcolor{keywordtype}{float}\ value)\ \{\ \mbox{\hyperlink{struct_test_component_data_adedf7b0e98426525b1eda4b668974dd5}{test\_value}}\ =\ value;\ \}}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_test_component_data_a2c13bc221d4675787285acb49a5ee2f7}{reset\_response\_count}}()\ \{\ \mbox{\hyperlink{struct_test_component_data_a2fe283aa0324bc3148950aeed2e7bc4f}{response\_count}}\ =\ 0;\ \}}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_test_component_data_a2593932f03ea982be225b5a6cff8c534}{set\_should\_throw}}(\textcolor{keywordtype}{bool}\ throw\_flag)\ \{\ \mbox{\hyperlink{struct_test_component_data_ae8147450db70aa28896cc01581d46702}{should\_throw}}\ =\ throw\_flag;\ \}}
+\DoxyCodeLine{00032\ \};}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00044\ \textcolor{keyword}{inline}\ std::vector<std::uint8\_t>\ \mbox{\hyperlink{test__factories_8hpp_a5c8b54a113f492fdb2424c550f7a3530}{test\_producer\_function}}(std::uint32\_t\ unit,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00045\ \ \ \ \ \mbox{\hyperlink{struct_test_component_data}{TestComponentData}}*\ test\_data\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{struct_test_component_data}{TestComponentData}}*\textcolor{keyword}{>}(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00046\ \ \ \ \ }
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordflow}{if}\ (test\_data-\/>\mbox{\hyperlink{struct_test_component_data_ae8147450db70aa28896cc01581d46702}{should\_throw}})\ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Test\ exception\ in\ producer\ function"{}});}
+\DoxyCodeLine{00049\ \ \ \ \ \}}
+\DoxyCodeLine{00050\ \ \ \ \ }
+\DoxyCodeLine{00051\ \ \ \ \ std::vector<std::uint8\_t>\ value(\textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00052\ \ \ \ \ std::memcpy(value.data(),\ \&test\_data-\/>\mbox{\hyperlink{struct_test_component_data_adedf7b0e98426525b1eda4b668974dd5}{test\_value}},\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}));}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordflow}{return}\ value;}
+\DoxyCodeLine{00054\ \}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00065\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{test__factories_8hpp_a449dd988e6ed14029b3c9b33af24afaf}{test\_consumer\_function}}(\textcolor{keywordtype}{void}*\ msg,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \mbox{\hyperlink{struct_test_component_data}{TestComponentData}}*\ test\_data\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{struct_test_component_data}{TestComponentData}}*\textcolor{keyword}{>}(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00067\ \ \ \ \ }
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordflow}{if}\ (test\_data-\/>\mbox{\hyperlink{struct_test_component_data_ae8147450db70aa28896cc01581d46702}{should\_throw}})\ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Test\ exception\ in\ consumer\ function"{}});}
+\DoxyCodeLine{00070\ \ \ \ \ \}}
+\DoxyCodeLine{00071\ \ \ \ \ }
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{if}\ (!msg)\ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ Safety\ check}}
+\DoxyCodeLine{00073\ \ \ \ \ }
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{comment}{//\ Cast\ to\ Agent::Message*\ for\ proper\ message\ handling}}
+\DoxyCodeLine{00075\ \ \ \ \ \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Agent::Message}}*\ message\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Agent::Message}}*\textcolor{keyword}{>}(msg);}
+\DoxyCodeLine{00076\ \ \ \ \ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordflow}{if}\ (message\ \&\&\ message-\/>value\_size()\ >=\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{float}))\ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::uint8\_t*\ received\_value\ =\ message-\/>value();}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ test\_data-\/>\mbox{\hyperlink{struct_test_component_data_a47b571d28cd82ae3ad3a6b18a4cc4548}{last\_received\_value}}\ =\ *\textcolor{keyword}{reinterpret\_cast<}\textcolor{keyword}{const\ }\textcolor{keywordtype}{float}*\textcolor{keyword}{>}(received\_value);}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ test\_data-\/>\mbox{\hyperlink{struct_test_component_data_a2fe283aa0324bc3148950aeed2e7bc4f}{response\_count}}++;}
+\DoxyCodeLine{00081\ \ \ \ \ \}}
+\DoxyCodeLine{00082\ \}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00097\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{test__factories_8hpp_ab4a2defb7b93438ee9f24c331a8324f9}{create\_test\_producer}}(}
+\DoxyCodeLine{00098\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,\ }
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}TestProducer"{}},}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{keywordtype}{float}\ test\_value\ =\ 42.0f}
+\DoxyCodeLine{00102\ )\ \{}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keywordflow}{if}\ (!can)\ \{}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}CAN\ bus\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00105\ \ \ \ \ \}}
+\DoxyCodeLine{00106\ \ \ \ \ }
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keywordflow}{if}\ (name.empty())\ \{}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}Agent\ name\ cannot\ be\ empty"{}});}
+\DoxyCodeLine{00109\ \ \ \ \ \}}
+\DoxyCodeLine{00110\ \ \ \ \ }
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ std::make\_unique<TestComponentData>();}
+\DoxyCodeLine{00112\ \ \ \ \ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}-\/>set\_test\_value(test\_value);}
+\DoxyCodeLine{00113\ \ \ \ \ }
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<Agent>(}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ can,\ name,}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504face5ae617b7a277d02a8dccc786c7e4e7}{DataTypes::UNIT\_A}}),}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ Agent::Type::INTEREST,\ \textcolor{comment}{//\ Producer\ observes\ INTEREST\ messages}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ addr,}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{test__factories_8hpp_a5c8b54a113f492fdb2424c550f7a3530}{test\_producer\_function}},}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{keyword}{nullptr},\ \textcolor{comment}{//\ Producers\ don't\ need\ response\ handlers}}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})}
+\DoxyCodeLine{00122\ \ \ \ \ );}
+\DoxyCodeLine{00123\ \}}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00137\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{test__factories_8hpp_a35a548b6b327aab67f8a85f7ac2f0553}{create\_test\_consumer}}(}
+\DoxyCodeLine{00138\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,\ }
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}TestConsumer"{}}}
+\DoxyCodeLine{00141\ )\ \{}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keywordflow}{if}\ (!can)\ \{}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}CAN\ bus\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00144\ \ \ \ \ \}}
+\DoxyCodeLine{00145\ \ \ \ \ }
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordflow}{if}\ (name.empty())\ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}Agent\ name\ cannot\ be\ empty"{}});}
+\DoxyCodeLine{00148\ \ \ \ \ \}}
+\DoxyCodeLine{00149\ \ \ \ \ }
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keyword}{auto}\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ =\ std::make\_unique<TestComponentData>();}
+\DoxyCodeLine{00151\ \ \ \ \ }
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<Agent>(}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ can,\ name,}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504face5ae617b7a277d02a8dccc786c7e4e7}{DataTypes::UNIT\_A}}),}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ Agent::Type::RESPONSE,\ \textcolor{comment}{//\ Consumer\ observes\ RESPONSE\ messages}}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ addr,}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \textcolor{keyword}{nullptr},\ \textcolor{comment}{//\ Consumers\ don't\ need\ producer\ functions}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{test__factories_8hpp_a449dd988e6ed14029b3c9b33af24afaf}{test\_consumer\_function}},}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})}
+\DoxyCodeLine{00160\ \ \ \ \ );}
+\DoxyCodeLine{00161\ \}}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00176\ \textcolor{keyword}{inline}\ std::unique\_ptr<Agent>\ \mbox{\hyperlink{test__factories_8hpp_afbd302005369e536571092ddde0cb95b}{create\_test\_consumer\_with\_period}}(}
+\DoxyCodeLine{00177\ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ can,\ }
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\&\ addr,\ }
+\DoxyCodeLine{00179\ \ \ \ \ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Agent::Microseconds}}\ period,}
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name\ =\ \textcolor{stringliteral}{"{}TestConsumer"{}}}
+\DoxyCodeLine{00181\ )\ \{}
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{keyword}{auto}\ consumer\ =\ \mbox{\hyperlink{test__factories_8hpp_a35a548b6b327aab67f8a85f7ac2f0553}{create\_test\_consumer}}(can,\ addr,\ name);}
+\DoxyCodeLine{00183\ \ \ \ \ consumer-\/>start\_periodic\_interest(\textcolor{keyword}{static\_cast<}std::uint32\_t\textcolor{keyword}{>}(\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504face5ae617b7a277d02a8dccc786c7e4e7}{DataTypes::UNIT\_A}}),\ period);}
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keywordflow}{return}\ consumer;}
+\DoxyCodeLine{00185\ \}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00198\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{struct_test_component_data}{TestComponentData}}*\ \mbox{\hyperlink{test__factories_8hpp_abf74bae185f8892eaa7f499987f180e4}{get\_test\_data}}(\mbox{\hyperlink{class_agent}{Agent}}*\ agent)\ \{}
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{comment}{//\ Note:\ This\ is\ a\ simplified\ approach\ for\ testing}}
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{comment}{//\ In\ a\ real\ implementation,\ we\ might\ need\ a\ more\ sophisticated\ way}}
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{comment}{//\ to\ access\ component\ data\ for\ verification}}
+\DoxyCodeLine{00202\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};\ \textcolor{comment}{//\ Placeholder\ -\/\ actual\ implementation\ would\ need\ Agent\ API\ changes}}
+\DoxyCodeLine{00203\ \}}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ TEST\_FACTORIES\_HPP}}
+
+\end{DoxyCode}

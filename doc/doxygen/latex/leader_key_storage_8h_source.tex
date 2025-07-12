@@ -1,0 +1,118 @@
+\doxysection{leader\+Key\+Storage.\+h}
+\hypertarget{leader_key_storage_8h_source}{}\label{leader_key_storage_8h_source}\index{include/api/framework/leaderKeyStorage.h@{include/api/framework/leaderKeyStorage.h}}
+\mbox{\hyperlink{leader_key_storage_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ LEADER\_KEY\_STORAGE\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ LEADER\_KEY\_STORAGE\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <array>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <cstdio>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ethernet_8h}{api/network/ethernet.h}}"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{traits_8h}{api/traits.h}}"{}}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ Define\ MAC\ key\ type}}
+\DoxyCodeLine{00015\ \textcolor{keyword}{using\ }\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ =\ std::array<uint8\_t,\ 16>;}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{class\ }LeaderKeyStorage\ \{}
+\DoxyCodeLine{00026\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keyword}{static}\ LeaderKeyStorage\&\ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{getInstance}}();}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_leader_key_storage_a209a9826106362df59d13924242abce0}{setLeaderId}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\&\ leader\_id);}
+\DoxyCodeLine{00029\ \ \ \ \ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ \mbox{\hyperlink{class_leader_key_storage_a92ad0e468adab9e803a23b72766cb9ea}{getLeaderId}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_leader_key_storage_ae50fdd2568a695c267a18202792c22c7}{setGroupMacKey}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ key);}
+\DoxyCodeLine{00031\ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ \mbox{\hyperlink{class_leader_key_storage_a111ba868b182ba904375e24d003cb489}{getGroupMacKey}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00032\ \ \ \ \ std::chrono::steady\_clock::time\_point\ \mbox{\hyperlink{class_leader_key_storage_a3d82bb4bbf8368077921cdde451d4805}{getLastUpdateTime}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00035\ \ \ \ \ LeaderKeyStorage();}
+\DoxyCodeLine{00036\ \ \ \ \ \string~LeaderKeyStorage()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00037\ \ \ \ \ LeaderKeyStorage(\textcolor{keyword}{const}\ LeaderKeyStorage\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00038\ \ \ \ \ LeaderKeyStorage\&\ operator=(\textcolor{keyword}{const}\ LeaderKeyStorage\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keyword}{mutable}\ std::mutex\ \_mutex;}
+\DoxyCodeLine{00041\ \ \ \ \ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ \_current\_leader\_id;}
+\DoxyCodeLine{00042\ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ \_current\_group\_mac\_key;}
+\DoxyCodeLine{00043\ \ \ \ \ std::atomic<std::chrono::steady\_clock::time\_point>\ \_last\_update\_time;}
+\DoxyCodeLine{00044\ \};}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{comment}{//\ Implementation}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{inline}\ LeaderKeyStorage\&\ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}()\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keyword}{static}\ LeaderKeyStorage\ instance;}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordflow}{return}\ instance;}
+\DoxyCodeLine{00057\ \}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00065\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_leader_key_storage_a209a9826106362df59d13924242abce0}{LeaderKeyStorage::setLeaderId}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\&\ leader\_id)\ \{}
+\DoxyCodeLine{00066\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_current\_leader\_id\ !=\ leader\_id)\ \{}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<LeaderKeyStorage>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}LeaderKeyStorage:\ Leader\ changed\ from\ "{}}\ }
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(\_current\_leader\_id)\ <<\ \textcolor{stringliteral}{"{}\ to\ "{}}\ }
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(leader\_id)\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \_current\_leader\_id\ =\ leader\_id;}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \_last\_update\_time.store(std::chrono::steady\_clock::now(),\ std::memory\_order\_release);}
+\DoxyCodeLine{00073\ \ \ \ \ \}}
+\DoxyCodeLine{00074\ \}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00082\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet::Address}}\ \mbox{\hyperlink{class_leader_key_storage_a92ad0e468adab9e803a23b72766cb9ea}{LeaderKeyStorage::getLeaderId}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00083\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordflow}{return}\ \_current\_leader\_id;}
+\DoxyCodeLine{00085\ \}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00093\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_leader_key_storage_ae50fdd2568a695c267a18202792c22c7}{LeaderKeyStorage::setGroupMacKey}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ key)\ \{}
+\DoxyCodeLine{00094\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_current\_group\_mac\_key\ !=\ key)\ \{}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ old\ and\ new\ keys}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ std::string\ old\_key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ \_current\_group\_mac\_key[i]);}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ old\_key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ std::string\ new\_key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ key[i]);}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ new\_key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<LeaderKeyStorage>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}LeaderKeyStorage:\ Group\ MAC\ key\ updated\(\backslash\)n"{}};}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<LeaderKeyStorage>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}LeaderKeyStorage:\ Old\ key:\ "{}}\ <<\ old\_key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<LeaderKeyStorage>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}LeaderKeyStorage:\ New\ key:\ "{}}\ <<\ new\_key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \_current\_group\_mac\_key\ =\ key;}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \_last\_update\_time.store(std::chrono::steady\_clock::now(),\ std::memory\_order\_release);}
+\DoxyCodeLine{00115\ \ \ \ \ \}}
+\DoxyCodeLine{00116\ \}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00124\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ \mbox{\hyperlink{class_leader_key_storage_a111ba868b182ba904375e24d003cb489}{LeaderKeyStorage::getGroupMacKey}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00125\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_mutex);}
+\DoxyCodeLine{00126\ \ \ \ \ }
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ the\ key\ being\ retrieved}}
+\DoxyCodeLine{00128\ \ \ \ \ std::string\ key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ \_current\_group\_mac\_key[i]);}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00133\ \ \ \ \ \}}
+\DoxyCodeLine{00134\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<LeaderKeyStorage>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}LeaderKeyStorage:\ Retrieved\ key:\ "{}}\ <<\ key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00135\ \ \ \ \ }
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordflow}{return}\ \_current\_group\_mac\_key;}
+\DoxyCodeLine{00137\ \}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00145\ \textcolor{keyword}{inline}\ std::chrono::steady\_clock::time\_point\ \mbox{\hyperlink{class_leader_key_storage_a3d82bb4bbf8368077921cdde451d4805}{LeaderKeyStorage::getLastUpdateTime}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordflow}{return}\ \_last\_update\_time.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00147\ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{keyword}{inline}\ LeaderKeyStorage::LeaderKeyStorage()\ :\ }
+\DoxyCodeLine{00150\ \ \ \ \ \_current\_leader\_id(\mbox{\hyperlink{class_ethernet}{Ethernet}}::NULL\_ADDRESS),}
+\DoxyCodeLine{00151\ \ \ \ \ \_last\_update\_time(std::chrono::steady\_clock::now())\ \{\ }
+\DoxyCodeLine{00152\ \ \ \ \ \_current\_group\_mac\_key.fill(0);}
+\DoxyCodeLine{00153\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<LeaderKeyStorage>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}LeaderKeyStorage:\ Initialized\(\backslash\)n"{}};}
+\DoxyCodeLine{00154\ \}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LEADER\_KEY\_STORAGE\_H\ }}
+
+\end{DoxyCode}

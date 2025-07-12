@@ -1,0 +1,91 @@
+\doxysection{network.\+h}
+\hypertarget{network_8h_source}{}\label{network_8h_source}\index{include/api/framework/network.h@{include/api/framework/network.h}}
+\mbox{\hyperlink{network_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ NETWORK\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ NETWORK\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{initializer_8h}{api/network/initializer.h}}"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{bus_8h}{api/network/bus.h}}"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{vehicle_r_s_u_manager_8h}{api/framework/vehicleRSUManager.h}}"{}}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_network_aee62207dc11044c14f314e7922857c38}{Network}}\ \{}
+\DoxyCodeLine{00009\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00010\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum\ class}\ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852a}{EntityType}}\ \{\ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2}{VEHICLE}},\ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aa75988ec7a180ed96d48291db84701f84}{RSU}}\ \};}
+\DoxyCodeLine{00011\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_initializer_aa75c3f3ed5c99abaf825f804d5ca73ba}{Initializer::NIC\_T}}\ \mbox{\hyperlink{class_network_a590638bc97b681f5f4c1f0c280c2e3c2}{NIC}};}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_initializer_a29c887c2c13b4ecbf189222a43a59574}{Initializer::Protocol\_T}}\ \mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Protocol}};}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer::Message}}\ \mbox{\hyperlink{class_network_ace8ef437586a78c43b82d6d4b5ae6410}{Message}};}
+\DoxyCodeLine{00014\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_initializer_a580ff83e3e338f95aa4a918980d1cf87}{Initializer::Communicator\_T}}\ \mbox{\hyperlink{class_network_a638cca85e6d97e60e28b9bbb310aa1e2}{Communicator}};}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_network_aee62207dc11044c14f314e7922857c38}{Network}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id}\ =\ 0,\ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852a}{EntityType}}\ entity\_type\ =\ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2}{EntityType::VEHICLE}});}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_network_a7a4e19cdb4bf0c7ecf82baa643831492}{\string~Network}}();}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_network_a223d8aca05065fb5a5c80b119c077831}{stop}}()\ \{\ }
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_nic)}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_nic-\/>stop();}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol}{Protocol}}*\ \mbox{\hyperlink{class_network_aa5756a1aa44b3f3b0b3213b954022b0d}{channel}}();}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ \mbox{\hyperlink{class_network_a6d0aa4bf1498f16b4f4e66ba7a72a4f8}{bus}}();}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC::Address}}\ \mbox{\hyperlink{class_network_acf5cddd16900d4e174160223e79bee0c}{address}}();}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ New:\ Set\ RSU\ manager\ for\ vehicles}}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_network_a784fd614e27ac0bb55f0634fc5add421}{set\_vehicle\_rsu\_manager}}(\mbox{\hyperlink{class_vehicle_r_s_u_manager}{VehicleRSUManager<Protocol>}}*\ manager);}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \_id;}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol}{Protocol}}*\ \_protocol;}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_n_i_c}{NIC}}*\ \_nic;}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ \_can;}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852a}{EntityType}}\ \_entity\_type;}
+\DoxyCodeLine{00036\ \};}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_network_aee62207dc11044c14f314e7922857c38}{Network::Network}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id},\ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852a}{EntityType}}\ entity\_type)\ :\ \_id(id),\ \_entity\_type(entity\_type)\ \{}
+\DoxyCodeLine{00039\ \ \ \ \ \_nic\ =\ \mbox{\hyperlink{class_initializer_a27529172beb006f4832d0eb1623d8770}{Initializer::create\_nic}}();}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keywordtype}{id})\ \{}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC::Address}}\ addr;\ \textcolor{comment}{//\ We\ don't\ set\ the\ address\ here\ anymore;}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ addr.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[0]\ =\ 0x02;\ \textcolor{comment}{//\ the\ NIC\ gets\ its\ address\ from\ the\ SocketEngine.}}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ addr.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[1]\ =\ 0x00;}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ addr.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[2]\ =\ 0x00;}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ addr.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[3]\ =\ 0x00;}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ addr.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[4]\ =\ (\textcolor{keywordtype}{id}\ >>\ 8)\ \&\ 0xFF;}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ addr.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[5]\ =\ \textcolor{keywordtype}{id}\ \&\ 0xFF;}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \_nic-\/>setAddress(addr);}
+\DoxyCodeLine{00049\ \ \ \ \ \}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{//\ Pass\ entity\ type\ to\ Protocol}}
+\DoxyCodeLine{00052\ \ \ \ \ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204b}{Protocol::EntityType}}\ prot\_entity\_type\ =\ (entity\_type\ ==\ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2}{EntityType::VEHICLE}})\ ?\ }
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204bae9fa318f4d73c31493e98096efa497e2}{Protocol::EntityType::VEHICLE}}\ :\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204ba75988ec7a180ed96d48291db84701f84}{Protocol::EntityType::RSU}};}
+\DoxyCodeLine{00054\ \ \ \ \ \_protocol\ =\ \mbox{\hyperlink{class_initializer_ac55c5c287a384a66d4205ed132e4f53c}{Initializer::create\_protocol}}(\_nic,\ prot\_entity\_type);}
+\DoxyCodeLine{00055\ \ \ \ \ \_can\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_c_a_n}{CAN}}();}
+\DoxyCodeLine{00056\ \}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_network_a7a4e19cdb4bf0c7ecf82baa643831492}{Network::\string~Network}}()\ \{}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keyword}{delete}\ \_can;}
+\DoxyCodeLine{00060\ \ \ \ \ \_can\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keyword}{delete}\ \_protocol;}
+\DoxyCodeLine{00062\ \ \ \ \ \_protocol\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keyword}{delete}\ \_nic;}
+\DoxyCodeLine{00064\ \ \ \ \ \_nic\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00065\ \}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Network::Protocol}}*\ \mbox{\hyperlink{class_network_aa5756a1aa44b3f3b0b3213b954022b0d}{Network::channel}}()\ \{}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordflow}{return}\ \_protocol;}
+\DoxyCodeLine{00069\ \}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ \mbox{\hyperlink{class_network_a6d0aa4bf1498f16b4f4e66ba7a72a4f8}{Network::bus}}()\ \{}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{return}\ \_can;}
+\DoxyCodeLine{00073\ \}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{Network::NIC::Address}}\ \mbox{\hyperlink{class_network_acf5cddd16900d4e174160223e79bee0c}{Network::address}}()\ \{}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{return}\ \_nic-\/>address();}
+\DoxyCodeLine{00077\ \}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_network_a784fd614e27ac0bb55f0634fc5add421}{Network::set\_vehicle\_rsu\_manager}}(\mbox{\hyperlink{class_vehicle_r_s_u_manager}{VehicleRSUManager<Protocol>}}*\ manager)\ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ ==\ \mbox{\hyperlink{class_network_a4b0f38eb75202f20638f1e096cb0852aae9fa318f4d73c31493e98096efa497e2}{EntityType::VEHICLE}})\ \{}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \_protocol-\/>set\_vehicle\_rsu\_manager(manager);}
+\DoxyCodeLine{00082\ \ \ \ \ \}}
+\DoxyCodeLine{00083\ \}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ NETWORK\_H}}
+
+\end{DoxyCode}

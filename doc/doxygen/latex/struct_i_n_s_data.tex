@@ -1,0 +1,207 @@
+\doxysection{INSData Struct Reference}
+\hypertarget{struct_i_n_s_data}{}\label{struct_i_n_s_data}\index{INSData@{INSData}}
+
+
+Data structure for INS (Inertial Navigation System) component.  
+
+
+
+
+{\ttfamily \#include $<$ins\+\_\+data.\+hpp$>$}
+
+Inheritance diagram for INSData\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{struct_i_n_s_data}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{struct_i_n_s_data_a6df76126890ee4070183a46ee32f7bfe}{INSData}} ()
+\begin{DoxyCompactList}\small\item\em Constructor initializes random number generation with realistic ranges. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_i_n_s_data_ae04680e56b515b41f6a15c8f05a52a8d}{update\+\_\+position\+\_\+range}} (double x\+\_\+min, double x\+\_\+max, double y\+\_\+min, double y\+\_\+max, double alt\+\_\+min, double alt\+\_\+max)
+\begin{DoxyCompactList}\small\item\em Update the navigation data generation ranges. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_i_n_s_data_a8c5444c221b86e9153a814b52d56ba18}{update\+\_\+motion\+\_\+range}} (double vel\+\_\+min, double vel\+\_\+max, double accel\+\_\+min, double accel\+\_\+max)
+\begin{DoxyCompactList}\small\item\em Update the motion data generation ranges. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{struct_component_data}{Component\+Data}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual \mbox{\hyperlink{struct_component_data_a9d2f13c283f7f17eee8f4283c04f519d}{\texorpdfstring{$\sim$}{\string~}\+Component\+Data}} ()=default
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::random\+\_\+device \mbox{\hyperlink{struct_i_n_s_data_ac66a667487b8d4a6b89498808bcb74d9}{rd}}
+\item 
+std\+::mt19937 \mbox{\hyperlink{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}{gen}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_i_n_s_data_a94a6b437edb3f91145a9ba2d01abe0c3}{x\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_i_n_s_data_a669d93432ea6ffbb2cecee18f653bf34}{y\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_i_n_s_data_ad58c02bd348ff3a5f179aa09b3035548}{alt\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_i_n_s_data_a53a491deb597267566427ff49b15155d}{vel\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_i_n_s_data_a56e0db12c38572861b5397ea5f26c68c}{accel\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_i_n_s_data_af45c43ecd8ab0ee644d020105526bf7e}{gyro\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+real\+\_\+distribution \mbox{\hyperlink{struct_i_n_s_data_aa5a8d5524d661e39bbd704b32bac108f}{heading\+\_\+dist}}
+\item 
+std\+::uniform\+\_\+int\+\_\+distribution \mbox{\hyperlink{struct_i_n_s_data_a58d6dca9621794ad920dde41204c0323}{delay\+\_\+dist}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Data structure for INS (Inertial Navigation System) component. 
+
+Following EPOS Smart\+Data principles, this structure contains all the data needed for \doxylink{struct_i_n_s_component}{INSComponent} functionality. Generates realistic navigation data including position, velocity, acceleration, gyroscope, and heading information.
+
+Replaces inheritance-\/based data storage with pure composition. 
+
+\label{doc-constructors}
+\Hypertarget{struct_i_n_s_data_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{struct_i_n_s_data_a6df76126890ee4070183a46ee32f7bfe}\index{INSData@{INSData}!INSData@{INSData}}
+\index{INSData@{INSData}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{INSData()}{INSData()}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_a6df76126890ee4070183a46ee32f7bfe} 
+INSData\+::\+INSData (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Constructor initializes random number generation with realistic ranges. 
+
+Sets up the same random distributions as the original \doxylink{struct_i_n_s_component}{INSComponent}\+:
+\begin{DoxyItemize}
+\item Position\+: 0-\/1000m for X/Y, 0-\/500m altitude
+\item Velocity\+: 0-\/30 m/s (typical vehicle speeds)
+\item Acceleration\+: ±2g (realistic vehicle acceleration)
+\item Gyroscope\+: ±π rad/s (±180 deg/s)
+\item Heading\+: 0-\/2π rad (0-\/360 degrees)
+\item Delay\+: 90-\/110ms (typical INS \texorpdfstring{$\sim$}{\string~}10\+Hz update rate) 
+\end{DoxyItemize}
+
+\label{doc-func-members}
+\Hypertarget{struct_i_n_s_data_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{struct_i_n_s_data_a8c5444c221b86e9153a814b52d56ba18}\index{INSData@{INSData}!update\_motion\_range@{update\_motion\_range}}
+\index{update\_motion\_range@{update\_motion\_range}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{update\_motion\_range()}{update\_motion\_range()}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_a8c5444c221b86e9153a814b52d56ba18} 
+void INSData\+::update\+\_\+motion\+\_\+range (\begin{DoxyParamCaption}\item[{double}]{vel\+\_\+min}{, }\item[{double}]{vel\+\_\+max}{, }\item[{double}]{accel\+\_\+min}{, }\item[{double}]{accel\+\_\+max}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update the motion data generation ranges. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em vel\+\_\+min} & Minimum velocity (m/s) \\
+\hline
+{\em vel\+\_\+max} & Maximum velocity (m/s) \\
+\hline
+{\em accel\+\_\+min} & Minimum acceleration (m/s²) \\
+\hline
+{\em accel\+\_\+max} & Maximum acceleration (m/s²) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{struct_i_n_s_data_ae04680e56b515b41f6a15c8f05a52a8d}\index{INSData@{INSData}!update\_position\_range@{update\_position\_range}}
+\index{update\_position\_range@{update\_position\_range}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{update\_position\_range()}{update\_position\_range()}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_ae04680e56b515b41f6a15c8f05a52a8d} 
+void INSData\+::update\+\_\+position\+\_\+range (\begin{DoxyParamCaption}\item[{double}]{x\+\_\+min}{, }\item[{double}]{x\+\_\+max}{, }\item[{double}]{y\+\_\+min}{, }\item[{double}]{y\+\_\+max}{, }\item[{double}]{alt\+\_\+min}{, }\item[{double}]{alt\+\_\+max}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update the navigation data generation ranges. 
+
+Allows dynamic reconfiguration of the navigation data ranges. Useful for testing different scenarios or runtime configuration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em x\+\_\+min} & Minimum X coordinate \\
+\hline
+{\em x\+\_\+max} & Maximum X coordinate \\
+\hline
+{\em y\+\_\+min} & Minimum Y coordinate \\
+\hline
+{\em y\+\_\+max} & Maximum Y coordinate \\
+\hline
+{\em alt\+\_\+min} & Minimum altitude \\
+\hline
+{\em alt\+\_\+max} & Maximum altitude \\
+\hline
+\end{DoxyParams}
+
+
+\label{doc-variable-members}
+\Hypertarget{struct_i_n_s_data_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{struct_i_n_s_data_a56e0db12c38572861b5397ea5f26c68c}\index{INSData@{INSData}!accel\_dist@{accel\_dist}}
+\index{accel\_dist@{accel\_dist}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{accel\_dist}{accel\_dist}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_a56e0db12c38572861b5397ea5f26c68c} 
+std\+::uniform\+\_\+real\+\_\+distribution INSData\+::accel\+\_\+dist}
+
+\Hypertarget{struct_i_n_s_data_ad58c02bd348ff3a5f179aa09b3035548}\index{INSData@{INSData}!alt\_dist@{alt\_dist}}
+\index{alt\_dist@{alt\_dist}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{alt\_dist}{alt\_dist}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_ad58c02bd348ff3a5f179aa09b3035548} 
+std\+::uniform\+\_\+real\+\_\+distribution INSData\+::alt\+\_\+dist}
+
+\Hypertarget{struct_i_n_s_data_a58d6dca9621794ad920dde41204c0323}\index{INSData@{INSData}!delay\_dist@{delay\_dist}}
+\index{delay\_dist@{delay\_dist}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{delay\_dist}{delay\_dist}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_a58d6dca9621794ad920dde41204c0323} 
+std\+::uniform\+\_\+int\+\_\+distribution INSData\+::delay\+\_\+dist}
+
+\Hypertarget{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180}\index{INSData@{INSData}!gen@{gen}}
+\index{gen@{gen}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{gen}{gen}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_a8b36474f2f2ffa9b1087976860265180} 
+std\+::mt19937 INSData\+::gen}
+
+\Hypertarget{struct_i_n_s_data_af45c43ecd8ab0ee644d020105526bf7e}\index{INSData@{INSData}!gyro\_dist@{gyro\_dist}}
+\index{gyro\_dist@{gyro\_dist}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{gyro\_dist}{gyro\_dist}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_af45c43ecd8ab0ee644d020105526bf7e} 
+std\+::uniform\+\_\+real\+\_\+distribution INSData\+::gyro\+\_\+dist}
+
+\Hypertarget{struct_i_n_s_data_aa5a8d5524d661e39bbd704b32bac108f}\index{INSData@{INSData}!heading\_dist@{heading\_dist}}
+\index{heading\_dist@{heading\_dist}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{heading\_dist}{heading\_dist}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_aa5a8d5524d661e39bbd704b32bac108f} 
+std\+::uniform\+\_\+real\+\_\+distribution INSData\+::heading\+\_\+dist}
+
+\Hypertarget{struct_i_n_s_data_ac66a667487b8d4a6b89498808bcb74d9}\index{INSData@{INSData}!rd@{rd}}
+\index{rd@{rd}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{rd}{rd}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_ac66a667487b8d4a6b89498808bcb74d9} 
+std\+::random\+\_\+device INSData\+::rd}
+
+\Hypertarget{struct_i_n_s_data_a53a491deb597267566427ff49b15155d}\index{INSData@{INSData}!vel\_dist@{vel\_dist}}
+\index{vel\_dist@{vel\_dist}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{vel\_dist}{vel\_dist}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_a53a491deb597267566427ff49b15155d} 
+std\+::uniform\+\_\+real\+\_\+distribution INSData\+::vel\+\_\+dist}
+
+\Hypertarget{struct_i_n_s_data_a94a6b437edb3f91145a9ba2d01abe0c3}\index{INSData@{INSData}!x\_dist@{x\_dist}}
+\index{x\_dist@{x\_dist}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{x\_dist}{x\_dist}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_a94a6b437edb3f91145a9ba2d01abe0c3} 
+std\+::uniform\+\_\+real\+\_\+distribution INSData\+::x\+\_\+dist}
+
+\Hypertarget{struct_i_n_s_data_a669d93432ea6ffbb2cecee18f653bf34}\index{INSData@{INSData}!y\_dist@{y\_dist}}
+\index{y\_dist@{y\_dist}!INSData@{INSData}}
+\doxysubsubsection{\texorpdfstring{y\_dist}{y\_dist}}
+{\footnotesize\ttfamily \label{struct_i_n_s_data_a669d93432ea6ffbb2cecee18f653bf34} 
+std\+::uniform\+\_\+real\+\_\+distribution INSData\+::y\+\_\+dist}
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/app/components/\mbox{\hyperlink{ins__data_8hpp}{ins\+\_\+data.\+hpp}}\end{DoxyCompactItemize}

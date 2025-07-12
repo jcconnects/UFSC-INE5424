@@ -1,0 +1,54 @@
+\doxysection{include/app/components/basic\+\_\+producer\+\_\+b\+\_\+factory.hpp File Reference}
+\hypertarget{basic__producer__b__factory_8hpp}{}\label{basic__producer__b__factory_8hpp}\index{include/app/components/basic\_producer\_b\_factory.hpp@{include/app/components/basic\_producer\_b\_factory.hpp}}
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include "{}api/framework/agent.\+h"{}}\newline
+{\ttfamily \#include "{}../../api/framework/component\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}unit\+\_\+b\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}unit\+\_\+b\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../datatypes.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{basic__producer__b__factory_8hpp_aa5079893f8ac7a6d86b6324e6fbdce29}{create\+\_\+basic\+\_\+producer\+\_\+b}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, const std\+::string \&name="{}Basic\+Producer\+B"{}, float min\+\_\+range=200.\+0f, float max\+\_\+range=300.\+0f)
+\begin{DoxyCompactList}\small\item\em Creates a \doxylink{struct_basic_producer_b}{Basic\+ProducerB} agent using function-\/based composition. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{basic__producer__b__factory_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{basic__producer__b__factory_8hpp_aa5079893f8ac7a6d86b6324e6fbdce29}\index{basic\_producer\_b\_factory.hpp@{basic\_producer\_b\_factory.hpp}!create\_basic\_producer\_b@{create\_basic\_producer\_b}}
+\index{create\_basic\_producer\_b@{create\_basic\_producer\_b}!basic\_producer\_b\_factory.hpp@{basic\_producer\_b\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_basic\_producer\_b()}{create\_basic\_producer\_b()}}
+{\footnotesize\ttfamily \label{basic__producer__b__factory_8hpp_aa5079893f8ac7a6d86b6324e6fbdce29} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+basic\+\_\+producer\+\_\+b (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}BasicProducerB"{}}, }\item[{float}]{min\+\_\+range}{ = {\ttfamily 200.0f}, }\item[{float}]{max\+\_\+range}{ = {\ttfamily 300.0f}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a \doxylink{struct_basic_producer_b}{Basic\+ProducerB} agent using function-\/based composition. 
+
+Replaces the inheritance-\/based \doxylink{struct_basic_producer_b}{Basic\+ProducerB} class with EPOS Smart\+Data principles. Eliminates vtable race conditions during destruction by using function pointers instead of virtual methods.
+
+This factory function creates a complete \doxylink{class_agent}{Agent} configured as a producer for UNIT\+\_\+B data, with configurable random value generation range.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Basic\+Producer\+B"{}) \\
+\hline
+{\em min\+\_\+range} & Minimum value for random generation (default\+: 200.\+0f) \\
+\hline
+{\em max\+\_\+range} & Maximum value for random generation (default\+: 300.\+0f) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} ready for operation 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null, name is empty, or invalid range \\
+\hline
+\end{DoxyExceptions}

@@ -1,0 +1,102 @@
+\doxysection{bus.\+h}
+\hypertarget{bus_8h_source}{}\label{bus_8h_source}\index{include/api/network/bus.h@{include/api/network/bus.h}}
+\mbox{\hyperlink{bus_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ CAN\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ CAN\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{traits_8h}{api/traits.h}}"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{observed_8h}{api/util/observed.h}}"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{initializer_8h}{api/network/initializer.h}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_condition_ae5df27d5127e0ed89e944d50f0472c75}{Condition}}\ \{}
+\DoxyCodeLine{00011\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer::Message}}\ \mbox{\hyperlink{class_condition_a2582c374d7a2fb41a2ee8c206b59361c}{Message}};}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message::Unit}}\ \mbox{\hyperlink{class_condition_a84bad61cba9244cb40c80598850718e0}{Unit}};}
+\DoxyCodeLine{00014\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Message::Type}}\ \mbox{\hyperlink{class_condition_a3b93276df2c1a95d69d601c95f67a8a8}{Type}};}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_condition_a9bcc19154cc4a8453552663ca99ab7a6}{Condition}}(\mbox{\hyperlink{class_condition_a84bad61cba9244cb40c80598850718e0}{Unit}}\ \mbox{\hyperlink{class_condition_add27264d5cadbda647688d6a0d928910}{unit}},\ \mbox{\hyperlink{class_condition_a3b93276df2c1a95d69d601c95f67a8a8}{Type}}\ \mbox{\hyperlink{class_condition_ab92fd6216bb983cfe66bbc371a3dc535}{type}});}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_condition_a9bcc19154cc4a8453552663ca99ab7a6}{Condition}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_condition_af604a320da70f018c7952d82ce6b2261}{\string~Condition}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_condition_a84bad61cba9244cb40c80598850718e0}{Unit}}\ \mbox{\hyperlink{class_condition_add27264d5cadbda647688d6a0d928910}{unit}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_condition_a3b93276df2c1a95d69d601c95f67a8a8}{Type}}\ \mbox{\hyperlink{class_condition_ab92fd6216bb983cfe66bbc371a3dc535}{type}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_condition_a80513e184d6577ec0e6b416f1bafaaac}{operator==}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_condition_ae5df27d5127e0ed89e944d50f0472c75}{Condition}}\&\ other)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_condition_a418d3a500b57ba7208bae2d6f39c894f}{operator!=}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_condition_ae5df27d5127e0ed89e944d50f0472c75}{Condition}}\&\ other)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_condition_a84bad61cba9244cb40c80598850718e0}{Unit}}\ \_unit;}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_condition_a3b93276df2c1a95d69d601c95f67a8a8}{Type}}\ \_type;}
+\DoxyCodeLine{00029\ \};}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \mbox{\hyperlink{class_condition_a9bcc19154cc4a8453552663ca99ab7a6}{Condition::Condition}}(\mbox{\hyperlink{class_condition_a84bad61cba9244cb40c80598850718e0}{Unit}}\ \mbox{\hyperlink{class_condition_add27264d5cadbda647688d6a0d928910}{unit}},\ \mbox{\hyperlink{class_condition_a3b93276df2c1a95d69d601c95f67a8a8}{Type}}\ \mbox{\hyperlink{class_condition_ab92fd6216bb983cfe66bbc371a3dc535}{type}})\ \{}
+\DoxyCodeLine{00032\ \ \ \ \ \_unit\ =\ \mbox{\hyperlink{class_condition_add27264d5cadbda647688d6a0d928910}{unit}};}
+\DoxyCodeLine{00033\ \ \ \ \ \_type\ =\ \mbox{\hyperlink{class_condition_ab92fd6216bb983cfe66bbc371a3dc535}{type}};}
+\DoxyCodeLine{00034\ \}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_condition_a84bad61cba9244cb40c80598850718e0}{Condition::Unit}}\ \mbox{\hyperlink{class_condition_add27264d5cadbda647688d6a0d928910}{Condition::unit}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordflow}{return}\ \_unit;}
+\DoxyCodeLine{00038\ \}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_condition_a3b93276df2c1a95d69d601c95f67a8a8}{Condition::Type}}\ \mbox{\hyperlink{class_condition_ab92fd6216bb983cfe66bbc371a3dc535}{Condition::type}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordflow}{return}\ \_type;}
+\DoxyCodeLine{00042\ \}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_condition_a80513e184d6577ec0e6b416f1bafaaac}{Condition::operator==}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_condition_ae5df27d5127e0ed89e944d50f0472c75}{Condition}}\&\ other)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordflow}{return}\ ((\_unit\ ==\ other.\mbox{\hyperlink{class_condition_add27264d5cadbda647688d6a0d928910}{unit}}())\ \&\&\ (\_type\ ==\ other.\mbox{\hyperlink{class_condition_ab92fd6216bb983cfe66bbc371a3dc535}{type}}()));}
+\DoxyCodeLine{00046\ \}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_condition_a418d3a500b57ba7208bae2d6f39c894f}{Condition::operator!=}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_condition_ae5df27d5127e0ed89e944d50f0472c75}{Condition}}\&\ other)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ other);}
+\DoxyCodeLine{00050\ \}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_c_a_n_a0ceb0a5180d9da6d987f059a609aa04b}{CAN}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{class_concurrent___observed_a2d06723771ce7a85324b6bae71562ead}{Concurrent\_Observed}}<Initializer::Message,\ Condition>\{}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_initializer_a172cfd2e46b89f96e34205e44bc6fcb7}{Initializer::Message}}\ \mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}};}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ Initializer::Protocol\_T::Address\ \mbox{\hyperlink{class_c_a_n_aebcadd3df44c50eb74a733a8220610a3}{Address}};}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message::Unit}}\ \mbox{\hyperlink{class_c_a_n_aace97fc6d79153cbde52e6ed6d585a97}{Unit}};}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Message::Type}}\ \mbox{\hyperlink{class_c_a_n_adb64217ec81862dfaca8cdfa06b67056}{Type}};}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_concurrent___observer}{Concurrent\_Observer<Message,\ Condition>}}\ \mbox{\hyperlink{class_c_a_n_a359d8413dfaf202bdaa027d33286fd4f}{Observer}};}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_concurrent___observed_a2d06723771ce7a85324b6bae71562ead}{Concurrent\_Observed<Message,\ Condition>}}\ \mbox{\hyperlink{class_c_a_n_a980249b929bca6a3c2c28613f0c4bf93}{Observed}};}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_c_a_n_a0ceb0a5180d9da6d987f059a609aa04b}{CAN}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_c_a_n_a3cb7ade9935e058284389bc89c592544}{\string~CAN}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_c_a_n_a261d3591fcfa47037f7165dfaef96201}{send}}(\mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}}*\ msg);}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_c_a_n_ae12e1bdec86279a65067b3ec0fea1810}{notify}}(\mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}}*\ buf,\ \mbox{\hyperlink{class_condition}{Condition}}\ c)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00066\ \};}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_c_a_n_a261d3591fcfa47037f7165dfaef96201}{CAN::send}}(\mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}}*\ msg)\ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<CAN>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}CAN::send()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00070\ \ \ \ \ \mbox{\hyperlink{class_condition}{Condition}}\ c(msg-\/>\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}(),\ msg-\/>\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}());}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_c_a_n_ae12e1bdec86279a65067b3ec0fea1810}{notify}}(msg,\ c))}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00073\ \ \ \ \ }
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordflow}{return}\ msg-\/>\mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}}();}
+\DoxyCodeLine{00075\ \}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_c_a_n_ae12e1bdec86279a65067b3ec0fea1810}{CAN::notify}}(\mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}}*\ buf,\ \mbox{\hyperlink{class_condition}{Condition}}\ c)\ \{}
+\DoxyCodeLine{00078\ \ \ \ \ pthread\_mutex\_lock(\&\mbox{\hyperlink{class_concurrent___observed_a7e68e7947fd7db3a644bae7ce0fa6495}{\_mtx}});}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordtype}{bool}\ notified\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<CAN>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}Notifying\ observers...\(\backslash\)n"{}};}
+\DoxyCodeLine{00082\ \ \ \ \ }
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{typename}\ \mbox{\hyperlink{class_ordered___list_ac80a35a95e2c8eebb0cea764a24b6b57}{Observers::Iterator}}\ obs\ =\ \mbox{\hyperlink{class_concurrent___observed_ac8d1f370e094921ddc2faae02359f243}{\_observers}}.begin();\ obs\ !=\ \mbox{\hyperlink{class_concurrent___observed_ac8d1f370e094921ddc2faae02359f243}{\_observers}}.end();\ ++obs)\ \{}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((*obs)-\/>rank()\ ==\ c\ ||\ (*obs)-\/>rank().\mbox{\hyperlink{class_condition_ab92fd6216bb983cfe66bbc371a3dc535}{type}}()\ ==\ Condition::Type::UNKNOWN)\ \{}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}}*\ msg\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{Message}}(*buf);}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ (*obs)-\/>update((*obs)-\/>rank(),\ msg);}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ notified\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00090\ \ \ \ \ \}}
+\DoxyCodeLine{00091\ \ \ \ \ }
+\DoxyCodeLine{00092\ \ \ \ \ pthread\_mutex\_unlock(\&\mbox{\hyperlink{class_concurrent___observed_a7e68e7947fd7db3a644bae7ce0fa6495}{\_mtx}});}
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{keywordflow}{return}\ notified;}
+\DoxyCodeLine{00094\ \}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ CAN\_H}}
+
+\end{DoxyCode}

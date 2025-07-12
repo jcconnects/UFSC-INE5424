@@ -1,0 +1,63 @@
+\doxysection{include/app/components/lidar\+\_\+functions.hpp File Reference}
+\hypertarget{lidar__functions_8hpp}{}\label{lidar__functions_8hpp}\index{include/app/components/lidar\_functions.hpp@{include/app/components/lidar\_functions.hpp}}
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$thread$>$}\newline
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include "{}lidar\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/framework/component\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/util/debug.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ \mbox{\hyperlink{lidar__functions_8hpp_a234a75d14ee5e2bbcc3303107d6dddf3}{lidar\+\_\+producer}} (std\+::uint32\+\_\+t unit, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Producer function for Lidar component -\/ generates point cloud data. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{lidar__functions_8hpp_af4ef393a879c2b105661f854b75c1110}{lidar\+\_\+consumer}} (void \texorpdfstring{$\ast$}{*}msg, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Consumer function for Lidar component (not used -\/ Lidar is producer-\/only) \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{lidar__functions_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{lidar__functions_8hpp_af4ef393a879c2b105661f854b75c1110}\index{lidar\_functions.hpp@{lidar\_functions.hpp}!lidar\_consumer@{lidar\_consumer}}
+\index{lidar\_consumer@{lidar\_consumer}!lidar\_functions.hpp@{lidar\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{lidar\_consumer()}{lidar\_consumer()}}
+{\footnotesize\ttfamily \label{lidar__functions_8hpp_af4ef393a879c2b105661f854b75c1110} 
+void lidar\+\_\+consumer (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{msg}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Consumer function for Lidar component (not used -\/ Lidar is producer-\/only) 
+
+Lidar components are typically producer-\/only and don\textquotesingle{}t consume data from other components. This function is provided for interface compatibility but performs no operations.
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to the received message (unused) \\
+\hline
+{\em data} & Pointer to \doxylink{struct_lidar_data}{Lidar\+Data} structure (unused) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{lidar__functions_8hpp_a234a75d14ee5e2bbcc3303107d6dddf3}\index{lidar\_functions.hpp@{lidar\_functions.hpp}!lidar\_producer@{lidar\_producer}}
+\index{lidar\_producer@{lidar\_producer}!lidar\_functions.hpp@{lidar\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{lidar\_producer()}{lidar\_producer()}}
+{\footnotesize\ttfamily \label{lidar__functions_8hpp_a234a75d14ee5e2bbcc3303107d6dddf3} 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ lidar\+\_\+producer (\begin{DoxyParamCaption}\item[{std\+::uint32\+\_\+t}]{unit}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Producer function for Lidar component -\/ generates point cloud data. 
+
+Replaces Lidar\+Component\+::get() virtual method with direct function call. Generates realistic 3D point cloud data with variable number of points, each containing X, Y, Z coordinates and intensity values. Maintains the exact behavior and data format of the original implementation.
+
+
+\begin{DoxyParams}{Parameters}
+{\em unit} & The data unit being requested (should be EXTERNAL\+\_\+\+POINT\+\_\+\+CLOUD\+\_\+\+XYZ) \\
+\hline
+{\em data} & Pointer to \doxylink{struct_lidar_data}{Lidar\+Data} structure containing random generators \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Vector containing point cloud data (variable size based on number of points) 
+\end{DoxyReturn}

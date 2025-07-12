@@ -1,0 +1,58 @@
+\doxysection{lidar\+\_\+data.\+hpp}
+\hypertarget{lidar__data_8hpp_source}{}\label{lidar__data_8hpp_source}\index{include/app/components/lidar\_data.hpp@{include/app/components/lidar\_data.hpp}}
+\mbox{\hyperlink{lidar__data_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ LIDAR\_DATA\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ LIDAR\_DATA\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <random>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__types_8hpp}{../../api/framework/component\_types.hpp}}"{}}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00016\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_lidar_data_a0c8fe11914e9aff260be3359b00ebde3}{LidarData}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_component_data}{ComponentData}}\ \{}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{comment}{//\ Producer\ data:\ random\ number\ generation\ for\ point\ cloud\ data}}
+\DoxyCodeLine{00018\ \ \ \ \ std::random\_device\ \mbox{\hyperlink{struct_lidar_data_ab028cb6a2247f150d1184f5b3662f2f5}{rd}};}
+\DoxyCodeLine{00019\ \ \ \ \ std::mt19937\ \mbox{\hyperlink{struct_lidar_data_ae75fd8d773e563174b414bcb2f9da605}{gen}};}
+\DoxyCodeLine{00020\ \ \ \ \ }
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{comment}{//\ Point\ cloud\ generation\ distributions}}
+\DoxyCodeLine{00022\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_lidar_data_a7861762e7420eea3b0ce6d31400fe945}{x\_dist}};\ \ \ \ \ \ \ \ \textcolor{comment}{//\ X\ coordinate\ (meters)}}
+\DoxyCodeLine{00023\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_lidar_data_a289aa9bb4f75ec3141d1506a6af0790b}{y\_dist}};\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Y\ coordinate\ (meters)}}
+\DoxyCodeLine{00024\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_lidar_data_a9d0a37d41d66cd37d13963bbc4fd80d7}{z\_dist}};\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Z\ coordinate\ (meters)}}
+\DoxyCodeLine{00025\ \ \ \ \ std::uniform\_real\_distribution<>\ \mbox{\hyperlink{struct_lidar_data_a18361dcacb044e8c72167ca36313bedd}{intensity\_dist}};\ \textcolor{comment}{//\ Point\ intensity\ (0.0-\/1.0)}}
+\DoxyCodeLine{00026\ \ \ \ \ }
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{comment}{//\ Point\ cloud\ size\ distribution}}
+\DoxyCodeLine{00028\ \ \ \ \ std::uniform\_int\_distribution<>\ \mbox{\hyperlink{struct_lidar_data_aa8ddadf1c8ed7a2f2a40e1d74ca36178}{num\_points\_dist}};\ \textcolor{comment}{//\ Number\ of\ points\ per\ scan}}
+\DoxyCodeLine{00029\ \ \ \ \ }
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{comment}{//\ Timing\ distribution}}
+\DoxyCodeLine{00031\ \ \ \ \ std::uniform\_int\_distribution<>\ \mbox{\hyperlink{struct_lidar_data_a4a71df05971be5cf51b1488a000d780b}{delay\_dist}};\ \ \ \ \ \textcolor{comment}{//\ Delay\ between\ scans\ (ms)}}
+\DoxyCodeLine{00032\ \ \ \ \ }
+\DoxyCodeLine{00043\ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_a0c8fe11914e9aff260be3359b00ebde3}{LidarData}}()\ :\ \mbox{\hyperlink{struct_lidar_data_ae75fd8d773e563174b414bcb2f9da605}{gen}}(\mbox{\hyperlink{struct_lidar_data_ab028cb6a2247f150d1184f5b3662f2f5}{rd}}()),}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_a7861762e7420eea3b0ce6d31400fe945}{x\_dist}}(-\/50.0,\ 50.0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ X\ coordinate\ in\ meters\ (±50m)}}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_a289aa9bb4f75ec3141d1506a6af0790b}{y\_dist}}(-\/50.0,\ 50.0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Y\ coordinate\ in\ meters\ (±50m)}}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_a9d0a37d41d66cd37d13963bbc4fd80d7}{z\_dist}}(-\/5.0,\ 10.0),\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Z\ coordinate\ in\ meters\ (-\/5m\ to\ +10m)}}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_a18361dcacb044e8c72167ca36313bedd}{intensity\_dist}}(0.0,\ 1.0),\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Intensity\ (normalized\ 0.0-\/1.0)}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_aa8ddadf1c8ed7a2f2a40e1d74ca36178}{num\_points\_dist}}(1000,\ 5000),\ \ \ \ \ \ \textcolor{comment}{//\ Number\ of\ points\ per\ scan}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_a4a71df05971be5cf51b1488a000d780b}{delay\_dist}}(90,\ 110)\ \{\}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Milliseconds\ delay\ (lidar\ typically\ \string~10Hz)}}
+\DoxyCodeLine{00050\ \ \ \ \ }
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_lidar_data_ac9ea7edc6e9f68f21f36bc0d5d3ac62e}{update\_spatial\_range}}(\textcolor{keywordtype}{double}\ x\_min,\ \textcolor{keywordtype}{double}\ x\_max,\ \textcolor{keywordtype}{double}\ y\_min,\ \textcolor{keywordtype}{double}\ y\_max,\ }
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ z\_min,\ \textcolor{keywordtype}{double}\ z\_max)\ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_a7861762e7420eea3b0ce6d31400fe945}{x\_dist}}\ =\ std::uniform\_real\_distribution<>(x\_min,\ x\_max);}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_a289aa9bb4f75ec3141d1506a6af0790b}{y\_dist}}\ =\ std::uniform\_real\_distribution<>(y\_min,\ y\_max);}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_a9d0a37d41d66cd37d13963bbc4fd80d7}{z\_dist}}\ =\ std::uniform\_real\_distribution<>(z\_min,\ z\_max);}
+\DoxyCodeLine{00069\ \ \ \ \ \}}
+\DoxyCodeLine{00070\ \ \ \ \ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_lidar_data_af25f4ca6c1eb1cea3d1ac354b3abd4e0}{update\_density\_range}}(\textcolor{keywordtype}{int}\ min\_points,\ \textcolor{keywordtype}{int}\ max\_points)\ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_points\ >\ 0\ \&\&\ max\_points\ >\ min\_points)\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_aa8ddadf1c8ed7a2f2a40e1d74ca36178}{num\_points\_dist}}\ =\ std::uniform\_int\_distribution<>(min\_points,\ max\_points);}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00081\ \ \ \ \ \}}
+\DoxyCodeLine{00082\ \ \ \ \ }
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_lidar_data_a34662e0ab1edfa4739633a3cf74dfa43}{update\_timing\_range}}(\textcolor{keywordtype}{int}\ min\_delay\_ms,\ \textcolor{keywordtype}{int}\ max\_delay\_ms)\ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_delay\_ms\ >\ 0\ \&\&\ max\_delay\_ms\ >\ min\_delay\_ms)\ \{}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_lidar_data_a4a71df05971be5cf51b1488a000d780b}{delay\_dist}}\ =\ std::uniform\_int\_distribution<>(min\_delay\_ms,\ max\_delay\_ms);}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00093\ \ \ \ \ \}}
+\DoxyCodeLine{00094\ \};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LIDAR\_DATA\_HPP\ }}
+
+\end{DoxyCode}

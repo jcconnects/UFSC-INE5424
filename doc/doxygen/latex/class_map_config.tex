@@ -1,0 +1,128 @@
+\doxysection{Map\+Config Class Reference}
+\hypertarget{class_map_config}{}\label{class_map_config}\index{MapConfig@{MapConfig}}
+
+
+{\ttfamily \#include $<$map\+\_\+config.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_map_config_a6ddb7bd40412504ca82a971617392c17}{Map\+Config}} (const std\+::string \&config\+\_\+file\+\_\+path)
+\item 
+const std\+::vector$<$ \mbox{\hyperlink{struct_waypoint}{Waypoint}} $>$ \& \mbox{\hyperlink{class_map_config_a55e8a86552bd4599eebd2b7d44c27cff}{waypoints}} () const
+\item 
+const std\+::vector$<$ \mbox{\hyperlink{struct_route}{Route}} $>$ \& \mbox{\hyperlink{class_map_config_ae7ec1369e3e1ba8e995973b6d0d8824f}{routes}} () const
+\item 
+const \mbox{\hyperlink{struct_r_s_u_config}{RSUConfig}} \& \mbox{\hyperlink{class_map_config_a429282fbc35a1c3c15c462adf56c28bc}{rsu\+\_\+config}} () const
+\item 
+std\+::vector$<$ \mbox{\hyperlink{struct_r_s_u_config}{RSUConfig}} $>$ \mbox{\hyperlink{class_map_config_a434a3bd4b5135e1083f6b281aaa8f177}{get\+\_\+all\+\_\+rsu\+\_\+configs}} () const
+\item 
+const \mbox{\hyperlink{struct_vehicle_config}{Vehicle\+Config}} \& \mbox{\hyperlink{class_map_config_a28eec4c3bf57abb5bff1d3e04cbfe94f}{vehicle\+\_\+config}} () const
+\item 
+const \mbox{\hyperlink{struct_simulation_config}{Simulation\+Config}} \& \mbox{\hyperlink{class_map_config_a7614e6e276e6104c8521d5e5e3a3b301}{simulation}} () const
+\item 
+const \mbox{\hyperlink{struct_logging_config}{Logging\+Config}} \& \mbox{\hyperlink{class_map_config_a1433bc9adeaf3713c6f719f1a1971275}{logging}} () const
+\item 
+\mbox{\hyperlink{struct_waypoint}{Waypoint}} \mbox{\hyperlink{class_map_config_a31cc7b46ddf699eee47568a195453200}{get\+\_\+waypoint}} (const std\+::string \&name) const
+\item 
+\mbox{\hyperlink{struct_route}{Route}} \mbox{\hyperlink{class_map_config_ac1b6f327f97378b4bfebe3f664546d52}{get\+\_\+route}} (const std\+::string \&name) const
+\item 
+std\+::string \mbox{\hyperlink{class_map_config_a079d04d236b5d9ff4a0ef8169d6978dc}{get\+\_\+trajectory\+\_\+file\+\_\+path}} (const std\+::string \&entity\+\_\+type, unsigned int entity\+\_\+id) const
+\item 
+double \mbox{\hyperlink{class_map_config_a4f69575239f0501306a0a8364dc61f28}{get\+\_\+transmission\+\_\+radius}} () const
+\item 
+std\+::string \mbox{\hyperlink{class_map_config_a22accca445347be53f34e79b85f1b961}{get\+\_\+trajectory\+\_\+generator\+\_\+script}} () const
+\end{DoxyCompactItemize}
+
+
+\label{doc-constructors}
+\Hypertarget{class_map_config_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_map_config_a6ddb7bd40412504ca82a971617392c17}\index{MapConfig@{MapConfig}!MapConfig@{MapConfig}}
+\index{MapConfig@{MapConfig}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{MapConfig()}{MapConfig()}}
+{\footnotesize\ttfamily \label{class_map_config_a6ddb7bd40412504ca82a971617392c17} 
+Map\+Config\+::\+Map\+Config (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{config\+\_\+file\+\_\+path}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_map_config_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_map_config_a434a3bd4b5135e1083f6b281aaa8f177}\index{MapConfig@{MapConfig}!get\_all\_rsu\_configs@{get\_all\_rsu\_configs}}
+\index{get\_all\_rsu\_configs@{get\_all\_rsu\_configs}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{get\_all\_rsu\_configs()}{get\_all\_rsu\_configs()}}
+{\footnotesize\ttfamily \label{class_map_config_a434a3bd4b5135e1083f6b281aaa8f177} 
+std\+::vector$<$ \mbox{\hyperlink{struct_r_s_u_config}{RSUConfig}} $>$ Map\+Config\+::get\+\_\+all\+\_\+rsu\+\_\+configs (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_map_config_ac1b6f327f97378b4bfebe3f664546d52}\index{MapConfig@{MapConfig}!get\_route@{get\_route}}
+\index{get\_route@{get\_route}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{get\_route()}{get\_route()}}
+{\footnotesize\ttfamily \label{class_map_config_ac1b6f327f97378b4bfebe3f664546d52} 
+\mbox{\hyperlink{struct_route}{Route}} Map\+Config\+::get\+\_\+route (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_map_config_a079d04d236b5d9ff4a0ef8169d6978dc}\index{MapConfig@{MapConfig}!get\_trajectory\_file\_path@{get\_trajectory\_file\_path}}
+\index{get\_trajectory\_file\_path@{get\_trajectory\_file\_path}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{get\_trajectory\_file\_path()}{get\_trajectory\_file\_path()}}
+{\footnotesize\ttfamily \label{class_map_config_a079d04d236b5d9ff4a0ef8169d6978dc} 
+std\+::string Map\+Config\+::get\+\_\+trajectory\+\_\+file\+\_\+path (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{entity\+\_\+type}{, }\item[{unsigned int}]{entity\+\_\+id}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_map_config_a22accca445347be53f34e79b85f1b961}\index{MapConfig@{MapConfig}!get\_trajectory\_generator\_script@{get\_trajectory\_generator\_script}}
+\index{get\_trajectory\_generator\_script@{get\_trajectory\_generator\_script}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{get\_trajectory\_generator\_script()}{get\_trajectory\_generator\_script()}}
+{\footnotesize\ttfamily \label{class_map_config_a22accca445347be53f34e79b85f1b961} 
+std\+::string Map\+Config\+::get\+\_\+trajectory\+\_\+generator\+\_\+script (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_map_config_a4f69575239f0501306a0a8364dc61f28}\index{MapConfig@{MapConfig}!get\_transmission\_radius@{get\_transmission\_radius}}
+\index{get\_transmission\_radius@{get\_transmission\_radius}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{get\_transmission\_radius()}{get\_transmission\_radius()}}
+{\footnotesize\ttfamily \label{class_map_config_a4f69575239f0501306a0a8364dc61f28} 
+double Map\+Config\+::get\+\_\+transmission\+\_\+radius (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_map_config_a31cc7b46ddf699eee47568a195453200}\index{MapConfig@{MapConfig}!get\_waypoint@{get\_waypoint}}
+\index{get\_waypoint@{get\_waypoint}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{get\_waypoint()}{get\_waypoint()}}
+{\footnotesize\ttfamily \label{class_map_config_a31cc7b46ddf699eee47568a195453200} 
+\mbox{\hyperlink{struct_waypoint}{Waypoint}} Map\+Config\+::get\+\_\+waypoint (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_map_config_a1433bc9adeaf3713c6f719f1a1971275}\index{MapConfig@{MapConfig}!logging@{logging}}
+\index{logging@{logging}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{logging()}{logging()}}
+{\footnotesize\ttfamily \label{class_map_config_a1433bc9adeaf3713c6f719f1a1971275} 
+const \mbox{\hyperlink{struct_logging_config}{Logging\+Config}} \& Map\+Config\+::logging (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_map_config_ae7ec1369e3e1ba8e995973b6d0d8824f}\index{MapConfig@{MapConfig}!routes@{routes}}
+\index{routes@{routes}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{routes()}{routes()}}
+{\footnotesize\ttfamily \label{class_map_config_ae7ec1369e3e1ba8e995973b6d0d8824f} 
+const std\+::vector$<$ \mbox{\hyperlink{struct_route}{Route}} $>$ \& Map\+Config\+::routes (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_map_config_a429282fbc35a1c3c15c462adf56c28bc}\index{MapConfig@{MapConfig}!rsu\_config@{rsu\_config}}
+\index{rsu\_config@{rsu\_config}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{rsu\_config()}{rsu\_config()}}
+{\footnotesize\ttfamily \label{class_map_config_a429282fbc35a1c3c15c462adf56c28bc} 
+const \mbox{\hyperlink{struct_r_s_u_config}{RSUConfig}} \& Map\+Config\+::rsu\+\_\+config (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_map_config_a7614e6e276e6104c8521d5e5e3a3b301}\index{MapConfig@{MapConfig}!simulation@{simulation}}
+\index{simulation@{simulation}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{simulation()}{simulation()}}
+{\footnotesize\ttfamily \label{class_map_config_a7614e6e276e6104c8521d5e5e3a3b301} 
+const \mbox{\hyperlink{struct_simulation_config}{Simulation\+Config}} \& Map\+Config\+::simulation (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_map_config_a28eec4c3bf57abb5bff1d3e04cbfe94f}\index{MapConfig@{MapConfig}!vehicle\_config@{vehicle\_config}}
+\index{vehicle\_config@{vehicle\_config}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{vehicle\_config()}{vehicle\_config()}}
+{\footnotesize\ttfamily \label{class_map_config_a28eec4c3bf57abb5bff1d3e04cbfe94f} 
+const \mbox{\hyperlink{struct_vehicle_config}{Vehicle\+Config}} \& Map\+Config\+::vehicle\+\_\+config (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_map_config_a55e8a86552bd4599eebd2b7d44c27cff}\index{MapConfig@{MapConfig}!waypoints@{waypoints}}
+\index{waypoints@{waypoints}!MapConfig@{MapConfig}}
+\doxysubsubsection{\texorpdfstring{waypoints()}{waypoints()}}
+{\footnotesize\ttfamily \label{class_map_config_a55e8a86552bd4599eebd2b7d44c27cff} 
+const std\+::vector$<$ \mbox{\hyperlink{struct_waypoint}{Waypoint}} $>$ \& Map\+Config\+::waypoints (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/framework/\mbox{\hyperlink{map__config_8h}{map\+\_\+config.\+h}}\end{DoxyCompactItemize}

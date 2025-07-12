@@ -1,0 +1,63 @@
+\doxysection{include/app/components/ins\+\_\+functions.hpp File Reference}
+\hypertarget{ins__functions_8hpp}{}\label{ins__functions_8hpp}\index{include/app/components/ins\_functions.hpp@{include/app/components/ins\_functions.hpp}}
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$thread$>$}\newline
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include "{}ins\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/framework/component\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../../api/util/debug.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ \mbox{\hyperlink{ins__functions_8hpp_a8e9d00f9b724b87739524bf3adf6cde0}{ins\+\_\+producer}} (std\+::uint32\+\_\+t unit, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Producer function for INS component -\/ generates navigation data. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ins__functions_8hpp_a15e1cc2a7a835acd99d9a3c46f40984c}{ins\+\_\+consumer}} (void \texorpdfstring{$\ast$}{*}msg, \mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})
+\begin{DoxyCompactList}\small\item\em Consumer function for INS component (not used -\/ INS is producer-\/only) \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{ins__functions_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{ins__functions_8hpp_a15e1cc2a7a835acd99d9a3c46f40984c}\index{ins\_functions.hpp@{ins\_functions.hpp}!ins\_consumer@{ins\_consumer}}
+\index{ins\_consumer@{ins\_consumer}!ins\_functions.hpp@{ins\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{ins\_consumer()}{ins\_consumer()}}
+{\footnotesize\ttfamily \label{ins__functions_8hpp_a15e1cc2a7a835acd99d9a3c46f40984c} 
+void ins\+\_\+consumer (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{msg}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Consumer function for INS component (not used -\/ INS is producer-\/only) 
+
+INS components are typically producer-\/only and don\textquotesingle{}t consume data from other components. This function is provided for interface compatibility but performs no operations.
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to the received message (unused) \\
+\hline
+{\em data} & Pointer to \doxylink{struct_i_n_s_data}{INSData} structure (unused) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{ins__functions_8hpp_a8e9d00f9b724b87739524bf3adf6cde0}\index{ins\_functions.hpp@{ins\_functions.hpp}!ins\_producer@{ins\_producer}}
+\index{ins\_producer@{ins\_producer}!ins\_functions.hpp@{ins\_functions.hpp}}
+\doxysubsubsection{\texorpdfstring{ins\_producer()}{ins\_producer()}}
+{\footnotesize\ttfamily \label{ins__functions_8hpp_a8e9d00f9b724b87739524bf3adf6cde0} 
+std\+::vector$<$ std\+::uint8\+\_\+t $>$ ins\+\_\+producer (\begin{DoxyParamCaption}\item[{std\+::uint32\+\_\+t}]{unit}{, }\item[{\mbox{\hyperlink{struct_component_data}{Component\+Data}} \texorpdfstring{$\ast$}{*}}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Producer function for INS component -\/ generates navigation data. 
+
+Replaces INSComponent\+::get() virtual method with direct function call. Generates realistic inertial navigation data including position, velocity, acceleration, gyroscope readings, and heading information. Maintains the exact behavior and data format of the original implementation.
+
+
+\begin{DoxyParams}{Parameters}
+{\em unit} & The data unit being requested (should be EXTERNAL\+\_\+\+INERTIAL\+\_\+\+POSITION) \\
+\hline
+{\em data} & Pointer to \doxylink{struct_i_n_s_data}{INSData} structure containing random generators \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Vector containing 32 bytes of navigation data (8 floats) 
+\end{DoxyReturn}

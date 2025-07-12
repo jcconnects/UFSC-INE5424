@@ -1,0 +1,162 @@
+\doxysection{include/app/components/lidar\+\_\+factory.hpp File Reference}
+\hypertarget{lidar__factory_8hpp}{}\label{lidar__factory_8hpp}\index{include/app/components/lidar\_factory.hpp@{include/app/components/lidar\_factory.hpp}}
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include "{}../../api/framework/agent.\+h"{}}\newline
+{\ttfamily \#include "{}lidar\+\_\+data.\+hpp"{}}\newline
+{\ttfamily \#include "{}lidar\+\_\+functions.\+hpp"{}}\newline
+{\ttfamily \#include "{}../datatypes.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{lidar__factory_8hpp_a3c346f997e0aa0b0be3cae50aade7399}{create\+\_\+lidar\+\_\+component}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, const std\+::string \&name="{}Lidar\+Component"{})
+\begin{DoxyCompactList}\small\item\em Creates a Lidar component using function-\/based composition. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{lidar__factory_8hpp_a65079b562c6f8538d43eb698f2d1da69}{create\+\_\+lidar\+\_\+component\+\_\+with\+\_\+ranges}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, double x\+\_\+min, double x\+\_\+max, double y\+\_\+min, double y\+\_\+max, double z\+\_\+min, double z\+\_\+max, const std\+::string \&name="{}Lidar\+Component"{})
+\begin{DoxyCompactList}\small\item\em Creates a Lidar component with custom spatial ranges. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{lidar__factory_8hpp_a141ba1ced218eb4921d2f7e70cb2420b}{create\+\_\+lidar\+\_\+component\+\_\+with\+\_\+density}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, int min\+\_\+points, int max\+\_\+points, const std\+::string \&name="{}Lidar\+Component"{})
+\begin{DoxyCompactList}\small\item\em Creates a Lidar component with custom density parameters. \end{DoxyCompactList}\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ \mbox{\hyperlink{lidar__factory_8hpp_a553d7cf822b8ba6a7d40b4e76689906d}{create\+\_\+lidar\+\_\+component\+\_\+with\+\_\+timing}} (\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}can, const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&addr, int min\+\_\+delay\+\_\+ms, int max\+\_\+delay\+\_\+ms, const std\+::string \&name="{}Lidar\+Component"{})
+\begin{DoxyCompactList}\small\item\em Creates a Lidar component with custom timing parameters. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{lidar__factory_8hpp_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{lidar__factory_8hpp_a3c346f997e0aa0b0be3cae50aade7399}\index{lidar\_factory.hpp@{lidar\_factory.hpp}!create\_lidar\_component@{create\_lidar\_component}}
+\index{create\_lidar\_component@{create\_lidar\_component}!lidar\_factory.hpp@{lidar\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_lidar\_component()}{create\_lidar\_component()}}
+{\footnotesize\ttfamily \label{lidar__factory_8hpp_a3c346f997e0aa0b0be3cae50aade7399} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+lidar\+\_\+component (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}LidarComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a Lidar component using function-\/based composition. 
+
+Replaces the inheritance-\/based \doxylink{struct_lidar_component}{Lidar\+Component} class with EPOS Smart\+Data principles. Eliminates vtable race conditions during destruction by using function pointers instead of virtual methods.
+
+Lidar components are producer-\/only and generate 3D point cloud data with variable number of points, each containing X, Y, Z coordinates and intensity. This factory creates a complete \doxylink{class_agent}{Agent} configured as a producer for EXTERNAL\+\_\+\+POINT\+\_\+\+CLOUD\+\_\+\+XYZ.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Lidar\+Component"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} ready for operation 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null or name is empty \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{lidar__factory_8hpp_a141ba1ced218eb4921d2f7e70cb2420b}\index{lidar\_factory.hpp@{lidar\_factory.hpp}!create\_lidar\_component\_with\_density@{create\_lidar\_component\_with\_density}}
+\index{create\_lidar\_component\_with\_density@{create\_lidar\_component\_with\_density}!lidar\_factory.hpp@{lidar\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_lidar\_component\_with\_density()}{create\_lidar\_component\_with\_density()}}
+{\footnotesize\ttfamily \label{lidar__factory_8hpp_a141ba1ced218eb4921d2f7e70cb2420b} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+lidar\+\_\+component\+\_\+with\+\_\+density (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{int}]{min\+\_\+points}{, }\item[{int}]{max\+\_\+points}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}LidarComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a Lidar component with custom density parameters. 
+
+Creates a Lidar component with customized point cloud density. Useful for simulating different Lidar types (low-\/res vs high-\/res) or performance testing with different data volumes.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em min\+\_\+points} & Minimum number of points per scan \\
+\hline
+{\em max\+\_\+points} & Maximum number of points per scan \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Lidar\+Component"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} with custom density 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null, name is empty, or parameters are invalid \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{lidar__factory_8hpp_a65079b562c6f8538d43eb698f2d1da69}\index{lidar\_factory.hpp@{lidar\_factory.hpp}!create\_lidar\_component\_with\_ranges@{create\_lidar\_component\_with\_ranges}}
+\index{create\_lidar\_component\_with\_ranges@{create\_lidar\_component\_with\_ranges}!lidar\_factory.hpp@{lidar\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_lidar\_component\_with\_ranges()}{create\_lidar\_component\_with\_ranges()}}
+{\footnotesize\ttfamily \label{lidar__factory_8hpp_a65079b562c6f8538d43eb698f2d1da69} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+lidar\+\_\+component\+\_\+with\+\_\+ranges (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{double}]{x\+\_\+min}{, }\item[{double}]{x\+\_\+max}{, }\item[{double}]{y\+\_\+min}{, }\item[{double}]{y\+\_\+max}{, }\item[{double}]{z\+\_\+min}{, }\item[{double}]{z\+\_\+max}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}LidarComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a Lidar component with custom spatial ranges. 
+
+Creates a Lidar component with customized spatial ranges for point cloud generation. Useful for testing specific scenarios or configuring Lidar for different operational environments (e.\+g., indoor vs outdoor, different vehicle types).
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em x\+\_\+min} & Minimum X coordinate (meters) \\
+\hline
+{\em x\+\_\+max} & Maximum X coordinate (meters) \\
+\hline
+{\em y\+\_\+min} & Minimum Y coordinate (meters) \\
+\hline
+{\em y\+\_\+max} & Maximum Y coordinate (meters) \\
+\hline
+{\em z\+\_\+min} & Minimum Z coordinate (meters) \\
+\hline
+{\em z\+\_\+max} & Maximum Z coordinate (meters) \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Lidar\+Component"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} with custom spatial ranges 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null, name is empty, or ranges are invalid \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{lidar__factory_8hpp_a553d7cf822b8ba6a7d40b4e76689906d}\index{lidar\_factory.hpp@{lidar\_factory.hpp}!create\_lidar\_component\_with\_timing@{create\_lidar\_component\_with\_timing}}
+\index{create\_lidar\_component\_with\_timing@{create\_lidar\_component\_with\_timing}!lidar\_factory.hpp@{lidar\_factory.hpp}}
+\doxysubsubsection{\texorpdfstring{create\_lidar\_component\_with\_timing()}{create\_lidar\_component\_with\_timing()}}
+{\footnotesize\ttfamily \label{lidar__factory_8hpp_a553d7cf822b8ba6a7d40b4e76689906d} 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{class_agent}{Agent}} $>$ create\+\_\+lidar\+\_\+component\+\_\+with\+\_\+timing (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_a_n}{CAN}} \texorpdfstring{$\ast$}{*}}]{can}{, }\item[{const \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent\+::\+Address}} \&}]{addr}{, }\item[{int}]{min\+\_\+delay\+\_\+ms}{, }\item[{int}]{max\+\_\+delay\+\_\+ms}{, }\item[{const std\+::string \&}]{name}{ = {\ttfamily "{}LidarComponent"{}}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Creates a Lidar component with custom timing parameters. 
+
+Creates a Lidar component with customized scan timing. Useful for simulating different Lidar scan rates or testing system performance under different timing conditions.
+
+
+\begin{DoxyParams}{Parameters}
+{\em can} & \doxylink{class_c_a_n}{CAN} bus for communication (must not be null) \\
+\hline
+{\em addr} & \doxylink{class_network}{Network} address for the agent \\
+\hline
+{\em min\+\_\+delay\+\_\+ms} & Minimum delay between scans (milliseconds) \\
+\hline
+{\em max\+\_\+delay\+\_\+ms} & Maximum delay between scans (milliseconds) \\
+\hline
+{\em name} & \doxylink{class_agent}{Agent} name for identification (default\+: "{}\+Lidar\+Component"{}) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unique pointer to configured \doxylink{class_agent}{Agent} with custom timing 
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::invalid\+\_\+argument} & if can is null, name is empty, or timing is invalid \\
+\hline
+\end{DoxyExceptions}

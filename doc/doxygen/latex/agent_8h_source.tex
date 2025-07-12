@@ -1,0 +1,587 @@
+\doxysection{agent.\+h}
+\hypertarget{agent_8h_source}{}\label{agent_8h_source}\index{include/api/framework/agent.h@{include/api/framework/agent.h}}
+\mbox{\hyperlink{agent_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ AGENT\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ AGENT\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <sstream>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <pthread.h>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <numeric>}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{bus_8h}{api/network/bus.h}}"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{periodic_thread_8h}{api/framework/periodicThread.h}}"{}}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{csv__logger_8h}{api/util/csv\_logger.h}}"{}}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{traits_8h}{api/traits.h}}"{}}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{static__size__hashed__cache_8h}{api/util/static\_size\_hashed\_cache.h}}"{}}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__types_8hpp}{api/framework/component\_types.hpp}}"{}}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__functions_8hpp}{api/framework/component\_functions.hpp}}"{}}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00035\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_agent_af463a1789fba270f3c71bbc341497ea0}{Agent}}\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_c_a_n_a5933787c2150df4898c4ba8c6a4c2268}{CAN::Message}}\ \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}};}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_message_a9503881ced5ab90d776a921d5e29e27f}{Message::Origin}}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Address}};}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_message_a6a16dfdcb8a3f35650440459b673ebbe}{Message::Array}}\ \mbox{\hyperlink{class_agent_a18a67129d2455bca64c43adf093567a6}{Value}};}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message::Unit}}\ \mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}};}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{Message::Type}}\ \mbox{\hyperlink{class_agent_a252b1a14b8f711d1ba6a25a2c80da6f3}{Type}};}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_message_a8d96e96af236b29707044cc25f30c568}{Message::Microseconds}}\ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}};}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_periodic___thread}{Periodic\_Thread<Agent>}}\ \mbox{\hyperlink{class_agent_a7938da6b695346da93afc23d43a987e0}{Thread}};}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_c_a_n_a359d8413dfaf202bdaa027d33286fd4f}{CAN::Observer}}\ \mbox{\hyperlink{class_agent_a5d52ad1b2c84ad64f59744e9be7d1b3f}{Observer}};}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Number\ of\ units\ a\ vehicle\ could\ produce}}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_agent_a39e9645b8248c543fde7c43e51c5cffb}{\_units\_per\_vehicle}}\ =\ 5;}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Fixed-\/response\ feature:\ number\ of\ responses\ a\ producer\ sends\ per\ INTEREST}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_agent_a016b6c0d56b5ed4961f9e773f9e7e081}{MAX\_RESPONSES\_PER\_INTEREST}}\ =\ 5;}
+\DoxyCodeLine{00049\ \ \ \ \ }
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_af463a1789fba270f3c71bbc341497ea0}{Agent}}(\mbox{\hyperlink{class_c_a_n}{CAN}}*\ bus,\ \textcolor{keyword}{const}\ std::string\&\ \mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}},\ \mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit,\ \mbox{\hyperlink{class_agent_a252b1a14b8f711d1ba6a25a2c80da6f3}{Type}}\ type,\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Address}}\ \mbox{\hyperlink{class_agent_a374fceb89c2d3d53046ac128d2a50415}{address}},}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{component__functions_8hpp_a09035d123daa3e7131b0f583a140371c}{DataProducer}}\ producer,\ \mbox{\hyperlink{component__functions_8hpp_a53233b5baa21df43948d115fa1f102a1}{ResponseHandler}}\ handler,\ }
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::unique\_ptr<ComponentData>\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_agent_acbe540cfd323fcd18db620e2265b40d9}{external}}\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_ab8dd8d152605cf1339fed595376e83cb}{\string~Agent}}();}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Non-\/virtual\ interface\ -\/\ eliminates\ race\ condition}}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a18a67129d2455bca64c43adf093567a6}{Value}}\ \mbox{\hyperlink{class_agent_af986ce4308578cfb41ac891fb43477d6}{get}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit);}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_ac8304f2fb2ab35287394c772b59fe73c}{handle\_response}}(\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}*\ msg);}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_agent_a4a0d9642e1fa211160f67ab27320ec97}{send}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit,\ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ period);\ \textcolor{comment}{//\ Send\ will\ always\ be\ INTEREST\ (this\ is\ exposed\ to\ application)}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_agent_a661a2c3e4ac1cc143eae7062cbac0fae}{receive}}(\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}*\ msg);}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{class_agent_adbfbd8895294995d262be9ff18b26485}{run}}(\textcolor{keywordtype}{void}*\ arg);\ \textcolor{comment}{//\ Run\ will\ always\ receive\ INTEREST\ messages,\ and\ set\ periodic\ thread}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_agent_a927dadd25d2b8e6172c18ead37c554cf}{running}}();}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_ab9e9da9e9a66227bca835dab3780d366}{external}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_agent_acbe540cfd323fcd18db620e2265b40d9}{external}});}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ External\ flag\ for\ message\ filtering}}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_agent_ab9e9da9e9a66227bca835dab3780d366}{external}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_external;\ \}}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ std::string\ \mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_name;\ \}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ CSV\ logging\ methods}}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_af8b714e0188b27f2294fdc138cad0190}{set\_csv\_logger}}(\textcolor{keyword}{const}\ std::string\&\ log\_dir);}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_a7a400be6500ceb7df23bf6d18ebf3a8d}{log\_message}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_message}{Message}}\&\ msg,\ \textcolor{keyword}{const}\ std::string\&\ direction);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_agent_ad438098d30b55b16ba88401f70a3bce2}{start\_periodic\_interest}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit,\ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ period);}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_a7846bb6027785d01803b71da1e667760}{stop\_periodic\_interest}}();}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_a7d5fd455d10924542f6b838e76cfd3c0}{send\_interest}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit);}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_a06e90b6d019c3767897664144be0abe8}{update\_interest\_period}}(\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ new\_period);}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_adee5474d6762bc0ccfbfd86df1824ec5}{reply}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit);}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_agent_a475c095d790fd809a4c4f54cdc8eb478}{thread\_running}}();}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_agent_abdd1927b5e75313e89c56dc9eea71929}{can\_send}}(\mbox{\hyperlink{class_message}{Message}}*\ msg);}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Address}}\ \mbox{\hyperlink{class_agent_a374fceb89c2d3d53046ac128d2a50415}{address}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ handle\_interest(\mbox{\hyperlink{class_message}{Message}}*\ msg);}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ should\_process\_response();}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ recompute\_gcd();}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Address}}\ \_address;}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_c_a_n}{CAN}}*\ \_can;}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ std::string\ \_name;}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a5d52ad1b2c84ad64f59744e9be7d1b3f}{Observer}}*\ \_can\_observer;}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ pthread\_t\ \_thread;}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a7938da6b695346da93afc23d43a987e0}{Thread}}*\ \_periodic\_thread;}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ std::atomic<bool>\ \_running;}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_condition}{Condition}}\ \_c;}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ std::unique\_ptr<CSVLogger>\ \_csv\_logger;}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a7938da6b695346da93afc23d43a987e0}{Thread}}*\ \_interest\_thread;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Periodic\ thread\ for\ sending\ INTEREST}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ \_requested\_period;\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Period\ requested\ by\ this\ consumer}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ \_interest\_period;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Current\ INTEREST\ period\ for\ response\ filtering}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ std::atomic<bool>\ \_interest\_active;\ \ \ \ \textcolor{comment}{//\ Control\ interest\ sending}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ std::atomic<bool>\ \_is\_consumer;\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Track\ if\ this\ agent\ is\ a\ consumer}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ std::atomic<long\ long>\ \_last\_response\_timestamp;\ \textcolor{comment}{//\ Timestamp\ of\ last\ processed\ RESPONSE\ (µs)}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Producer\ GCD\ period\ tracking\ (for\ fixed-\/response\ feature)}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ \_producer\_gcd;}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ EPOS-\/inspired\ composition\ members}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ std::unique\_ptr<ComponentData>\ \_component\_data;}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{component__functions_8hpp_a09035d123daa3e7131b0f583a140371c}{DataProducer}}\ \_data\_producer;}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{component__functions_8hpp_a53233b5baa21df43948d115fa1f102a1}{ResponseHandler}}\ \_response\_handler;}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Cache\ for\ storing\ the\ last\ value\ for\ each\ unit}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }ValueCache\ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit;}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ timestamp;}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size;}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ StaticSizeHashedCache<ValueCache*>\ \_value\_cache;}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ ===\ Fixed-\/Response\ feature\ data\ ===}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }ResponseInfo\ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ termination\_time\{Microseconds::zero()\};}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ period\{Microseconds::zero()\};}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ key\ =\ (consumerId\ ⊕\ unit)\ \ –\ same\ 16-\/bit\ scheme\ used\ elsewhere}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ StaticSizeHashedCache<ResponseInfo,\ 128>\ \_active\_interests;}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \_external;}
+\DoxyCodeLine{00135\ \};}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \textcolor{comment}{/******\ Agent\ Implementation\ *****/}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00154\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_agent_af463a1789fba270f3c71bbc341497ea0}{Agent::Agent}}(\mbox{\hyperlink{class_c_a_n}{CAN}}*\ bus,\ \textcolor{keyword}{const}\ std::string\&\ \mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}},\ \mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit,\ \mbox{\hyperlink{class_agent_a252b1a14b8f711d1ba6a25a2c80da6f3}{Type}}\ type,\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Address}}\ \mbox{\hyperlink{class_agent_a374fceb89c2d3d53046ac128d2a50415}{address}},}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{component__functions_8hpp_a09035d123daa3e7131b0f583a140371c}{DataProducer}}\ producer,\ \mbox{\hyperlink{component__functions_8hpp_a53233b5baa21df43948d115fa1f102a1}{ResponseHandler}}\ handler,\ }
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::unique\_ptr<ComponentData>\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_agent_acbe540cfd323fcd18db620e2265b40d9}{external}})\ }
+\DoxyCodeLine{00157\ \ \ \ \ :\ \_address(\mbox{\hyperlink{class_agent_a374fceb89c2d3d53046ac128d2a50415}{address}}),}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \_can(bus),}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \_name(\mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}}),}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \_can\_observer(nullptr),}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \_thread(),}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \_periodic\_thread(nullptr),}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \_running(false),}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \_c(),}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \_csv\_logger(nullptr),}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \_interest\_thread(nullptr),}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \_requested\_period(\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}::zero()),}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \_interest\_period(\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}::zero()),}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \_interest\_active(false),}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \_is\_consumer(type\ ==\ \mbox{\hyperlink{class_agent_a252b1a14b8f711d1ba6a25a2c80da6f3}{Type}}::RESPONSE),}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \_last\_response\_timestamp(0),}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \_producer\_gcd(\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}::zero()),}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \_component\_data(std::move(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})),}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \_data\_producer(producer),}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \_response\_handler(handler),}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \_external(\mbox{\hyperlink{class_agent_acbe540cfd323fcd18db620e2265b40d9}{external}})\ \{}
+\DoxyCodeLine{00177\ \ \ \ \ }
+\DoxyCodeLine{00178\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ created\ with\ address:\ "{}}\ <<\ \_address.to\_string()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keywordflow}{if}\ (!bus)}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}Gateway\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00181\ \ \ \ \ }
+\DoxyCodeLine{00182\ \ \ \ \ \mbox{\hyperlink{class_condition}{Condition}}\ c(unit,\ type);}
+\DoxyCodeLine{00183\ \ \ \ \ \_c\ =\ c;}
+\DoxyCodeLine{00184\ \ \ \ \ \_can\_observer\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_agent_a5d52ad1b2c84ad64f59744e9be7d1b3f}{Observer}}(c);}
+\DoxyCodeLine{00185\ \ \ \ \ \_can-\/>attach(\_can\_observer,\ c);}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_is\_consumer\ \&\&\ !handler)\ \{}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}Consumer\ agents\ must\ have\ a\ response\ handler"{}});}
+\DoxyCodeLine{00189\ \ \ \ \ \}}
+\DoxyCodeLine{00190\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_is\_consumer\ \&\&\ !producer)\ \{}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}Producer\ agents\ must\ have\ a\ data\ producer"{}});}
+\DoxyCodeLine{00192\ \ \ \ \ \}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{comment}{//\ Phase\ 1.2:\ Consumer\ initialization\ -\/\ No\ automatic\ INTEREST\ sending}}
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_is\_consumer)\ \{}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Don't\ send\ initial\ INTEREST\ here\ anymore}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Application\ will\ call\ start\_periodic\_interest()\ when\ ready}}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ initialized\ as\ consumer,\ waiting\ for\ application\ to\ start\ periodic\ interest\(\backslash\)n"{}};}
+\DoxyCodeLine{00199\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ initialized\ as\ producer,\ ready\ to\ handle\ INTEREST\ messages\(\backslash\)n"{}};}
+\DoxyCodeLine{00201\ \ \ \ \ \}}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ \ \ \_running\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ pthread\_create(\&\_thread,\ \textcolor{keyword}{nullptr},\ \mbox{\hyperlink{class_agent_adbfbd8895294995d262be9ff18b26485}{Agent::run}},\ \textcolor{keyword}{this});}
+\DoxyCodeLine{00205\ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ !=\ 0)\ \{}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \_running\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Failed\ to\ create\ agent\ thread"{}});}
+\DoxyCodeLine{00208\ \ \ \ \ \}}
+\DoxyCodeLine{00209\ \}}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00217\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_agent_ab8dd8d152605cf1339fed595376e83cb}{Agent::\string~Agent}}()\ \{}
+\DoxyCodeLine{00218\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ destruction\ started\(\backslash\)n"{}};}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{comment}{//\ First,\ stop\ the\ running\ flag\ to\ prevent\ new\ operations}}
+\DoxyCodeLine{00221\ \ \ \ \ \_running.store(\textcolor{keyword}{false},\ std::memory\_order\_release);}
+\DoxyCodeLine{00222\ \ \ \ \ }
+\DoxyCodeLine{00223\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_interest\_thread)\ \{}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a7846bb6027785d01803b71da1e667760}{stop\_periodic\_interest}}();}
+\DoxyCodeLine{00225\ \ \ \ \ \}}
+\DoxyCodeLine{00226\ \ \ \ \ }
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{comment}{//\ Stop\ periodic\ thread\ first\ if\ it\ exists\ -\/\ CRITICAL:\ Do\ this\ before\ anything\ else}}
+\DoxyCodeLine{00228\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_periodic\_thread)\ \{}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \_periodic\_thread-\/>join();}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ \_periodic\_thread;}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \_periodic\_thread\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00232\ \ \ \ \ \}}
+\DoxyCodeLine{00233\ \ \ \ \ }
+\DoxyCodeLine{00234\ \ \ \ \ \textcolor{comment}{//\ Cancel\ the\ main\ agent\ thread\ and\ wait\ for\ it\ to\ exit}}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_thread)\ \{}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ pthread\_cancel(\_thread);}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ pthread\_join(\_thread,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00238\ \ \ \ \ \}}
+\DoxyCodeLine{00239\ \ \ \ \ }
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{comment}{//\ Detach\ from\ CAN\ bus\ before\ deleting\ observer}}
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_can\_observer)\ \{}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \_can-\/>detach(\_can\_observer,\ \_c);}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ \_can\_observer;}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \_can\_observer\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00245\ \ \ \ \ \}}
+\DoxyCodeLine{00246\ \ \ \ \ }
+\DoxyCodeLine{00247\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ destroyed\ successfully\(\backslash\)n"{}};}
+\DoxyCodeLine{00248\ \}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00260\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_agent_a18a67129d2455bca64c43adf093567a6}{Agent::Value}}\ \mbox{\hyperlink{class_agent_af986ce4308578cfb41ac891fb43477d6}{Agent::get}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit)\ \{}
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{comment}{//\ Only\ producers\ should\ generate\ data}}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_is\_consumer\ ||\ !\_data\_producer\ ||\ !\_component\_data)\ \{}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_agent_a18a67129d2455bca64c43adf093567a6}{Value}}();\ \textcolor{comment}{//\ Return\ empty\ vector\ if\ not\ a\ producer}}
+\DoxyCodeLine{00264\ \ \ \ \ \}}
+\DoxyCodeLine{00265\ \ \ \ \ \textcolor{keywordflow}{return}\ \_data\_producer(unit,\ \_component\_data.get());}
+\DoxyCodeLine{00266\ \}}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00276\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_ac8304f2fb2ab35287394c772b59fe73c}{Agent::handle\_response}}(\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}*\ msg)\ \{}
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{comment}{//\ Only\ consumers\ should\ handle\ responses}}
+\DoxyCodeLine{00278\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_is\_consumer\ ||\ !\_response\_handler\ ||\ !\_component\_data\ ||\ !msg)\ \{}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ Silently\ ignore\ if\ not\ a\ consumer}}
+\DoxyCodeLine{00280\ \ \ \ \ \}}
+\DoxyCodeLine{00281\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ handling\ response\ for\ unit:\ "{}}\ <<\ msg-\/>\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{keyword}{auto}\ origin\_paddr\ =\ msg-\/>\mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}}().paddr();}
+\DoxyCodeLine{00284\ \ \ \ \ uint16\_t\ key\ =\ (\textcolor{keyword}{static\_cast<}uint16\_t\textcolor{keyword}{>}(origin\_paddr.bytes[4])\ <<\ 8)\ |\ origin\_paddr.bytes[5];}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_value\_cache.contains(key))\ \{}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ ptr\ =\ \_value\_cache.get(key);}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ cached\_values\ =\ *ptr;}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ unit\_found\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ found\ cached\ values\ for\ key:\ "{}}\ <<\ key\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ \mbox{\hyperlink{class_agent_a39e9645b8248c543fde7c43e51c5cffb}{\_units\_per\_vehicle}};\ ++i)\ \{}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cached\_values[i].unit\ ==\ msg-\/>\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}())\ \{}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ unit\_found\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ current\_timestamp\ =\ \mbox{\hyperlink{class_message_a6e77e8a3dd4ffc3e33f03e8754d330cd}{Message::getSynchronizedTimestamp}}();}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((current\_timestamp.count()\ -\/\ cached\_values[i].timestamp.count())\ >=\ \_interest\_period.count())\ \{}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cached\_values[i].timestamp\ =\ current\_timestamp;}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_response\_handler(msg,\ \_component\_data.get());}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}Unit"{}}\ <<\ (unit\_found\ ?\ \textcolor{stringliteral}{"{}FOUND"{}}\ :\ \textcolor{stringliteral}{"{}\ NOT\ FOUND"{}})\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!unit\_found)\ \{}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ \mbox{\hyperlink{class_agent_a39e9645b8248c543fde7c43e51c5cffb}{\_units\_per\_vehicle}};\ ++i)\ \{}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cached\_values[i].timestamp.count()\ ==\ 0)\ \{\ \textcolor{comment}{//\ Assuming\ timestamp\ 0\ means\ empty}}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cached\_values[i].unit\ =\ msg-\/>\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}();}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cached\_values[i].timestamp\ =\ \mbox{\hyperlink{class_message_a6e77e8a3dd4ffc3e33f03e8754d330cd}{Message::getSynchronizedTimestamp}}();}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cached\_values[i].size\ =\ msg-\/>\mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\_size}}();}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_response\_handler(msg,\ \_component\_data.get());}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00318\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ NO\ CACHE\ FOUND\ FOR\ KEY:\ "{}}\ <<\ key\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ ValueCache\ new\_values[\mbox{\hyperlink{class_agent_a39e9645b8248c543fde7c43e51c5cffb}{\_units\_per\_vehicle}}];\ \textcolor{comment}{//\ Zero-\/initialize}}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ new\_values[0].unit\ =\ msg-\/>\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}();}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ new\_values[0].timestamp\ =\ \mbox{\hyperlink{class_message_a6e77e8a3dd4ffc3e33f03e8754d330cd}{Message::getSynchronizedTimestamp}}();}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ new\_values[0].size\ =\ msg-\/>\mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\_size}}();}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \_value\_cache.add(key,\ new\_values);}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \_response\_handler(msg,\ \_component\_data.get());}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ ADDED\ CACHE\ FOR\ KEY:\ "{}}\ <<\ key\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00328\ \ \ \ \ \}}
+\DoxyCodeLine{00329\ \}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_agent_a4a0d9642e1fa211160f67ab27320ec97}{Agent::send}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit,\ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ period)\ \{}
+\DoxyCodeLine{00332\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ sending\ INTEREST\ for\ unit:\ "{}}\ <<\ unit\ <<\ \textcolor{stringliteral}{"{}\ with\ period:\ "{}}\ <<\ period.count()\ <<\ \textcolor{stringliteral}{"{}\ microseconds"{}}\ <<\ \textcolor{stringliteral}{"{}\ external:\ "{}}\ <<\ \_external\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{keywordflow}{if}\ (period\ ==\ Microseconds::zero())}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00335\ \ \ \ \ }
+\DoxyCodeLine{00336\ \ \ \ \ \textcolor{comment}{//\ Store\ the\ INTEREST\ period\ for\ RESPONSE\ filtering}}
+\DoxyCodeLine{00337\ \ \ \ \ \_interest\_period\ =\ period;}
+\DoxyCodeLine{00338\ \ \ \ \ }
+\DoxyCodeLine{00339\ \ \ \ \ \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}\ msg(\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ac1833ca6521c2a6c481c6dbe9671738d}{Message::Type::INTEREST}},\ \_address,\ unit,\ period);}
+\DoxyCodeLine{00340\ \ \ \ \ msg.\mbox{\hyperlink{class_message_a5e1b63e51a32c96c04178a30859edbfc}{external}}(\_external);}
+\DoxyCodeLine{00341\ \ \ \ \ }
+\DoxyCodeLine{00342\ \ \ \ \ \textcolor{comment}{//\ Log\ sent\ message\ to\ CSV}}
+\DoxyCodeLine{00343\ \ \ \ \ \mbox{\hyperlink{class_agent_a7a400be6500ceb7df23bf6d18ebf3a8d}{log\_message}}(msg,\ \textcolor{stringliteral}{"{}SEND"{}});}
+\DoxyCodeLine{00344\ \ \ \ \ }
+\DoxyCodeLine{00345\ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ \_can-\/>send(\&msg);}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \ \ \ \ \textcolor{keywordflow}{if}\ (!result)}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;\ }
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00351\ \}}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_agent_a661a2c3e4ac1cc143eae7062cbac0fae}{Agent::receive}}(\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}*\ msg)\ \{}
+\DoxyCodeLine{00354\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ waiting\ for\ messages...\(\backslash\)n"{}};}
+\DoxyCodeLine{00355\ \ \ \ \ (*msg)\ =\ *(\_can\_observer-\/>updated());}
+\DoxyCodeLine{00356\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ messages\ received\(\backslash\)n"{}};}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \ \ \ \ \textcolor{comment}{//\ Log\ received\ message\ to\ CSV}}
+\DoxyCodeLine{00359\ \ \ \ \ \mbox{\hyperlink{class_agent_a7a400be6500ceb7df23bf6d18ebf3a8d}{log\_message}}(*msg,\ \textcolor{stringliteral}{"{}RECEIVE"{}});}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{keywordflow}{return}\ msg-\/>\mbox{\hyperlink{class_message_ac1ea18ca0f925dc5f5ce79a5eca8796f}{size}}();}
+\DoxyCodeLine{00362\ \}}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{class_agent_adbfbd8895294995d262be9ff18b26485}{Agent::run}}(\textcolor{keywordtype}{void}*\ arg)\ \{}
+\DoxyCodeLine{00365\ \ \ \ \ \mbox{\hyperlink{class_agent_af463a1789fba270f3c71bbc341497ea0}{Agent}}*\ agent\ =\ \textcolor{keyword}{reinterpret\_cast<}\mbox{\hyperlink{class_agent_af463a1789fba270f3c71bbc341497ea0}{Agent}}*\textcolor{keyword}{>}(arg);}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \ \ \textcolor{keywordflow}{while}\ (agent-\/>\mbox{\hyperlink{class_agent_a927dadd25d2b8e6172c18ead37c554cf}{running}}())\ \{}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}*\ msg\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}();}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ received\ =\ agent-\/>\mbox{\hyperlink{class_agent_a661a2c3e4ac1cc143eae7062cbac0fae}{receive}}(msg);}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (received\ <=\ 0\ ||\ !msg)\ \{}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ agent-\/>\mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}}()\ <<\ \textcolor{stringliteral}{"{}\ received\ an\ empty\ (received="{}}\ <<\ received\ <<\ \textcolor{stringliteral}{"{})\ or\ invalid\ message\(\backslash\)n"{}};}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ msg;\ \textcolor{comment}{//\ Clean\ up\ the\ message\ object}}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};\ \textcolor{comment}{//\ Skip\ processing\ if\ no\ valid\ message\ was\ received}}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ agent-\/>\mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}}()\ <<\ \textcolor{stringliteral}{"{}\ received\ message\ of\ type:\ "{}}\ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(msg-\/>\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}())\ }
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ for\ unit:\ "{}}\ <<\ msg-\/>\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}()\ <<\ \textcolor{stringliteral}{"{}\ with\ size:\ "{}}\ <<\ msg-\/>\mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\_size}}()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (msg-\/>\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}()\ ==\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a4fa1a4d2e48aa765093ca6aae57a5150}{Message::Type::RESPONSE}})\ \{}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Filter\ RESPONSE\ messages\ based\ on\ INTEREST\ period}}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (agent-\/>should\_process\_response())\ \{}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ agent-\/>\mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}}()\ <<\ \textcolor{stringliteral}{"{}\ processing\ RESPONSE\ message\ (period\ filter\ passed)\(\backslash\)n"{}};}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ agent-\/>\mbox{\hyperlink{class_agent_ac8304f2fb2ab35287394c772b59fe73c}{handle\_response}}(msg);}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ agent-\/>\mbox{\hyperlink{class_agent_afab9e97454c47bfad2220991d3d73b37}{name}}()\ <<\ \textcolor{stringliteral}{"{}\ discarding\ RESPONSE\ message\ (period\ filter\ failed)\(\backslash\)n"{}};}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (msg-\/>\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}()\ ==\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ac1833ca6521c2a6c481c6dbe9671738d}{Message::Type::INTEREST}})\ \{}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ \ \ \ \ agent-\/>handle\_interest(msg);}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ msg;\ \textcolor{comment}{//\ Clean\ up\ the\ message\ object\ after\ processing}}
+\DoxyCodeLine{00394\ \ \ \ \ \}}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00397\ \}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_agent_a927dadd25d2b8e6172c18ead37c554cf}{Agent::running}}()\ \{}
+\DoxyCodeLine{00400\ \ \ \ \ \textcolor{keywordflow}{return}\ \_running.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00401\ \}}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ Agent::handle\_interest(\mbox{\hyperlink{class_message}{Message}}*\ msg)\ \{}
+\DoxyCodeLine{00404\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ received\ INTEREST\ for\ unit:\ "{}}\ <<\ msg-\/>\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}()\ <<\ \textcolor{stringliteral}{"{}\ with\ period:\ "{}}\ <<\ msg-\/>\mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}().count()\ <<\ \textcolor{stringliteral}{"{}\ microseconds\(\backslash\)n"{}};}
+\DoxyCodeLine{00405\ \ \ \ \ }
+\DoxyCodeLine{00406\ \ \ \ \ \textcolor{comment}{//\ Only\ respond\ to\ INTEREST\ if\ this\ agent\ is\ a\ producer\ (observing\ INTEREST\ messages)}}
+\DoxyCodeLine{00407\ \ \ \ \ \textcolor{comment}{//\ Consumers\ (observing\ RESPONSE\ messages)\ should\ not\ respond\ to\ INTEREST}}
+\DoxyCodeLine{00408\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_c.\mbox{\hyperlink{class_condition_ab92fd6216bb983cfe66bbc371a3dc535}{type}}()\ !=\ Type::INTEREST)\ \{}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ ignoring\ INTEREST\ message\ (not\ a\ producer)\(\backslash\)n"{}};}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00411\ \ \ \ \ \}}
+\DoxyCodeLine{00412\ \ \ \ \ }
+\DoxyCodeLine{00413\ \ \ \ \ \textcolor{comment}{//\ ===\ Fixed-\/Response\ cache\ update\ ===}}
+\DoxyCodeLine{00414\ \ \ \ \ \textcolor{keyword}{auto}\ origin\_paddr\ =\ msg-\/>\mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}}().paddr();}
+\DoxyCodeLine{00415\ \ \ \ \ uint16\_t\ consumer\_id\ =\ (\textcolor{keyword}{static\_cast<}uint16\_t\textcolor{keyword}{>}(origin\_paddr.bytes[4])\ <<\ 8)\ |\ origin\_paddr.bytes[5];}
+\DoxyCodeLine{00416\ \ \ \ \ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\ key\ =\ (\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(consumer\_id)\ <<\ 16)\ |\ (msg-\/>\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}()\ \&\ 0xFFFF);}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \ \ \ \ ResponseInfo\ info;}
+\DoxyCodeLine{00419\ \ \ \ \ info.termination\_time\ =\ msg-\/>\mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}()\ *\ \mbox{\hyperlink{class_agent_a016b6c0d56b5ed4961f9e773f9e7e081}{MAX\_RESPONSES\_PER\_INTEREST}};}
+\DoxyCodeLine{00420\ \ \ \ \ info.period\ =\ msg-\/>\mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}();}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_active\_interests.contains(key))\ \{}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \ *\_active\_interests.get(key)\ =\ info;\ \textcolor{comment}{//\ overwrite}}
+\DoxyCodeLine{00424\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ \_active\_interests.add(key,\ info);}
+\DoxyCodeLine{00426\ \ \ \ \ \}}
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ \ \ \ \ \textcolor{comment}{//\ Recompute\ GCD\ and\ adjust\ thread\ period\ if\ needed}}
+\DoxyCodeLine{00429\ \ \ \ \ recompute\_gcd();}
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_periodic\_thread)\ \{}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ \_periodic\_thread\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_agent_a7938da6b695346da93afc23d43a987e0}{Thread}}(\textcolor{keyword}{this},\ \&\mbox{\hyperlink{class_agent_adee5474d6762bc0ccfbfd86df1824ec5}{Agent::reply}},\ msg-\/>\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}());}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ \_periodic\_thread-\/>start(\_producer\_gcd.count());}
+\DoxyCodeLine{00434\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \ \_periodic\_thread-\/>set\_period(\_producer\_gcd.count());}
+\DoxyCodeLine{00436\ \ \ \ \ \}}
+\DoxyCodeLine{00437\ \}}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00446\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_adee5474d6762bc0ccfbfd86df1824ec5}{Agent::reply}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit)\ \{}
+\DoxyCodeLine{00447\ \ \ \ \ \textcolor{comment}{//\ Safety\ check:\ don't\ reply\ if\ agent\ is\ being\ destroyed}}
+\DoxyCodeLine{00448\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{class_agent_a927dadd25d2b8e6172c18ead37c554cf}{running}}())\ \{}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00450\ \ \ \ \ \}}
+\DoxyCodeLine{00451\ \ \ \ \ }
+\DoxyCodeLine{00452\ \ \ \ \ \textcolor{comment}{//\ Additional\ safety\ check:\ ensure\ periodic\ thread\ is\ still\ valid}}
+\DoxyCodeLine{00453\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_periodic\_thread\ ||\ !\_periodic\_thread-\/>running())\ \{}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00455\ \ \ \ \ \}}
+\DoxyCodeLine{00456\ \ \ \ \ }
+\DoxyCodeLine{00457\ \ \ \ \ \textcolor{comment}{//\ ===\ Fixed-\/response\ counter\ handling\ ===}}
+\DoxyCodeLine{00458\ \ \ \ \ \textcolor{keywordtype}{bool}\ has\_active\_entry\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00459\ \ \ \ \ \textcolor{keywordtype}{bool}\ counters\_updated\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00460\ \ \ \ \ \_active\_interests.for\_each([\&](\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\ key,\ ResponseInfo\&\ info)\{}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((key\ \&\ 0xFFFF)\ ==\ unit\ \&\&\ info.termination\_time.count()\ >\ 0)\ \{}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ \ \ \ \ has\_active\_entry\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ \ \ \ \ \ info.termination\_time\ -\/=\ \_producer\_gcd;}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info.termination\_time.count()\ <=\ 0)\ counters\_updated\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00466\ \ \ \ \ \});}
+\DoxyCodeLine{00467\ }
+\DoxyCodeLine{00468\ \ \ \ \ \textcolor{keywordflow}{if}\ (!has\_active\_entry)\ \{}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ No\ consumer\ still\ interested;\ nothing\ to\ send}}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00471\ \ \ \ \ \}}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ sending\ RESPONSE\ for\ unit:\ "{}}\ <<\ unit\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \ \ \ \ \textcolor{comment}{//\ Produce\ data\ and\ send\ one\ RESPONSE\ (broadcast)}}
+\DoxyCodeLine{00476\ \ \ \ \ \mbox{\hyperlink{class_agent_a18a67129d2455bca64c43adf093567a6}{Value}}\ value\ =\ \mbox{\hyperlink{class_agent_af986ce4308578cfb41ac891fb43477d6}{get}}(unit);}
+\DoxyCodeLine{00477\ \ \ \ \ \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}\ msg(\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4a4fa1a4d2e48aa765093ca6aae57a5150}{Message::Type::RESPONSE}},\ \_address,\ unit,\ Microseconds::zero(),\ value.data(),\ value.size());}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \ \ \ \ \mbox{\hyperlink{class_agent_a7a400be6500ceb7df23bf6d18ebf3a8d}{log\_message}}(msg,\ \textcolor{stringliteral}{"{}SEND"{}});}
+\DoxyCodeLine{00480\ \ \ \ \ \_can-\/>send(\&msg);}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00482\ \ \ \ \ \textcolor{keywordflow}{if}\ (counters\_updated)\ \{}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ recompute\_gcd();}
+\DoxyCodeLine{00484\ \ \ \ \ \}}
+\DoxyCodeLine{00485\ \}}
+\DoxyCodeLine{00486\ }
+\DoxyCodeLine{00487\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_af8b714e0188b27f2294fdc138cad0190}{Agent::set\_csv\_logger}}(\textcolor{keyword}{const}\ std::string\&\ log\_dir)\ \{}
+\DoxyCodeLine{00488\ \ \ \ \ std::string\ csv\_file\ =\ log\_dir\ +\ \textcolor{stringliteral}{"{}/"{}}\ +\ \_name\ +\ \textcolor{stringliteral}{"{}\_messages.csv"{}};}
+\DoxyCodeLine{00489\ \ \ \ \ std::string\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}}\ =\ \textcolor{stringliteral}{"{}timestamp\_us,message\_type,direction,origin,destination,unit,period\_us,value\_size,latency\_us"{}};}
+\DoxyCodeLine{00490\ \ \ \ \ \_csv\_logger\ =\ std::make\_unique<CSVLogger>(csv\_file,\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}});}
+\DoxyCodeLine{00491\ \}}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_a7a400be6500ceb7df23bf6d18ebf3a8d}{Agent::log\_message}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}\&\ msg,\ \textcolor{keyword}{const}\ std::string\&\ direction)\ \{}
+\DoxyCodeLine{00494\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_csv\_logger\ ||\ !\_csv\_logger-\/>is\_open())\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00495\ \ \ \ \ }
+\DoxyCodeLine{00496\ \ \ \ \ \textcolor{keyword}{auto}\ timestamp\_us\ =\ \mbox{\hyperlink{class_message_a6e77e8a3dd4ffc3e33f03e8754d330cd}{Message::getSynchronizedTimestamp}}().count();}
+\DoxyCodeLine{00497\ \ \ \ \ }
+\DoxyCodeLine{00498\ \ \ \ \ \textcolor{comment}{//\ Calculate\ latency\ for\ received\ messages}}
+\DoxyCodeLine{00499\ \ \ \ \ \textcolor{keyword}{auto}\ latency\_us\ =\ 0L;}
+\DoxyCodeLine{00500\ \ \ \ \ \textcolor{keywordflow}{if}\ (direction\ ==\ \textcolor{stringliteral}{"{}RECEIVE"{}})\ \{}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ latency\_us\ =\ timestamp\_us\ -\/\ msg.\mbox{\hyperlink{class_message_aae60b766de043dc68bdc455e572d2c19}{timestamp}}().count();}
+\DoxyCodeLine{00502\ \ \ \ \ \}}
+\DoxyCodeLine{00503\ \ \ \ \ }
+\DoxyCodeLine{00504\ \ \ \ \ std::ostringstream\ csv\_line;}
+\DoxyCodeLine{00505\ \ \ \ \ csv\_line\ <<\ timestamp\_us\ <<\ \textcolor{stringliteral}{"{},"{}}}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ (msg.\mbox{\hyperlink{class_message_a24fa33a0be3e5e35f8c7a8a2994659ae}{message\_type}}()\ ==\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ac1833ca6521c2a6c481c6dbe9671738d}{Message::Type::INTEREST}}\ ?\ \textcolor{stringliteral}{"{}INTEREST"{}}\ :\ \textcolor{stringliteral}{"{}RESPONSE"{}})\ <<\ \textcolor{stringliteral}{"{},"{}}}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ direction\ <<\ \textcolor{stringliteral}{"{},"{}}}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ (direction\ ==\ \textcolor{stringliteral}{"{}SEND"{}}\ ?\ \_address.to\_string()\ :\ msg.\mbox{\hyperlink{class_message_aa3290cab595b83a90309002d03379d58}{origin}}().to\_string())\ <<\ \textcolor{stringliteral}{"{},"{}}}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ (direction\ ==\ \textcolor{stringliteral}{"{}SEND"{}}\ ?\ \textcolor{stringliteral}{"{}BROADCAST"{}}\ :\ \_address.to\_string())\ <<\ \textcolor{stringliteral}{"{},"{}}}
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ msg.\mbox{\hyperlink{class_message_a735ef7d00f8107014facffab3b89f61e}{unit}}()\ <<\ \textcolor{stringliteral}{"{},"{}}}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ msg.\mbox{\hyperlink{class_message_ae793e41a6806927dd1f159ec49837508}{period}}().count()\ <<\ \textcolor{stringliteral}{"{},"{}}}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ msg.\mbox{\hyperlink{class_message_a7f18843f030797c61e327d63d98e6a4a}{value\_size}}()\ <<\ \textcolor{stringliteral}{"{},"{}}}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ latency\_us;}
+\DoxyCodeLine{00514\ \ \ \ \ }
+\DoxyCodeLine{00515\ \ \ \ \ \_csv\_logger-\/>log(csv\_line.str());}
+\DoxyCodeLine{00516\ \}}
+\DoxyCodeLine{00517\ }
+\DoxyCodeLine{00525\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_agent_ad438098d30b55b16ba88401f70a3bce2}{Agent::start\_periodic\_interest}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit,\ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ period)\ \{}
+\DoxyCodeLine{00526\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_is\_consumer)\ \{}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ is\ not\ a\ consumer,\ cannot\ start\ periodic\ interest\(\backslash\)n"{}};}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00529\ \ \ \ \ \}}
+\DoxyCodeLine{00530\ \ \ \ \ }
+\DoxyCodeLine{00531\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_interest\_active.load())\ \{}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ updating\ interest\ period\ from\ "{}}\ }
+\DoxyCodeLine{00533\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \_requested\_period.count()\ <<\ \textcolor{stringliteral}{"{}\ to\ "{}}\ <<\ period.count()\ <<\ \textcolor{stringliteral}{"{}\ microseconds\(\backslash\)n"{}};}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_agent_a06e90b6d019c3767897664144be0abe8}{update\_interest\_period}}(period);}
+\DoxyCodeLine{00535\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00536\ \ \ \ \ \}}
+\DoxyCodeLine{00537\ \ \ \ \ }
+\DoxyCodeLine{00538\ \ \ \ \ \_requested\_period\ =\ period;}
+\DoxyCodeLine{00539\ \ \ \ \ \_interest\_period\ =\ period;\ \textcolor{comment}{//\ Keep\ response\ filter\ in\ sync}}
+\DoxyCodeLine{00540\ \ \ \ \ \_interest\_active.store(\textcolor{keyword}{true},\ std::memory\_order\_release);}
+\DoxyCodeLine{00541\ \ \ \ \ }
+\DoxyCodeLine{00542\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_interest\_thread)\ \{}
+\DoxyCodeLine{00543\ \ \ \ \ \ \ \ \ \_interest\_thread\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{class_agent_a7938da6b695346da93afc23d43a987e0}{Thread}}(\textcolor{keyword}{this},\ \&\mbox{\hyperlink{class_agent_a7d5fd455d10924542f6b838e76cfd3c0}{Agent::send\_interest}},\ unit);}
+\DoxyCodeLine{00544\ \ \ \ \ \ \ \ \ \_interest\_thread-\/>start(period.count());}
+\DoxyCodeLine{00545\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ started\ periodic\ INTEREST\ for\ unit:\ "{}}\ }
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ unit\ <<\ \textcolor{stringliteral}{"{}\ with\ period:\ "{}}\ <<\ period.count()\ <<\ \textcolor{stringliteral}{"{}\ microseconds\(\backslash\)n"{}};}
+\DoxyCodeLine{00547\ \ \ \ \ \}}
+\DoxyCodeLine{00548\ \ \ \ \ }
+\DoxyCodeLine{00549\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00550\ \}}
+\DoxyCodeLine{00551\ }
+\DoxyCodeLine{00555\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_a7846bb6027785d01803b71da1e667760}{Agent::stop\_periodic\_interest}}()\ \{}
+\DoxyCodeLine{00556\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_interest\_active.load())\ \{}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \ \ \_interest\_active.store(\textcolor{keyword}{false},\ std::memory\_order\_release);}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_interest\_thread)\ \{}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \ \ \ \ \_interest\_thread-\/>join();}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ \_interest\_thread;}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ \_interest\_thread\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ stopped\ periodic\ INTEREST\(\backslash\)n"{}};}
+\DoxyCodeLine{00566\ \ \ \ \ \}}
+\DoxyCodeLine{00567\ \}}
+\DoxyCodeLine{00568\ }
+\DoxyCodeLine{00574\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_a7d5fd455d10924542f6b838e76cfd3c0}{Agent::send\_interest}}(\mbox{\hyperlink{class_agent_addb4d1988cc4fd0a7ae7df049c0be775}{Unit}}\ unit)\ \{}
+\DoxyCodeLine{00575\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_interest\_active.load()\ ||\ !\mbox{\hyperlink{class_agent_a927dadd25d2b8e6172c18ead37c554cf}{running}}())\ \{}
+\DoxyCodeLine{00576\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00577\ \ \ \ \ \}}
+\DoxyCodeLine{00578\ \ \ \ \ }
+\DoxyCodeLine{00579\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Agent>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[Agent]\ "{}}\ <<\ \_name\ <<\ \textcolor{stringliteral}{"{}\ sending\ periodic\ INTEREST\ for\ unit:\ "{}}\ }
+\DoxyCodeLine{00580\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ unit\ <<\ \textcolor{stringliteral}{"{}\ with\ period:\ "{}}\ <<\ \_requested\_period.count()\ <<\ \textcolor{stringliteral}{"{}\ microseconds"{}}\ <<\ \textcolor{stringliteral}{"{}\ external:\ "{}}\ <<\ \_external\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00581\ \ \ \ \ }
+\DoxyCodeLine{00582\ \ \ \ \ \mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}\ msg(\mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4ac1833ca6521c2a6c481c6dbe9671738d}{Message::Type::INTEREST}},\ \_address,\ unit,\ \_requested\_period);}
+\DoxyCodeLine{00583\ \ \ \ \ msg.\mbox{\hyperlink{class_message_a5e1b63e51a32c96c04178a30859edbfc}{external}}(\_external);}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \ \ \ \ \mbox{\hyperlink{class_agent_a7a400be6500ceb7df23bf6d18ebf3a8d}{log\_message}}(msg,\ \textcolor{stringliteral}{"{}SEND"{}});}
+\DoxyCodeLine{00586\ \ \ \ \ \_can-\/>send(\&msg);}
+\DoxyCodeLine{00587\ \}}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00594\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_a06e90b6d019c3767897664144be0abe8}{Agent::update\_interest\_period}}(\mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}\ new\_period)\ \{}
+\DoxyCodeLine{00595\ \ \ \ \ \_requested\_period\ =\ new\_period;}
+\DoxyCodeLine{00596\ \ \ \ \ \_interest\_period\ =\ new\_period;\ \textcolor{comment}{//\ Keep\ response\ filter\ in\ sync}}
+\DoxyCodeLine{00597\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_interest\_thread)\ \{}
+\DoxyCodeLine{00598\ \ \ \ \ \ \ \ \ \_interest\_thread-\/>set\_period(new\_period.count());}
+\DoxyCodeLine{00599\ \ \ \ \ \}}
+\DoxyCodeLine{00600\ \}}
+\DoxyCodeLine{00601\ }
+\DoxyCodeLine{00602\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00603\ \textcolor{comment}{\ *\ @brief\ Check\ if\ a\ RESPONSE\ message\ should\ be\ processed\ based\ on\ the\ INTEREST\ period}}
+\DoxyCodeLine{00604\ \textcolor{comment}{\ *\ @return\ true\ if\ enough\ time\ has\ passed\ since\ the\ last\ processed\ RESPONSE,\ false\ otherwise}}
+\DoxyCodeLine{00605\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00606\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ Agent::should\_process\_response()\ \{}
+\DoxyCodeLine{00607\ \ \ \ \ \textcolor{comment}{//\ If\ no\ INTEREST\ period\ is\ set,\ process\ all\ messages}}
+\DoxyCodeLine{00608\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_interest\_period\ ==\ Microseconds::zero())\ \{}
+\DoxyCodeLine{00609\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00610\ \ \ \ \ \}}
+\DoxyCodeLine{00611\ \ \ \ \ }
+\DoxyCodeLine{00612\ \ \ \ \ \textcolor{keyword}{auto}\ current\_timestamp\ =\ \mbox{\hyperlink{class_message_a6e77e8a3dd4ffc3e33f03e8754d330cd}{Message::getSynchronizedTimestamp}}().count();}
+\DoxyCodeLine{00613\ \ \ \ \ \textcolor{keyword}{auto}\ last\_timestamp\ =\ \_last\_response\_timestamp.load(std::memory\_order\_acquire);}
+\DoxyCodeLine{00614\ \ \ \ \ }
+\DoxyCodeLine{00615\ \ \ \ \ \textcolor{comment}{//\ If\ this\ is\ the\ first\ RESPONSE\ or\ enough\ time\ has\ passed}}
+\DoxyCodeLine{00616\ \ \ \ \ \textcolor{keywordflow}{if}\ (last\_timestamp\ ==\ 0\ ||\ (current\_timestamp\ -\/\ last\_timestamp)\ >=\ \_interest\_period.count())\ \{}
+\DoxyCodeLine{00617\ \ \ \ \ \ \ \ \ \_last\_response\_timestamp.store(current\_timestamp,\ std::memory\_order\_release);}
+\DoxyCodeLine{00618\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00619\ \ \ \ \ \}}
+\DoxyCodeLine{00620\ \ \ \ \ }
+\DoxyCodeLine{00621\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00622\ \}}
+\DoxyCodeLine{00623\ }
+\DoxyCodeLine{00624\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_agent_ab9e9da9e9a66227bca835dab3780d366}{Agent::external}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_agent_acbe540cfd323fcd18db620e2265b40d9}{external}})\ \{}
+\DoxyCodeLine{00625\ \ \ \ \ \_external\ =\ \mbox{\hyperlink{class_agent_acbe540cfd323fcd18db620e2265b40d9}{external}};}
+\DoxyCodeLine{00626\ \}}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ Agent::recompute\_gcd()\ \{}
+\DoxyCodeLine{00629\ \ \ \ \ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ gcd\_us\ =\ 0;}
+\DoxyCodeLine{00630\ \ \ \ \ \_active\_interests.\mbox{\hyperlink{class_static_size_hashed_cache_a0287a58c92ed5dfbc78fc278564f7d17}{for\_each}}([\&](\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\ \textcolor{comment}{/*k*/},\ ResponseInfo\&\ info)\{}
+\DoxyCodeLine{00631\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (info.termination\_time.count()\ >\ 0)\ \{}
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ p\ =\ info.period.count();}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \ \ \ \ \ \ gcd\_us\ =\ gcd\_us\ ==\ 0\ ?\ p\ :\ std::gcd(gcd\_us,\ p);}
+\DoxyCodeLine{00634\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00635\ \ \ \ \ \});}
+\DoxyCodeLine{00636\ }
+\DoxyCodeLine{00637\ \ \ \ \ \textcolor{comment}{//\ If\ no\ active\ entries\ keep\ previous\ gcd\ (thread\ will\ idle)}}
+\DoxyCodeLine{00638\ \ \ \ \ \textcolor{keywordflow}{if}\ (gcd\_us\ ==\ 0)}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00640\ }
+\DoxyCodeLine{00641\ \ \ \ \ \_producer\_gcd\ =\ \mbox{\hyperlink{class_agent_a22777b5e3a3b3d46961799fc6abb1a86}{Microseconds}}(gcd\_us);\ \textcolor{comment}{//\ Does\ this\ transform\ long\ long\ to\ int64\_t?}}
+\DoxyCodeLine{00642\ }
+\DoxyCodeLine{00643\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_periodic\_thread)\ \{}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \ \ \_periodic\_thread-\/>set\_period(gcd\_us);}
+\DoxyCodeLine{00645\ \ \ \ \ \}}
+\DoxyCodeLine{00646\ \}}
+\DoxyCodeLine{00647\ }
+\DoxyCodeLine{00648\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_agent_a2abe9226c41ade78a1cc022926011e79}{Agent::Address}}\ \mbox{\hyperlink{class_agent_a374fceb89c2d3d53046ac128d2a50415}{Agent::address}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00649\ \ \ \ \ \textcolor{keywordflow}{return}\ \_address;}
+\DoxyCodeLine{00650\ \}}
+\DoxyCodeLine{00651\ }
+\DoxyCodeLine{00652\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_agent_abdd1927b5e75313e89c56dc9eea71929}{Agent::can\_send}}(\mbox{\hyperlink{class_agent_a9469bca2c85eba8cb1c55ff157202ee5}{Message}}*\ msg)\ \{}
+\DoxyCodeLine{00653\ \ \ \ \ \textcolor{keywordflow}{return}\ \_can-\/>send(msg);}
+\DoxyCodeLine{00654\ \}}
+\DoxyCodeLine{00655\ }
+\DoxyCodeLine{00656\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_agent_a475c095d790fd809a4c4f54cdc8eb478}{Agent::thread\_running}}()\ \{}
+\DoxyCodeLine{00657\ \ \ \ \ \textcolor{keywordflow}{return}\ \_periodic\_thread\ \&\&\ \_periodic\_thread-\/>running();}
+\DoxyCodeLine{00658\ \}}
+\DoxyCodeLine{00659\ }
+\DoxyCodeLine{00660\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ AGENT\_H}}
+
+\end{DoxyCode}

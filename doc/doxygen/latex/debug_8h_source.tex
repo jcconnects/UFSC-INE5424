@@ -1,0 +1,272 @@
+\doxysection{debug.\+h}
+\hypertarget{debug_8h_source}{}\label{debug_8h_source}\index{include/api/util/debug.h@{include/api/util/debug.h}}
+\mbox{\hyperlink{debug_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DEBUG\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DEBUG\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <sstream>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <pthread.h>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <iomanip>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <sys/syscall.h>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <unistd.h>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{traits_8h}{api/traits.h}}"{}}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_debug_a5b453c195c4cfffed2702c3330f53a64}{Debug}}}
+\DoxyCodeLine{00017\ \{}
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_debug_a5b453c195c4cfffed2702c3330f53a64}{Debug}}()\ :\ \_message\_started(false)\ \{\}}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_debug_a911a84a0f56b770724e09a049399dc30}{\string~Debug}}()\ \{}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Flush\ any\ remaining\ content\ when\ object\ is\ destroyed}}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_message\_started)\ \{}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ flush\_buffer();}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_debug_a5b453c195c4cfffed2702c3330f53a64}{Debug}}\ \&\ \mbox{\hyperlink{class_debug_a94f15514e075a0c98064ffe0b1796b09}{operator<<}}(T\ p)\ \{}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \ \ get\_buffer()\ <<\ p;}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_debug_1_1_begl}{Begl}}\ \{\};}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_debug_1_1_err}{Err}}\ \{\};}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_debug_a5b453c195c4cfffed2702c3330f53a64}{Debug}}\ \&\ \mbox{\hyperlink{class_debug_abd54b536f00fa5cdfc71354cb204aa74}{operator<<}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_debug_1_1_begl}{Begl}}\ \&\ \mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{begl}})\ \{\ }
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Start\ a\ new\ log\ entry\ -\/\ flush\ any\ existing\ buffer\ and\ prepare\ for\ new\ message}}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_message\_started)\ \{}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ flush\_buffer();}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ \_message\_started\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ get\_buffer()\ <<\ get\_timestamp\_and\_thread()\ <<\ \textcolor{stringliteral}{"{}\ "{}};}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ }
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_debug_a5b453c195c4cfffed2702c3330f53a64}{Debug}}\ \&\ \mbox{\hyperlink{class_debug_a74fa809fe500f5a29c0c0a0b29785412}{operator<<}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_debug_1_1_err}{Err}}\ \&\ err)\ \{\ }
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ get\_buffer()\ <<\ \textcolor{stringliteral}{"{}[ERROR]\ "{}};}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ }
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Flush\ buffer\ when\ newline\ is\ encountered}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_debug_a5b453c195c4cfffed2702c3330f53a64}{Debug}}\ \&\ \mbox{\hyperlink{class_debug_ab7ad7ae17b0b6a2f9b900b3a216da0f8}{operator<<}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str)\ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ s(str);}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ get\_buffer()\ <<\ s;}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (s.find(\textcolor{charliteral}{'\(\backslash\)n'})\ !=\ std::string::npos)\ \{}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ flush\_buffer();}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_message\_started\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_debug_a9bfe570886f0f6ab505ad6b23f86b5e9}{set\_log\_file}}(\textcolor{keyword}{const}\ std::string\ \&filename)\ \{}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ pthread\_mutex\_lock(\&\_global\_mutex);}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \_file\_stream\ =\ std::make\_unique<std::ofstream>(filename,\ std::ios::out);}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_file\_stream-\/>is\_open())\ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::cerr\ <<\ \textcolor{stringliteral}{"{}Erro\ ao\ abrir\ arquivo\ de\ log:\ "{}}\ <<\ filename\ <<\ std::endl;}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_stream\ =\ \&std::cout;\ \textcolor{comment}{//\ Fallback\ to\ cout}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_stream\ =\ \_file\_stream.get();}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ pthread\_mutex\_unlock(\&\_global\_mutex);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_debug_aa8bcebc197197417abe10613ca589842}{close\_log\_file}}()\ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ pthread\_mutex\_lock(\&\_global\_mutex);}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_file\_stream\ \&\&\ \_file\_stream-\/>is\_open())\ \{}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_file\_stream-\/>close();}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_stream\ =\ \&std::cout;\ \textcolor{comment}{//\ Fallback\ to\ cout}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ pthread\_mutex\_unlock(\&\_global\_mutex);}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00082\ \ \ \ \ }
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_debug_a5b453c195c4cfffed2702c3330f53a64}{Debug}}\ \&\ \mbox{\hyperlink{class_debug_a70964d17e1daca55292dc58ba4b9514c}{instance}}()\ \{}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_debug_a5b453c195c4cfffed2702c3330f53a64}{Debug}}\ debug;}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ debug;}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_debug_a78d150c839996e50479cbb56fa7e6e41}{init}}()\ \{}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ pthread\_mutex\_init(\&\_global\_mutex,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_debug_a327c8ca24e6252b74bd7646ce47ae625}{cleanup}}()\ \{}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ pthread\_mutex\_destroy(\&\_global\_mutex);}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ flush\_buffer()\ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ content\ =\ get\_buffer().str();}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!content.empty())\ \{}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pthread\_mutex\_lock(\&\_global\_mutex);}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_stream)\ \{}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (*\_stream)\ <<\ content\ <<\ std::flush;}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pthread\_mutex\_unlock(\&\_global\_mutex);}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ get\_buffer().str(\textcolor{stringliteral}{"{}"{}});\ \textcolor{comment}{//\ Clear\ buffer}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ get\_buffer().clear();\ \textcolor{comment}{//\ Clear\ error\ flags}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ std::ostringstream\&\ get\_buffer()\ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{thread\_local}\ std::ostringstream\ buffer;}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ buffer;}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ std::string\ get\_timestamp\_and\_thread()\ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ now\ =\ std::chrono::system\_clock::now();}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ time\_t\ =\ std::chrono::system\_clock::to\_time\_t(now);}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ ms\ =\ std::chrono::duration\_cast<std::chrono::milliseconds>(}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ now.time\_since\_epoch())\ \%\ 1000;}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ std::ostringstream\ oss;}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ oss\ <<\ \textcolor{stringliteral}{"{}["{}}\ <<\ std::put\_time(std::localtime(\&time\_t),\ \textcolor{stringliteral}{"{}\%H:\%M:\%S"{}});}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ oss\ <<\ \textcolor{stringliteral}{"{}."{}}\ <<\ std::setfill(\textcolor{charliteral}{'0'})\ <<\ std::setw(3)\ <<\ ms.count();}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ oss\ <<\ \textcolor{stringliteral}{"{}\ T"{}}\ <<\ syscall(SYS\_gettid)\ <<\ \textcolor{stringliteral}{"{}]"{}};}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ oss.str();}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ std::unique\_ptr<std::ofstream>\ \_file\_stream;}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ std::ostream*\ \_stream\ =\ \&std::cout;}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ pthread\_mutex\_t\ \_global\_mutex\ =\ PTHREAD\_MUTEX\_INITIALIZER;}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \_message\_started;\ \textcolor{comment}{//\ Track\ if\ a\ message\ has\ been\ started}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{struct_debug_1_1_begl}{Begl}}\ \mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{begl}};}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{struct_debug_1_1_err}{Err}}\ \mbox{\hyperlink{class_debug_a3dd23d53e41d133cb0e6c08c9269e935}{error}};}
+\DoxyCodeLine{00137\ \};}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_null___debug}{Null\_Debug}}}
+\DoxyCodeLine{00140\ \{}
+\DoxyCodeLine{00141\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00143\ \ \ \ \ \mbox{\hyperlink{class_null___debug}{Null\_Debug}}\ \&\ \mbox{\hyperlink{class_null___debug_a9374bde69c426c142500432d04c5567e}{operator<<}}(\textcolor{keyword}{const}\ T\ \&\ o)\ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00146\ \ \ \ \ \mbox{\hyperlink{class_null___debug}{Null\_Debug}}\ \&\ \mbox{\hyperlink{class_null___debug_adafc9a91dcdc3f885d9be33a91f3eeaf}{operator<<}}(\textcolor{keyword}{const}\ T\ *\ o)\ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00147\ \ \ \ \ }
+\DoxyCodeLine{00148\ \ \ \ \ \mbox{\hyperlink{class_null___debug}{Null\_Debug}}\ \&\ \mbox{\hyperlink{class_null___debug_a18164ab0c594eab1f56583ff716f6de9}{operator<<}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str)\ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00149\ \ \ \ \ }
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_null___debug_1_1_begl}{Begl}}\ \{\};}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_null___debug_1_1_err}{Err}}\ \{\};}
+\DoxyCodeLine{00152\ \ \ \ \ \mbox{\hyperlink{class_null___debug}{Null\_Debug}}\ \&\ \mbox{\hyperlink{class_null___debug_a7e3878b0ecdc3a719a35e8464591dc11}{operator<<}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_null___debug_1_1_begl}{Begl}}\ \&\ begl)\ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00153\ \ \ \ \ \mbox{\hyperlink{class_null___debug}{Null\_Debug}}\ \&\ \mbox{\hyperlink{class_null___debug_af572bafad552b1de1b55a0cecff4015d}{operator<<}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_null___debug_1_1_err}{Err}}\ \&\ err)\ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00154\ \};}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \textcolor{keyword}{template}<\textcolor{keywordtype}{bool}\ debugged>}
+\DoxyCodeLine{00157\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_select___debug}{Select\_Debug}}:\ \textcolor{keyword}{public}\ \mbox{\hyperlink{class_debug_a5b453c195c4cfffed2702c3330f53a64}{Debug}}\ \{\};}
+\DoxyCodeLine{00158\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00159\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_select___debug}{Select\_Debug}}<false>:\ \textcolor{keyword}{public}\ \mbox{\hyperlink{class_null___debug}{Null\_Debug}}\ \{\};}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \textcolor{comment}{//\ Error}}
+\DoxyCodeLine{00162\ \textcolor{keyword}{enum}\ \mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbb}{Debug\_Error}}\ \{\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}}\ =\ 1\};}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00165\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<(\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T>::debugged}}\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::error}})>}
+\DoxyCodeLine{00166\ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbb}{Debug\_Error}}\ l)}
+\DoxyCodeLine{00167\ \{}
+\DoxyCodeLine{00168\ \ \ \ \ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<(\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T>::debugged}}\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::error}})>\ debug\_instance;}
+\DoxyCodeLine{00169\ \ \ \ \ debug\_instance\ <<\ \mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{Debug::begl}};}
+\DoxyCodeLine{00170\ \ \ \ \ debug\_instance\ <<\ \mbox{\hyperlink{class_debug_a3dd23d53e41d133cb0e6c08c9269e935}{Debug::error}};}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{keywordflow}{return}\ debug\_instance;}
+\DoxyCodeLine{00172\ \}}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00175\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<((\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T1>::debugged}}\ ||\ \mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T2>::debugged}})\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::error}})>}
+\DoxyCodeLine{00176\ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbb}{Debug\_Error}}\ l)}
+\DoxyCodeLine{00177\ \{}
+\DoxyCodeLine{00178\ \ \ \ \ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<((\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T1>::debugged}}\ ||\ \mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T2>::debugged}})\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::error}})>\ debug\_instance;}
+\DoxyCodeLine{00179\ \ \ \ \ debug\_instance\ <<\ \mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{Debug::begl}};}
+\DoxyCodeLine{00180\ \ \ \ \ debug\_instance\ <<\ \mbox{\hyperlink{class_debug_a3dd23d53e41d133cb0e6c08c9269e935}{Debug::error}};}
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keywordflow}{return}\ debug\_instance;}
+\DoxyCodeLine{00182\ \}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \textcolor{comment}{//\ Warning}}
+\DoxyCodeLine{00185\ \textcolor{keyword}{enum}\ \mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76}{Debug\_Warning}}\ \{\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}}\ =\ 2\};}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00188\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<(\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T>::debugged}}\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::warning}})>}
+\DoxyCodeLine{00189\ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76}{Debug\_Warning}}\ l)}
+\DoxyCodeLine{00190\ \{}
+\DoxyCodeLine{00191\ \ \ \ \ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<(\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T>::debugged}}\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::warning}})>\ debug\_instance;}
+\DoxyCodeLine{00192\ \ \ \ \ debug\_instance\ <<\ \mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{Debug::begl}};}
+\DoxyCodeLine{00193\ \ \ \ \ debug\_instance\ <<\ \textcolor{stringliteral}{"{}[WARNING]\ "{}};}
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{keywordflow}{return}\ debug\_instance;}
+\DoxyCodeLine{00195\ \}}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00198\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<((\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T1>::debugged}}\ ||\ \mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T2>::debugged}})\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::warning}})>}
+\DoxyCodeLine{00199\ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76}{Debug\_Warning}}\ l)}
+\DoxyCodeLine{00200\ \{}
+\DoxyCodeLine{00201\ \ \ \ \ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<((\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T1>::debugged}}\ ||\ \mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T2>::debugged}})\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::warning}})>\ debug\_instance;}
+\DoxyCodeLine{00202\ \ \ \ \ debug\_instance\ <<\ \mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{Debug::begl}};}
+\DoxyCodeLine{00203\ \ \ \ \ debug\_instance\ <<\ \textcolor{stringliteral}{"{}[WARNING]\ "{}};}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordflow}{return}\ debug\_instance;}
+\DoxyCodeLine{00205\ \}}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \textcolor{comment}{//\ Info}}
+\DoxyCodeLine{00208\ \textcolor{keyword}{enum}\ \mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94}{Debug\_Info}}\ \{\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}}\ =\ 3\};}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00211\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<(\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T>::debugged}}\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::info}})>}
+\DoxyCodeLine{00212\ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94}{Debug\_Info}}\ l)}
+\DoxyCodeLine{00213\ \{}
+\DoxyCodeLine{00214\ \ \ \ \ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<(\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T>::debugged}}\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::info}})>\ debug\_instance;}
+\DoxyCodeLine{00215\ \ \ \ \ debug\_instance\ <<\ \mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{Debug::begl}};}
+\DoxyCodeLine{00216\ \ \ \ \ debug\_instance\ <<\ \textcolor{stringliteral}{"{}[INFO]\ "{}};}
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{keywordflow}{return}\ debug\_instance;}
+\DoxyCodeLine{00218\ \}}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00221\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<((\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T1>::debugged}}\ ||\ \mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T2>::debugged}})\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::info}})>}
+\DoxyCodeLine{00222\ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94}{Debug\_Info}}\ l)}
+\DoxyCodeLine{00223\ \{}
+\DoxyCodeLine{00224\ \ \ \ \ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<((\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T1>::debugged}}\ ||\ \mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T2>::debugged}})\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::info}})>\ debug\_instance;}
+\DoxyCodeLine{00225\ \ \ \ \ debug\_instance\ <<\ \mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{Debug::begl}};}
+\DoxyCodeLine{00226\ \ \ \ \ debug\_instance\ <<\ \textcolor{stringliteral}{"{}[INFO]\ "{}};}
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keywordflow}{return}\ debug\_instance;}
+\DoxyCodeLine{00228\ \}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \textcolor{comment}{//\ Trace}}
+\DoxyCodeLine{00231\ \textcolor{keyword}{enum}\ \mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747}{Debug\_Trace}}\ \{\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}}\ =\ 4\};}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00234\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<(\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T>::debugged}}\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::trace}})>}
+\DoxyCodeLine{00235\ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747}{Debug\_Trace}}\ l)}
+\DoxyCodeLine{00236\ \{}
+\DoxyCodeLine{00237\ \ \ \ \ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<(\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T>::debugged}}\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::trace}})>\ debug\_instance;}
+\DoxyCodeLine{00238\ \ \ \ \ debug\_instance\ <<\ \mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{Debug::begl}};}
+\DoxyCodeLine{00239\ \ \ \ \ debug\_instance\ <<\ \textcolor{stringliteral}{"{}[TRACE]\ "{}};}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{keywordflow}{return}\ debug\_instance;}
+\DoxyCodeLine{00241\ \}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T1,\ \textcolor{keyword}{typename}\ T2>}
+\DoxyCodeLine{00244\ \textcolor{keyword}{inline}\ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<((\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T1>::debugged}}\ ||\ \mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T2>::debugged}})\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::trace}})>}
+\DoxyCodeLine{00245\ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747}{Debug\_Trace}}\ l)}
+\DoxyCodeLine{00246\ \{}
+\DoxyCodeLine{00247\ \ \ \ \ \mbox{\hyperlink{class_select___debug}{Select\_Debug}}<((\mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T1>::debugged}}\ ||\ \mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{Traits<T2>::debugged}})\ \&\&\ \mbox{\hyperlink{struct_traits}{Traits<Debug>::trace}})>\ debug\_instance;}
+\DoxyCodeLine{00248\ \ \ \ \ debug\_instance\ <<\ \mbox{\hyperlink{class_debug_aa57266a1575244047fa9f1cf49e6b065}{Debug::begl}};}
+\DoxyCodeLine{00249\ \ \ \ \ debug\_instance\ <<\ \textcolor{stringliteral}{"{}[TRACE]\ "{}};}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordflow}{return}\ debug\_instance;}
+\DoxyCodeLine{00251\ \}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \textcolor{comment}{//\ Call\ this\ at\ program\ start}}
+\DoxyCodeLine{00254\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_debug_initializer_aa4ae3b9a18acf31ef95a554ae5f50925}{DebugInitializer}}\ \{}
+\DoxyCodeLine{00255\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00256\ \ \ \ \ \mbox{\hyperlink{class_debug_initializer_aa4ae3b9a18acf31ef95a554ae5f50925}{DebugInitializer}}()\ \{}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_debug_a78d150c839996e50479cbb56fa7e6e41}{Debug::init}}();}
+\DoxyCodeLine{00258\ \ \ \ \ \}}
+\DoxyCodeLine{00259\ \ \ \ \ \mbox{\hyperlink{class_debug_initializer_a953d758578d2c426d0b8af703295e961}{\string~DebugInitializer}}()\ \{}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_debug_a327c8ca24e6252b74bd7646ce47ae625}{Debug::cleanup}}();}
+\DoxyCodeLine{00261\ \ \ \ \ \}}
+\DoxyCodeLine{00262\ \};}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_debug_initializer}{DebugInitializer}}\ debugInitializer;}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DEBUG\_H}}
+
+\end{DoxyCode}

@@ -1,0 +1,132 @@
+\doxysection{ECUData Struct Reference}
+\hypertarget{struct_e_c_u_data}{}\label{struct_e_c_u_data}\index{ECUData@{ECUData}}
+
+
+Data structure for ECU component.  
+
+
+
+
+{\ttfamily \#include $<$ecu\+\_\+data.\+hpp$>$}
+
+Inheritance diagram for ECUData\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{struct_e_c_u_data}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{struct_e_c_u_data_a2c9f6402d4c8bd70a98cc1d609c03c41}{ECUData}} ()
+\begin{DoxyCompactList}\small\item\em Constructor initializes consumer tracking state. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_e_c_u_data_a192243a407bde05dd0f81ee26e8d9f61}{reset\+\_\+consumer\+\_\+state}} ()
+\begin{DoxyCompactList}\small\item\em Reset consumer state for testing purposes. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_e_c_u_data_a7b7c7c8a2f02fb25de99ac4474990bbb}{update\+\_\+message\+\_\+tracking}} (const std\+::string \&source, std\+::uint32\+\_\+t unit, std\+::size\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em Update message tracking with new received message. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{struct_component_data}{Component\+Data}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual \mbox{\hyperlink{struct_component_data_a9d2f13c283f7f17eee8f4283c04f519d}{\texorpdfstring{$\sim$}{\string~}\+Component\+Data}} ()=default
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{struct_e_c_u_data_a32cf1c0855b3d5f52c89ca147672d12f}{messages\+\_\+received}}
+\item 
+std\+::string \mbox{\hyperlink{struct_e_c_u_data_ac277919575354ca1673ae5a8b16b5cf6}{last\+\_\+message\+\_\+source}}
+\item 
+std\+::uint32\+\_\+t \mbox{\hyperlink{struct_e_c_u_data_abd7bb1eb7b71cf90dd59ca2c96a9c4ae}{last\+\_\+message\+\_\+unit}}
+\item 
+std\+::size\+\_\+t \mbox{\hyperlink{struct_e_c_u_data_a087b0a637db3b2978c27c60a23b47d08}{last\+\_\+message\+\_\+size}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Data structure for ECU component. 
+
+Following EPOS Smart\+Data principles, this structure contains all the data needed for \doxylink{struct_e_c_u_component}{ECUComponent} functionality. ECU is a consumer-\/only component that receives and processes messages from other components (Camera, Lidar, INS).
+
+Replaces inheritance-\/based data storage with pure composition. 
+
+\label{doc-constructors}
+\Hypertarget{struct_e_c_u_data_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{struct_e_c_u_data_a2c9f6402d4c8bd70a98cc1d609c03c41}\index{ECUData@{ECUData}!ECUData@{ECUData}}
+\index{ECUData@{ECUData}!ECUData@{ECUData}}
+\doxysubsubsection{\texorpdfstring{ECUData()}{ECUData()}}
+{\footnotesize\ttfamily \label{struct_e_c_u_data_a2c9f6402d4c8bd70a98cc1d609c03c41} 
+ECUData\+::\+ECUData (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Constructor initializes consumer tracking state. 
+
+Sets up initial state for message tracking and processing. ECU components don\textquotesingle{}t need producer data since they are consumer-\/only. 
+
+\label{doc-func-members}
+\Hypertarget{struct_e_c_u_data_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{struct_e_c_u_data_a192243a407bde05dd0f81ee26e8d9f61}\index{ECUData@{ECUData}!reset\_consumer\_state@{reset\_consumer\_state}}
+\index{reset\_consumer\_state@{reset\_consumer\_state}!ECUData@{ECUData}}
+\doxysubsubsection{\texorpdfstring{reset\_consumer\_state()}{reset\_consumer\_state()}}
+{\footnotesize\ttfamily \label{struct_e_c_u_data_a192243a407bde05dd0f81ee26e8d9f61} 
+void ECUData\+::reset\+\_\+consumer\+\_\+state (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Reset consumer state for testing purposes. 
+
+\Hypertarget{struct_e_c_u_data_a7b7c7c8a2f02fb25de99ac4474990bbb}\index{ECUData@{ECUData}!update\_message\_tracking@{update\_message\_tracking}}
+\index{update\_message\_tracking@{update\_message\_tracking}!ECUData@{ECUData}}
+\doxysubsubsection{\texorpdfstring{update\_message\_tracking()}{update\_message\_tracking()}}
+{\footnotesize\ttfamily \label{struct_e_c_u_data_a7b7c7c8a2f02fb25de99ac4474990bbb} 
+void ECUData\+::update\+\_\+message\+\_\+tracking (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{source}{, }\item[{std\+::uint32\+\_\+t}]{unit}{, }\item[{std\+::size\+\_\+t}]{size}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Update message tracking with new received message. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em source} & Source component name/address \\
+\hline
+{\em unit} & Data unit type received \\
+\hline
+{\em size} & \doxylink{class_message}{Message} size in bytes \\
+\hline
+\end{DoxyParams}
+
+
+\label{doc-variable-members}
+\Hypertarget{struct_e_c_u_data_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{struct_e_c_u_data_a087b0a637db3b2978c27c60a23b47d08}\index{ECUData@{ECUData}!last\_message\_size@{last\_message\_size}}
+\index{last\_message\_size@{last\_message\_size}!ECUData@{ECUData}}
+\doxysubsubsection{\texorpdfstring{last\_message\_size}{last\_message\_size}}
+{\footnotesize\ttfamily \label{struct_e_c_u_data_a087b0a637db3b2978c27c60a23b47d08} 
+std\+::size\+\_\+t ECUData\+::last\+\_\+message\+\_\+size}
+
+\Hypertarget{struct_e_c_u_data_ac277919575354ca1673ae5a8b16b5cf6}\index{ECUData@{ECUData}!last\_message\_source@{last\_message\_source}}
+\index{last\_message\_source@{last\_message\_source}!ECUData@{ECUData}}
+\doxysubsubsection{\texorpdfstring{last\_message\_source}{last\_message\_source}}
+{\footnotesize\ttfamily \label{struct_e_c_u_data_ac277919575354ca1673ae5a8b16b5cf6} 
+std\+::string ECUData\+::last\+\_\+message\+\_\+source}
+
+\Hypertarget{struct_e_c_u_data_abd7bb1eb7b71cf90dd59ca2c96a9c4ae}\index{ECUData@{ECUData}!last\_message\_unit@{last\_message\_unit}}
+\index{last\_message\_unit@{last\_message\_unit}!ECUData@{ECUData}}
+\doxysubsubsection{\texorpdfstring{last\_message\_unit}{last\_message\_unit}}
+{\footnotesize\ttfamily \label{struct_e_c_u_data_abd7bb1eb7b71cf90dd59ca2c96a9c4ae} 
+std\+::uint32\+\_\+t ECUData\+::last\+\_\+message\+\_\+unit}
+
+\Hypertarget{struct_e_c_u_data_a32cf1c0855b3d5f52c89ca147672d12f}\index{ECUData@{ECUData}!messages\_received@{messages\_received}}
+\index{messages\_received@{messages\_received}!ECUData@{ECUData}}
+\doxysubsubsection{\texorpdfstring{messages\_received}{messages\_received}}
+{\footnotesize\ttfamily \label{struct_e_c_u_data_a32cf1c0855b3d5f52c89ca147672d12f} 
+int ECUData\+::messages\+\_\+received}
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/app/components/\mbox{\hyperlink{ecu__data_8hpp}{ecu\+\_\+data.\+hpp}}\end{DoxyCompactItemize}

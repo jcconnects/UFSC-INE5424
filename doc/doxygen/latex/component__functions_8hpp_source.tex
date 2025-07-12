@@ -1,0 +1,21 @@
+\doxysection{component\+\_\+functions.\+hpp}
+\hypertarget{component__functions_8hpp_source}{}\label{component__functions_8hpp_source}\index{include/api/framework/component\_functions.hpp@{include/api/framework/component\_functions.hpp}}
+\mbox{\hyperlink{component__functions_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ COMPONENT\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ COMPONENT\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__types_8hpp}{api/framework/component\_types.hpp}}"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ Forward\ declarations\ to\ resolve\ circular\ dependencies}}
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_agent}{Agent}};}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00022\ \textcolor{keyword}{typedef}\ std::vector<std::uint8\_t>\ (*\mbox{\hyperlink{component__functions_8hpp_a09035d123daa3e7131b0f583a140371c}{DataProducer}})(std::uint32\_t\ unit,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00034\ \textcolor{keyword}{typedef}\ void\ (*\mbox{\hyperlink{component__functions_8hpp_a53233b5baa21df43948d115fa1f102a1}{ResponseHandler}})(\textcolor{keywordtype}{void}*\ msg,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ COMPONENT\_FUNCTIONS\_HPP\ }}
+
+\end{DoxyCode}

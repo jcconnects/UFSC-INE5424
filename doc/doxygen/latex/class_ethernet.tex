@@ -1,0 +1,136 @@
+\doxysection{Ethernet Class Reference}
+\hypertarget{class_ethernet}{}\label{class_ethernet}\index{Ethernet@{Ethernet}}
+
+
+{\ttfamily \#include $<$ethernet.\+h$>$}
+
+Inheritance diagram for Ethernet\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_ethernet}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_ethernet_1_1_address}{Address}}
+\item 
+struct \mbox{\hyperlink{struct_ethernet_1_1_frame}{Frame}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef std\+::uint16\+\_\+t \mbox{\hyperlink{class_ethernet_a7192e74f89cf8ff08d4f28c397891f5c}{Protocol}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet\+::\+Frame}} \mbox{\hyperlink{class_ethernet_a0ca590091aedf078b653162f0bba9829}{\+\_\+\+\_\+attribute\+\_\+\+\_\+}} ((packed))
+\item 
+\mbox{\hyperlink{class_ethernet_a360ed49c9cd592de54486f4f2e41f341}{Ethernet}} ()=default
+\item 
+\mbox{\hyperlink{class_ethernet_ae6cf80014bd93a03e7fe0aaad338604b}{\texorpdfstring{$\sim$}{\string~}\+Ethernet}} ()=default
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static std\+::string \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{mac\+\_\+to\+\_\+string}} (\mbox{\hyperlink{struct_ethernet_1_1_address}{Address}} addr)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static constexpr unsigned int \mbox{\hyperlink{class_ethernet_ab5325c9e8545b790a86765fa1dba1c87}{MTU}} = 1500
+\item 
+static constexpr unsigned int \mbox{\hyperlink{class_ethernet_a4782274332fe011d8fd5d14284ff6a16}{MAC\+\_\+\+SIZE}} = 6
+\item 
+static const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \mbox{\hyperlink{class_ethernet_ad07c95e4afe8e563cc0eb4c82b1f10b8}{NULL\+\_\+\+ADDRESS}} = \{\}
+\item 
+static const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} \mbox{\hyperlink{class_ethernet_a4d98569f734c1d3050bd1b85aeb30b51}{BROADCAST}} = \{\{0xff, 0xff, 0xff, 0xff, 0xff, 0xff\}\}
+\item 
+static constexpr unsigned int \mbox{\hyperlink{class_ethernet_a981bc68d59187910a930f8f446e98c2d}{HEADER\+\_\+\+SIZE}} = sizeof(\mbox{\hyperlink{struct_ethernet_1_1_address}{Address}})\texorpdfstring{$\ast$}{*}2 + sizeof(\mbox{\hyperlink{class_ethernet_a7192e74f89cf8ff08d4f28c397891f5c}{Protocol}})
+\end{DoxyCompactItemize}
+
+
+\label{doc-typedef-members}
+\Hypertarget{class_ethernet_doc-typedef-members}
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_ethernet_a7192e74f89cf8ff08d4f28c397891f5c}\index{Ethernet@{Ethernet}!Protocol@{Protocol}}
+\index{Protocol@{Protocol}!Ethernet@{Ethernet}}
+\doxysubsubsection{\texorpdfstring{Protocol}{Protocol}}
+{\footnotesize\ttfamily \label{class_ethernet_a7192e74f89cf8ff08d4f28c397891f5c} 
+typedef std\+::uint16\+\_\+t \mbox{\hyperlink{class_ethernet_a7192e74f89cf8ff08d4f28c397891f5c}{Ethernet\+::\+Protocol}}}
+
+
+
+\label{doc-constructors}
+\Hypertarget{class_ethernet_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_ethernet_a360ed49c9cd592de54486f4f2e41f341}\index{Ethernet@{Ethernet}!Ethernet@{Ethernet}}
+\index{Ethernet@{Ethernet}!Ethernet@{Ethernet}}
+\doxysubsubsection{\texorpdfstring{Ethernet()}{Ethernet()}}
+{\footnotesize\ttfamily \label{class_ethernet_a360ed49c9cd592de54486f4f2e41f341} 
+Ethernet\+::\+Ethernet (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+\Hypertarget{class_ethernet_ae6cf80014bd93a03e7fe0aaad338604b}\index{Ethernet@{Ethernet}!````~Ethernet@{\texorpdfstring{$\sim$}{\string~}Ethernet}}
+\index{````~Ethernet@{\texorpdfstring{$\sim$}{\string~}Ethernet}!Ethernet@{Ethernet}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Ethernet()}{\string~Ethernet()}}
+{\footnotesize\ttfamily \label{class_ethernet_ae6cf80014bd93a03e7fe0aaad338604b} 
+Ethernet\+::\texorpdfstring{$\sim$}{\string~}\+Ethernet (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_ethernet_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_ethernet_a0ca590091aedf078b653162f0bba9829}\index{Ethernet@{Ethernet}!\_\_attribute\_\_@{\_\_attribute\_\_}}
+\index{\_\_attribute\_\_@{\_\_attribute\_\_}!Ethernet@{Ethernet}}
+\doxysubsubsection{\texorpdfstring{\_\_attribute\_\_()}{\_\_attribute\_\_()}}
+{\footnotesize\ttfamily \label{class_ethernet_a0ca590091aedf078b653162f0bba9829} 
+struct \mbox{\hyperlink{struct_ethernet_1_1_frame}{Ethernet\+::\+Frame}} Ethernet\+::\+\_\+\+\_\+attribute\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{(packed)}]{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}\index{Ethernet@{Ethernet}!mac\_to\_string@{mac\_to\_string}}
+\index{mac\_to\_string@{mac\_to\_string}!Ethernet@{Ethernet}}
+\doxysubsubsection{\texorpdfstring{mac\_to\_string()}{mac\_to\_string()}}
+{\footnotesize\ttfamily \label{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd} 
+std\+::string Ethernet\+::mac\+\_\+to\+\_\+string (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{struct_ethernet_1_1_address}{Address}}}]{addr}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+\label{doc-variable-members}
+\Hypertarget{class_ethernet_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_ethernet_a4d98569f734c1d3050bd1b85aeb30b51}\index{Ethernet@{Ethernet}!BROADCAST@{BROADCAST}}
+\index{BROADCAST@{BROADCAST}!Ethernet@{Ethernet}}
+\doxysubsubsection{\texorpdfstring{BROADCAST}{BROADCAST}}
+{\footnotesize\ttfamily \label{class_ethernet_a4d98569f734c1d3050bd1b85aeb30b51} 
+const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} Ethernet\+::\+BROADCAST = \{\{0xff, 0xff, 0xff, 0xff, 0xff, 0xff\}\}\hspace{0.3cm}{\ttfamily [static]}}
+
+\Hypertarget{class_ethernet_a981bc68d59187910a930f8f446e98c2d}\index{Ethernet@{Ethernet}!HEADER\_SIZE@{HEADER\_SIZE}}
+\index{HEADER\_SIZE@{HEADER\_SIZE}!Ethernet@{Ethernet}}
+\doxysubsubsection{\texorpdfstring{HEADER\_SIZE}{HEADER\_SIZE}}
+{\footnotesize\ttfamily \label{class_ethernet_a981bc68d59187910a930f8f446e98c2d} 
+unsigned int Ethernet\+::\+HEADER\+\_\+\+SIZE = sizeof(\mbox{\hyperlink{struct_ethernet_1_1_address}{Address}})\texorpdfstring{$\ast$}{*}2 + sizeof(\mbox{\hyperlink{class_ethernet_a7192e74f89cf8ff08d4f28c397891f5c}{Protocol}})\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [constexpr]}}
+
+\Hypertarget{class_ethernet_a4782274332fe011d8fd5d14284ff6a16}\index{Ethernet@{Ethernet}!MAC\_SIZE@{MAC\_SIZE}}
+\index{MAC\_SIZE@{MAC\_SIZE}!Ethernet@{Ethernet}}
+\doxysubsubsection{\texorpdfstring{MAC\_SIZE}{MAC\_SIZE}}
+{\footnotesize\ttfamily \label{class_ethernet_a4782274332fe011d8fd5d14284ff6a16} 
+unsigned int Ethernet\+::\+MAC\+\_\+\+SIZE = 6\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [constexpr]}}
+
+\Hypertarget{class_ethernet_ab5325c9e8545b790a86765fa1dba1c87}\index{Ethernet@{Ethernet}!MTU@{MTU}}
+\index{MTU@{MTU}!Ethernet@{Ethernet}}
+\doxysubsubsection{\texorpdfstring{MTU}{MTU}}
+{\footnotesize\ttfamily \label{class_ethernet_ab5325c9e8545b790a86765fa1dba1c87} 
+unsigned int Ethernet\+::\+MTU = 1500\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [constexpr]}}
+
+\Hypertarget{class_ethernet_ad07c95e4afe8e563cc0eb4c82b1f10b8}\index{Ethernet@{Ethernet}!NULL\_ADDRESS@{NULL\_ADDRESS}}
+\index{NULL\_ADDRESS@{NULL\_ADDRESS}!Ethernet@{Ethernet}}
+\doxysubsubsection{\texorpdfstring{NULL\_ADDRESS}{NULL\_ADDRESS}}
+{\footnotesize\ttfamily \label{class_ethernet_ad07c95e4afe8e563cc0eb4c82b1f10b8} 
+const \mbox{\hyperlink{struct_ethernet_1_1_address}{Ethernet\+::\+Address}} Ethernet\+::\+NULL\+\_\+\+ADDRESS = \{\}\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/network/\mbox{\hyperlink{ethernet_8h}{ethernet.\+h}}\end{DoxyCompactItemize}

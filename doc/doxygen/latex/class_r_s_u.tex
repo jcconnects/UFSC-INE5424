@@ -1,0 +1,234 @@
+\doxysection{RSU Class Reference}
+\hypertarget{class_r_s_u}{}\label{class_r_s_u}\index{RSU@{RSU}}
+
+
+{\ttfamily \#include $<$rsu.\+h$>$}
+
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef \mbox{\hyperlink{class_network_a638cca85e6d97e60e28b9bbb310aa1e2}{Network\+::\+Communicator}} \mbox{\hyperlink{class_r_s_u_a6b39b0aa63fca522e4904354f8c3a634}{Communicator}}
+\item 
+typedef \mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Network\+::\+Protocol}} \mbox{\hyperlink{class_r_s_u_afd0585e0e24b0eb1e89fb4c19b2cbf18}{Protocol}}
+\item 
+typedef \mbox{\hyperlink{class_protocol_1_1_address}{Protocol\+::\+Address}} \mbox{\hyperlink{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0}{Address}}
+\item 
+typedef \mbox{\hyperlink{class_network_ace8ef437586a78c43b82d6d4b5ae6410}{Network\+::\+Message}} \mbox{\hyperlink{class_r_s_u_a4f80ca90cc11271d968b43fef64ec0fa}{Message}}
+\item 
+typedef \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message\+::\+Unit}} \mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{Unit}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_r_s_u_a1ad1a5d7de51603f4341d0a0110ac106}{RSU}} (unsigned int rsu\+\_\+id, \mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{Unit}} \mbox{\hyperlink{class_r_s_u_a9c4b19205d3a48f69311cdf853bb6cd4}{unit}}, std\+::chrono\+::milliseconds \mbox{\hyperlink{class_r_s_u_a090a82e21305501e60e4e840e53f48e0}{period}}, double x=0.\+0, double y=0.\+0, double radius=400.\+0, const void \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}=nullptr, unsigned int data\+\_\+size=0)
+\begin{DoxyCompactList}\small\item\em Construct a new \doxylink{class_r_s_u}{RSU} object. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{class_r_s_u_a2de7f2cab75b00188899a9a3ecff0c80}{\texorpdfstring{$\sim$}{\string~}\+RSU}} ()
+\begin{DoxyCompactList}\small\item\em Destroy the \doxylink{class_r_s_u}{RSU} object. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_r_s_u_a7be81f9359d98994f57b9ea7b3d7198b}{start}} ()
+\begin{DoxyCompactList}\small\item\em Start the \doxylink{class_r_s_u}{RSU} broadcasting. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_r_s_u_a47c0376b44480b390932a2d79960377b}{stop}} ()
+\begin{DoxyCompactList}\small\item\em Stop the \doxylink{class_r_s_u}{RSU} broadcasting. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{class_r_s_u_a27479f45a055be4845f1cead3d42c1cf}{running}} () const
+\begin{DoxyCompactList}\small\item\em Check if the \doxylink{class_r_s_u}{RSU} is running. \end{DoxyCompactList}\item 
+const \mbox{\hyperlink{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0}{Address}} \& \mbox{\hyperlink{class_r_s_u_a170895c1c3e1a9617c8e891516aca401}{address}} () const
+\begin{DoxyCompactList}\small\item\em Get the \doxylink{class_r_s_u}{RSU}\textquotesingle{}s network address. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{Unit}} \mbox{\hyperlink{class_r_s_u_a9c4b19205d3a48f69311cdf853bb6cd4}{unit}} () const
+\begin{DoxyCompactList}\small\item\em Get the unit type being broadcast. \end{DoxyCompactList}\item 
+std\+::chrono\+::milliseconds \mbox{\hyperlink{class_r_s_u_a090a82e21305501e60e4e840e53f48e0}{period}} () const
+\begin{DoxyCompactList}\small\item\em Get the broadcasting period. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_r_s_u_a2f583a4621b4e5ff46fa7c20d537d4cf}{adjust\+\_\+period}} (std\+::chrono\+::milliseconds new\+\_\+period)
+\begin{DoxyCompactList}\small\item\em Adjust the broadcasting period. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_r_s_u_a070711958e52f9417cd0a01df694eb88}{broadcast}} ()
+\begin{DoxyCompactList}\small\item\em Send a single broadcast message (called by periodic thread) \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_r_s_u_a9c06d0c1b899feca5ca057324451c2aa}{initialize\+\_\+neighbor\+\_\+rsus}} ()
+\begin{DoxyCompactList}\small\item\em Initialize neighbor RSUs directly in \doxylink{class_protocol}{Protocol} structure In a real system, this would be loaded from configuration. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-typedef-members}
+\Hypertarget{class_r_s_u_doc-typedef-members}
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0}\index{RSU@{RSU}!Address@{Address}}
+\index{Address@{Address}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{Address}{Address}}
+{\footnotesize\ttfamily \label{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0} 
+typedef \mbox{\hyperlink{class_protocol_1_1_address}{Protocol\+::\+Address}} \mbox{\hyperlink{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0}{RSU\+::\+Address}}}
+
+\Hypertarget{class_r_s_u_a6b39b0aa63fca522e4904354f8c3a634}\index{RSU@{RSU}!Communicator@{Communicator}}
+\index{Communicator@{Communicator}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{Communicator}{Communicator}}
+{\footnotesize\ttfamily \label{class_r_s_u_a6b39b0aa63fca522e4904354f8c3a634} 
+typedef \mbox{\hyperlink{class_network_a638cca85e6d97e60e28b9bbb310aa1e2}{Network\+::\+Communicator}} \mbox{\hyperlink{class_r_s_u_a6b39b0aa63fca522e4904354f8c3a634}{RSU\+::\+Communicator}}}
+
+\Hypertarget{class_r_s_u_a4f80ca90cc11271d968b43fef64ec0fa}\index{RSU@{RSU}!Message@{Message}}
+\index{Message@{Message}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{Message}{Message}}
+{\footnotesize\ttfamily \label{class_r_s_u_a4f80ca90cc11271d968b43fef64ec0fa} 
+typedef \mbox{\hyperlink{class_network_ace8ef437586a78c43b82d6d4b5ae6410}{Network\+::\+Message}} \mbox{\hyperlink{class_r_s_u_a4f80ca90cc11271d968b43fef64ec0fa}{RSU\+::\+Message}}}
+
+\Hypertarget{class_r_s_u_afd0585e0e24b0eb1e89fb4c19b2cbf18}\index{RSU@{RSU}!Protocol@{Protocol}}
+\index{Protocol@{Protocol}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{Protocol}{Protocol}}
+{\footnotesize\ttfamily \label{class_r_s_u_afd0585e0e24b0eb1e89fb4c19b2cbf18} 
+typedef \mbox{\hyperlink{class_network_a8d0ff6afe275a422cb63a9eec75f8d4a}{Network\+::\+Protocol}} \mbox{\hyperlink{class_r_s_u_afd0585e0e24b0eb1e89fb4c19b2cbf18}{RSU\+::\+Protocol}}}
+
+\Hypertarget{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}\index{RSU@{RSU}!Unit@{Unit}}
+\index{Unit@{Unit}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{Unit}{Unit}}
+{\footnotesize\ttfamily \label{class_r_s_u_a12b8890235d5355063bdbea5d8440e26} 
+typedef \mbox{\hyperlink{class_message_adc63ad6ff6d68eb4f0c9a0c730bd5ab4}{Message\+::\+Unit}} \mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{RSU\+::\+Unit}}}
+
+
+
+\label{doc-constructors}
+\Hypertarget{class_r_s_u_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_r_s_u_a1ad1a5d7de51603f4341d0a0110ac106}\index{RSU@{RSU}!RSU@{RSU}}
+\index{RSU@{RSU}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{RSU()}{RSU()}}
+{\footnotesize\ttfamily \label{class_r_s_u_a1ad1a5d7de51603f4341d0a0110ac106} 
+RSU\+::\+RSU (\begin{DoxyParamCaption}\item[{unsigned int}]{rsu\+\_\+id}{, }\item[{\mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{Unit}}}]{unit}{, }\item[{std\+::chrono\+::milliseconds}]{period}{, }\item[{double}]{x}{ = {\ttfamily 0.0}, }\item[{double}]{y}{ = {\ttfamily 0.0}, }\item[{double}]{radius}{ = {\ttfamily 400.0}, }\item[{const void \texorpdfstring{$\ast$}{*}}]{data}{ = {\ttfamily nullptr}, }\item[{unsigned int}]{data\+\_\+size}{ = {\ttfamily 0}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Construct a new \doxylink{class_r_s_u}{RSU} object. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em rsu\+\_\+id} & Unique identifier for this \doxylink{class_r_s_u}{RSU} (used for MAC address generation) \\
+\hline
+{\em unit} & The unit type that this \doxylink{class_r_s_u}{RSU} will broadcast \\
+\hline
+{\em period} & The broadcasting period in milliseconds \\
+\hline
+{\em data} & Optional data payload for the RESPONSE message \\
+\hline
+{\em data\+\_\+size} & Size of the data payload \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_r_s_u_a2de7f2cab75b00188899a9a3ecff0c80}\index{RSU@{RSU}!````~RSU@{\texorpdfstring{$\sim$}{\string~}RSU}}
+\index{````~RSU@{\texorpdfstring{$\sim$}{\string~}RSU}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}RSU()}{\string~RSU()}}
+{\footnotesize\ttfamily \label{class_r_s_u_a2de7f2cab75b00188899a9a3ecff0c80} 
+RSU\+::\texorpdfstring{$\sim$}{\string~}\+RSU (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Destroy the \doxylink{class_r_s_u}{RSU} object. 
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_r_s_u_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_r_s_u_a170895c1c3e1a9617c8e891516aca401}\index{RSU@{RSU}!address@{address}}
+\index{address@{address}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{address()}{address()}}
+{\footnotesize\ttfamily \label{class_r_s_u_a170895c1c3e1a9617c8e891516aca401} 
+const \mbox{\hyperlink{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0}{RSU\+::\+Address}} \& RSU\+::address (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get the \doxylink{class_r_s_u}{RSU}\textquotesingle{}s network address. 
+
+\begin{DoxyReturn}{Returns}
+const \doxylink{class_r_s_u_a2514e690b6735481fe6c88dabebb9ef0}{Address}\& \doxylink{class_r_s_u}{RSU}\textquotesingle{}s address 
+\end{DoxyReturn}
+\Hypertarget{class_r_s_u_a2f583a4621b4e5ff46fa7c20d537d4cf}\index{RSU@{RSU}!adjust\_period@{adjust\_period}}
+\index{adjust\_period@{adjust\_period}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{adjust\_period()}{adjust\_period()}}
+{\footnotesize\ttfamily \label{class_r_s_u_a2f583a4621b4e5ff46fa7c20d537d4cf} 
+void RSU\+::adjust\+\_\+period (\begin{DoxyParamCaption}\item[{std\+::chrono\+::milliseconds}]{new\+\_\+period}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Adjust the broadcasting period. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+period} & New period in milliseconds \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_r_s_u_a070711958e52f9417cd0a01df694eb88}\index{RSU@{RSU}!broadcast@{broadcast}}
+\index{broadcast@{broadcast}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{broadcast()}{broadcast()}}
+{\footnotesize\ttfamily \label{class_r_s_u_a070711958e52f9417cd0a01df694eb88} 
+void RSU\+::broadcast (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Send a single broadcast message (called by periodic thread) 
+
+\Hypertarget{class_r_s_u_a9c06d0c1b899feca5ca057324451c2aa}\index{RSU@{RSU}!initialize\_neighbor\_rsus@{initialize\_neighbor\_rsus}}
+\index{initialize\_neighbor\_rsus@{initialize\_neighbor\_rsus}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{initialize\_neighbor\_rsus()}{initialize\_neighbor\_rsus()}}
+{\footnotesize\ttfamily \label{class_r_s_u_a9c06d0c1b899feca5ca057324451c2aa} 
+void RSU\+::initialize\+\_\+neighbor\+\_\+rsus (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Initialize neighbor RSUs directly in \doxylink{class_protocol}{Protocol} structure In a real system, this would be loaded from configuration. 
+
+\Hypertarget{class_r_s_u_a090a82e21305501e60e4e840e53f48e0}\index{RSU@{RSU}!period@{period}}
+\index{period@{period}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{period()}{period()}}
+{\footnotesize\ttfamily \label{class_r_s_u_a090a82e21305501e60e4e840e53f48e0} 
+std\+::chrono\+::milliseconds RSU\+::period (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get the broadcasting period. 
+
+\begin{DoxyReturn}{Returns}
+std\+::chrono\+::milliseconds The current period 
+\end{DoxyReturn}
+\Hypertarget{class_r_s_u_a27479f45a055be4845f1cead3d42c1cf}\index{RSU@{RSU}!running@{running}}
+\index{running@{running}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{running()}{running()}}
+{\footnotesize\ttfamily \label{class_r_s_u_a27479f45a055be4845f1cead3d42c1cf} 
+bool RSU\+::running (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Check if the \doxylink{class_r_s_u}{RSU} is running. 
+
+\begin{DoxyReturn}{Returns}
+bool True if running, false otherwise 
+\end{DoxyReturn}
+\Hypertarget{class_r_s_u_a7be81f9359d98994f57b9ea7b3d7198b}\index{RSU@{RSU}!start@{start}}
+\index{start@{start}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{start()}{start()}}
+{\footnotesize\ttfamily \label{class_r_s_u_a7be81f9359d98994f57b9ea7b3d7198b} 
+void RSU\+::start (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Start the \doxylink{class_r_s_u}{RSU} broadcasting. 
+
+\Hypertarget{class_r_s_u_a47c0376b44480b390932a2d79960377b}\index{RSU@{RSU}!stop@{stop}}
+\index{stop@{stop}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{stop()}{stop()}}
+{\footnotesize\ttfamily \label{class_r_s_u_a47c0376b44480b390932a2d79960377b} 
+void RSU\+::stop (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Stop the \doxylink{class_r_s_u}{RSU} broadcasting. 
+
+\Hypertarget{class_r_s_u_a9c4b19205d3a48f69311cdf853bb6cd4}\index{RSU@{RSU}!unit@{unit}}
+\index{unit@{unit}!RSU@{RSU}}
+\doxysubsubsection{\texorpdfstring{unit()}{unit()}}
+{\footnotesize\ttfamily \label{class_r_s_u_a9c4b19205d3a48f69311cdf853bb6cd4} 
+\mbox{\hyperlink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{RSU\+::\+Unit}} RSU\+::unit (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get the unit type being broadcast. 
+
+\begin{DoxyReturn}{Returns}
+\doxylink{class_r_s_u_a12b8890235d5355063bdbea5d8440e26}{Unit} The unit type 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/framework/\mbox{\hyperlink{rsu_8h}{rsu.\+h}}\end{DoxyCompactItemize}

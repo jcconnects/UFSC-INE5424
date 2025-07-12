@@ -1,0 +1,128 @@
+\doxysection{Test\+Component\+Data Struct Reference}
+\hypertarget{struct_test_component_data}{}\label{struct_test_component_data}\index{TestComponentData@{TestComponentData}}
+
+
+Test-\/specific component data structure for predictable testing.  
+
+
+
+
+{\ttfamily \#include $<$test\+\_\+factories.\+hpp$>$}
+
+Inheritance diagram for Test\+Component\+Data\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{struct_test_component_data}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+float \mbox{\hyperlink{struct_test_component_data_afbce7493039c30f9ce6f65d924dc53d8}{get\+\_\+test\+\_\+value}} () const
+\item 
+float \mbox{\hyperlink{struct_test_component_data_a4e6e6cca388d51de47b690595911e733}{get\+\_\+last\+\_\+received\+\_\+value}} () const
+\item 
+int \mbox{\hyperlink{struct_test_component_data_ad601363293945ff62c39043152989965}{get\+\_\+response\+\_\+count}} () const
+\item 
+void \mbox{\hyperlink{struct_test_component_data_a7f6e8b5121af9466ca2086e987af22bd}{set\+\_\+test\+\_\+value}} (float value)
+\item 
+void \mbox{\hyperlink{struct_test_component_data_a2c13bc221d4675787285acb49a5ee2f7}{reset\+\_\+response\+\_\+count}} ()
+\item 
+void \mbox{\hyperlink{struct_test_component_data_a2593932f03ea982be225b5a6cff8c534}{set\+\_\+should\+\_\+throw}} (bool throw\+\_\+flag)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{struct_component_data}{Component\+Data}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual \mbox{\hyperlink{struct_component_data_a9d2f13c283f7f17eee8f4283c04f519d}{\texorpdfstring{$\sim$}{\string~}\+Component\+Data}} ()=default
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+float \mbox{\hyperlink{struct_test_component_data_adedf7b0e98426525b1eda4b668974dd5}{test\+\_\+value}} = 42.\+0f
+\item 
+float \mbox{\hyperlink{struct_test_component_data_a47b571d28cd82ae3ad3a6b18a4cc4548}{last\+\_\+received\+\_\+value}} = 0.\+0f
+\item 
+int \mbox{\hyperlink{struct_test_component_data_a2fe283aa0324bc3148950aeed2e7bc4f}{response\+\_\+count}} = 0
+\item 
+bool \mbox{\hyperlink{struct_test_component_data_ae8147450db70aa28896cc01581d46702}{should\+\_\+throw}} = false
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Test-\/specific component data structure for predictable testing. 
+
+Provides the same interface as the original Test\+Agent class but using the EPOS Smart\+Data composition approach. This eliminates vtable race conditions while maintaining exact test behavior. 
+
+\label{doc-func-members}
+\Hypertarget{struct_test_component_data_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{struct_test_component_data_a4e6e6cca388d51de47b690595911e733}\index{TestComponentData@{TestComponentData}!get\_last\_received\_value@{get\_last\_received\_value}}
+\index{get\_last\_received\_value@{get\_last\_received\_value}!TestComponentData@{TestComponentData}}
+\doxysubsubsection{\texorpdfstring{get\_last\_received\_value()}{get\_last\_received\_value()}}
+{\footnotesize\ttfamily \label{struct_test_component_data_a4e6e6cca388d51de47b690595911e733} 
+float Test\+Component\+Data\+::get\+\_\+last\+\_\+received\+\_\+value (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{struct_test_component_data_ad601363293945ff62c39043152989965}\index{TestComponentData@{TestComponentData}!get\_response\_count@{get\_response\_count}}
+\index{get\_response\_count@{get\_response\_count}!TestComponentData@{TestComponentData}}
+\doxysubsubsection{\texorpdfstring{get\_response\_count()}{get\_response\_count()}}
+{\footnotesize\ttfamily \label{struct_test_component_data_ad601363293945ff62c39043152989965} 
+int Test\+Component\+Data\+::get\+\_\+response\+\_\+count (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{struct_test_component_data_afbce7493039c30f9ce6f65d924dc53d8}\index{TestComponentData@{TestComponentData}!get\_test\_value@{get\_test\_value}}
+\index{get\_test\_value@{get\_test\_value}!TestComponentData@{TestComponentData}}
+\doxysubsubsection{\texorpdfstring{get\_test\_value()}{get\_test\_value()}}
+{\footnotesize\ttfamily \label{struct_test_component_data_afbce7493039c30f9ce6f65d924dc53d8} 
+float Test\+Component\+Data\+::get\+\_\+test\+\_\+value (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{struct_test_component_data_a2c13bc221d4675787285acb49a5ee2f7}\index{TestComponentData@{TestComponentData}!reset\_response\_count@{reset\_response\_count}}
+\index{reset\_response\_count@{reset\_response\_count}!TestComponentData@{TestComponentData}}
+\doxysubsubsection{\texorpdfstring{reset\_response\_count()}{reset\_response\_count()}}
+{\footnotesize\ttfamily \label{struct_test_component_data_a2c13bc221d4675787285acb49a5ee2f7} 
+void Test\+Component\+Data\+::reset\+\_\+response\+\_\+count (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{struct_test_component_data_a2593932f03ea982be225b5a6cff8c534}\index{TestComponentData@{TestComponentData}!set\_should\_throw@{set\_should\_throw}}
+\index{set\_should\_throw@{set\_should\_throw}!TestComponentData@{TestComponentData}}
+\doxysubsubsection{\texorpdfstring{set\_should\_throw()}{set\_should\_throw()}}
+{\footnotesize\ttfamily \label{struct_test_component_data_a2593932f03ea982be225b5a6cff8c534} 
+void Test\+Component\+Data\+::set\+\_\+should\+\_\+throw (\begin{DoxyParamCaption}\item[{bool}]{throw\+\_\+flag}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{struct_test_component_data_a7f6e8b5121af9466ca2086e987af22bd}\index{TestComponentData@{TestComponentData}!set\_test\_value@{set\_test\_value}}
+\index{set\_test\_value@{set\_test\_value}!TestComponentData@{TestComponentData}}
+\doxysubsubsection{\texorpdfstring{set\_test\_value()}{set\_test\_value()}}
+{\footnotesize\ttfamily \label{struct_test_component_data_a7f6e8b5121af9466ca2086e987af22bd} 
+void Test\+Component\+Data\+::set\+\_\+test\+\_\+value (\begin{DoxyParamCaption}\item[{float}]{value}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-variable-members}
+\Hypertarget{struct_test_component_data_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{struct_test_component_data_a47b571d28cd82ae3ad3a6b18a4cc4548}\index{TestComponentData@{TestComponentData}!last\_received\_value@{last\_received\_value}}
+\index{last\_received\_value@{last\_received\_value}!TestComponentData@{TestComponentData}}
+\doxysubsubsection{\texorpdfstring{last\_received\_value}{last\_received\_value}}
+{\footnotesize\ttfamily \label{struct_test_component_data_a47b571d28cd82ae3ad3a6b18a4cc4548} 
+float Test\+Component\+Data\+::last\+\_\+received\+\_\+value = 0.\+0f}
+
+\Hypertarget{struct_test_component_data_a2fe283aa0324bc3148950aeed2e7bc4f}\index{TestComponentData@{TestComponentData}!response\_count@{response\_count}}
+\index{response\_count@{response\_count}!TestComponentData@{TestComponentData}}
+\doxysubsubsection{\texorpdfstring{response\_count}{response\_count}}
+{\footnotesize\ttfamily \label{struct_test_component_data_a2fe283aa0324bc3148950aeed2e7bc4f} 
+int Test\+Component\+Data\+::response\+\_\+count = 0}
+
+\Hypertarget{struct_test_component_data_ae8147450db70aa28896cc01581d46702}\index{TestComponentData@{TestComponentData}!should\_throw@{should\_throw}}
+\index{should\_throw@{should\_throw}!TestComponentData@{TestComponentData}}
+\doxysubsubsection{\texorpdfstring{should\_throw}{should\_throw}}
+{\footnotesize\ttfamily \label{struct_test_component_data_ae8147450db70aa28896cc01581d46702} 
+bool Test\+Component\+Data\+::should\+\_\+throw = false}
+
+\Hypertarget{struct_test_component_data_adedf7b0e98426525b1eda4b668974dd5}\index{TestComponentData@{TestComponentData}!test\_value@{test\_value}}
+\index{test\_value@{test\_value}!TestComponentData@{TestComponentData}}
+\doxysubsubsection{\texorpdfstring{test\_value}{test\_value}}
+{\footnotesize\ttfamily \label{struct_test_component_data_adedf7b0e98426525b1eda4b668974dd5} 
+float Test\+Component\+Data\+::test\+\_\+value = 42.\+0f}
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/app/components/\mbox{\hyperlink{test__factories_8hpp}{test\+\_\+factories.\+hpp}}\end{DoxyCompactItemize}

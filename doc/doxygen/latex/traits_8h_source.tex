@@ -1,0 +1,169 @@
+\doxysection{traits.\+h}
+\hypertarget{traits_8h_source}{}\label{traits_8h_source}\index{include/api/traits.h@{include/api/traits.h}}
+\mbox{\hyperlink{traits_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ TRAITS\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ TRAITS\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ Helper\ function\ to\ get\ the\ interface\ name}}
+\DoxyCodeLine{00008\ \textcolor{keyword}{inline}\ std::string\ \mbox{\hyperlink{traits_8h_a6674e86e97b1780782af76859e224bb6}{get\_interface\_name}}()\ \{}
+\DoxyCodeLine{00009\ \ \ \ \ std::string\ interface\_name\ =\ \textcolor{stringliteral}{"{}test-\/dummy0"{}};\ \textcolor{comment}{//\ Default}}
+\DoxyCodeLine{00010\ \ \ \ \ std::ifstream\ iface\_file(\textcolor{stringliteral}{"{}tests/logs/current\_test\_iface"{}});}
+\DoxyCodeLine{00011\ \ \ \ \ \textcolor{keywordflow}{if}\ (iface\_file)\ \{}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ std::getline(iface\_file,\ interface\_name);}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!interface\_name.empty())\ \{}
+\DoxyCodeLine{00014\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ interface\_name;}
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00016\ \ \ \ \ \}}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keywordflow}{return}\ interface\_name;}
+\DoxyCodeLine{00018\ \}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ Foward\ Declarations}}
+\DoxyCodeLine{00021\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00022\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_protocol}{Protocol}};}
+\DoxyCodeLine{00023\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_agent}{Agent}};}
+\DoxyCodeLine{00024\ \textcolor{keyword}{class\ }AgentStub;}
+\DoxyCodeLine{00025\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00026\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_n_i_c}{NIC}};}
+\DoxyCodeLine{00027\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_socket_engine}{SocketEngine}};}
+\DoxyCodeLine{00028\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_debug}{Debug}};}
+\DoxyCodeLine{00029\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00030\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_communicator}{Communicator}};}
+\DoxyCodeLine{00031\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Protocol>}
+\DoxyCodeLine{00032\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_message}{Message}};}
+\DoxyCodeLine{00033\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_c_a_n}{CAN}};}
+\DoxyCodeLine{00034\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_gateway}{Gateway}};}
+\DoxyCodeLine{00035\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_clock}{Clock}};}
+\DoxyCodeLine{00036\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_leader_key_storage}{LeaderKeyStorage}};}
+\DoxyCodeLine{00037\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_r_s_u}{RSU}};}
+\DoxyCodeLine{00038\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Protocol\_T>}
+\DoxyCodeLine{00039\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_vehicle_r_s_u_manager}{VehicleRSUManager}};}
+\DoxyCodeLine{00040\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ V,\ \textcolor{keywordtype}{size\_t}\ N>}
+\DoxyCodeLine{00041\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_static_size_hashed_cache}{StaticSizeHashedCache}};}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{comment}{//\ Traits\ definition}}
+\DoxyCodeLine{00044\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00045\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}\ \{}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_a0abb19a116800ab778598eed38bad4a0}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00047\ \};}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{comment}{//\ Traits\ for\ SocketEngine\ class}}
+\DoxyCodeLine{00050\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00051\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_socket_engine}{SocketEngine}}>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00052\ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_socket_engine_01_4_a004afbf25118fd950ea8624829373cfb}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \mbox{\hyperlink{struct_traits_3_01_socket_engine_01_4_a04b1e092e0e793fdbf17745fbb33c20f}{DEFAULT\_INTERFACE\_NAME}}\ =\ \textcolor{stringliteral}{"{}test-\/dummy0"{}};}
+\DoxyCodeLine{00055\ \ \ \ \ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \mbox{\hyperlink{struct_traits_3_01_socket_engine_01_4_a4a088ea461ac638c46b8ba8c6a649213}{INTERFACE\_NAME}}()\ \{}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ std::string\ interface\_name\ =\ \mbox{\hyperlink{traits_8h_a6674e86e97b1780782af76859e224bb6}{get\_interface\_name}}();}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ interface\_name.c\_str();}
+\DoxyCodeLine{00059\ \ \ \ \ \}}
+\DoxyCodeLine{00060\ \};}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \textcolor{comment}{//\ Traits\ for\ dual-\/engine\ NIC}}
+\DoxyCodeLine{00063\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Engine>}
+\DoxyCodeLine{00064\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_n_i_c}{NIC}}<Engine>>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00065\ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_n_i_c_3_01_engine_01_4_01_4_aec46938fffc6e7158b4feb75f19921e6}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_traits_3_01_n_i_c_3_01_engine_01_4_01_4_a86a8daf98ef10d14c3c5715115203e20}{SEND\_BUFFERS}}\ =\ 512;}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_traits_3_01_n_i_c_3_01_engine_01_4_01_4_ae8c6b44ae4b0f1089a1d66a350049575}{RECEIVE\_BUFFERS}}\ =\ 512;}
+\DoxyCodeLine{00069\ \};}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{comment}{//\ Traits\ for\ Protocol\ with\ dual-\/engine\ NIC}}
+\DoxyCodeLine{00072\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00073\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_protocol}{Protocol}}<\mbox{\hyperlink{class_n_i_c}{NIC}}<\mbox{\hyperlink{class_socket_engine}{SocketEngine}}>>>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00074\ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_protocol_3_01_n_i_c_3_01_socket_engine_01_4_01_4_01_4_a82e462aa0e2a40911b3f8a58d2d8e10e}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_traits_3_01_protocol_3_01_n_i_c_3_01_socket_engine_01_4_01_4_01_4_a842b8544ad0612b519986cf904383d04}{ETHERNET\_PROTOCOL\_NUMBER}}\ =\ 888;\ \textcolor{comment}{//\ Example\ value}}
+\DoxyCodeLine{00077\ \};}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{comment}{//\ Traits\ for\ Communicator\ class}}
+\DoxyCodeLine{00080\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Channel>}
+\DoxyCodeLine{00081\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_communicator}{Communicator}}<Channel>>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00082\ \{}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_communicator_3_01_channel_01_4_01_4_a42cf6ddfcf44de4428cb4aa45b78d943}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00084\ \};}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \textcolor{comment}{//\ Traits\ for\ message\ class}}
+\DoxyCodeLine{00087\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Protocol>}
+\DoxyCodeLine{00088\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_message}{Message}}<\mbox{\hyperlink{class_protocol}{Protocol}}>>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00089\ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_message_3_01_protocol_01_4_01_4_adfcfabf7dd35c83c30be7694255f6ca1}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_traits_3_01_message_3_01_protocol_01_4_01_4_a09e9783ba95a08582acb350cbac29a78}{MAC\_SIZE}}\ =\ 16;}
+\DoxyCodeLine{00092\ \};}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00095\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_c_a_n}{CAN}}>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00096\ \{}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_c_a_n_01_4_ae1cecdfdb7f0b60166ee016a58351bca}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00098\ \};}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00101\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<AgentStub>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00102\ \{}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_agent_stub_01_4_aac3553c9317033da4044dfcda1f4bfba}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00104\ \};}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00107\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_agent}{Agent}}>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00108\ \{}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_agent_01_4_a63527b1b9c215358050cf9407a17e92a}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00110\ \};}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{comment}{//\ Traits\ for\ Gateway\ class}}
+\DoxyCodeLine{00113\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00114\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_gateway}{Gateway}}>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00115\ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_gateway_01_4_a34f540b61f1e38d55c83afbff6c5eec1}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00117\ \};}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{comment}{//\ Traits\ for\ Clock\ class}}
+\DoxyCodeLine{00120\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00121\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_clock}{Clock}}>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00122\ \{}
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_clock_01_4_a170362ccfc1af8f89b94653259e16a5f}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00124\ \};}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{comment}{//\ Traits\ for\ LeaderKeyStorage\ class}}
+\DoxyCodeLine{00127\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00128\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_leader_key_storage}{LeaderKeyStorage}}>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00129\ \{}
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_leader_key_storage_01_4_af51ce2a9da6ef04d30fb4217b4a76a7e}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00131\ \};}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{comment}{//\ Traits\ for\ RSU\ class}}
+\DoxyCodeLine{00134\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00135\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_r_s_u}{RSU}}>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00136\ \{}
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_r_s_u_01_4_a0d6b134575645db2cb1b149c64f50156}{debugged}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00138\ \};}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{comment}{//\ Traits\ for\ VehicleRSUManager\ class}}
+\DoxyCodeLine{00141\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Protocol\_T>}
+\DoxyCodeLine{00142\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_vehicle_r_s_u_manager}{VehicleRSUManager}}<Protocol\_T>>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00143\ \{}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_vehicle_r_s_u_manager_3_01_protocol___t_01_4_01_4_a9c372fc1b0fcf15c9ab2e90c846d4445}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00145\ \};}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ V,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ S>}
+\DoxyCodeLine{00148\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_static_size_hashed_cache}{StaticSizeHashedCache}}<V,\ S>>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00149\ \{}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_static_size_hashed_cache_3_01_v_00_01_s_01_4_01_4_a0e729e2da8c62877edfac8fd394bc752}{debugged}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00151\ \};}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{comment}{//\ Traits\ for\ Debug\ class}}
+\DoxyCodeLine{00154\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00155\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_traits}{Traits}}<\mbox{\hyperlink{class_debug}{Debug}}>\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_traits}{Traits}}<void>}
+\DoxyCodeLine{00156\ \{}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_debug_01_4_abe6808e0a4d63867c443811c1fce72cc}{error}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_debug_01_4_a1b7788b1eab2663380f69978551a003f}{warning}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_debug_01_4_a47475448fe3e871269d04f950bc75aba}{info}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_traits_3_01_debug_01_4_a0a28bfbb30386b589d881ee6034d428d}{trace}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00161\ \};}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ TRAITS\_H}}
+
+\end{DoxyCode}

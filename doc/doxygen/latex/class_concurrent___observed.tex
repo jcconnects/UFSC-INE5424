@@ -1,0 +1,191 @@
+\doxysection{Concurrent\+\_\+\+Observed\texorpdfstring{$<$}{<} D, C \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_concurrent___observed}{}\label{class_concurrent___observed}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+
+
+{\ttfamily \#include $<$observed.\+h$>$}
+
+Inheritance diagram for Concurrent\+\_\+\+Observed\texorpdfstring{$<$}{<} D, C \texorpdfstring{$>$}{>}\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_concurrent___observed}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef D \mbox{\hyperlink{class_concurrent___observed_afcfe96d231174bc8f06785d79f44fe05}{Observed\+\_\+\+Data}}
+\item 
+typedef C \mbox{\hyperlink{class_concurrent___observed_a5de1df05b91b77d3d4d639010bdf72fd}{Observing\+\_\+\+Condition}}
+\item 
+typedef \mbox{\hyperlink{class_concurrent___observer}{Concurrent\+\_\+\+Observer}}$<$ D, C $>$ \mbox{\hyperlink{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}{Observer}}
+\item 
+typedef \mbox{\hyperlink{class_ordered___list}{Ordered\+\_\+\+List}}$<$ \mbox{\hyperlink{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}{Observer}}, C $>$ \mbox{\hyperlink{class_concurrent___observed_aace59afae8d08a779e6461559aeb6b1c}{Observers}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Types inherited from \mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\+\_\+\+Data\+\_\+\+Observed$<$ D, C $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+typedef D \mbox{\hyperlink{class_conditionally___data___observed_a8f4d45fc4a937ad39fd550117c691ea5}{Observed\+\_\+\+Data}}
+\item 
+typedef C \mbox{\hyperlink{class_conditionally___data___observed_a7abc2da27e26e93ce06c26447f5ad486}{Observing\+\_\+\+Condition}}
+\item 
+typedef \mbox{\hyperlink{class_conditional___data___observer}{Conditional\+\_\+\+Data\+\_\+\+Observer}}$<$ D, C $>$ \mbox{\hyperlink{class_conditionally___data___observed_a4757a2ca2e3efd0be1e5478b92b635a8}{Observer}}
+\item 
+typedef \mbox{\hyperlink{class_ordered___list}{Ordered\+\_\+\+List}}$<$ \mbox{\hyperlink{class_conditionally___data___observed_a4757a2ca2e3efd0be1e5478b92b635a8}{Observer}}, C $>$ \mbox{\hyperlink{class_conditionally___data___observed_ac426014d93611d29092d39305eac99ff}{Observers}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_concurrent___observed_a2d06723771ce7a85324b6bae71562ead}{Concurrent\+\_\+\+Observed}} ()
+\item 
+\mbox{\hyperlink{class_concurrent___observed_aff678432d77b924ac2f9f96f81177900}{\texorpdfstring{$\sim$}{\string~}\+Concurrent\+\_\+\+Observed}} ()
+\item 
+void \mbox{\hyperlink{class_concurrent___observed_ae91b53086a4956c83505231c598d0182}{attach}} (\mbox{\hyperlink{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}{Observer}} \texorpdfstring{$\ast$}{*}o, C c)
+\item 
+void \mbox{\hyperlink{class_concurrent___observed_a04eef75c917de163a776ddebeb1f5d7a}{detach}} (\mbox{\hyperlink{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}{Observer}} \texorpdfstring{$\ast$}{*}o, C c)
+\item 
+virtual bool \mbox{\hyperlink{class_concurrent___observed_a0f1a9aa88542f8ae850f1cc3d27b4f98}{notify}} (D \texorpdfstring{$\ast$}{*}d, C c)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\+\_\+\+Data\+\_\+\+Observed$<$ D, C $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_conditionally___data___observed_ad30ddf9fb57ef30ba3bb21cc11f3ff7a}{Conditionally\+\_\+\+Data\+\_\+\+Observed}} ()=default
+\item 
+virtual \mbox{\hyperlink{class_conditionally___data___observed_a46e984d93441e348b861e7837e76d592}{\texorpdfstring{$\sim$}{\string~}\+Conditionally\+\_\+\+Data\+\_\+\+Observed}} ()=default
+\item 
+void \mbox{\hyperlink{class_conditionally___data___observed_a572069ab252a64a136006a50bb287a3a}{attach}} (\mbox{\hyperlink{class_conditionally___data___observed_a4757a2ca2e3efd0be1e5478b92b635a8}{Observer}} \texorpdfstring{$\ast$}{*}o, C c)
+\item 
+void \mbox{\hyperlink{class_conditionally___data___observed_a189c2425ae77901be9bdf5a5bb5bf640}{detach}} (\mbox{\hyperlink{class_conditionally___data___observed_a4757a2ca2e3efd0be1e5478b92b635a8}{Observer}} \texorpdfstring{$\ast$}{*}o, C c)
+\item 
+bool \mbox{\hyperlink{class_conditionally___data___observed_aa4cb3f63ba747ca4732e42d6a244ea80}{notify}} (D \texorpdfstring{$\ast$}{*}d, C c)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+pthread\+\_\+mutex\+\_\+t \mbox{\hyperlink{class_concurrent___observed_a7e68e7947fd7db3a644bae7ce0fa6495}{\+\_\+mtx}}
+\item 
+\mbox{\hyperlink{class_concurrent___observed_aace59afae8d08a779e6461559aeb6b1c}{Observers}} \mbox{\hyperlink{class_concurrent___observed_ac8d1f370e094921ddc2faae02359f243}{\+\_\+observers}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes inherited from \mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\+\_\+\+Data\+\_\+\+Observed$<$ D, C $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_conditionally___data___observed_ac426014d93611d29092d39305eac99ff}{Observers}} \mbox{\hyperlink{class_conditionally___data___observed_a12935de2b8830363e0e5d3d0d298e318}{\+\_\+observers}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{class_concurrent___observed_ac584e65beb2fc689404410ba5dc1f435}{Concurrent\+\_\+\+Observer$<$ D, C $>$}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-typedef-members}
+\Hypertarget{class_concurrent___observed_doc-typedef-members}
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_concurrent___observed_afcfe96d231174bc8f06785d79f44fe05}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!Observed\_Data@{Observed\_Data}}
+\index{Observed\_Data@{Observed\_Data}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{Observed\_Data}{Observed\_Data}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_afcfe96d231174bc8f06785d79f44fe05} 
+template$<$typename D, typename C$>$ \\
+typedef D \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ D, C $>$\+::\+Observed\+\_\+\+Data}
+
+\Hypertarget{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!Observer@{Observer}}
+\index{Observer@{Observer}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{Observer}{Observer}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da} 
+template$<$typename D, typename C$>$ \\
+typedef \mbox{\hyperlink{class_concurrent___observer}{Concurrent\+\_\+\+Observer}}$<$D, C$>$ \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ D, C $>$\+::\+Observer}
+
+\Hypertarget{class_concurrent___observed_aace59afae8d08a779e6461559aeb6b1c}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!Observers@{Observers}}
+\index{Observers@{Observers}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{Observers}{Observers}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_aace59afae8d08a779e6461559aeb6b1c} 
+template$<$typename D, typename C$>$ \\
+typedef \mbox{\hyperlink{class_ordered___list}{Ordered\+\_\+\+List}}$<$\mbox{\hyperlink{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}{Observer}}, C$>$ \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ D, C $>$\+::\+Observers}
+
+\Hypertarget{class_concurrent___observed_a5de1df05b91b77d3d4d639010bdf72fd}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!Observing\_Condition@{Observing\_Condition}}
+\index{Observing\_Condition@{Observing\_Condition}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{Observing\_Condition}{Observing\_Condition}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_a5de1df05b91b77d3d4d639010bdf72fd} 
+template$<$typename D, typename C$>$ \\
+typedef C \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ D, C $>$\+::\+Observing\+\_\+\+Condition}
+
+
+
+\label{doc-constructors}
+\Hypertarget{class_concurrent___observed_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_concurrent___observed_a2d06723771ce7a85324b6bae71562ead}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!Concurrent\_Observed@{Concurrent\_Observed}}
+\index{Concurrent\_Observed@{Concurrent\_Observed}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{Concurrent\_Observed()}{Concurrent\_Observed()}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_a2d06723771ce7a85324b6bae71562ead} 
+template$<$typename D, typename C$>$ \\
+\mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ D, C $>$\mbox{\hyperlink{class_concurrent___observed}{\+::\+Concurrent\+\_\+\+Observed}} (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_concurrent___observed_aff678432d77b924ac2f9f96f81177900}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!````~Concurrent\_Observed@{\texorpdfstring{$\sim$}{\string~}Concurrent\_Observed}}
+\index{````~Concurrent\_Observed@{\texorpdfstring{$\sim$}{\string~}Concurrent\_Observed}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Concurrent\_Observed()}{\string~Concurrent\_Observed()}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_aff678432d77b924ac2f9f96f81177900} 
+template$<$typename D, typename C$>$ \\
+\mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ D, C $>$\+::\texorpdfstring{$\sim$}{\string~}\mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}} (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_concurrent___observed_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_concurrent___observed_ae91b53086a4956c83505231c598d0182}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!attach@{attach}}
+\index{attach@{attach}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{attach()}{attach()}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_ae91b53086a4956c83505231c598d0182} 
+template$<$typename D, typename C$>$ \\
+void \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ D, C $>$\+::attach (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}{Observer}} \texorpdfstring{$\ast$}{*}}]{o}{, }\item[{C}]{c}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_concurrent___observed_a04eef75c917de163a776ddebeb1f5d7a}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!detach@{detach}}
+\index{detach@{detach}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{detach()}{detach()}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_a04eef75c917de163a776ddebeb1f5d7a} 
+template$<$typename D, typename C$>$ \\
+void \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ D, C $>$\+::detach (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_concurrent___observed_a6fbf16642638d1827844a3cd967e68da}{Observer}} \texorpdfstring{$\ast$}{*}}]{o}{, }\item[{C}]{c}{}\end{DoxyParamCaption})}
+
+\Hypertarget{class_concurrent___observed_a0f1a9aa88542f8ae850f1cc3d27b4f98}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!notify@{notify}}
+\index{notify@{notify}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{notify()}{notify()}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_a0f1a9aa88542f8ae850f1cc3d27b4f98} 
+template$<$typename D, typename C$>$ \\
+bool \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ D, C $>$\+::notify (\begin{DoxyParamCaption}\item[{D \texorpdfstring{$\ast$}{*}}]{d}{, }\item[{C}]{c}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+\label{doc-related-members}
+\Hypertarget{class_concurrent___observed_doc-related-members}
+\doxysubsection{Friends And Related Symbol Documentation}
+\Hypertarget{class_concurrent___observed_ac584e65beb2fc689404410ba5dc1f435}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!Concurrent\_Observer$<$ D, C $>$@{Concurrent\_Observer$<$ D, C $>$}}
+\index{Concurrent\_Observer$<$ D, C $>$@{Concurrent\_Observer$<$ D, C $>$}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{Concurrent\_Observer$<$ D, C $>$}{Concurrent\_Observer< D, C >}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_ac584e65beb2fc689404410ba5dc1f435} 
+template$<$typename D, typename C$>$ \\
+friend class \mbox{\hyperlink{class_concurrent___observer}{Concurrent\+\_\+\+Observer}}$<$ D, C $>$\hspace{0.3cm}{\ttfamily [friend]}}
+
+
+
+\label{doc-variable-members}
+\Hypertarget{class_concurrent___observed_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_concurrent___observed_a7e68e7947fd7db3a644bae7ce0fa6495}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!\_mtx@{\_mtx}}
+\index{\_mtx@{\_mtx}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{\_mtx}{\_mtx}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_a7e68e7947fd7db3a644bae7ce0fa6495} 
+template$<$typename D, typename C$>$ \\
+pthread\+\_\+mutex\+\_\+t \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ D, C $>$\+::\+\_\+mtx\hspace{0.3cm}{\ttfamily [protected]}}
+
+\Hypertarget{class_concurrent___observed_ac8d1f370e094921ddc2faae02359f243}\index{Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}!\_observers@{\_observers}}
+\index{\_observers@{\_observers}!Concurrent\_Observed$<$ D, C $>$@{Concurrent\_Observed$<$ D, C $>$}}
+\doxysubsubsection{\texorpdfstring{\_observers}{\_observers}}
+{\footnotesize\ttfamily \label{class_concurrent___observed_ac8d1f370e094921ddc2faae02359f243} 
+template$<$typename D, typename C$>$ \\
+\mbox{\hyperlink{class_concurrent___observed_aace59afae8d08a779e6461559aeb6b1c}{Observers}} \mbox{\hyperlink{class_concurrent___observed}{Concurrent\+\_\+\+Observed}}$<$ D, C $>$\+::\+\_\+observers\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/util/\mbox{\hyperlink{observed_8h}{observed.\+h}}\end{DoxyCompactItemize}

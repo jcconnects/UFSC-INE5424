@@ -1,0 +1,156 @@
+\doxysection{csv\+\_\+component\+\_\+data.\+hpp}
+\hypertarget{csv__component__data_8hpp_source}{}\label{csv__component__data_8hpp_source}\index{include/app/components/csv\_component\_data.hpp@{include/app/components/csv\_component\_data.hpp}}
+\mbox{\hyperlink{csv__component__data_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ CSV\_COMPONENT\_DATA\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ CSV\_COMPONENT\_DATA\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <sstream>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__types_8hpp}{../../api/framework/component\_types.hpp}}"{}}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00022\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_c_s_v_component_data_a6e07f2a11e96707b4e8bb5b9172b2cac}{CSVComponentData}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_component_data}{ComponentData}}\ \{}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{comment}{//\ CSV\ data\ structure\ -\/\ matches\ dynamics-\/vehicle\_0.csv\ format}}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}}\ \{}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ std::uint64\_t\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ad75355ed05baf07870315b23152d6820}{timestamp}};}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ std::uint32\_t\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ae6047bc010acbc99517601faba13bc9e}{id}};}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a5faa4647f4f56e32ca174b7f11dacde9}{lat}};}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_aa65d8240c115fb8b4918077781b3d597}{lon}};}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_adac58840143593675837fb9bd386d223}{alt}};}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a09a1bb8269dfd155255a6da14dc85ba3}{x}};}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a2bf1883b533454266b6b3d3031aa1001}{y}};}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ad8d426bf21782e73622fe486ef8f46a4}{z}};}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_aa501deaf9838bcdac56184f3ce3a6f22}{speed}};}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ac20dd70b97fb6164eeab62f73299df95}{heading}};}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a279a76f37ea9e29dcf378b1a6c96034c}{yawrate}};}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a607d75c19ec5e52d4d83f2bd0f8380ff}{acceleration}};}
+\DoxyCodeLine{00037\ \ \ \ \ \};}
+\DoxyCodeLine{00038\ \ \ \ \ }
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{comment}{//\ CSV\ file\ management}}
+\DoxyCodeLine{00040\ \ \ \ \ std::string\ \mbox{\hyperlink{struct_c_s_v_component_data_ad9f9384c5140438e74b06fc96c58c8c2}{csv\_file\_path}};}
+\DoxyCodeLine{00041\ \ \ \ \ std::vector<CSVRecord>\ \mbox{\hyperlink{struct_c_s_v_component_data_a46506b9dbb48606f29276feb71b1eb67}{csv\_data}};}
+\DoxyCodeLine{00042\ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_c_s_v_component_data_aecc10b5b29accc821250999ab67b0a23}{current\_row\_index}};}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_c_s_v_component_data_ac835e9fa89f3b4dbdc14178e0e35cc31}{file\_loaded}};}
+\DoxyCodeLine{00044\ \ \ \ \ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{//\ Statistics}}
+\DoxyCodeLine{00046\ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_c_s_v_component_data_a7bc29a1444a8e9cbc4c9f2802d5bb7eb}{total\_records}};}
+\DoxyCodeLine{00047\ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_c_s_v_component_data_a3a4ddcef2b6398bafc0a539b8bb558f5}{records\_sent}};}
+\DoxyCodeLine{00048\ \ \ \ \ }
+\DoxyCodeLine{00055\ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_a6e07f2a11e96707b4e8bb5b9172b2cac}{CSVComponentData}}()\ :\ \mbox{\hyperlink{struct_c_s_v_component_data_aecc10b5b29accc821250999ab67b0a23}{current\_row\_index}}(0),\ }
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_ac835e9fa89f3b4dbdc14178e0e35cc31}{file\_loaded}}(false),\ }
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_a7bc29a1444a8e9cbc4c9f2802d5bb7eb}{total\_records}}(0),\ }
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_a3a4ddcef2b6398bafc0a539b8bb558f5}{records\_sent}}(0)\ \{\}}
+\DoxyCodeLine{00059\ \ \ \ \ }
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_c_s_v_component_data_ae13471479129183d7282b1b927b0f5be}{load\_csv\_file}}(\textcolor{keyword}{const}\ std::string\&\ file\_path)\ \{}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_ad9f9384c5140438e74b06fc96c58c8c2}{csv\_file\_path}}\ =\ file\_path;}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_a46506b9dbb48606f29276feb71b1eb67}{csv\_data}}.clear();}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_aecc10b5b29accc821250999ab67b0a23}{current\_row\_index}}\ =\ 0;}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_ac835e9fa89f3b4dbdc14178e0e35cc31}{file\_loaded}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_a7bc29a1444a8e9cbc4c9f2802d5bb7eb}{total\_records}}\ =\ 0;}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_a3a4ddcef2b6398bafc0a539b8bb558f5}{records\_sent}}\ =\ 0;}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ std::ifstream\ file(file\_path);}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!file.is\_open())\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ std::string\ line;}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ first\_line\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Read\ CSV\ file\ line\ by\ line}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (std::getline(file,\ line))\ \{}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Skip\ header\ line}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (first\_line)\ \{}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ first\_line\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Parse\ CSV\ line}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}}\ record;}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{struct_c_s_v_component_data_ad3197c6da9d724e022fe607c9435447f}{parse\_csv\_line}}(line,\ record))\ \{}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_a46506b9dbb48606f29276feb71b1eb67}{csv\_data}}.push\_back(record);}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ file.close();}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_a7bc29a1444a8e9cbc4c9f2802d5bb7eb}{total\_records}}\ =\ \mbox{\hyperlink{struct_c_s_v_component_data_a46506b9dbb48606f29276feb71b1eb67}{csv\_data}}.size();}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_ac835e9fa89f3b4dbdc14178e0e35cc31}{file\_loaded}}\ =\ (\mbox{\hyperlink{struct_c_s_v_component_data_a7bc29a1444a8e9cbc4c9f2802d5bb7eb}{total\_records}}\ >\ 0);}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_c_s_v_component_data_ac835e9fa89f3b4dbdc14178e0e35cc31}{file\_loaded}};}
+\DoxyCodeLine{00105\ \ \ \ \ \}}
+\DoxyCodeLine{00106\ \ \ \ \ }
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_c_s_v_component_data_ad3197c6da9d724e022fe607c9435447f}{parse\_csv\_line}}(\textcolor{keyword}{const}\ std::string\&\ line,\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}}\&\ record)\ \{}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ std::stringstream\ ss(line);}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ std::string\ token;}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ std::vector<std::string>\ tokens;}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Split\ line\ by\ commas}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (std::getline(ss,\ token,\ \textcolor{charliteral}{','}))\ \{}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ tokens.push\_back(token);}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Ensure\ we\ have\ the\ expected\ number\ of\ columns\ (12)}}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (tokens.size()\ !=\ 12)\ \{}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ad75355ed05baf07870315b23152d6820}{timestamp}}\ =\ std::stoull(tokens[0]);}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ae6047bc010acbc99517601faba13bc9e}{id}}\ =\ std::stoul(tokens[1]);}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a5faa4647f4f56e32ca174b7f11dacde9}{lat}}\ =\ std::stod(tokens[2]);}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_aa65d8240c115fb8b4918077781b3d597}{lon}}\ =\ std::stod(tokens[3]);}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_adac58840143593675837fb9bd386d223}{alt}}\ =\ std::stod(tokens[4]);}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a09a1bb8269dfd155255a6da14dc85ba3}{x}}\ =\ std::stod(tokens[5]);}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a2bf1883b533454266b6b3d3031aa1001}{y}}\ =\ std::stod(tokens[6]);}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ad8d426bf21782e73622fe486ef8f46a4}{z}}\ =\ std::stod(tokens[7]);}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_aa501deaf9838bcdac56184f3ce3a6f22}{speed}}\ =\ std::stod(tokens[8]);}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ac20dd70b97fb6164eeab62f73299df95}{heading}}\ =\ std::stod(tokens[9]);}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a279a76f37ea9e29dcf378b1a6c96034c}{yawrate}}\ =\ std::stod(tokens[10]);}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a607d75c19ec5e52d4d83f2bd0f8380ff}{acceleration}}\ =\ std::stod(tokens[11]);}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (\textcolor{keyword}{const}\ std::exception\&)\ \{}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00146\ \ \ \ \ \}}
+\DoxyCodeLine{00147\ \ \ \ \ }
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}}*\ \mbox{\hyperlink{struct_c_s_v_component_data_a0b38efe9998b58a44dd25a6413b04821}{get\_next\_record}}()\ \{}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{struct_c_s_v_component_data_ac835e9fa89f3b4dbdc14178e0e35cc31}{file\_loaded}}\ ||\ \mbox{\hyperlink{struct_c_s_v_component_data_a46506b9dbb48606f29276feb71b1eb67}{csv\_data}}.empty())\ \{}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}}*\ record\ =\ \&\mbox{\hyperlink{struct_c_s_v_component_data_a46506b9dbb48606f29276feb71b1eb67}{csv\_data}}[\mbox{\hyperlink{struct_c_s_v_component_data_aecc10b5b29accc821250999ab67b0a23}{current\_row\_index}}];}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_aecc10b5b29accc821250999ab67b0a23}{current\_row\_index}}\ =\ (\mbox{\hyperlink{struct_c_s_v_component_data_aecc10b5b29accc821250999ab67b0a23}{current\_row\_index}}\ +\ 1)\ \%\ \mbox{\hyperlink{struct_c_s_v_component_data_a46506b9dbb48606f29276feb71b1eb67}{csv\_data}}.size();}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_a3a4ddcef2b6398bafc0a539b8bb558f5}{records\_sent}}++;}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ record;}
+\DoxyCodeLine{00166\ \ \ \ \ \}}
+\DoxyCodeLine{00167\ \ \ \ \ }
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_c_s_v_component_data_aff03541d098adf80e667f0f4dafcee93}{reset}}()\ \{}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_aecc10b5b29accc821250999ab67b0a23}{current\_row\_index}}\ =\ 0;}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_a3a4ddcef2b6398bafc0a539b8bb558f5}{records\_sent}}\ =\ 0;}
+\DoxyCodeLine{00174\ \ \ \ \ \}}
+\DoxyCodeLine{00175\ \ \ \ \ }
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_c_s_v_component_data_a94176ad7a49e5989af910ede41d9e01f}{is\_loaded}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_c_s_v_component_data_ac835e9fa89f3b4dbdc14178e0e35cc31}{file\_loaded}};}
+\DoxyCodeLine{00183\ \ \ \ \ \}}
+\DoxyCodeLine{00184\ \ \ \ \ }
+\DoxyCodeLine{00190\ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_c_s_v_component_data_a9d35935870dc655a86a9404e70947a78}{get\_total\_records}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_c_s_v_component_data_a7bc29a1444a8e9cbc4c9f2802d5bb7eb}{total\_records}};}
+\DoxyCodeLine{00192\ \ \ \ \ \}}
+\DoxyCodeLine{00193\ \ \ \ \ }
+\DoxyCodeLine{00199\ \ \ \ \ std::size\_t\ \mbox{\hyperlink{struct_c_s_v_component_data_a970212d04f4fa3df0a8833f644a88785}{get\_records\_sent}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_c_s_v_component_data_a3a4ddcef2b6398bafc0a539b8bb558f5}{records\_sent}};}
+\DoxyCodeLine{00201\ \ \ \ \ \}}
+\DoxyCodeLine{00202\ \ \ \ \ }
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keyword}{static}\ std::size\_t\ \mbox{\hyperlink{struct_c_s_v_component_data_aaee534d4a24737e6abbedb975ad31991}{get\_record\_size}}()\ \{}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}});}
+\DoxyCodeLine{00210\ \ \ \ \ \}}
+\DoxyCodeLine{00211\ \};}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ CSV\_COMPONENT\_DATA\_HPP\ }}
+
+\end{DoxyCode}

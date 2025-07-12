@@ -1,0 +1,137 @@
+\doxysection{Vehicle\+RSUManager\texorpdfstring{$<$}{<} Protocol\+\_\+T \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_vehicle_r_s_u_manager}{}\label{class_vehicle_r_s_u_manager}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+
+
+{\ttfamily \#include $<$vehicle\+RSUManager.\+h$>$}
+
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info}{RSUInfo}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_vehicle_r_s_u_manager_aec0ffb39c81ed3afedcdef60b8c89549}{Vehicle\+RSUManager}} (unsigned int vehicle\+\_\+id, std\+::chrono\+::seconds timeout=std\+::chrono\+::seconds(10))
+\item 
+\mbox{\hyperlink{class_vehicle_r_s_u_manager_aba74087284bd0d0b61cd3f20b9b75ff8}{\texorpdfstring{$\sim$}{\string~}\+Vehicle\+RSUManager}} ()
+\item 
+void \mbox{\hyperlink{class_vehicle_r_s_u_manager_ae85d33dd93d9fdd92018b552d8aa55d4}{process\+\_\+rsu\+\_\+status}} (const typename Protocol\+\_\+\+T\+::\+Address \&rsu\+\_\+address, double x, double y, double radius, const \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} \&group\+\_\+key)
+\item 
+void \mbox{\hyperlink{class_vehicle_r_s_u_manager_ae07a51faee4a75c90ae86ed8a1bfa41e}{update\+\_\+leader\+\_\+selection}} ()
+\item 
+void \mbox{\hyperlink{class_vehicle_r_s_u_manager_a53cc5a1828304173404720f0d75f6fa7}{update\+\_\+distances}} ()
+\item 
+void \mbox{\hyperlink{class_vehicle_r_s_u_manager_a482d690a3af039127810b71e28ce526b}{cleanup\+\_\+stale\+\_\+rsus}} ()
+\item 
+\mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info}{RSUInfo}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_vehicle_r_s_u_manager_a85b321ad0d731209978e5a0a457a98f0}{get\+\_\+current\+\_\+leader}} ()
+\item 
+std\+::vector$<$ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info}{RSUInfo}} $>$ \mbox{\hyperlink{class_vehicle_r_s_u_manager_a02003d38714e66c1187a45fe9e5bc384}{get\+\_\+known\+\_\+rsus}} ()
+\item 
+void \mbox{\hyperlink{class_vehicle_r_s_u_manager_a29fdcf3002b86f4e8308f82b415c4551}{add\+\_\+neighbor\+\_\+rsu\+\_\+key}} (const \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} \&key)
+\item 
+std\+::vector$<$ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} $>$ \mbox{\hyperlink{class_vehicle_r_s_u_manager_a360a57cf0f1c5e18110ae8bdc3da1304}{get\+\_\+neighbor\+\_\+rsu\+\_\+keys}} ()
+\item 
+bool \mbox{\hyperlink{class_vehicle_r_s_u_manager_a7f88c7fb206de16cb255ab01bc6003b3}{remove\+\_\+neighbor\+\_\+rsu\+\_\+key}} (const \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} \&key)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename Protocol\+\_\+T$>$\newline
+class Vehicle\+RSUManager$<$ Protocol\+\_\+\+T $>$}
+\doxylink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager} -\/ Simplified collision domain logic
+
+Leader selection is based on communication ability (collision domain). If a vehicle can receive STATUS messages from an \doxylink{class_r_s_u}{RSU}, they are within the collision domain and the \doxylink{class_r_s_u}{RSU} is eligible to be the leader.
+
+The closest \doxylink{class_r_s_u}{RSU} (by distance) that we can communicate with becomes the leader. 
+
+\label{doc-constructors}
+\Hypertarget{class_vehicle_r_s_u_manager_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_vehicle_r_s_u_manager_aec0ffb39c81ed3afedcdef60b8c89549}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}!VehicleRSUManager@{VehicleRSUManager}}
+\index{VehicleRSUManager@{VehicleRSUManager}!VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+\doxysubsubsection{\texorpdfstring{VehicleRSUManager()}{VehicleRSUManager()}}
+{\footnotesize\ttfamily \label{class_vehicle_r_s_u_manager_aec0ffb39c81ed3afedcdef60b8c89549} 
+template$<$typename Protocol\+\_\+T$>$ \\
+\mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ Protocol\+\_\+T $>$\mbox{\hyperlink{class_vehicle_r_s_u_manager}{\+::\+Vehicle\+RSUManager}} (\begin{DoxyParamCaption}\item[{unsigned int}]{vehicle\+\_\+id}{, }\item[{std\+::chrono\+::seconds}]{timeout}{ = {\ttfamily std\+:\+:chrono\+:\+:seconds(10)}}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_r_s_u_manager_aba74087284bd0d0b61cd3f20b9b75ff8}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}!````~VehicleRSUManager@{\texorpdfstring{$\sim$}{\string~}VehicleRSUManager}}
+\index{````~VehicleRSUManager@{\texorpdfstring{$\sim$}{\string~}VehicleRSUManager}!VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}VehicleRSUManager()}{\string~VehicleRSUManager()}}
+{\footnotesize\ttfamily \label{class_vehicle_r_s_u_manager_aba74087284bd0d0b61cd3f20b9b75ff8} 
+template$<$typename Protocol\+\_\+T$>$ \\
+\mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ Protocol\+\_\+T $>$\+::\texorpdfstring{$\sim$}{\string~}\mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}} (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_vehicle_r_s_u_manager_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_vehicle_r_s_u_manager_a29fdcf3002b86f4e8308f82b415c4551}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}!add\_neighbor\_rsu\_key@{add\_neighbor\_rsu\_key}}
+\index{add\_neighbor\_rsu\_key@{add\_neighbor\_rsu\_key}!VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+\doxysubsubsection{\texorpdfstring{add\_neighbor\_rsu\_key()}{add\_neighbor\_rsu\_key()}}
+{\footnotesize\ttfamily \label{class_vehicle_r_s_u_manager_a29fdcf3002b86f4e8308f82b415c4551} 
+template$<$typename Protocol\+\_\+T$>$ \\
+void \mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ Protocol\+\_\+T $>$\+::add\+\_\+neighbor\+\_\+rsu\+\_\+key (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} \&}]{key}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_r_s_u_manager_a482d690a3af039127810b71e28ce526b}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}!cleanup\_stale\_rsus@{cleanup\_stale\_rsus}}
+\index{cleanup\_stale\_rsus@{cleanup\_stale\_rsus}!VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+\doxysubsubsection{\texorpdfstring{cleanup\_stale\_rsus()}{cleanup\_stale\_rsus()}}
+{\footnotesize\ttfamily \label{class_vehicle_r_s_u_manager_a482d690a3af039127810b71e28ce526b} 
+template$<$typename Protocol\+\_\+T$>$ \\
+void \mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ Protocol\+\_\+T $>$\+::cleanup\+\_\+stale\+\_\+rsus (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_r_s_u_manager_a85b321ad0d731209978e5a0a457a98f0}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}!get\_current\_leader@{get\_current\_leader}}
+\index{get\_current\_leader@{get\_current\_leader}!VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+\doxysubsubsection{\texorpdfstring{get\_current\_leader()}{get\_current\_leader()}}
+{\footnotesize\ttfamily \label{class_vehicle_r_s_u_manager_a85b321ad0d731209978e5a0a457a98f0} 
+template$<$typename Protocol\+\_\+T$>$ \\
+\mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info}{RSUInfo}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ Protocol\+\_\+T $>$\+::get\+\_\+current\+\_\+leader (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_r_s_u_manager_a02003d38714e66c1187a45fe9e5bc384}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}!get\_known\_rsus@{get\_known\_rsus}}
+\index{get\_known\_rsus@{get\_known\_rsus}!VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+\doxysubsubsection{\texorpdfstring{get\_known\_rsus()}{get\_known\_rsus()}}
+{\footnotesize\ttfamily \label{class_vehicle_r_s_u_manager_a02003d38714e66c1187a45fe9e5bc384} 
+template$<$typename Protocol\+\_\+T$>$ \\
+std\+::vector$<$ \mbox{\hyperlink{struct_vehicle_r_s_u_manager_1_1_r_s_u_info}{RSUInfo}} $>$ \mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ Protocol\+\_\+T $>$\+::get\+\_\+known\+\_\+rsus (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_r_s_u_manager_a360a57cf0f1c5e18110ae8bdc3da1304}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}!get\_neighbor\_rsu\_keys@{get\_neighbor\_rsu\_keys}}
+\index{get\_neighbor\_rsu\_keys@{get\_neighbor\_rsu\_keys}!VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+\doxysubsubsection{\texorpdfstring{get\_neighbor\_rsu\_keys()}{get\_neighbor\_rsu\_keys()}}
+{\footnotesize\ttfamily \label{class_vehicle_r_s_u_manager_a360a57cf0f1c5e18110ae8bdc3da1304} 
+template$<$typename Protocol\+\_\+T$>$ \\
+std\+::vector$<$ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} $>$ \mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ Protocol\+\_\+T $>$\+::get\+\_\+neighbor\+\_\+rsu\+\_\+keys (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_r_s_u_manager_ae85d33dd93d9fdd92018b552d8aa55d4}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}!process\_rsu\_status@{process\_rsu\_status}}
+\index{process\_rsu\_status@{process\_rsu\_status}!VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+\doxysubsubsection{\texorpdfstring{process\_rsu\_status()}{process\_rsu\_status()}}
+{\footnotesize\ttfamily \label{class_vehicle_r_s_u_manager_ae85d33dd93d9fdd92018b552d8aa55d4} 
+template$<$typename Protocol\+\_\+T$>$ \\
+void \mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ Protocol\+\_\+T $>$\+::process\+\_\+rsu\+\_\+status (\begin{DoxyParamCaption}\item[{const typename Protocol\+\_\+\+T\+::\+Address \&}]{rsu\+\_\+address}{, }\item[{double}]{x}{, }\item[{double}]{y}{, }\item[{double}]{radius}{, }\item[{const \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} \&}]{group\+\_\+key}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_r_s_u_manager_a7f88c7fb206de16cb255ab01bc6003b3}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}!remove\_neighbor\_rsu\_key@{remove\_neighbor\_rsu\_key}}
+\index{remove\_neighbor\_rsu\_key@{remove\_neighbor\_rsu\_key}!VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+\doxysubsubsection{\texorpdfstring{remove\_neighbor\_rsu\_key()}{remove\_neighbor\_rsu\_key()}}
+{\footnotesize\ttfamily \label{class_vehicle_r_s_u_manager_a7f88c7fb206de16cb255ab01bc6003b3} 
+template$<$typename Protocol\+\_\+T$>$ \\
+bool \mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ Protocol\+\_\+T $>$\+::remove\+\_\+neighbor\+\_\+rsu\+\_\+key (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{Mac\+Key\+Type}} \&}]{key}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_r_s_u_manager_a53cc5a1828304173404720f0d75f6fa7}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}!update\_distances@{update\_distances}}
+\index{update\_distances@{update\_distances}!VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+\doxysubsubsection{\texorpdfstring{update\_distances()}{update\_distances()}}
+{\footnotesize\ttfamily \label{class_vehicle_r_s_u_manager_a53cc5a1828304173404720f0d75f6fa7} 
+template$<$typename Protocol\+\_\+T$>$ \\
+void \mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ Protocol\+\_\+T $>$\+::update\+\_\+distances (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_vehicle_r_s_u_manager_ae07a51faee4a75c90ae86ed8a1bfa41e}\index{VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}!update\_leader\_selection@{update\_leader\_selection}}
+\index{update\_leader\_selection@{update\_leader\_selection}!VehicleRSUManager$<$ Protocol\_T $>$@{VehicleRSUManager$<$ Protocol\_T $>$}}
+\doxysubsubsection{\texorpdfstring{update\_leader\_selection()}{update\_leader\_selection()}}
+{\footnotesize\ttfamily \label{class_vehicle_r_s_u_manager_ae07a51faee4a75c90ae86ed8a1bfa41e} 
+template$<$typename Protocol\+\_\+T$>$ \\
+void \mbox{\hyperlink{class_vehicle_r_s_u_manager}{Vehicle\+RSUManager}}$<$ Protocol\+\_\+T $>$\+::update\+\_\+leader\+\_\+selection (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/api/framework/\mbox{\hyperlink{vehicle_r_s_u_manager_8h}{vehicle\+RSUManager.\+h}}\end{DoxyCompactItemize}

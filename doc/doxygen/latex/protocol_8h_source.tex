@@ -1,0 +1,1331 @@
+\doxysection{protocol.\+h}
+\hypertarget{protocol_8h_source}{}\label{protocol_8h_source}\index{include/api/network/protocol.h@{include/api/network/protocol.h}}
+\mbox{\hyperlink{protocol_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ PROTOCOL\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ PROTOCOL\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <cstddef>}\ \textcolor{comment}{//\ Ensure\ this\ is\ included\ for\ offsetof}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <stdexcept>}\ \textcolor{comment}{//\ Ensure\ this\ is\ included\ for\ std::invalid\_argument}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <cstdio>}\ \textcolor{comment}{//\ For\ snprintf\ in\ debug\ logging}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <algorithm>}\ \textcolor{comment}{//\ For\ std::any\_of}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <mutex>}\ \textcolor{comment}{//\ For\ std::mutex\ and\ std::lock\_guard}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{traits_8h}{api/traits.h}}"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{api/util/debug.h}}"{}}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{observed_8h}{api/util/observed.h}}"{}}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{observer_8h}{api/util/observer.h}}"{}}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{ethernet_8h}{api/network/ethernet.h}}"{}}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{clock_8h}{api/framework/clock.h}}"{}}\ \ \textcolor{comment}{//\ Include\ Clock\ for\ timestamping}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{location__service_8h}{api/framework/location\_service.h}}"{}}\ \ \textcolor{comment}{//\ Include\ LocationService}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{geo__utils_8h}{api/util/geo\_utils.h}}"{}}\ \ \textcolor{comment}{//\ Include\ GeoUtils}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{message_8h}{api/network/message.h}}"{}}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{leader_key_storage_8h}{api/framework/leaderKeyStorage.h}}"{}}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{vehicle_r_s_u_manager_8h}{api/framework/vehicleRSUManager.h}}"{}}\ \textcolor{comment}{//\ Full\ definition\ for\ VehicleRSUManager}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{comment}{//\ Protocol\ implementation\ that\ works\ with\ the\ real\ Communicator}}
+\DoxyCodeLine{00027\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00028\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_protocol_a97ef237ecd6671852095121d551d56e2}{Protocol}}:\ \textcolor{keyword}{private}\ \mbox{\hyperlink{class_n_i_c_a54efa859705d1f6b050145d3e35fd7b2}{NIC::Observer}}}
+\DoxyCodeLine{00029\ \{}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_a99ca9377e6702fa33fb0eb0757b6b842}{NIC::Protocol\_Number}}\ \mbox{\hyperlink{class_protocol_a8f58367287b93d018f33a8d67f84d3ae}{PROTO}}\ =\ \mbox{\hyperlink{struct_traits}{Traits<Protocol>::ETHERNET\_PROTOCOL\_NUMBER}};}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_a30fadb2595c85fdceb9c83fed539a0c1}{NIC::DataBuffer}}\ \mbox{\hyperlink{class_protocol_a73dddef2b65c7ff5bf444e5afe632c64}{Buffer}};}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC::Address}}\ \mbox{\hyperlink{class_protocol_a4c2c46c8c28f666d18eb6795f17f8745}{Physical\_Address}};}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ std::uint16\_t\ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}};}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_message}{Message<Protocol<NIC>}}>\ \mbox{\hyperlink{class_protocol_ab196d0fd839fda52be451a09dd287ad4}{ProtocolMessage}};}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Change\ to\ use\ Concurrent\_Observer\ for\ Communicator\ interactions}}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_conditional___data___observer}{Conditional\_Data\_Observer<Buffer,\ Port>}}\ \mbox{\hyperlink{class_protocol_a20e8d1d47c156c069bf2618cb7ebed5a}{Observer}};}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \mbox{\hyperlink{class_conditionally___data___observed}{Conditionally\_Data\_Observed<Buffer,\ Port>}}\ \mbox{\hyperlink{class_protocol_adf34547f0d266858f1c8b66763df74e2}{Observed}};}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Header\ class\ for\ protocol\ messages}}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_protocol_1_1_header_aa7883d10b19303b2c4ea49ddd3958a36}{Header}}\ \{}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_1_1_header_aa7883d10b19303b2c4ea49ddd3958a36}{Header}}()\ :\ \_from\_port(0),\ \_to\_port(0),\ \_size(0)\ \{\}}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ \mbox{\hyperlink{class_protocol_1_1_header_aec8af8cc384a41bbec30ba3d4181f42a}{from\_port}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_from\_port;\ \}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_1_1_header_a068b8bdaa0e0911062bd20eb4f5b3f10}{from\_port}}(\mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ p)\ \{\ \_from\_port\ =\ p;\ \}}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ \mbox{\hyperlink{class_protocol_1_1_header_a4b90f32cdfce1925ac70dfe475a074aa}{to\_port}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_to\_port;\ \}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_1_1_header_a057159267e5d239c7f9bc1a795abb0d6}{to\_port}}(\mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ p)\ \{\ \_to\_port\ =\ p;\ \}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_protocol_1_1_header_ace7e2145947b82235295706e63555cdd}{size}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_size;\ \}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_1_1_header_af154d998b095f9e7e91672c106d6dcb7}{size}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ s)\ \{\ \_size\ =\ s;\ \}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ \_from\_port;}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ \_to\_port;}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \_size;}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Timestamp\ fields\ structure\ for\ NIC-\/level\ timestamping}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields_ab7f1ea6224db394bae6e7cf6c2fb250d}{TimestampFields}}\ \{}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_protocol_1_1_timestamp_fields_a402acc93e765bb38089371e68eac967c}{is\_clock\_synchronized}};\ \ \ \ \ \ \textcolor{comment}{//\ Clock\ synchronization\ status\ (filled\ by\ Protocol\ on\ send)}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ \mbox{\hyperlink{struct_protocol_1_1_timestamp_fields_ae4409a63fb7e38f4efb55c1f2546ee59}{tx\_timestamp}};\ \ \ \ \ \ \textcolor{comment}{//\ Filled\ by\ NIC\ on\ send}}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_protocol_1_1_timestamp_fields_ab7f1ea6224db394bae6e7cf6c2fb250d}{TimestampFields}}()\ :\ }
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_protocol_1_1_timestamp_fields_a402acc93e765bb38089371e68eac967c}{is\_clock\_synchronized}}(false),}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_protocol_1_1_timestamp_fields_ae4409a63fb7e38f4efb55c1f2546ee59}{tx\_timestamp}}(\mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}::min())\ \{\}}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ MAC\ authentication\ field\ structure}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_protocol_1_1_authentication_fields_aa8e29def03a415c66b438b1660970a0f}{AuthenticationFields}}\ \{}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ \mbox{\hyperlink{struct_protocol_1_1_authentication_fields_a88af1f29150042f2265ccb5c31444a96}{mac}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Message\ Authentication\ Code\ for\ INTEREST/RESPONSE\ messages}}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_protocol_1_1_authentication_fields_a28be8129dadfcd3781f9e9b46c6b5d0a}{has\_mac}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Flag\ indicating\ if\ MAC\ is\ present\ and\ valid}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_protocol_1_1_authentication_fields_aa8e29def03a415c66b438b1660970a0f}{AuthenticationFields}}()\ :\ \mbox{\hyperlink{struct_protocol_1_1_authentication_fields_a28be8129dadfcd3781f9e9b46c6b5d0a}{has\_mac}}(false)\ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_protocol_1_1_authentication_fields_a88af1f29150042f2265ccb5c31444a96}{mac}}.fill(0);}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_protocol_abb9a16075a603f1bb1fd353b30bfdd24}{MTU}}\ =\ \mbox{\hyperlink{class_ethernet_ab5325c9e8545b790a86765fa1dba1c87}{NIC::MTU}}\ -\/\ \textcolor{keyword}{sizeof}(Header)\ -\/\ \textcolor{keyword}{sizeof}(TimestampFields)\ -\/\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}})\ -\/\ \textcolor{keyword}{sizeof}(AuthenticationFields);}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ std::uint8\_t\ \mbox{\hyperlink{class_protocol_a68b003f36a9c1ad44c37df645c13eee9}{Data}}[\mbox{\hyperlink{class_protocol_abb9a16075a603f1bb1fd353b30bfdd24}{MTU}}];}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Packet\ class\ that\ includes\ header,\ timestamp\ fields,\ coordinates,\ and\ data}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_protocol_1_1_packet_ac86af28cc790092e03a697234255bcdd}{Packet}}:\ \textcolor{keyword}{public}\ \mbox{\hyperlink{class_protocol_1_1_header_aa7883d10b19303b2c4ea49ddd3958a36}{Header}}\ \{}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_1_1_packet_ac86af28cc790092e03a697234255bcdd}{Packet}}()\ \{\}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_1_1_header_aa7883d10b19303b2c4ea49ddd3958a36}{Header}}*\ \mbox{\hyperlink{class_protocol_1_1_packet_ad66f6f2c239cacd75dfcd6dae89348ea}{header}}()\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{TimestampFields}}*\ \mbox{\hyperlink{class_protocol_1_1_packet_a18319d3114c4dccbc6335d287a5fa5a1}{timestamps}}()\ \{\ }
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{TimestampFields}}*\textcolor{keyword}{>}(}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{reinterpret\_cast<}uint8\_t*\textcolor{keyword}{>}(\textcolor{keyword}{this})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{class_protocol_1_1_header_aa7883d10b19303b2c4ea49ddd3958a36}{Header}})}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ );\ }
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_coordinates}{Coordinates}}*\ \mbox{\hyperlink{class_protocol_1_1_packet_aa9dbd5c0b87a17d359d76af08a7d7063}{coordinates}}()\ \{}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}\mbox{\hyperlink{struct_coordinates}{Coordinates}}*\textcolor{keyword}{>}(}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{reinterpret\_cast<}uint8\_t*\textcolor{keyword}{>}(\textcolor{keyword}{this})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{class_protocol_1_1_header_aa7883d10b19303b2c4ea49ddd3958a36}{Header}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{TimestampFields}})}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ );}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_protocol_1_1_authentication_fields}{AuthenticationFields}}*\ \mbox{\hyperlink{class_protocol_1_1_packet_a16322e49b4e6aa2e8f8f84133a7ba7b5}{authentication}}()\ \{}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}\mbox{\hyperlink{struct_protocol_1_1_authentication_fields}{AuthenticationFields}}*\textcolor{keyword}{>}(}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{reinterpret\_cast<}uint8\_t*\textcolor{keyword}{>}(\textcolor{keyword}{this})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{class_protocol_1_1_header_aa7883d10b19303b2c4ea49ddd3958a36}{Header}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{TimestampFields}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}})}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ );}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T*\ \mbox{\hyperlink{class_protocol_1_1_packet_a0b24c14862b490ee5b5378d3c1bfa8c9}{data}}()\ \{\ }
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}T*\textcolor{keyword}{>}(}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{reinterpret\_cast<}uint8\_t*\textcolor{keyword}{>}(\textcolor{keyword}{this})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{class_protocol_1_1_header_aa7883d10b19303b2c4ea49ddd3958a36}{Header}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{TimestampFields}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_protocol_1_1_authentication_fields}{AuthenticationFields}})}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ );\ }
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Calculate\ offset\ to\ timestamp\ fields\ from\ start\ of\ packet}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_protocol_1_1_packet_a48eabdedaecb867890e09f2bb0c71ada}{sync\_status\_offset}}()\ \{}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{class_protocol_1_1_header_aa7883d10b19303b2c4ea49ddd3958a36}{Header}})\ +\ offsetof(\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{TimestampFields}},\ is\_clock\_synchronized);}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_protocol_1_1_packet_a933c92cc4b2156d3925f59a57b0800d2}{tx\_timestamp\_offset}}()\ \{}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{class_protocol_1_1_header_aa7883d10b19303b2c4ea49ddd3958a36}{Header}})\ +\ offsetof(\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{TimestampFields}},\ tx\_timestamp);}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_a68b003f36a9c1ad44c37df645c13eee9}{Data}}\ \mbox{\hyperlink{class_conditional___data___observer_a355268647c8789cefe0f4cae266a00a6}{\_data}};}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Note:\ Actual\ timestamp\ fields,\ coordinates,\ and\ data\ are\ accessed\ via\ pointers}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ to\ maintain\ proper\ memory\ layout}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \}\ \mbox{\hyperlink{class_protocol_af44d53f0f989930f3924485726db6dba}{\_\_attribute\_\_}}((packed));}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Address\ class\ for\ Protocol\ layer}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_protocol_1_1_address_aabbd339755b0de40ad48c975b81f91ff}{Address}}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum}\ \mbox{\hyperlink{class_protocol_1_1_address_a14d8caeb0af2a29c3b8dbeb2a6d8347a}{Null}}\ \{\ \mbox{\hyperlink{class_protocol_1_1_address_a14d8caeb0af2a29c3b8dbeb2a6d8347aac948bd63438b803ecd9d07fd731540ca}{NULL\_VALUE}}\ \};}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_1_1_address_aabbd339755b0de40ad48c975b81f91ff}{Address}}();}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_1_1_address_aabbd339755b0de40ad48c975b81f91ff}{Address}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_protocol_1_1_address_a14d8caeb0af2a29c3b8dbeb2a6d8347a}{Null}}\&\ null);}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_1_1_address_aabbd339755b0de40ad48c975b81f91ff}{Address}}(\mbox{\hyperlink{class_protocol_a4c2c46c8c28f666d18eb6795f17f8745}{Physical\_Address}}\ \mbox{\hyperlink{class_protocol_1_1_address_a8e0a94c875cb4acd6bbb30a1312815a4}{paddr}},\ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ \mbox{\hyperlink{class_protocol_1_1_address_a140a54fbfe4076ec2d9987dbf41f5de1}{port}});}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_1_1_address_afbd5488e00f6cc8fc41f742726b0b4f3}{paddr}}(\mbox{\hyperlink{class_protocol_a4c2c46c8c28f666d18eb6795f17f8745}{Physical\_Address}}\ addr);}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_protocol_a4c2c46c8c28f666d18eb6795f17f8745}{Physical\_Address}}\&\ \mbox{\hyperlink{class_protocol_1_1_address_afbd5488e00f6cc8fc41f742726b0b4f3}{paddr}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_1_1_address_a9a4a9594edb9e870b9a593d8e9e22ffc}{port}}(\mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ \mbox{\hyperlink{class_protocol_1_1_address_a140a54fbfe4076ec2d9987dbf41f5de1}{port}});}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\&\ \mbox{\hyperlink{class_protocol_1_1_address_a9a4a9594edb9e870b9a593d8e9e22ffc}{port}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \mbox{\hyperlink{class_protocol_1_1_address_ad7d3dbf96ece94df051146f91433b528}{to\_string}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_protocol_1_1_address_aabbd339755b0de40ad48c975b81f91ff}{Address}}\ \mbox{\hyperlink{class_protocol_1_1_address_ad5ba9286afd532fff67de8de85236daa}{BROADCAST}};}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{operator}\ bool()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_protocol_1_1_address_a312cf280353e8de90f9f2d5b270c71af}{operator==}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_protocol_1_1_address_aabbd339755b0de40ad48c975b81f91ff}{Address}}\&\ a)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ \_port;}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_a4c2c46c8c28f666d18eb6795f17f8745}{Physical\_Address}}\ \_paddr;}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum\ class}\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204b}{EntityType}}\ \{\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204bae9fa318f4d73c31493e98096efa497e2}{VEHICLE}},\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204ba75988ec7a180ed96d48291db84701f84}{RSU}},\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204ba696b031073e74bf2cb98e5ef201d4aa3}{UNKNOWN}}\ \};}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Modified\ constructor}}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_a97ef237ecd6671852095121d551d56e2}{Protocol}}(\mbox{\hyperlink{class_n_i_c}{NIC}}*\ nic,\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204b}{EntityType}}\ entity\_type\ =\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204ba696b031073e74bf2cb98e5ef201d4aa3}{EntityType::UNKNOWN}});}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ New\ method\ to\ set\ entity\ manager\ (only\ for\ vehicles)}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_a53c2c7dd7da28c8193d0f790da4129a2}{set\_vehicle\_rsu\_manager}}(\mbox{\hyperlink{class_vehicle_r_s_u_manager}{VehicleRSUManager}}<\mbox{\hyperlink{class_protocol_a97ef237ecd6671852095121d551d56e2}{Protocol<NIC>}}>*\ manager);}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_a7c6255350f6f9fbcd57823964dadc543}{\string~Protocol}}();}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_protocol_a2310fafa5201b0fe2d132bdfecac5195}{send}}(Address\ from,\ Address\ to,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size);}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_protocol_a2079eae36beadf25559a0aaf39ba7c61}{receive}}(\mbox{\hyperlink{class_protocol_a73dddef2b65c7ff5bf444e5afe632c64}{Buffer}}*\ buf,\ Address\ *from,\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size);}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Method\ to\ free\ a\ buffer,\ crucial\ for\ Communicator\ to\ prevent\ leaks}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_a358b5c29ca76e7736dbcd343d6e7fbda}{free}}(\mbox{\hyperlink{class_protocol_a73dddef2b65c7ff5bf444e5afe632c64}{Buffer}}*\ buf);}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Method\ to\ set\ NIC\ transmission\ radius}}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_a42a5264d98b803915d5c57e55b6b6ab3}{setRadius}}(\textcolor{keywordtype}{double}\ radius);}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Neighbor\ RSU\ management\ (for\ RSUs\ only)}}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_ab162aadadb63de98f40f59f16c11c673}{add\_neighbor\_rsu}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ rsu\_id,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ key,\ \textcolor{keyword}{const}\ Address\&\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}});}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_a69267cd57fd708be329d0a380a8f6543}{clear\_neighbor\_rsus}}();}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Get\ Protocol's\ own\ address}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ Address\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_acdbe278edf6c525dccda43b8596f2372}{attach}}(\mbox{\hyperlink{class_protocol_a20e8d1d47c156c069bf2618cb7ebed5a}{Observer}}*\ obs,\ Address\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}});}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_a8708d5b5b95795cdf708ec25650c22df}{detach}}(\mbox{\hyperlink{class_protocol_a20e8d1d47c156c069bf2618cb7ebed5a}{Observer}}*\ obs,\ Address\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}});}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ update(\textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_a99ca9377e6702fa33fb0eb0757b6b842}{NIC::Protocol\_Number}}\ \mbox{\hyperlink{ethernet_8h_a238bf641c59c4900e20286010351f46e}{prot}},\ \mbox{\hyperlink{class_protocol_a73dddef2b65c7ff5bf444e5afe632c64}{Buffer}}\ *\ buf)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ handle\_status\_message(\textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{ProtocolMessage::Type}}\&\ msg\_type,}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ payload\_size,}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_coordinates}{Coordinates}}*\ sender\_coords,}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ TimestampFields*\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}},}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC::Address}}\&\ sender\_mac);}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ handle\_req\_message(\textcolor{keyword}{const}\ uint8\_t*\ message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ payload\_size,}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC::Address}}\&\ sender\_mac);}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ handle\_resp\_message(\textcolor{keyword}{const}\ uint8\_t*\ message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ payload\_size);}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ send\_req\_message\_to\_leader(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ failed\_message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ failed\_message\_size,}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ failed\_mac,\ \textcolor{keyword}{const}\ Header*\ failed\_header,}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ TimestampFields*\ failed\_timestamps,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_coordinates}{Coordinates}}*\ failed\_coordinates);}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ MAC\ authentication\ methods\ -\/\ Hybrid\ approach\ (message\ +\ packet\ fields)}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ calculate\_mac(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ message\_size,}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Header*\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}},\ \textcolor{keyword}{const}\ TimestampFields*\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}},}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_coordinates}{Coordinates}}*\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ key);}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ verify\_mac(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ message\_size,}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Header*\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}},\ \textcolor{keyword}{const}\ TimestampFields*\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}},}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_coordinates}{Coordinates}}*\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ received\_mac);}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ requires\_authentication(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size);}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ is\_authenticated\_message\_type(\textcolor{keyword}{typename}\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{ProtocolMessage::Type}}\ type);}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Neighbor\ RSU\ information\ for\ RSUs\ (used\ when\ handling\ REQ\ messages)}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }NeighborRSUInfo\ \{}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ rsu\_id;}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ key;}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ Address\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}};}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ NeighborRSUInfo(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ k,\ \textcolor{keyword}{const}\ Address\&\ addr)\ }
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ rsu\_id(id),\ key(k),\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}}(addr)\ \{\}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ std::vector<NeighborRSUInfo>\ \_neighbor\_rsus;\ \textcolor{comment}{//\ Only\ used\ by\ RSUs}}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ std::mutex\ \_neighbor\_rsus\_mutex;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Thread\ safety\ for\ neighbor\ RSUs}}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ NIC*\ \_nic;}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_protocol_adf34547f0d266858f1c8b66763df74e2}{Observed}}\ \_observed;}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204b}{EntityType}}\ \_entity\_type;}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ VehicleRSUManager<Protocol<NIC>>*\ \_vehicle\_rsu\_manager;\ \textcolor{comment}{//\ nullptr\ for\ RSUs}}
+\DoxyCodeLine{00234\ \};}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \textcolor{comment}{/********\ Protocol::Address\ Implementation\ ******/}}
+\DoxyCodeLine{00237\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00238\ \mbox{\hyperlink{class_protocol_1_1_address_aabbd339755b0de40ad48c975b81f91ff}{Protocol<NIC>::Address::Address}}()\ :\ \_port(0),\ \_paddr(\mbox{\hyperlink{class_n_i_c}{NIC}}::NULL\_ADDRESS)\ \{\}}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00241\ \mbox{\hyperlink{class_protocol_1_1_address_aabbd339755b0de40ad48c975b81f91ff}{Protocol<NIC>::Address::Address}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_protocol_1_1_address_a14d8caeb0af2a29c3b8dbeb2a6d8347a}{Null}}\&\ null)\ :\ \_port(0),\ \_paddr(\mbox{\hyperlink{class_n_i_c}{NIC}}::NULL\_ADDRESS)\ \{\}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00244\ \mbox{\hyperlink{class_protocol_1_1_address_aabbd339755b0de40ad48c975b81f91ff}{Protocol<NIC>::Address::Address}}(\mbox{\hyperlink{class_protocol_a4c2c46c8c28f666d18eb6795f17f8745}{Physical\_Address}}\ \mbox{\hyperlink{class_protocol_1_1_address_a8e0a94c875cb4acd6bbb30a1312815a4}{paddr}},\ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ \mbox{\hyperlink{class_protocol_1_1_address_a140a54fbfe4076ec2d9987dbf41f5de1}{port}})\ :\ \_port(\mbox{\hyperlink{class_protocol_1_1_address_a140a54fbfe4076ec2d9987dbf41f5de1}{port}}),\ \_paddr(\mbox{\hyperlink{class_protocol_1_1_address_a8e0a94c875cb4acd6bbb30a1312815a4}{paddr}})\ \{\}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00247\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_1_1_address_afbd5488e00f6cc8fc41f742726b0b4f3}{Protocol<NIC>::Address::paddr}}(\mbox{\hyperlink{class_protocol_a4c2c46c8c28f666d18eb6795f17f8745}{Physical\_Address}}\ addr)\{}
+\DoxyCodeLine{00248\ \ \ \ \ \_paddr\ =\ addr;}
+\DoxyCodeLine{00249\ \}}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00252\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_protocol_a4c2c46c8c28f666d18eb6795f17f8745}{Protocol<NIC>::Physical\_Address}}\&\ \mbox{\hyperlink{class_protocol_1_1_address_afbd5488e00f6cc8fc41f742726b0b4f3}{Protocol<NIC>::Address::paddr}}()\textcolor{keyword}{\ const}\{}
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{keywordflow}{return}\ \_paddr;}
+\DoxyCodeLine{00254\ \}}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00257\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_1_1_address_a9a4a9594edb9e870b9a593d8e9e22ffc}{Protocol<NIC>::Address::port}}(\mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ \mbox{\hyperlink{class_protocol_1_1_address_a140a54fbfe4076ec2d9987dbf41f5de1}{port}})\ \{}
+\DoxyCodeLine{00258\ \ \ \ \ \_port\ =\ \mbox{\hyperlink{class_protocol_1_1_address_a140a54fbfe4076ec2d9987dbf41f5de1}{port}};}
+\DoxyCodeLine{00259\ \}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00262\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Protocol<NIC>::Port}}\&\ \mbox{\hyperlink{class_protocol_1_1_address_a9a4a9594edb9e870b9a593d8e9e22ffc}{Protocol<NIC>::Address::port}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00263\ \ \ \ \ \textcolor{keywordflow}{return}\ \_port;}
+\DoxyCodeLine{00264\ \}}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00267\ \mbox{\hyperlink{class_protocol_a97ef237ecd6671852095121d551d56e2}{Protocol<NIC>::Address::operator}}\ bool()\textcolor{keyword}{\ const\ }\{\ }
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{keywordflow}{return}\ \_port\ !=\ 0\ ||\ \_paddr\ !=\ \mbox{\hyperlink{class_protocol_a4c2c46c8c28f666d18eb6795f17f8745}{Physical\_Address}}();}
+\DoxyCodeLine{00269\ \}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00272\ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_protocol_1_1_address_a312cf280353e8de90f9f2d5b270c71af}{Protocol<NIC>::Address::operator==}}(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_protocol_1_1_address_aabbd339755b0de40ad48c975b81f91ff}{Address}}\&\ a)\textcolor{keyword}{\ const\ }\{\ }
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{keywordflow}{return}\ (\_paddr\ ==\ a.\_paddr)\ \&\&\ (\_port\ ==\ a.\_port);\ }
+\DoxyCodeLine{00274\ \}}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00277\ \textcolor{keyword}{const}\ std::string\ \mbox{\hyperlink{class_protocol_1_1_address_ad7d3dbf96ece94df051146f91433b528}{Protocol<NIC>::Address::to\_string}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00278\ \ \ \ \ std::string\ mac\_addr\ =\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{NIC::mac\_to\_string}}(\_paddr);}
+\DoxyCodeLine{00279\ \ \ \ \ \textcolor{keywordflow}{return}\ mac\_addr\ +\ \textcolor{stringliteral}{"{}:"{}}\ +\ std::to\_string(\_port);}
+\DoxyCodeLine{00280\ \}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{comment}{/*********\ Protocol\ Implementation\ *********/}}
+\DoxyCodeLine{00283\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00284\ \mbox{\hyperlink{class_protocol_a97ef237ecd6671852095121d551d56e2}{Protocol<NIC>::Protocol}}(\mbox{\hyperlink{class_n_i_c}{NIC}}*\ nic,\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204b}{EntityType}}\ entity\_type)}
+\DoxyCodeLine{00285\ \ \ \ \ :\ \mbox{\hyperlink{class_n_i_c}{NIC}}::\mbox{\hyperlink{class_protocol_a20e8d1d47c156c069bf2618cb7ebed5a}{Observer}}(\mbox{\hyperlink{class_protocol_a8f58367287b93d018f33a8d67f84d3ae}{PROTO}}),\ \_nic(nic),\ \_entity\_type(entity\_type),\ \_vehicle\_rsu\_manager(nullptr)\ \{}
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{keywordflow}{if}\ (!nic)\ \{}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::invalid\_argument(\textcolor{stringliteral}{"{}NIC\ pointer\ cannot\ be\ null"{}});}
+\DoxyCodeLine{00288\ \ \ \ \ \}}
+\DoxyCodeLine{00289\ \ \ \ \ \_nic-\/>attach(\textcolor{keyword}{this},\ \mbox{\hyperlink{class_protocol_a8f58367287b93d018f33a8d67f84d3ae}{PROTO}});}
+\DoxyCodeLine{00290\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ created\ for\ "{}}}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ (entity\_type\ ==\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204bae9fa318f4d73c31493e98096efa497e2}{EntityType::VEHICLE}}\ ?\ \textcolor{stringliteral}{"{}VEHICLE"{}}\ :\ }
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ entity\_type\ ==\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204ba75988ec7a180ed96d48291db84701f84}{EntityType::RSU}}\ ?\ \textcolor{stringliteral}{"{}RSU"{}}\ :\ \textcolor{stringliteral}{"{}UNKNOWN"{}})\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00293\ \}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00296\ \mbox{\hyperlink{class_protocol_a7c6255350f6f9fbcd57823964dadc543}{Protocol<NIC>::\string~Protocol}}()\ \{}
+\DoxyCodeLine{00297\ \ \ \ \ \_nic-\/>detach(\textcolor{keyword}{this},\ \mbox{\hyperlink{class_protocol_a8f58367287b93d018f33a8d67f84d3ae}{PROTO}});}
+\DoxyCodeLine{00298\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ detached\ from\ NIC\(\backslash\)n"{}};}
+\DoxyCodeLine{00299\ \}}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00302\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_protocol_a2310fafa5201b0fe2d132bdfecac5195}{Protocol<NIC>::send}}(\mbox{\hyperlink{class_protocol_1_1_address}{Address}}\ from,\ \mbox{\hyperlink{class_protocol_1_1_address}{Address}}\ to,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \{}
+\DoxyCodeLine{00303\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Protocol<NIC>::send()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}}\ ||\ size\ ==\ 0)\ \{}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ Invalid\ data\ or\ size.\ Dropping\ message.\(\backslash\)n"{}};}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;\ \textcolor{comment}{//\ Or\ a\ specific\ error\ code}}
+\DoxyCodeLine{00308\ \ \ \ \ \}}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_nic)\ \{}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Protocol<NIC>::send()\ called\ after\ release!\(\backslash\)n"{}};}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00313\ \ \ \ \ \}}
+\DoxyCodeLine{00314\ }
+\DoxyCodeLine{00315\ \ \ \ \ \textcolor{comment}{//\ DEBUG:\ Show\ what\ message\ we're\ trying\ to\ send}}
+\DoxyCodeLine{00316\ \ \ \ \ \textcolor{keywordflow}{if}\ (size\ >\ 0)\ \{}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ msg\_bytes\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }uint8\_t*\textcolor{keyword}{>}(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ uint8\_t\ msg\_type\ =\ msg\_bytes[0];}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ type\_name\ =\ \textcolor{stringliteral}{"{}UNKNOWN"{}};}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{switch}\ (\textcolor{keyword}{static\_cast<}typename\ \mbox{\hyperlink{class_message_ad27a1a9986e5a2b019993f6c1d2e77b4}{ProtocolMessage::Type}}\textcolor{keyword}{>}(msg\_type))\ \{}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ ProtocolMessage::Type::RESPONSE:\ type\_name\ =\ \textcolor{stringliteral}{"{}RESPONSE"{}};\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ ProtocolMessage::Type::INTEREST:\ type\_name\ =\ \textcolor{stringliteral}{"{}INTEREST"{}};\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ ProtocolMessage::Type::STATUS:\ type\_name\ =\ \textcolor{stringliteral}{"{}STATUS"{}};\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ ProtocolMessage::Type::REQ:\ type\_name\ =\ \textcolor{stringliteral}{"{}REQ"{}};\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ ProtocolMessage::Type::KEY\_RESPONSE:\ type\_name\ =\ \textcolor{stringliteral}{"{}KEY\_RESPONSE"{}};\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{default}:\ type\_name\ =\ \textcolor{stringliteral}{"{}OTHER"{}};\ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ Message\ type:\ "{}}\ <<\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(msg\_type)\ }
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ ("{}}\ <<\ type\_name\ <<\ \textcolor{stringliteral}{"{}),\ size:\ "{}}\ <<\ size\ <<\ \textcolor{stringliteral}{"{}\ bytes\(\backslash\)n"{}};}
+\DoxyCodeLine{00330\ \ \ \ \ \}}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{comment}{//\ Check\ if\ message\ requires\ authentication\ and\ we\ have\ the\ necessary\ keys}}
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{keywordflow}{if}\ (requires\_authentication(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ size))\ \{}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ Message\ requires\ authentication\ -\/\ checking\ key\ availability\(\backslash\)n"{}};}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ has\_auth\_keys\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ ==\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204bae9fa318f4d73c31493e98096efa497e2}{EntityType::VEHICLE}})\ \{}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ vehicles:\ check\ if\ we\ have\ any\ known\ RSUs\ (leaders)}}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_vehicle\_rsu\_manager)\ \{}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ known\_rsus\ =\ \_vehicle\_rsu\_manager-\/>get\_known\_rsus();}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ has\_auth\_keys\ =\ !known\_rsus.empty();}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ Vehicle\ has\ "{}}\ <<\ known\_rsus.size()\ <<\ \textcolor{stringliteral}{"{}\ known\ RSUs\ for\ authentication\(\backslash\)n"{}};}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DEBUG:\ Show\ which\ RSUs\ are\ known\ and\ their\ keys}}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ known\_rsus.size();\ ++i)\ \{}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ rsu\_key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ j\ =\ 0;\ j\ <\ 16;\ ++j)\ \{}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ known\_rsus[i].group\_key[j]);}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rsu\_key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ Known\ RSU\ "{}}\ <<\ i\ <<\ \textcolor{stringliteral}{"{}\ ("{}}\ <<\ known\_rsus[i].address.to\_string()\ }
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{})\ key:\ "{}}\ <<\ rsu\_key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ Vehicle\ has\ no\ RSU\ manager\ -\/\ no\ authentication\ possible\(\backslash\)n"{}};}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ RSUs:\ check\ if\ we\ have\ a\ valid\ leader\ key\ (not\ all\ zeros)}}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ leader\_key\ =\ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_a111ba868b182ba904375e24d003cb489}{getGroupMacKey}}();}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ \ \ \ \ has\_auth\_keys\ =\ std::any\_of(leader\_key.begin(),\ leader\_key.end(),\ [](uint8\_t\ b)\ \{\ return\ b\ !=\ 0;\ \});}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ leader\_key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ leader\_key[i]);}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ leader\_key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ RSU\ leader\ key:\ "{}}\ <<\ leader\_key\_hex\ }
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (valid:\ "{}}\ <<\ (has\_auth\_keys\ ?\ \textcolor{stringliteral}{"{}YES"{}}\ :\ \textcolor{stringliteral}{"{}NO"{}})\ <<\ \textcolor{stringliteral}{"{})\(\backslash\)n"{}};}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!has\_auth\_keys)\ \{}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ DROPPING\ authenticated\ message\ -\/\ no\ authentication\ keys\ available\(\backslash\)n"{}};}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;\ \textcolor{comment}{//\ Drop\ the\ message}}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ Authentication\ keys\ available\ -\/\ proceeding\ with\ message\ send\(\backslash\)n"{}};}
+\DoxyCodeLine{00380\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ Message\ does\ NOT\ require\ authentication\(\backslash\)n"{}};}
+\DoxyCodeLine{00382\ \ \ \ \ \}}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00384\ \ \ \ \ \textcolor{comment}{//\ Allocate\ buffer\ for\ the\ entire\ frame\ -\/>\ NIC\ alloc\ adds\ Frame\ Header\ size\ (this\ is\ better\ for\ independency)}}
+\DoxyCodeLine{00385\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ packet\_size\ =\ size\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{class_protocol_1_1_header}{Header}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{TimestampFields}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_protocol_1_1_authentication_fields}{AuthenticationFields}});}
+\DoxyCodeLine{00386\ \ \ \ \ \mbox{\hyperlink{class_protocol_a73dddef2b65c7ff5bf444e5afe632c64}{Buffer}}*\ buf\ =\ \_nic-\/>alloc(to.\mbox{\hyperlink{class_protocol_1_1_address_a8e0a94c875cb4acd6bbb30a1312815a4}{paddr}}(),\ \mbox{\hyperlink{class_protocol_a8f58367287b93d018f33a8d67f84d3ae}{PROTO}},\ packet\_size);}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \ \ \ \ \textcolor{comment}{//\ Get\ pointer\ to\ where\ Protocol\ packet\ starts\ (within\ the\ Ethernet\ payload)}}
+\DoxyCodeLine{00389\ \ \ \ \ \textcolor{comment}{//\ Assumes\ buf-\/>data()\ returns\ Ethernet::Frame*\ and\ payload\ follows\ header}}
+\DoxyCodeLine{00390\ \ \ \ \ \mbox{\hyperlink{class_protocol_1_1_packet}{Packet}}*\ packet\ =\ \textcolor{keyword}{reinterpret\_cast<}\mbox{\hyperlink{class_protocol_1_1_packet}{Packet}}*\textcolor{keyword}{>}(buf-\/>\mbox{\hyperlink{class_buffer_ae4d2252ca9e14b66f1884480627ae6d3}{data}}()-\/>\mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}});}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \ \ \ \ \textcolor{comment}{//\ Set\ up\ Protocol\ Packet\ Header}}
+\DoxyCodeLine{00393\ \ \ \ \ packet-\/>\mbox{\hyperlink{class_protocol_1_1_header_aec8af8cc384a41bbec30ba3d4181f42a}{from\_port}}(from.\mbox{\hyperlink{class_protocol_1_1_address_a140a54fbfe4076ec2d9987dbf41f5de1}{port}}());}
+\DoxyCodeLine{00394\ \ \ \ \ packet-\/>\mbox{\hyperlink{class_protocol_1_1_header_a4b90f32cdfce1925ac70dfe475a074aa}{to\_port}}(to.\mbox{\hyperlink{class_protocol_1_1_address_a140a54fbfe4076ec2d9987dbf41f5de1}{port}}());}
+\DoxyCodeLine{00395\ \ \ \ \ packet-\/>\mbox{\hyperlink{class_protocol_1_1_header_ace7e2145947b82235295706e63555cdd}{size}}(size);\ \textcolor{comment}{//\ Set\ the\ size\ of\ the\ *user\ data*}}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \ \ \ \ \textcolor{comment}{//\ Copy\ user\ data\ into\ the\ packet's\ data\ section}}
+\DoxyCodeLine{00398\ \ \ \ \ std::memcpy(packet-\/>template\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data<void>}}(),\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ size);}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \ \ \ \ \textcolor{comment}{//\ Set\ clock\ synchronization\ status\ in\ the\ packet}}
+\DoxyCodeLine{00401\ \ \ \ \ \textcolor{keyword}{auto}\&\ clock\ =\ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}();}
+\DoxyCodeLine{00402\ \ \ \ \ \textcolor{keywordtype}{bool}\ sync\_status;}
+\DoxyCodeLine{00403\ \ \ \ \ clock.getSynchronizedTime(\&sync\_status);\ \textcolor{comment}{//\ We\ only\ need\ the\ status}}
+\DoxyCodeLine{00404\ \ \ \ \ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_a18319d3114c4dccbc6335d287a5fa5a1}{timestamps}}()-\/>\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields_a402acc93e765bb38089371e68eac967c}{is\_clock\_synchronized}}\ =\ sync\_status;}
+\DoxyCodeLine{00405\ \ \ \ \ }
+\DoxyCodeLine{00406\ \ \ \ \ \textcolor{comment}{//\ TX\ timestamp\ will\ be\ set\ by\ NIC\ during\ transmission\ -\/\ not\ used\ in\ MAC\ calculation}}
+\DoxyCodeLine{00407\ \ \ \ \ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_a18319d3114c4dccbc6335d287a5fa5a1}{timestamps}}()-\/>\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields_ae4409a63fb7e38f4efb55c1f2546ee59}{tx\_timestamp}}\ =\ TimestampType::min();\ \textcolor{comment}{//\ Will\ be\ overwritten\ by\ NIC}}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \ \ \ \ \textcolor{comment}{//\ Set\ sender\ location\ and\ communication\ radius}}
+\DoxyCodeLine{00410\ \ \ \ \ \mbox{\hyperlink{struct_coordinates}{Coordinates}}\ coords;}
+\DoxyCodeLine{00411\ \ \ \ \ coords.\mbox{\hyperlink{struct_coordinates_a9da513ed4d7be0bcb560e3987ae09c69}{radius}}\ =\ \_nic-\/>radius();}
+\DoxyCodeLine{00412\ \ \ \ \ \mbox{\hyperlink{class_location_service_a47a113762a9a60846db63b02cb62abf8}{LocationService::getCurrentCoordinates}}(coords.\mbox{\hyperlink{struct_coordinates_a858fd248e4b9ae45cbceeb6bdc7d011b}{x}},\ coords.\mbox{\hyperlink{struct_coordinates_ab89961ba893566971c26e8bf5f377d49}{y}});}
+\DoxyCodeLine{00413\ \ \ \ \ std::memcpy(packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_aa9dbd5c0b87a17d359d76af08a7d7063}{coordinates}}(),\ \&coords,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}}));}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00415\ \ \ \ \ \textcolor{comment}{//\ Initialize\ authentication\ fields}}
+\DoxyCodeLine{00416\ \ \ \ \ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_a16322e49b4e6aa2e8f8f84133a7ba7b5}{authentication}}()-\/>\mbox{\hyperlink{struct_protocol_1_1_authentication_fields_a28be8129dadfcd3781f9e9b46c6b5d0a}{has\_mac}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00417\ \ \ \ \ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_a16322e49b4e6aa2e8f8f84133a7ba7b5}{authentication}}()-\/>\mbox{\hyperlink{struct_protocol_1_1_authentication_fields_a88af1f29150042f2265ccb5c31444a96}{mac}}.fill(0);}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ \ \ \ \ \textcolor{comment}{//\ Calculate\ MAC\ for\ INTEREST\ and\ RESPONSE\ messages}}
+\DoxyCodeLine{00420\ \ \ \ \ \textcolor{keywordflow}{if}\ (requires\_authentication(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ size))\ \{}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ Calculating\ Hybrid\ MAC\ for\ authenticated\ message\(\backslash\)n"{}};}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Get\ leader\ key\ from\ storage}}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ leader\_key\ =\ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_a111ba868b182ba904375e24d003cb489}{getGroupMacKey}}();}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DEBUG:\ Show\ packet\ fields\ being\ authenticated}}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ MAC\ Auth\ Header:\ from\_port="{}}\ <<\ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_ad66f6f2c239cacd75dfcd6dae89348ea}{header}}()-\/>\mbox{\hyperlink{class_protocol_1_1_header_aec8af8cc384a41bbec30ba3d4181f42a}{from\_port}}()\ }
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ to\_port="{}}\ <<\ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_ad66f6f2c239cacd75dfcd6dae89348ea}{header}}()-\/>\mbox{\hyperlink{class_protocol_1_1_header_a4b90f32cdfce1925ac70dfe475a074aa}{to\_port}}()\ <<\ \textcolor{stringliteral}{"{},\ size="{}}\ <<\ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_ad66f6f2c239cacd75dfcd6dae89348ea}{header}}()-\/>\mbox{\hyperlink{class_protocol_1_1_header_ace7e2145947b82235295706e63555cdd}{size}}()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ MAC\ Auth\ Coordinates:\ x="{}}\ <<\ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_aa9dbd5c0b87a17d359d76af08a7d7063}{coordinates}}()-\/>\mbox{\hyperlink{struct_coordinates_a858fd248e4b9ae45cbceeb6bdc7d011b}{x}}}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ y="{}}\ <<\ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_aa9dbd5c0b87a17d359d76af08a7d7063}{coordinates}}()-\/>\mbox{\hyperlink{struct_coordinates_ab89961ba893566971c26e8bf5f377d49}{y}}\ <<\ \textcolor{stringliteral}{"{},\ radius="{}}\ <<\ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_aa9dbd5c0b87a17d359d76af08a7d7063}{coordinates}}()-\/>\mbox{\hyperlink{struct_coordinates_a9da513ed4d7be0bcb560e3987ae09c69}{radius}}\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DEBUG:\ Show\ key\ being\ used}}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ std::string\ key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ leader\_key[i]);}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \ \ \ \ \ \ key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00439\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ MAC\ Auth\ Key:\ "{}}\ <<\ key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Calculate\ MAC\ over\ the\ message\ payload\ +\ packet\ fields\ (hybrid\ approach)}}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ calculated\_mac\ =\ calculate\_mac(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ size,\ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_ad66f6f2c239cacd75dfcd6dae89348ea}{header}}(),\ }
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_a18319d3114c4dccbc6335d287a5fa5a1}{timestamps}}(),\ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_aa9dbd5c0b87a17d359d76af08a7d7063}{coordinates}}(),\ leader\_key);}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DEBUG:\ Show\ calculated\ MAC}}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \ \ std::string\ mac\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ calculated\_mac[i]);}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ \ \ \ \ mac\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ Final\ calculated\ MAC:\ "{}}\ <<\ mac\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Set\ MAC\ in\ packet}}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_a16322e49b4e6aa2e8f8f84133a7ba7b5}{authentication}}()-\/>\mbox{\hyperlink{struct_protocol_1_1_authentication_fields_a88af1f29150042f2265ccb5c31444a96}{mac}}\ =\ calculated\_mac;}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_a16322e49b4e6aa2e8f8f84133a7ba7b5}{authentication}}()-\/>\mbox{\hyperlink{struct_protocol_1_1_authentication_fields_a28be8129dadfcd3781f9e9b46c6b5d0a}{has\_mac}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ Added\ MAC\ authentication\ to\ outgoing\ packet\(\backslash\)n"{}};}
+\DoxyCodeLine{00459\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ No\ authentication\ required\ -\/\ MAC\ left\ as\ zeros\(\backslash\)n"{}};}
+\DoxyCodeLine{00461\ \ \ \ \ \}}
+\DoxyCodeLine{00462\ }
+\DoxyCodeLine{00463\ \ \ \ \ \textcolor{comment}{//\ Send\ the\ packet\ via\ NIC,\ passing\ the\ packet\ size\ for\ timestamp\ offset\ calculation}}
+\DoxyCodeLine{00464\ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ \_nic-\/>send(buf,\ packet\_size);\ \textcolor{comment}{//\ Pass\ packet\ size\ to\ NIC}}
+\DoxyCodeLine{00465\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ SEND\ -\/\ NIC::send()\ returned\ "{}}\ <<\ result\ <<\ \textcolor{stringliteral}{"{},\ clock\_synchronized="{}}\ <<\ packet-\/>\mbox{\hyperlink{class_protocol_1_1_packet_a18319d3114c4dccbc6335d287a5fa5a1}{timestamps}}()-\/>\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields_a402acc93e765bb38089371e68eac967c}{is\_clock\_synchronized}}\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00466\ \ \ \ \ }
+\DoxyCodeLine{00467\ \ \ \ \ \textcolor{comment}{//\ NIC\ should\ release\ buffer\ after\ use}}
+\DoxyCodeLine{00468\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00469\ \}}
+\DoxyCodeLine{00470\ }
+\DoxyCodeLine{00471\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00472\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_protocol_a2079eae36beadf25559a0aaf39ba7c61}{Protocol<NIC>::receive}}(\mbox{\hyperlink{class_protocol_a73dddef2b65c7ff5bf444e5afe632c64}{Buffer}}*\ buf,\ \mbox{\hyperlink{class_protocol_1_1_address}{Address}}\ *from,\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \{}
+\DoxyCodeLine{00473\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Protocol<NIC>::receive()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \ \ \ \ \textcolor{keywordflow}{if}\ (!buf)\ \{}
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ receive()\ called\ with\ a\ null\ buffer.\(\backslash\)n"{}};}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00478\ \ \ \ \ \}}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \ \ \ \ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC::Address}}\ src\_mac;}
+\DoxyCodeLine{00481\ \ \ \ \ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC::Address}}\ dst\_mac;}
+\DoxyCodeLine{00482\ }
+\DoxyCodeLine{00483\ \ \ \ \ std::uint8\_t\ temp\_buffer[size\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{class_protocol_1_1_header}{Header}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{TimestampFields}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_protocol_1_1_authentication_fields}{AuthenticationFields}})];}
+\DoxyCodeLine{00484\ \ \ \ \ }
+\DoxyCodeLine{00485\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_nic)\ \{}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Protocol<NIC>::receive()\ called\ after\ release!\(\backslash\)n"{}};}
+\DoxyCodeLine{00487\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00488\ \ \ \ \ \}}
+\DoxyCodeLine{00489\ \ \ \ \ }
+\DoxyCodeLine{00490\ \ \ \ \ \textcolor{keywordtype}{int}\ packet\_size\ =\ \_nic-\/>receive(buf,\ \&src\_mac,\ \&dst\_mac,\ temp\_buffer,\ \mbox{\hyperlink{class_ethernet_ab5325c9e8545b790a86765fa1dba1c87}{NIC::MTU}});}
+\DoxyCodeLine{00491\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ NIC::receive()\ returned\ "{}}\ <<\ packet\_size\ <<\ \textcolor{stringliteral}{"{}.\(\backslash\)n"{}};}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ \ \ \ \ \textcolor{keywordflow}{if}\ (packet\_size\ <=\ 0)\ \{}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ No\ data\ received\ or\ error\ occurred.\(\backslash\)n"{}};}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;\ \textcolor{comment}{//\ No\ data\ received\ or\ error}}
+\DoxyCodeLine{00496\ \ \ \ \ \}}
+\DoxyCodeLine{00497\ \ \ \ \ }
+\DoxyCodeLine{00498\ \ \ \ \ \textcolor{comment}{//\ Reinterpretation\ as\ packet}}
+\DoxyCodeLine{00499\ \ \ \ \ \mbox{\hyperlink{class_protocol_1_1_packet}{Packet}}*\ pkt\ =\ \textcolor{keyword}{reinterpret\_cast<}\mbox{\hyperlink{class_protocol_1_1_packet}{Packet}}*\textcolor{keyword}{>}(temp\_buffer);}
+\DoxyCodeLine{00500\ }
+\DoxyCodeLine{00501\ \ \ \ \ \textcolor{keywordflow}{if}\ (from)\ \{}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ from-\/>\mbox{\hyperlink{class_protocol_1_1_address_a8e0a94c875cb4acd6bbb30a1312815a4}{paddr}}(src\_mac);}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ from-\/>\mbox{\hyperlink{class_protocol_1_1_address_a140a54fbfe4076ec2d9987dbf41f5de1}{port}}(pkt-\/>\mbox{\hyperlink{class_protocol_1_1_packet_ad66f6f2c239cacd75dfcd6dae89348ea}{header}}()-\/>\mbox{\hyperlink{class_protocol_1_1_header_aec8af8cc384a41bbec30ba3d4181f42a}{from\_port}}());}
+\DoxyCodeLine{00504\ \ \ \ \ \}}
+\DoxyCodeLine{00505\ }
+\DoxyCodeLine{00506\ \ \ \ \ \textcolor{comment}{//\ Payload\ size\ (accounting\ for\ Coordinates\ and\ AuthenticationFields)}}
+\DoxyCodeLine{00507\ \ \ \ \ \textcolor{keywordtype}{int}\ payload\_size\ =\ packet\_size\ -\/\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{class_protocol_1_1_header}{Header}})\ -\/\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_protocol_1_1_timestamp_fields}{TimestampFields}})\ -\/\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}})\ -\/\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_protocol_1_1_authentication_fields}{AuthenticationFields}});}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00509\ \ \ \ \ \textcolor{comment}{//\ Copies\ only\ useful\ data}}
+\DoxyCodeLine{00510\ \ \ \ \ std::memcpy(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ pkt-\/>template\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data<void>}}(),\ payload\_size);}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ received\ packet\ from\ "{}}\ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(src\_mac)\ <<\ \textcolor{stringliteral}{"{}\ to\ "{}}\ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(dst\_mac)\ <<\ \textcolor{stringliteral}{"{}\ with\ size\ "{}}\ <<\ packet\_size\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00514\ \ \ \ \ \textcolor{keywordflow}{return}\ payload\_size;}
+\DoxyCodeLine{00515\ \}}
+\DoxyCodeLine{00516\ }
+\DoxyCodeLine{00517\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00518\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_acdbe278edf6c525dccda43b8596f2372}{Protocol<NIC>::attach}}(\mbox{\hyperlink{class_protocol_a20e8d1d47c156c069bf2618cb7ebed5a}{Observer}}*\ obs,\ \mbox{\hyperlink{class_protocol_1_1_address}{Address}}\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}})\ \{\ \ \ \ }
+\DoxyCodeLine{00519\ \ \ \ \ \_observed.attach(obs,\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}}.port());}
+\DoxyCodeLine{00520\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Attached\ observer\ to\ port\ "{}}\ <<\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}}.port()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00521\ \}}
+\DoxyCodeLine{00522\ }
+\DoxyCodeLine{00523\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00524\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_a8708d5b5b95795cdf708ec25650c22df}{Protocol<NIC>::detach}}(\mbox{\hyperlink{class_protocol_a20e8d1d47c156c069bf2618cb7ebed5a}{Observer}}*\ obs,\ \mbox{\hyperlink{class_protocol_1_1_address}{Address}}\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}})\ \{}
+\DoxyCodeLine{00525\ \ \ \ \ \_observed.detach(obs,\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}}.port());}
+\DoxyCodeLine{00526\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Detached\ observer\ from\ port\ "{}}\ <<\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}}.port()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00527\ \}}
+\DoxyCodeLine{00528\ }
+\DoxyCodeLine{00529\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00530\ \textcolor{keywordtype}{void}\ Protocol<NIC>::update(\textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_a99ca9377e6702fa33fb0eb0757b6b842}{NIC::Protocol\_Number}}\ \mbox{\hyperlink{ethernet_8h_a238bf641c59c4900e20286010351f46e}{prot}},\ \mbox{\hyperlink{class_buffer}{Buffer}}\ *\ buf)\ \{}
+\DoxyCodeLine{00531\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}Protocol<NIC>::update()\ called!\(\backslash\)n"{}};}
+\DoxyCodeLine{00532\ }
+\DoxyCodeLine{00533\ \ \ \ \ \textcolor{keywordflow}{if}\ (!buf)\ \{}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ data\ received,\ but\ buffer\ is\ null.\ Releasing\ buffer.\(\backslash\)n"{}};}
+\DoxyCodeLine{00535\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00536\ \ \ \ \ \}}
+\DoxyCodeLine{00537\ }
+\DoxyCodeLine{00538\ \ \ \ \ \mbox{\hyperlink{protocol_8h_ad1552adee734eb7f3459a7476f5e303b}{Packet}}*\ pkt\ =\ \textcolor{keyword}{reinterpret\_cast<}\mbox{\hyperlink{protocol_8h_ad1552adee734eb7f3459a7476f5e303b}{Packet}}*\textcolor{keyword}{>}(buf-\/>\mbox{\hyperlink{class_buffer_ae4d2252ca9e14b66f1884480627ae6d3}{data}}()-\/>\mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}});}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00540\ \ \ \ \ \textcolor{comment}{//\ Radius-\/based\ collision\ domain\ filtering\ -\/\ FIRST\ CHECK}}
+\DoxyCodeLine{00541\ \ \ \ \ \mbox{\hyperlink{struct_coordinates}{Coordinates}}*\ coords\ =\ pkt-\/>coordinates();}
+\DoxyCodeLine{00542\ \ \ \ \ \textcolor{comment}{//\ Get\ receiver\ location}}
+\DoxyCodeLine{00543\ \ \ \ \ \textcolor{keywordtype}{double}\ rx\_x,\ rx\_y;}
+\DoxyCodeLine{00544\ \ \ \ \ \mbox{\hyperlink{class_location_service_a47a113762a9a60846db63b02cb62abf8}{LocationService::getCurrentCoordinates}}(rx\_x,\ rx\_y);}
+\DoxyCodeLine{00545\ \ \ \ \ \textcolor{comment}{//\ Check\ if\ packet\ is\ within\ sender's\ communication\ range}}
+\DoxyCodeLine{00546\ \ \ \ \ \textcolor{keywordtype}{double}\ distance\ =\ \mbox{\hyperlink{class_geo_utils_a89d28ded3fcf2e9a1f127bc208762882}{GeoUtils::euclideanDistance}}(coords-\/>\mbox{\hyperlink{struct_coordinates_a858fd248e4b9ae45cbceeb6bdc7d011b}{x}},\ coords-\/>\mbox{\hyperlink{struct_coordinates_ab89961ba893566971c26e8bf5f377d49}{y}},\ rx\_x,\ rx\_y);}
+\DoxyCodeLine{00547\ \ \ \ \ \textcolor{keywordflow}{if}\ (distance\ >\ coords-\/>\mbox{\hyperlink{struct_coordinates_a9da513ed4d7be0bcb560e3987ae09c69}{radius}})\ \{}
+\DoxyCodeLine{00548\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Packet\ dropped:\ out\ of\ range\ ("{}}\ <<\ distance\ <<\ \textcolor{stringliteral}{"{}m\ >\ "{}}\ <<\ coords-\/>\mbox{\hyperlink{struct_coordinates_a9da513ed4d7be0bcb560e3987ae09c69}{radius}}\ <<\ \textcolor{stringliteral}{"{}m)\(\backslash\)n"{}};}
+\DoxyCodeLine{00549\ \ \ \ \ \ \ \ \ free(buf);}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00551\ \ \ \ \ \}}
+\DoxyCodeLine{00552\ }
+\DoxyCodeLine{00553\ \ \ \ \ \textcolor{comment}{//\ RSU\ message\ filtering\ -\/\ drop\ INTEREST,\ RESPONSE,\ STATUS,\ and\ KEY\_RESPONSE\ messages\ for\ RSUs\ ONLY}}
+\DoxyCodeLine{00554\ \ \ \ \ \textcolor{keywordtype}{int}\ payload\_size\ =\ buf-\/>\mbox{\hyperlink{class_buffer_a2240a2d73d91c05ba18a3d4083282f62}{size}}()\ -\/\ \mbox{\hyperlink{class_ethernet_a981bc68d59187910a930f8f446e98c2d}{Ethernet::HEADER\_SIZE}}\ -\/\ \textcolor{keyword}{sizeof}(Header)\ -\/\ \textcolor{keyword}{sizeof}(TimestampFields)\ -\/\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}})\ -\/\ \textcolor{keyword}{sizeof}(AuthenticationFields);}
+\DoxyCodeLine{00555\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ ==\ EntityType::RSU\ \&\&\ payload\_size\ >\ 0)\ \{}
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ message\_data\ =\ pkt-\/>template\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data<uint8\_t>}}();}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (payload\_size\ >=\ 1)\ \{}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \ \ \ \ \ \ uint8\_t\ raw\_msg\_type\ =\ message\_data[0];}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (raw\_msg\_type\ ==\ \textcolor{keyword}{static\_cast<}uint8\_t\textcolor{keyword}{>}(ProtocolMessage::Type::INTEREST)\ ||}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ raw\_msg\_type\ ==\ \textcolor{keyword}{static\_cast<}uint8\_t\textcolor{keyword}{>}(ProtocolMessage::Type::RESPONSE)\ ||}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ raw\_msg\_type\ ==\ \textcolor{keyword}{static\_cast<}uint8\_t\textcolor{keyword}{>}(ProtocolMessage::Type::STATUS)\ ||}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ raw\_msg\_type\ ==\ \textcolor{keyword}{static\_cast<}uint8\_t\textcolor{keyword}{>}(ProtocolMessage::Type::KEY\_RESPONSE))\ \{}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ msg\_type\_str\ =\ (raw\_msg\_type\ ==\ \textcolor{keyword}{static\_cast<}uint8\_t\textcolor{keyword}{>}(ProtocolMessage::Type::INTEREST))\ ?\ \textcolor{stringliteral}{"{}INTEREST"{}}\ :}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (raw\_msg\_type\ ==\ static\_cast<uint8\_t>(ProtocolMessage::Type::RESPONSE))\ ?\ \textcolor{stringliteral}{"{}RESPONSE"{}}\ :}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (raw\_msg\_type\ ==\ static\_cast<uint8\_t>(ProtocolMessage::Type::STATUS))\ ?\ \textcolor{stringliteral}{"{}STATUS"{}}\ :\ \textcolor{stringliteral}{"{}KEY\_RESPONSE"{}};}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ RSU\ dropping\ "{}}\ <<\ msg\_type\_str\ <<\ \textcolor{stringliteral}{"{}\ message\ -\/\ not\ intended\ for\ RSUs\(\backslash\)n"{}};}
+\DoxyCodeLine{00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ free(buf);}
+\DoxyCodeLine{00571\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00572\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00573\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00574\ \ \ \ \ \}}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00576\ \ \ \ \ \textcolor{comment}{//\ Extract\ timestamps\ and\ update\ Clock\ if\ this\ is\ a\ PTP-\/relevant\ message}}
+\DoxyCodeLine{00577\ \ \ \ \ TimestampFields*\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}}\ =\ pkt-\/>timestamps();}
+\DoxyCodeLine{00578\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Received\ packet\ with\ sender\_clock\_synchronized="{}}\ }
+\DoxyCodeLine{00579\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}}-\/>is\_clock\_synchronized\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00580\ \ \ \ \ \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{TimestampType}}\ rx\_timestamp(std::chrono::microseconds(buf-\/>\mbox{\hyperlink{class_buffer_adc76803a7cbf8a7ad73a2d025f5b2b1a}{rx}}()));}
+\DoxyCodeLine{00581\ \ \ \ \ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC::Address}}\ src\_mac\ =\ buf-\/>\mbox{\hyperlink{class_buffer_ae4d2252ca9e14b66f1884480627ae6d3}{data}}()-\/>src;}
+\DoxyCodeLine{00582\ \ \ \ \ \mbox{\hyperlink{struct_ptp_relevant_data}{PtpRelevantData}}\ ptp\_data;}
+\DoxyCodeLine{00583\ \ \ \ \ ptp\_data.\mbox{\hyperlink{struct_ptp_relevant_data_ab2007597f3a427bbfb23fb81fe52cb0c}{sender\_id}}\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{LeaderIdType}}\textcolor{keyword}{>}(src\_mac.\mbox{\hyperlink{struct_ethernet_1_1_address_a07cba914a56f6e0e7d8724a46ac8ab2e}{bytes}}[5]);}
+\DoxyCodeLine{00584\ \ \ \ \ ptp\_data.\mbox{\hyperlink{struct_ptp_relevant_data_a63286839e08442908351928dd646a737}{ts\_tx\_at\_sender}}\ =\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}}-\/>tx\_timestamp;}
+\DoxyCodeLine{00585\ \ \ \ \ ptp\_data.\mbox{\hyperlink{struct_ptp_relevant_data_a8df7b439622b84080783866528e740b1}{ts\_local\_rx}}\ =\ rx\_timestamp;}
+\DoxyCodeLine{00586\ \ \ \ \ \textcolor{keyword}{auto}\&\ clock\ =\ \mbox{\hyperlink{class_clock_ab177004c1bc5df14899133b1e18c9bdb}{Clock::getInstance}}();}
+\DoxyCodeLine{00587\ \ \ \ \ clock.activate(\&ptp\_data);}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00589\ \ \ \ \ \textcolor{comment}{//\ Authentication\ verification\ for\ INTEREST\ and\ RESPONSE\ messages}}
+\DoxyCodeLine{00590\ \ \ \ \ \textcolor{keywordflow}{if}\ (payload\_size\ >\ 0)\ \{}
+\DoxyCodeLine{00591\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ message\_data\ =\ pkt-\/>template\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data<uint8\_t>}}();}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (payload\_size\ >=\ 1)\ \{}
+\DoxyCodeLine{00593\ \ \ \ \ \ \ \ \ \ \ \ \ uint8\_t\ raw\_msg\_type\ =\ message\_data[0];}
+\DoxyCodeLine{00594\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Check\ if\ this\ message\ type\ requires\ authentication}}
+\DoxyCodeLine{00596\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ msg\_type\ =\ \textcolor{keyword}{static\_cast<}typename\ ProtocolMessage::Type\textcolor{keyword}{>}(raw\_msg\_type);}
+\DoxyCodeLine{00597\ }
+\DoxyCodeLine{00598\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (is\_authenticated\_message\_type(msg\_type))\ \{}
+\DoxyCodeLine{00599\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00600\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Verify\ MAC\ authentication\ (hybrid\ approach:\ message\ +\ packet\ fields)}}
+\DoxyCodeLine{00601\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Note:\ TX\ timestamp\ is\ excluded\ from\ MAC\ calculation\ for\ architectural\ cleanliness}}
+\DoxyCodeLine{00602\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!verify\_mac(message\_data,\ payload\_size,\ pkt-\/>header(),\ }
+\DoxyCodeLine{00603\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pkt-\/>timestamps(),\ pkt-\/>coordinates(),\ pkt-\/>authentication()-\/>mac))\ \{}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ verification\ failed\ -\/\ packet\ may\ be\ tampered\(\backslash\)n"{}};}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ vehicles:\ Send\ REQ\ message\ to\ leader\ RSU\ instead\ of\ just\ dropping}}
+\DoxyCodeLine{00607\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ ==\ EntityType::VEHICLE\ \&\&\ \_vehicle\_rsu\_manager)\ \{}
+\DoxyCodeLine{00608\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Sending\ REQ\ message\ to\ leader\ RSU\ for\ failed\ authentication\(\backslash\)n"{}};}
+\DoxyCodeLine{00609\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ send\_req\_message\_to\_leader(message\_data,\ payload\_size,\ pkt-\/>authentication()-\/>mac,}
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pkt-\/>header(),\ pkt-\/>timestamps(),\ pkt-\/>coordinates());}
+\DoxyCodeLine{00611\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00612\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ RSU\ dropping\ message\ with\ failed\ MAC\(\backslash\)n"{}};}
+\DoxyCodeLine{00613\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00614\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ free(buf);}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00617\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00618\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00619\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ verification\ successful\ -\/\ packet\ integrity\ confirmed\(\backslash\)n"{}};}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ STATUS\ message\ interception\ (no\ authentication\ required)}}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (raw\_msg\_type\ ==\ \textcolor{keyword}{static\_cast<}uint8\_t\textcolor{keyword}{>}(ProtocolMessage::Type::STATUS))\ \{}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Intercepted\ STATUS\ message\(\backslash\)n"{}};}
+\DoxyCodeLine{00625\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ msg\_type\ =\ \textcolor{keyword}{static\_cast<}typename\ ProtocolMessage::Type\textcolor{keyword}{>}(raw\_msg\_type);}
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ handle\_status\_message(msg\_type,\ message\_data,\ payload\_size,\ pkt-\/>coordinates(),\ pkt-\/>timestamps(),\ buf-\/>\mbox{\hyperlink{class_buffer_ae4d2252ca9e14b66f1884480627ae6d3}{data}}()-\/>src);}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ free(buf);}
+\DoxyCodeLine{00628\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00631\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ REQ\ message\ interception\ (for\ RSUs\ only,\ no\ authentication\ required)}}
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (raw\_msg\_type\ ==\ \textcolor{keyword}{static\_cast<}uint8\_t\textcolor{keyword}{>}(ProtocolMessage::Type::REQ)\ \&\&\ \_entity\_type\ ==\ EntityType::RSU)\ \{}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Intercepted\ REQ\ message\ at\ RSU\(\backslash\)n"{}};}
+\DoxyCodeLine{00634\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ handle\_req\_message(message\_data,\ payload\_size,\ buf-\/>\mbox{\hyperlink{class_buffer_ae4d2252ca9e14b66f1884480627ae6d3}{data}}()-\/>src);}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ free(buf);}
+\DoxyCodeLine{00636\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ KEY\_RESPONSE\ message\ interception\ (for\ vehicles\ only,\ no\ authentication\ required)}}
+\DoxyCodeLine{00640\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (raw\_msg\_type\ ==\ \textcolor{keyword}{static\_cast<}uint8\_t\textcolor{keyword}{>}(ProtocolMessage::Type::KEY\_RESPONSE)\ \&\&\ \_entity\_type\ ==\ EntityType::VEHICLE)\ \{}
+\DoxyCodeLine{00641\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Intercepted\ KEY\_RESPONSE\ message\ at\ vehicle\(\backslash\)n"{}};}
+\DoxyCodeLine{00642\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ handle\_resp\_message(message\_data,\ payload\_size);}
+\DoxyCodeLine{00643\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ free(buf);}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00645\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00646\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00647\ \ \ \ \ \}}
+\DoxyCodeLine{00648\ }
+\DoxyCodeLine{00649\ \ \ \ \ \textcolor{comment}{//\ For\ non-\/STATUS\ messages,\ continue\ normal\ flow}}
+\DoxyCodeLine{00650\ \ \ \ \ \textcolor{keywordflow}{if}\ (!Protocol::\_observed.notify(buf))\ \{}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ data\ received,\ but\ no\ one\ was\ notified\ for\ port.\ Releasing\ buffer.\(\backslash\)n"{}};}
+\DoxyCodeLine{00652\ \ \ \ \ \ \ \ \ free(buf);}
+\DoxyCodeLine{00653\ \ \ \ \ \}}
+\DoxyCodeLine{00654\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ data\ received,\ notify\ succeeded.\(\backslash\)n"{}};}
+\DoxyCodeLine{00655\ \}}
+\DoxyCodeLine{00656\ }
+\DoxyCodeLine{00657\ \textcolor{comment}{//\ STATUS\ message\ handler}}
+\DoxyCodeLine{00658\ }
+\DoxyCodeLine{00659\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00660\ \textcolor{keywordtype}{void}\ Protocol<NIC>::handle\_status\_message(\textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ ProtocolMessage::Type\&\ msg\_type,}
+\DoxyCodeLine{00661\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ payload\_size,}
+\DoxyCodeLine{00662\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_coordinates}{Coordinates}}*\ sender\_coords,}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ TimestampFields*\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}},}
+\DoxyCodeLine{00664\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC::Address}}\&\ sender\_mac)\ \{}
+\DoxyCodeLine{00665\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Processing\ STATUS\ message\ from\ "{}}\ }
+\DoxyCodeLine{00666\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(sender\_mac)\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00667\ \ \ \ \ \textcolor{comment}{//\ Only\ vehicles\ process\ STATUS\ messages\ from\ RSUs}}
+\DoxyCodeLine{00668\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ !=\ EntityType::VEHICLE\ ||\ !\_vehicle\_rsu\_manager)\ \{}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Ignoring\ STATUS\ message\ (not\ a\ vehicle\ or\ no\ RSU\ manager)\(\backslash\)n"{}};}
+\DoxyCodeLine{00670\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00671\ \ \ \ \ \}}
+\DoxyCodeLine{00672\ \ \ \ \ }
+\DoxyCodeLine{00673\ \ \ \ \ \textcolor{comment}{//\ Deserialize\ the\ STATUS\ message\ to\ extract\ payload}}
+\DoxyCodeLine{00674\ \ \ \ \ ProtocolMessage\ status\_msg\ =\ ProtocolMessage::deserialize(message\_data,\ payload\_size);}
+\DoxyCodeLine{00675\ \ \ \ \ \textcolor{keywordflow}{if}\ (status\_msg.message\_type()\ !=\ ProtocolMessage::Type::STATUS)\ \{}
+\DoxyCodeLine{00676\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Failed\ to\ deserialize\ STATUS\ message\(\backslash\)n"{}};}
+\DoxyCodeLine{00677\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00678\ \ \ \ \ \}}
+\DoxyCodeLine{00679\ \ \ \ \ }
+\DoxyCodeLine{00680\ \ \ \ \ \textcolor{comment}{//\ Extract\ RSU\ information\ from\ STATUS\ message\ payload}}
+\DoxyCodeLine{00681\ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}\ =\ status\_msg.value();}
+\DoxyCodeLine{00682\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ value\_size\ =\ status\_msg.value\_size();}
+\DoxyCodeLine{00683\ \ \ \ \ \textcolor{keywordflow}{if}\ (value\_size\ <\ (\textcolor{keyword}{sizeof}(\textcolor{keywordtype}{double})\ *\ 3\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}})))\ \{}
+\DoxyCodeLine{00684\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ STATUS\ message\ payload\ too\ small:\ "{}}\ <<\ value\_size\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00685\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00686\ \ \ \ \ \}}
+\DoxyCodeLine{00687\ }
+\DoxyCodeLine{00688\ \ \ \ \ \textcolor{comment}{//\ Debug:\ print\ out\ the\ HEX\ for\ the\ payload}}
+\DoxyCodeLine{00689\ \ \ \ \ std::string\ payload\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00690\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ value\_size;\ ++i)\ \{}
+\DoxyCodeLine{00691\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00692\ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ message\_data[i]);}
+\DoxyCodeLine{00693\ \ \ \ \ \ \ \ \ payload\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00694\ \ \ \ \ \}}
+\DoxyCodeLine{00695\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ STATUS\ message\ payload:\ "{}}\ <<\ payload\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00696\ \ \ \ \ }
+\DoxyCodeLine{00697\ \ \ \ \ \textcolor{comment}{//\ Parse\ payload}}
+\DoxyCodeLine{00698\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ offset\ =\ 0;}
+\DoxyCodeLine{00699\ \ \ \ \ \textcolor{keywordtype}{double}\ rsu\_x,\ rsu\_y,\ rsu\_radius;}
+\DoxyCodeLine{00700\ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ rsu\_key;}
+\DoxyCodeLine{00701\ \ \ \ \ std::memcpy(\&rsu\_x,\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}\ +\ offset,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{double}));}
+\DoxyCodeLine{00702\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(double);}
+\DoxyCodeLine{00703\ \ \ \ \ std::memcpy(\&rsu\_y,\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}\ +\ offset,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{double}));}
+\DoxyCodeLine{00704\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(double);}
+\DoxyCodeLine{00705\ \ \ \ \ std::memcpy(\&rsu\_radius,\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}\ +\ offset,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{double}));}
+\DoxyCodeLine{00706\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(double);}
+\DoxyCodeLine{00707\ \ \ \ \ std::memcpy(\&rsu\_key,\ \mbox{\hyperlink{ethernet_8h_af86407c91e9d2911ca6ebaca1b81e33a}{payload}}\ +\ offset,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}));}
+\DoxyCodeLine{00708\ \ \ \ \ }
+\DoxyCodeLine{00709\ \ \ \ \ \textcolor{comment}{//\ Create\ Protocol\ address\ for\ the\ RSU}}
+\DoxyCodeLine{00710\ \ \ \ \ Address\ rsu\_address(sender\_mac,\ status\_msg.origin().port());}
+\DoxyCodeLine{00711\ \ \ \ \ }
+\DoxyCodeLine{00712\ \ \ \ \ \textcolor{comment}{//\ Forward\ to\ RSU\ manager\ -\/\ this\ will\ be\ linked\ at\ compile\ time\ when\ VehicleRSUManager\ is\ fully\ defined}}
+\DoxyCodeLine{00713\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_vehicle\_rsu\_manager)\ \{}
+\DoxyCodeLine{00714\ \ \ \ \ \ \ \ \ \_vehicle\_rsu\_manager-\/>process\_rsu\_status(rsu\_address,\ rsu\_x,\ rsu\_y,\ rsu\_radius,\ rsu\_key);}
+\DoxyCodeLine{00715\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Forwarded\ RSU\ info\ to\ manager:\ x="{}}\ <<\ rsu\_x\ }
+\DoxyCodeLine{00716\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ y="{}}\ <<\ rsu\_y\ <<\ \textcolor{stringliteral}{"{},\ radius="{}}\ <<\ rsu\_radius\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00717\ \ \ \ \ \}}
+\DoxyCodeLine{00718\ \}}
+\DoxyCodeLine{00719\ }
+\DoxyCodeLine{00720\ \textcolor{comment}{//\ Implementation\ for\ the\ new\ free\ method}}
+\DoxyCodeLine{00721\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00722\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_a358b5c29ca76e7736dbcd343d6e7fbda}{Protocol<NIC>::free}}(\mbox{\hyperlink{class_protocol_a73dddef2b65c7ff5bf444e5afe632c64}{Buffer}}*\ buf)\ \{}
+\DoxyCodeLine{00723\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_nic)\ \{}
+\DoxyCodeLine{00724\ \ \ \ \ \ \ \ \ \_nic-\/>free(buf);}
+\DoxyCodeLine{00725\ \ \ \ \ \}}
+\DoxyCodeLine{00726\ \}}
+\DoxyCodeLine{00727\ }
+\DoxyCodeLine{00728\ \textcolor{comment}{//\ Implementation\ for\ setRadius\ method}}
+\DoxyCodeLine{00729\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00730\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_a42a5264d98b803915d5c57e55b6b6ab3}{Protocol<NIC>::setRadius}}(\textcolor{keywordtype}{double}\ radius)\ \{}
+\DoxyCodeLine{00731\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_nic)\ \{}
+\DoxyCodeLine{00732\ \ \ \ \ \ \ \ \ \_nic-\/>setRadius(radius);}
+\DoxyCodeLine{00733\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ NIC\ transmission\ radius\ set\ to\ "{}}\ <<\ radius\ <<\ \textcolor{stringliteral}{"{}m\(\backslash\)n"{}};}
+\DoxyCodeLine{00734\ \ \ \ \ \}}
+\DoxyCodeLine{00735\ \}}
+\DoxyCodeLine{00736\ }
+\DoxyCodeLine{00737\ \textcolor{comment}{//\ MAC\ Authentication\ Implementation\ -\/\ Hybrid\ Approach}}
+\DoxyCodeLine{00738\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00739\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ Protocol<NIC>::calculate\_mac(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ message\_size,}
+\DoxyCodeLine{00740\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Header*\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}},\ \textcolor{keyword}{const}\ TimestampFields*\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}},}
+\DoxyCodeLine{00741\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_coordinates}{Coordinates}}*\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ key)\ \{}
+\DoxyCodeLine{00742\ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ result;}
+\DoxyCodeLine{00743\ \ \ \ \ result.fill(0);}
+\DoxyCodeLine{00744\ \ \ \ \ }
+\DoxyCodeLine{00745\ \ \ \ \ \textcolor{comment}{//\ Create\ a\ buffer\ containing\ all\ authenticated\ fields\ in\ deterministic\ order}}
+\DoxyCodeLine{00746\ \ \ \ \ std::vector<uint8\_t>\ auth\_data;}
+\DoxyCodeLine{00747\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ total\_size\ =\ 0;}
+\DoxyCodeLine{00748\ \ \ \ \ }
+\DoxyCodeLine{00749\ \ \ \ \ \textcolor{comment}{//\ 1.\ Add\ Header\ fields\ (from\_port,\ to\_port\ -\/\ excluding\ size\ to\ avoid\ circular\ dependency)}}
+\DoxyCodeLine{00750\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ header\_auth\_size\ =\ \textcolor{keyword}{sizeof}(Port)\ *\ 2;\ \textcolor{comment}{//\ from\_port\ +\ to\_port}}
+\DoxyCodeLine{00751\ \ \ \ \ total\_size\ +=\ header\_auth\_size;}
+\DoxyCodeLine{00752\ \ \ \ \ }
+\DoxyCodeLine{00753\ \ \ \ \ \textcolor{comment}{//\ 2.\ Add\ TimestampFields\ (only\ sync\ status,\ exclude\ tx\_timestamp\ for\ architectural\ cleanliness)}}
+\DoxyCodeLine{00754\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ timestamp\_auth\_size\ =\ \textcolor{keyword}{sizeof}(bool);\ \textcolor{comment}{//\ Only\ is\_clock\_synchronized}}
+\DoxyCodeLine{00755\ \ \ \ \ total\_size\ +=\ timestamp\_auth\_size;}
+\DoxyCodeLine{00756\ \ \ \ \ }
+\DoxyCodeLine{00757\ \ \ \ \ \textcolor{comment}{//\ 3.\ Add\ Coordinates\ (full\ structure\ for\ location\ integrity)}}
+\DoxyCodeLine{00758\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ coords\_auth\_size\ =\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}});}
+\DoxyCodeLine{00759\ \ \ \ \ total\_size\ +=\ coords\_auth\_size;}
+\DoxyCodeLine{00760\ \ \ \ \ }
+\DoxyCodeLine{00761\ \ \ \ \ \textcolor{comment}{//\ 4.\ Add\ message\ payload}}
+\DoxyCodeLine{00762\ \ \ \ \ total\_size\ +=\ message\_size;}
+\DoxyCodeLine{00763\ \ \ \ \ }
+\DoxyCodeLine{00764\ \ \ \ \ \textcolor{comment}{//\ Allocate\ buffer\ for\ all\ authenticated\ data}}
+\DoxyCodeLine{00765\ \ \ \ \ auth\_data.resize(total\_size);}
+\DoxyCodeLine{00766\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ offset\ =\ 0;}
+\DoxyCodeLine{00767\ \ \ \ \ }
+\DoxyCodeLine{00768\ \ \ \ \ \textcolor{comment}{//\ Serialize\ Header\ fields}}
+\DoxyCodeLine{00769\ \ \ \ \ Port\ from\_port\ =\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}}-\/>from\_port();}
+\DoxyCodeLine{00770\ \ \ \ \ Port\ to\_port\ =\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}}-\/>to\_port();}
+\DoxyCodeLine{00771\ \ \ \ \ std::memcpy(auth\_data.data()\ +\ offset,\ \&from\_port,\ \textcolor{keyword}{sizeof}(Port));}
+\DoxyCodeLine{00772\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(Port);}
+\DoxyCodeLine{00773\ \ \ \ \ std::memcpy(auth\_data.data()\ +\ offset,\ \&to\_port,\ \textcolor{keyword}{sizeof}(Port));}
+\DoxyCodeLine{00774\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(Port);}
+\DoxyCodeLine{00775\ \ \ \ \ }
+\DoxyCodeLine{00776\ \ \ \ \ \textcolor{comment}{//\ Serialize\ TimestampFields\ (only\ sync\ status,\ exclude\ tx\_timestamp)}}
+\DoxyCodeLine{00777\ \ \ \ \ \textcolor{keywordtype}{bool}\ sync\_status\ =\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}}-\/>is\_clock\_synchronized;}
+\DoxyCodeLine{00778\ \ \ \ \ std::memcpy(auth\_data.data()\ +\ offset,\ \&sync\_status,\ \textcolor{keyword}{sizeof}(\textcolor{keywordtype}{bool}));}
+\DoxyCodeLine{00779\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(bool);}
+\DoxyCodeLine{00780\ \ \ \ \ \textcolor{comment}{//\ Note:\ tx\_timestamp\ is\ intentionally\ excluded\ from\ MAC\ calculation}}
+\DoxyCodeLine{00781\ \ \ \ \ }
+\DoxyCodeLine{00782\ \ \ \ \ \textcolor{comment}{//\ Serialize\ Coordinates}}
+\DoxyCodeLine{00783\ \ \ \ \ std::memcpy(auth\_data.data()\ +\ offset,\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}},\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}}));}
+\DoxyCodeLine{00784\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}});}
+\DoxyCodeLine{00785\ \ \ \ \ }
+\DoxyCodeLine{00786\ \ \ \ \ \textcolor{comment}{//\ Serialize\ message\ payload}}
+\DoxyCodeLine{00787\ \ \ \ \ std::memcpy(auth\_data.data()\ +\ offset,\ message\_data,\ message\_size);}
+\DoxyCodeLine{00788\ \ \ \ \ }
+\DoxyCodeLine{00789\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ what's\ being\ authenticated}}
+\DoxyCodeLine{00790\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ -\/\ Authenticating\ "{}}\ <<\ total\_size\ <<\ \textcolor{stringliteral}{"{}\ bytes\ total:\(\backslash\)n"{}};}
+\DoxyCodeLine{00791\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ -\/\ Header:\ from\_port="{}}\ <<\ from\_port\ }
+\DoxyCodeLine{00792\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ to\_port="{}}\ <<\ to\_port\ <<\ \textcolor{stringliteral}{"{}\ ("{}}\ <<\ header\_auth\_size\ <<\ \textcolor{stringliteral}{"{}\ bytes)\(\backslash\)n"{}};}
+\DoxyCodeLine{00793\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ -\/\ Timestamps:\ sync="{}}\ <<\ sync\_status\ }
+\DoxyCodeLine{00794\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ ("{}}\ <<\ timestamp\_auth\_size\ <<\ \textcolor{stringliteral}{"{}\ bytes,\ tx\_timestamp\ excluded)\(\backslash\)n"{}};}
+\DoxyCodeLine{00795\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ -\/\ Coordinates:\ x="{}}\ <<\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}}-\/>x\ }
+\DoxyCodeLine{00796\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ y="{}}\ <<\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}}-\/>y\ <<\ \textcolor{stringliteral}{"{},\ radius="{}}\ <<\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}}-\/>radius\ }
+\DoxyCodeLine{00797\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ ("{}}\ <<\ coords\_auth\_size\ <<\ \textcolor{stringliteral}{"{}\ bytes)\(\backslash\)n"{}};}
+\DoxyCodeLine{00798\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ -\/\ Message\ payload:\ "{}}\ <<\ message\_size\ <<\ \textcolor{stringliteral}{"{}\ bytes\(\backslash\)n"{}};}
+\DoxyCodeLine{00799\ \ \ \ \ }
+\DoxyCodeLine{00800\ \ \ \ \ \textcolor{comment}{//\ XOR-\/based\ MAC\ calculation\ on\ combined\ authenticated\ data}}
+\DoxyCodeLine{00801\ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ combined\_data\ =\ auth\_data.data();}
+\DoxyCodeLine{00802\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ total\_size;\ ++i)\ \{}
+\DoxyCodeLine{00803\ \ \ \ \ \ \ \ \ result[i\ \%\ 16]\ \string^=\ combined\_data[i];}
+\DoxyCodeLine{00804\ \ \ \ \ \}}
+\DoxyCodeLine{00805\ \ \ \ \ }
+\DoxyCodeLine{00806\ \ \ \ \ \textcolor{comment}{//\ XOR\ with\ the\ key}}
+\DoxyCodeLine{00807\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00808\ \ \ \ \ \ \ \ \ result[i]\ \string^=\ key[i];}
+\DoxyCodeLine{00809\ \ \ \ \ \}}
+\DoxyCodeLine{00810\ \ \ \ \ }
+\DoxyCodeLine{00811\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ computed\ MAC}}
+\DoxyCodeLine{00812\ \ \ \ \ std::string\ computed\_mac\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00813\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00814\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00815\ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ result[i]);}
+\DoxyCodeLine{00816\ \ \ \ \ \ \ \ \ computed\_mac\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00817\ \ \ \ \ \}}
+\DoxyCodeLine{00818\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ -\/\ Computed\ MAC:\ "{}}\ <<\ computed\_mac\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00819\ \ \ \ \ }
+\DoxyCodeLine{00820\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00821\ \}}
+\DoxyCodeLine{00822\ }
+\DoxyCodeLine{00823\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00824\ \textcolor{keywordtype}{bool}\ Protocol<NIC>::verify\_mac(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ message\_size,}
+\DoxyCodeLine{00825\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Header*\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}},\ \textcolor{keyword}{const}\ TimestampFields*\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}},}
+\DoxyCodeLine{00826\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_coordinates}{Coordinates}}*\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}},\ \textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ received\_mac)\ \{}
+\DoxyCodeLine{00827\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ received\ MAC}}
+\DoxyCodeLine{00828\ \ \ \ \ std::string\ received\_mac\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00829\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00830\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00831\ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ received\_mac[i]);}
+\DoxyCodeLine{00832\ \ \ \ \ \ \ \ \ received\_mac\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00833\ \ \ \ \ \}}
+\DoxyCodeLine{00834\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ Received\ MAC:\ "{}}\ <<\ received\_mac\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00835\ \ \ \ \ }
+\DoxyCodeLine{00836\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ packet\ fields\ being\ verified}}
+\DoxyCodeLine{00837\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ Header:\ from\_port="{}}\ <<\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}}-\/>from\_port()\ }
+\DoxyCodeLine{00838\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ to\_port="{}}\ <<\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}}-\/>to\_port()\ <<\ \textcolor{stringliteral}{"{},\ size="{}}\ <<\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}}-\/>size()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00839\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ Timestamps:\ sync="{}}\ <<\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}}-\/>is\_clock\_synchronized\ }
+\DoxyCodeLine{00840\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ (tx\_timestamp\ excluded\ from\ MAC\ calculation)\(\backslash\)n"{}};}
+\DoxyCodeLine{00841\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ Coordinates:\ x="{}}\ <<\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}}-\/>x\ }
+\DoxyCodeLine{00842\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ y="{}}\ <<\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}}-\/>y\ <<\ \textcolor{stringliteral}{"{},\ radius="{}}\ <<\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}}-\/>radius\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00843\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ Message\ payload\ size:\ "{}}\ <<\ message\_size\ <<\ \textcolor{stringliteral}{"{}\ bytes\(\backslash\)n"{}};}
+\DoxyCodeLine{00844\ \ \ \ \ }
+\DoxyCodeLine{00845\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ message\ data\ being\ verified}}
+\DoxyCodeLine{00846\ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ msg\_bytes\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }uint8\_t*\textcolor{keyword}{>}(message\_data);}
+\DoxyCodeLine{00847\ \ \ \ \ std::string\ msg\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00848\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ std::min(message\_size,\ 32u);\ ++i)\ \{\ \ \textcolor{comment}{//\ Log\ first\ 32\ bytes}}
+\DoxyCodeLine{00849\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00850\ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ msg\_bytes[i]);}
+\DoxyCodeLine{00851\ \ \ \ \ \ \ \ \ msg\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00852\ \ \ \ \ \}}
+\DoxyCodeLine{00853\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ Message\ data\ (first\ "{}}\ <<\ std::min(message\_size,\ 32u)\ <<\ \textcolor{stringliteral}{"{}\ bytes):\ "{}}\ <<\ msg\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00854\ \ \ \ \ }
+\DoxyCodeLine{00855\ \ \ \ \ \textcolor{comment}{//\ For\ vehicles:\ Check\ MAC\ against\ all\ known\ RSU\ keys\ AND\ neighbor\ RSU\ keys}}
+\DoxyCodeLine{00856\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ ==\ EntityType::VEHICLE\ \&\&\ \_vehicle\_rsu\_manager)\ \{}
+\DoxyCodeLine{00857\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ known\_rsus\ =\ \_vehicle\_rsu\_manager-\/>get\_known\_rsus();}
+\DoxyCodeLine{00858\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ neighbor\_keys\ =\ \_vehicle\_rsu\_manager-\/>get\_neighbor\_rsu\_keys();}
+\DoxyCodeLine{00859\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00860\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ Vehicle\ checking\ against\ "{}}\ <<\ known\_rsus.size()\ }
+\DoxyCodeLine{00861\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ known\ RSU\ keys\ and\ "{}}\ <<\ neighbor\_keys.size()\ <<\ \textcolor{stringliteral}{"{}\ neighbor\ RSU\ keys\(\backslash\)n"{}};}
+\DoxyCodeLine{00862\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00863\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ First\ check\ known\ RSUs}}
+\DoxyCodeLine{00864\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ idx\ =\ 0;\ idx\ <\ known\_rsus.size();\ ++idx)\ \{}
+\DoxyCodeLine{00865\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ rsu\ =\ known\_rsus[idx];}
+\DoxyCodeLine{00866\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00867\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ RSU\ key\ being\ tested}}
+\DoxyCodeLine{00868\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ rsu\_key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00869\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00870\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00871\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ rsu.group\_key[i]);}
+\DoxyCodeLine{00872\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rsu\_key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00873\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00874\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ Testing\ known\ RSU\ "{}}\ <<\ idx\ <<\ \textcolor{stringliteral}{"{}\ ("{}}\ <<\ rsu.address.to\_string()\ <<\ \textcolor{stringliteral}{"{})\ key:\ "{}}\ <<\ rsu\_key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00875\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00876\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ calculated\_mac\ =\ calculate\_mac(message\_data,\ message\_size,\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}},\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}},\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}},\ rsu.group\_key);}
+\DoxyCodeLine{00877\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00878\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ calculated\ MAC\ for\ this\ key}}
+\DoxyCodeLine{00879\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ calc\_mac\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00880\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00881\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00882\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ calculated\_mac[i]);}
+\DoxyCodeLine{00883\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ calc\_mac\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00884\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00885\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ Known\ RSU\ "{}}\ <<\ idx\ <<\ \textcolor{stringliteral}{"{}\ calculated\ MAC:\ "{}}\ <<\ calc\_mac\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00886\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00887\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (calculated\_mac\ ==\ received\_mac)\ \{}
+\DoxyCodeLine{00888\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ verified\ with\ known\ RSU\ "{}}\ <<\ rsu.address.to\_string()\ <<\ \textcolor{stringliteral}{"{}\ key\(\backslash\)n"{}};}
+\DoxyCodeLine{00889\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00890\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00891\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00892\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00893\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Then\ check\ neighbor\ RSU\ keys}}
+\DoxyCodeLine{00894\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ idx\ =\ 0;\ idx\ <\ neighbor\_keys.size();\ ++idx)\ \{}
+\DoxyCodeLine{00895\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ neighbor\_key\ =\ neighbor\_keys[idx];}
+\DoxyCodeLine{00896\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00897\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ neighbor\ key\ being\ tested}}
+\DoxyCodeLine{00898\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ neighbor\_key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00899\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00900\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00901\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ neighbor\_key[i]);}
+\DoxyCodeLine{00902\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ neighbor\_key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00903\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00904\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ Testing\ neighbor\ RSU\ "{}}\ <<\ idx\ <<\ \textcolor{stringliteral}{"{}\ key:\ "{}}\ <<\ neighbor\_key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00905\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00906\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ calculated\_mac\ =\ calculate\_mac(message\_data,\ message\_size,\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}},\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}},\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}},\ neighbor\_key);}
+\DoxyCodeLine{00907\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00908\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ calculated\ MAC\ for\ this\ neighbor\ key}}
+\DoxyCodeLine{00909\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ calc\_mac\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00910\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00911\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00912\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ calculated\_mac[i]);}
+\DoxyCodeLine{00913\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ calc\_mac\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00914\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00915\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ Neighbor\ RSU\ "{}}\ <<\ idx\ <<\ \textcolor{stringliteral}{"{}\ calculated\ MAC:\ "{}}\ <<\ calc\_mac\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00916\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00917\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (calculated\_mac\ ==\ received\_mac)\ \{}
+\DoxyCodeLine{00918\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ verified\ with\ neighbor\ RSU\ key\ "{}}\ <<\ idx\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00919\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00920\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00921\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00922\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00923\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ verification\ failed\ -\/\ no\ matching\ RSU\ or\ neighbor\ key\ found\(\backslash\)n"{}};}
+\DoxyCodeLine{00924\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00925\ \ \ \ \ \}}
+\DoxyCodeLine{00926\ \ \ \ \ }
+\DoxyCodeLine{00927\ \ \ \ \ \textcolor{comment}{//\ For\ RSUs:\ Check\ MAC\ against\ current\ leader\ key}}
+\DoxyCodeLine{00928\ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ leader\_key\ =\ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_a111ba868b182ba904375e24d003cb489}{getGroupMacKey}}();}
+\DoxyCodeLine{00929\ \ \ \ \ }
+\DoxyCodeLine{00930\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ leader\ key\ being\ used}}
+\DoxyCodeLine{00931\ \ \ \ \ std::string\ leader\_key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00932\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00933\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00934\ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ leader\_key[i]);}
+\DoxyCodeLine{00935\ \ \ \ \ \ \ \ \ leader\_key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00936\ \ \ \ \ \}}
+\DoxyCodeLine{00937\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ RSU\ checking\ with\ leader\ key:\ "{}}\ <<\ leader\_key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00938\ \ \ \ \ }
+\DoxyCodeLine{00939\ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ calculated\_mac\ =\ calculate\_mac(message\_data,\ message\_size,\ \mbox{\hyperlink{protocol_8h_ac28f3c5c6696c919222b234f77c85013}{header}},\ \mbox{\hyperlink{protocol_8h_a415771a0c7a29fae2ee6cf9e9bbba538}{timestamps}},\ \mbox{\hyperlink{protocol_8h_a1a975da314c9523eb960d796231eaab4}{coordinates}},\ leader\_key);}
+\DoxyCodeLine{00940\ \ \ \ \ }
+\DoxyCodeLine{00941\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ calculated\ MAC}}
+\DoxyCodeLine{00942\ \ \ \ \ std::string\ calc\_mac\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00943\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{00944\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{00945\ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ calculated\_mac[i]);}
+\DoxyCodeLine{00946\ \ \ \ \ \ \ \ \ calc\_mac\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{00947\ \ \ \ \ \}}
+\DoxyCodeLine{00948\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ Verify\ -\/\ RSU\ calculated\ MAC:\ "{}}\ <<\ calc\_mac\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00949\ \ \ \ \ }
+\DoxyCodeLine{00950\ \ \ \ \ \textcolor{keywordtype}{bool}\ is\_valid\ =\ (calculated\_mac\ ==\ received\_mac);}
+\DoxyCodeLine{00951\ \ \ \ \ }
+\DoxyCodeLine{00952\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Hybrid\ MAC\ verification\ "{}}\ <<\ (is\_valid\ ?\ \textcolor{stringliteral}{"{}successful"{}}\ :\ \textcolor{stringliteral}{"{}failed"{}})\ <<\ \textcolor{stringliteral}{"{}\ with\ leader\ key\(\backslash\)n"{}};}
+\DoxyCodeLine{00953\ \ \ \ \ \textcolor{keywordflow}{return}\ is\_valid;}
+\DoxyCodeLine{00954\ \}}
+\DoxyCodeLine{00955\ }
+\DoxyCodeLine{00956\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00957\ \textcolor{keywordtype}{bool}\ Protocol<NIC>::requires\_authentication(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size)\ \{}
+\DoxyCodeLine{00958\ \ \ \ \ \textcolor{keywordflow}{if}\ (size\ <\ 1)\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00959\ \ \ \ \ }
+\DoxyCodeLine{00960\ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ message\_bytes\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }uint8\_t*\textcolor{keyword}{>}(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00961\ \ \ \ \ uint8\_t\ msg\_type\ =\ message\_bytes[0];}
+\DoxyCodeLine{00962\ \ \ \ \ }
+\DoxyCodeLine{00963\ \ \ \ \ \textcolor{keywordflow}{return}\ is\_authenticated\_message\_type(\textcolor{keyword}{static\_cast<}typename\ ProtocolMessage::Type\textcolor{keyword}{>}(msg\_type));}
+\DoxyCodeLine{00964\ \}}
+\DoxyCodeLine{00965\ }
+\DoxyCodeLine{00966\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00967\ \textcolor{keywordtype}{bool}\ Protocol<NIC>::is\_authenticated\_message\_type(\textcolor{keyword}{typename}\ ProtocolMessage::Type\ type)\ \{}
+\DoxyCodeLine{00968\ \ \ \ \ \textcolor{comment}{//return\ (type\ ==\ ProtocolMessage::Type::INTEREST\ ||\ }}
+\DoxyCodeLine{00969\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ type\ ==\ ProtocolMessage::Type::RESPONSE);}}
+\DoxyCodeLine{00970\ }
+\DoxyCodeLine{00971\ \ \ \ \ \textcolor{keywordflow}{return}\ (type\ ==\ ProtocolMessage::Type::RESPONSE);}
+\DoxyCodeLine{00972\ \}}
+\DoxyCodeLine{00973\ }
+\DoxyCodeLine{00974\ \textcolor{comment}{//\ REQ\ message\ handler\ implementation}}
+\DoxyCodeLine{00975\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{00976\ \textcolor{keywordtype}{void}\ Protocol<NIC>::handle\_req\_message(\textcolor{keyword}{const}\ uint8\_t*\ message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ payload\_size,}
+\DoxyCodeLine{00977\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_n_i_c_aaa3a968abe4bc5c6206036e2a7ca6965}{NIC::Address}}\&\ sender\_mac)\ \{}
+\DoxyCodeLine{00978\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ RSU\ processing\ REQ\ message\ from\ "{}}\ }
+\DoxyCodeLine{00979\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \mbox{\hyperlink{class_ethernet_a304d7ec52f4fb4082c3f6cc19fa454bd}{Ethernet::mac\_to\_string}}(sender\_mac)\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00980\ }
+\DoxyCodeLine{00981\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ !=\ EntityType::RSU)\ \{}
+\DoxyCodeLine{00982\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Non-\/RSU\ entity\ received\ REQ\ message\ -\/\ ignoring\(\backslash\)n"{}};}
+\DoxyCodeLine{00983\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00984\ \ \ \ \ \}}
+\DoxyCodeLine{00985\ }
+\DoxyCodeLine{00986\ \ \ \ \ ProtocolMessage\ req\_msg\ =\ ProtocolMessage::deserialize(message\_data,\ payload\_size);}
+\DoxyCodeLine{00987\ \ \ \ \ \textcolor{keywordflow}{if}\ (req\_msg.message\_type()\ !=\ ProtocolMessage::Type::REQ)\ \{}
+\DoxyCodeLine{00988\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Failed\ to\ deserialize\ REQ\ message\(\backslash\)n"{}};}
+\DoxyCodeLine{00989\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00990\ \ \ \ \ \}}
+\DoxyCodeLine{00991\ }
+\DoxyCodeLine{00992\ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ req\_payload\ =\ req\_msg.value();}
+\DoxyCodeLine{00993\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ req\_value\_size\ =\ req\_msg.value\_size();}
+\DoxyCodeLine{00994\ \ \ \ \ }
+\DoxyCodeLine{00995\ \ \ \ \ \textcolor{comment}{//\ Expected\ payload\ size\ check}}
+\DoxyCodeLine{00996\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ min\_payload\_size\ =\ \textcolor{keyword}{sizeof}(Header)\ +\ \textcolor{keyword}{sizeof}(TimestampFields)\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}})\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}});}
+\DoxyCodeLine{00997\ \ \ \ \ \textcolor{keywordflow}{if}\ (req\_value\_size\ <\ min\_payload\_size)\ \{}
+\DoxyCodeLine{00998\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ message\ payload\ too\ small:\ "{}}\ <<\ req\_value\_size\ <<\ \textcolor{stringliteral}{"{},\ expected\ at\ least\ "{}}\ <<\ min\_payload\_size\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00999\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01000\ \ \ \ \ \}}
+\DoxyCodeLine{01001\ }
+\DoxyCodeLine{01002\ \ \ \ \ \textcolor{comment}{//\ Deserialize\ the\ REQ\ payload:\ [Header][Timestamps][Coordinates][OriginalMsg][FailedMAC]}}
+\DoxyCodeLine{01003\ \ \ \ \ Header\ failed\_header;}
+\DoxyCodeLine{01004\ \ \ \ \ TimestampFields\ failed\_timestamps;}
+\DoxyCodeLine{01005\ \ \ \ \ \mbox{\hyperlink{struct_coordinates}{Coordinates}}\ failed\_coordinates;}
+\DoxyCodeLine{01006\ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ failed\_mac;}
+\DoxyCodeLine{01007\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ offset\ =\ 0;}
+\DoxyCodeLine{01008\ }
+\DoxyCodeLine{01009\ \ \ \ \ std::memcpy(\&failed\_header,\ req\_payload\ +\ offset,\ \textcolor{keyword}{sizeof}(Header));}
+\DoxyCodeLine{01010\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(Header);}
+\DoxyCodeLine{01011\ }
+\DoxyCodeLine{01012\ \ \ \ \ std::memcpy(\&failed\_timestamps,\ req\_payload\ +\ offset,\ \textcolor{keyword}{sizeof}(TimestampFields));}
+\DoxyCodeLine{01013\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(TimestampFields);}
+\DoxyCodeLine{01014\ }
+\DoxyCodeLine{01015\ \ \ \ \ std::memcpy(\&failed\_coordinates,\ req\_payload\ +\ offset,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}}));}
+\DoxyCodeLine{01016\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}});}
+\DoxyCodeLine{01017\ }
+\DoxyCodeLine{01018\ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ original\_msg\_data\ =\ req\_payload\ +\ offset;}
+\DoxyCodeLine{01019\ \ \ \ \ }
+\DoxyCodeLine{01020\ \ \ \ \ \textcolor{comment}{//\ BUG\ FIX:\ Use\ the\ size\ from\ the\ deserialized\ header\ of\ the\ failed\ message.}}
+\DoxyCodeLine{01021\ \ \ \ \ \textcolor{comment}{//\ This\ is\ more\ reliable\ than\ calculating\ from\ the\ REQ\ payload's\ total\ size,}}
+\DoxyCodeLine{01022\ \ \ \ \ \textcolor{comment}{//\ which\ can\ be\ prone\ to\ errors\ from\ padding/sizeof\ inconsistencies\ across\ modules.}}
+\DoxyCodeLine{01023\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ original\_msg\_size\ =\ failed\_header.size();}
+\DoxyCodeLine{01024\ \ \ \ \ }
+\DoxyCodeLine{01025\ \ \ \ \ \textcolor{comment}{//\ Defensive\ check:\ ensure\ the\ reported\ size\ doesn't\ exceed\ the\ actual\ payload\ buffer}}
+\DoxyCodeLine{01026\ \ \ \ \ \textcolor{keywordflow}{if}\ ((offset\ +\ original\_msg\_size\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}))\ >\ req\_value\_size)\ \{}
+\DoxyCodeLine{01027\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ payload\ validation\ failed:\ original\ message\ size\ ("{}}\ <<\ original\_msg\_size}
+\DoxyCodeLine{01028\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{})\ from\ header\ is\ too\ large\ for\ the\ received\ REQ\ payload\ size\ ("{}}\ <<\ req\_value\_size\ <<\ \textcolor{stringliteral}{"{}).\ Dropping.\(\backslash\)n"{}};}
+\DoxyCodeLine{01029\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01030\ \ \ \ \ \}}
+\DoxyCodeLine{01031\ }
+\DoxyCodeLine{01032\ \ \ \ \ std::vector<uint8\_t>\ msg(payload\_size);}
+\DoxyCodeLine{01033\ \ \ \ \ std::memcpy(msg.data(),\ message\_data,\ req\_msg.value\_size());}
+\DoxyCodeLine{01034\ \ \ \ \ \textcolor{comment}{//\ DEBUG:\ Show\ the\ failed\ MAC\ we're\ trying\ to\ match}}
+\DoxyCodeLine{01035\ \ \ \ \ std::string\ msg\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{01036\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ payload\_size;\ ++i)\ \{}
+\DoxyCodeLine{01037\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{01038\ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ msg[i]);}
+\DoxyCodeLine{01039\ \ \ \ \ \ \ \ \ msg\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{01040\ \ \ \ \ \}}
+\DoxyCodeLine{01041\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ received\ message:\ "{}}\ <<\ msg\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01042\ }
+\DoxyCodeLine{01043\ \ \ \ \ offset\ +=\ original\_msg\_size;}
+\DoxyCodeLine{01044\ \ \ \ \ std::memcpy(failed\_mac.data(),\ req\_payload\ +\ offset,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}));}
+\DoxyCodeLine{01045\ }
+\DoxyCodeLine{01046\ \ \ \ \ \textcolor{comment}{//\ DEBUG:\ Show\ the\ failed\ MAC\ we're\ trying\ to\ match}}
+\DoxyCodeLine{01047\ \ \ \ \ std::string\ failed\_mac\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{01048\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{01049\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{01050\ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ failed\_mac[i]);}
+\DoxyCodeLine{01051\ \ \ \ \ \ \ \ \ failed\_mac\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{01052\ \ \ \ \ \}}
+\DoxyCodeLine{01053\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ Failed\ MAC\ to\ match:\ "{}}\ <<\ failed\_mac\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01054\ \ \ \ \ }
+\DoxyCodeLine{01055\ \ \ \ \ \textcolor{comment}{//\ DEBUG:\ Show\ original\ message\ data\ details}}
+\DoxyCodeLine{01056\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ Original\ message\ size:\ "{}}\ <<\ original\_msg\_size\ <<\ \textcolor{stringliteral}{"{}\ bytes\(\backslash\)n"{}};}
+\DoxyCodeLine{01057\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ Original\ header:\ from\_port="{}}\ <<\ failed\_header.from\_port()\ }
+\DoxyCodeLine{01058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ to\_port="{}}\ <<\ failed\_header.to\_port()\ <<\ \textcolor{stringliteral}{"{},\ size="{}}\ <<\ failed\_header.size()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01059\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ Original\ coordinates:\ x="{}}\ <<\ failed\_coordinates.\mbox{\hyperlink{struct_coordinates_a858fd248e4b9ae45cbceeb6bdc7d011b}{x}}\ }
+\DoxyCodeLine{01060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ y="{}}\ <<\ failed\_coordinates.\mbox{\hyperlink{struct_coordinates_ab89961ba893566971c26e8bf5f377d49}{y}}\ <<\ \textcolor{stringliteral}{"{},\ radius="{}}\ <<\ failed\_coordinates.\mbox{\hyperlink{struct_coordinates_a9da513ed4d7be0bcb560e3987ae09c69}{radius}}\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01061\ }
+\DoxyCodeLine{01062\ \ \ \ \ \textcolor{keywordtype}{bool}\ found\_match\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01063\ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ matching\_key;}
+\DoxyCodeLine{01064\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ matching\_rsu\_id\ =\ 0;}
+\DoxyCodeLine{01065\ }
+\DoxyCodeLine{01066\ \ \ \ \ \{}
+\DoxyCodeLine{01067\ \ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_neighbor\_rsus\_mutex);}
+\DoxyCodeLine{01068\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ Searching\ through\ "{}}\ <<\ \_neighbor\_rsus.size()\ <<\ \textcolor{stringliteral}{"{}\ neighbor\ RSUs\ for\ a\ matching\ key.\(\backslash\)n"{}};}
+\DoxyCodeLine{01069\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ neighbor\ :\ \_neighbor\_rsus)\ \{}
+\DoxyCodeLine{01070\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DEBUG:\ Show\ each\ neighbor\ RSU\ key\ before\ testing}}
+\DoxyCodeLine{01071\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ neighbor\_key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{01072\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{01073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{01074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ neighbor.key[i]);}
+\DoxyCodeLine{01075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ neighbor\_key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{01076\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01077\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ Testing\ neighbor\ RSU\ "{}}\ <<\ neighbor.rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ key:\ "{}}\ <<\ neighbor\_key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01078\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{01079\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ calculated\_mac\ =\ calculate\_mac(original\_msg\_data,\ original\_msg\_size,\ }
+\DoxyCodeLine{01080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&failed\_header,\ \&failed\_timestamps,\ }
+\DoxyCodeLine{01081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&failed\_coordinates,\ neighbor.key);}
+\DoxyCodeLine{01082\ }
+\DoxyCodeLine{01083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DEBUG:\ Show\ the\ calculated\ MAC\ for\ this\ neighbor}}
+\DoxyCodeLine{01084\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ calc\_mac\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{01085\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{01086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{01087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ calculated\_mac[i]);}
+\DoxyCodeLine{01088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ calc\_mac\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{01089\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01090\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ Neighbor\ RSU\ "{}}\ <<\ neighbor.rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ calculated\ MAC:\ "{}}\ <<\ calc\_mac\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01091\ }
+\DoxyCodeLine{01092\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (calculated\_mac\ ==\ failed\_mac)\ \{}
+\DoxyCodeLine{01093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ matching\_key\ =\ neighbor.key;}
+\DoxyCodeLine{01094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ matching\_rsu\_id\ =\ neighbor.rsu\_id;}
+\DoxyCodeLine{01095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ found\_match\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{01096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ Found\ matching\ key\ from\ neighbor\ RSU\ "{}}\ <<\ neighbor.rsu\_id\ <<\ \textcolor{stringliteral}{"{}.\(\backslash\)n"{}};}
+\DoxyCodeLine{01097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01098\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{01099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ No\ match\ for\ neighbor\ RSU\ "{}}\ <<\ neighbor.rsu\_id\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01100\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01101\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01102\ \ \ \ \ \}}
+\DoxyCodeLine{01103\ }
+\DoxyCodeLine{01104\ \ \ \ \ \textcolor{keywordflow}{if}\ (found\_match)\ \{}
+\DoxyCodeLine{01105\ \ \ \ \ \ \ \ \ Address\ vehicle\_address(sender\_mac,\ req\_msg.origin().port());}
+\DoxyCodeLine{01106\ \ \ \ \ \ \ \ \ ProtocolMessage*\ resp\_msg\ =\ \textcolor{keyword}{new}\ ProtocolMessage(ProtocolMessage::Type::KEY\_RESPONSE,}
+\DoxyCodeLine{01107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ address(),\ 0,\ ProtocolMessage::ZERO,}
+\DoxyCodeLine{01108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&matching\_key,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}));}
+\DoxyCodeLine{01109\ }
+\DoxyCodeLine{01110\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Sending\ KEY\_RESPONSE\ to\ vehicle\ "{}}\ }
+\DoxyCodeLine{01111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ vehicle\_address.to\_string()\ <<\ \textcolor{stringliteral}{"{}\ with\ key\ from\ RSU\ "{}}\ <<\ matching\_rsu\_id\ <<\ \textcolor{stringliteral}{"{}.\(\backslash\)n"{}};}
+\DoxyCodeLine{01112\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{01113\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ send(address(),\ vehicle\_address,\ resp\_msg-\/>data(),\ resp\_msg-\/>size());}
+\DoxyCodeLine{01114\ }
+\DoxyCodeLine{01115\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ >\ 0)\ \{}
+\DoxyCodeLine{01116\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Successfully\ sent\ KEY\_RESPONSE\ message.\(\backslash\)n"{}};}
+\DoxyCodeLine{01117\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{01118\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Failed\ to\ send\ KEY\_RESPONSE\ message\ for\ RSU\ "{}}\ <<\ matching\_rsu\_id\ <<\ \textcolor{stringliteral}{"{}.\(\backslash\)n"{}};}
+\DoxyCodeLine{01119\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01120\ }
+\DoxyCodeLine{01121\ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ resp\_msg;}
+\DoxyCodeLine{01122\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{01123\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ No\ matching\ neighbor\ RSU\ key\ found\ for\ the\ failed\ message.\(\backslash\)n"{}};}
+\DoxyCodeLine{01124\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{01125\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DEBUG:\ Let's\ also\ check\ our\ own\ key\ to\ see\ if\ it\ would\ match}}
+\DoxyCodeLine{01126\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ leader\_key\ =\ \mbox{\hyperlink{class_leader_key_storage_a4ba88c1c6f8bf04d6c65f77696b717e0}{LeaderKeyStorage::getInstance}}().\mbox{\hyperlink{class_leader_key_storage_a111ba868b182ba904375e24d003cb489}{getGroupMacKey}}();}
+\DoxyCodeLine{01127\ \ \ \ \ \ \ \ \ std::string\ leader\_key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{01128\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{01129\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{01130\ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ leader\_key[i]);}
+\DoxyCodeLine{01131\ \ \ \ \ \ \ \ \ \ \ \ \ leader\_key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{01132\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01133\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ For\ comparison,\ our\ own\ leader\ key:\ "{}}\ <<\ leader\_key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01134\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{01135\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ self\_calculated\_mac\ =\ calculate\_mac(original\_msg\_data,\ original\_msg\_size,\ }
+\DoxyCodeLine{01136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&failed\_header,\ \&failed\_timestamps,\ }
+\DoxyCodeLine{01137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&failed\_coordinates,\ leader\_key);}
+\DoxyCodeLine{01138\ \ \ \ \ \ \ \ \ std::string\ self\_calc\_mac\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{01139\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{01140\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{01141\ \ \ \ \ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ self\_calculated\_mac[i]);}
+\DoxyCodeLine{01142\ \ \ \ \ \ \ \ \ \ \ \ \ self\_calc\_mac\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{01143\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01144\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ REQ\ -\/\ Our\ own\ key\ would\ produce\ MAC:\ "{}}\ <<\ self\_calc\_mac\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01145\ \ \ \ \ \}}
+\DoxyCodeLine{01146\ \}}
+\DoxyCodeLine{01147\ }
+\DoxyCodeLine{01148\ \textcolor{comment}{//\ KEY\_RESPONSE\ message\ handler\ implementation}}
+\DoxyCodeLine{01149\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{01150\ \textcolor{keywordtype}{void}\ Protocol<NIC>::handle\_resp\_message(\textcolor{keyword}{const}\ uint8\_t*\ message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ payload\_size)\ \{}
+\DoxyCodeLine{01151\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Vehicle\ processing\ KEY\_RESPONSE\ message\(\backslash\)n"{}};}
+\DoxyCodeLine{01152\ \ \ \ \ }
+\DoxyCodeLine{01153\ \ \ \ \ \textcolor{comment}{//\ Only\ vehicles\ should\ handle\ KEY\_RESPONSE\ messages}}
+\DoxyCodeLine{01154\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ !=\ EntityType::VEHICLE\ ||\ !\_vehicle\_rsu\_manager)\ \{}
+\DoxyCodeLine{01155\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Non-\/vehicle\ entity\ or\ no\ RSU\ manager\ for\ KEY\_RESPONSE\ message\ -\/\ ignoring\(\backslash\)n"{}};}
+\DoxyCodeLine{01156\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01157\ \ \ \ \ \}}
+\DoxyCodeLine{01158\ \ \ \ \ }
+\DoxyCodeLine{01159\ \ \ \ \ \textcolor{comment}{//\ Deserialize\ the\ KEY\_RESPONSE\ message}}
+\DoxyCodeLine{01160\ \ \ \ \ ProtocolMessage\ resp\_msg\ =\ ProtocolMessage::deserialize(message\_data,\ payload\_size);}
+\DoxyCodeLine{01161\ \ \ \ \ \textcolor{keywordflow}{if}\ (resp\_msg.message\_type()\ !=\ ProtocolMessage::Type::KEY\_RESPONSE)\ \{}
+\DoxyCodeLine{01162\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Failed\ to\ deserialize\ KEY\_RESPONSE\ message\(\backslash\)n"{}};}
+\DoxyCodeLine{01163\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01164\ \ \ \ \ \}}
+\DoxyCodeLine{01165\ \ \ \ \ }
+\DoxyCodeLine{01166\ \ \ \ \ \textcolor{comment}{//\ KEY\_RESPONSE\ message\ payload\ contains\ the\ neighbor\ RSU\ key}}
+\DoxyCodeLine{01167\ \ \ \ \ \textcolor{keyword}{const}\ uint8\_t*\ resp\_payload\ =\ resp\_msg.value();}
+\DoxyCodeLine{01168\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ resp\_value\_size\ =\ resp\_msg.value\_size();}
+\DoxyCodeLine{01169\ \ \ \ \ }
+\DoxyCodeLine{01170\ \ \ \ \ \textcolor{keywordflow}{if}\ (resp\_value\_size\ !=\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}))\ \{}
+\DoxyCodeLine{01171\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ KEY\_RESPONSE\ message\ payload\ size\ mismatch:\ expected\ "{}}\ }
+\DoxyCodeLine{01172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}})\ <<\ \textcolor{stringliteral}{"{},\ got\ "{}}\ <<\ resp\_value\_size\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01173\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01174\ \ \ \ \ \}}
+\DoxyCodeLine{01175\ \ \ \ \ }
+\DoxyCodeLine{01176\ \ \ \ \ \textcolor{comment}{//\ Extract\ the\ neighbor\ RSU\ key}}
+\DoxyCodeLine{01177\ \ \ \ \ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\ neighbor\_key;}
+\DoxyCodeLine{01178\ \ \ \ \ std::memcpy(\&neighbor\_key,\ resp\_payload,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}));}
+\DoxyCodeLine{01179\ \ \ \ \ }
+\DoxyCodeLine{01180\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging:\ Show\ received\ neighbor\ key}}
+\DoxyCodeLine{01181\ \ \ \ \ std::string\ neighbor\_key\_hex\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{01182\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ 16;\ ++i)\ \{}
+\DoxyCodeLine{01183\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ hex\_byte[4];}
+\DoxyCodeLine{01184\ \ \ \ \ \ \ \ \ snprintf(hex\_byte,\ \textcolor{keyword}{sizeof}(hex\_byte),\ \textcolor{stringliteral}{"{}\%02X\ "{}},\ neighbor\_key[i]);}
+\DoxyCodeLine{01185\ \ \ \ \ \ \ \ \ neighbor\_key\_hex\ +=\ hex\_byte;}
+\DoxyCodeLine{01186\ \ \ \ \ \}}
+\DoxyCodeLine{01187\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ KEY\_RESPONSE\ -\/\ Received\ neighbor\ RSU\ key:\ "{}}\ <<\ neighbor\_key\_hex\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01188\ \ \ \ \ }
+\DoxyCodeLine{01189\ \ \ \ \ \textcolor{comment}{//\ Add\ the\ neighbor\ RSU\ key\ to\ our\ collection}}
+\DoxyCodeLine{01190\ \ \ \ \ \_vehicle\_rsu\_manager-\/>add\_neighbor\_rsu\_key(neighbor\_key);}
+\DoxyCodeLine{01191\ \ \ \ \ }
+\DoxyCodeLine{01192\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Successfully\ added\ neighbor\ RSU\ key\ to\ vehicle\ storage\(\backslash\)n"{}};}
+\DoxyCodeLine{01193\ \}}
+\DoxyCodeLine{01194\ }
+\DoxyCodeLine{01195\ \textcolor{comment}{//\ REQ\ message\ sending\ implementation}}
+\DoxyCodeLine{01196\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{01197\ \textcolor{keywordtype}{void}\ Protocol<NIC>::send\_req\_message\_to\_leader(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ failed\_message\_data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ failed\_message\_size,}
+\DoxyCodeLine{01198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ failed\_mac,\ \textcolor{keyword}{const}\ Header*\ failed\_header,}
+\DoxyCodeLine{01199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ TimestampFields*\ failed\_timestamps,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{struct_coordinates}{Coordinates}}*\ failed\_coordinates)\ \{}
+\DoxyCodeLine{01200\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Preparing\ REQ\ message\ for\ leader\ RSU\(\backslash\)n"{}};}
+\DoxyCodeLine{01201\ \ \ \ \ }
+\DoxyCodeLine{01202\ \ \ \ \ \textcolor{comment}{//\ Only\ vehicles\ should\ send\ REQ\ messages}}
+\DoxyCodeLine{01203\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ !=\ EntityType::VEHICLE\ ||\ !\_vehicle\_rsu\_manager)\ \{}
+\DoxyCodeLine{01204\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Non-\/vehicle\ entity\ or\ no\ RSU\ manager\ -\/\ cannot\ send\ REQ\(\backslash\)n"{}};}
+\DoxyCodeLine{01205\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01206\ \ \ \ \ \}}
+\DoxyCodeLine{01207\ \ \ \ \ }
+\DoxyCodeLine{01208\ \ \ \ \ \textcolor{comment}{//\ Get\ current\ leader}}
+\DoxyCodeLine{01209\ \ \ \ \ \textcolor{keyword}{auto}\ current\_leader\ =\ \_vehicle\_rsu\_manager-\/>get\_current\_leader();}
+\DoxyCodeLine{01210\ \ \ \ \ \textcolor{keywordflow}{if}\ (!current\_leader)\ \{}
+\DoxyCodeLine{01211\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ No\ current\ leader\ RSU\ -\/\ cannot\ send\ REQ\ message\(\backslash\)n"{}};}
+\DoxyCodeLine{01212\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01213\ \ \ \ \ \}}
+\DoxyCodeLine{01214\ \ \ \ \ }
+\DoxyCodeLine{01215\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Sending\ REQ\ to\ leader\ RSU:\ "{}}\ <<\ current\_leader-\/>address.to\_string()\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{01216\ \ \ \ \ }
+\DoxyCodeLine{01217\ \ \ \ \ \textcolor{comment}{//\ Create\ REQ\ message\ payload:\ failed\_header\ +\ failed\_timestamps\ +\ failed\_coordinates\ +\ failed\_message\_data\ +\ failed\_mac}}
+\DoxyCodeLine{01218\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ req\_payload\_size\ =\ \textcolor{keyword}{sizeof}(Header)\ +\ \textcolor{keyword}{sizeof}(TimestampFields)\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}})\ +\ failed\_message\_size\ +\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}});}
+\DoxyCodeLine{01219\ \ \ \ \ std::vector<uint8\_t>\ req\_payload(req\_payload\_size);}
+\DoxyCodeLine{01220\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ offset\ =\ 0;}
+\DoxyCodeLine{01221\ }
+\DoxyCodeLine{01222\ \ \ \ \ \textcolor{comment}{//\ Copy\ original\ header}}
+\DoxyCodeLine{01223\ \ \ \ \ std::memcpy(req\_payload.data()\ +\ offset,\ failed\_header,\ \textcolor{keyword}{sizeof}(Header));}
+\DoxyCodeLine{01224\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(Header);}
+\DoxyCodeLine{01225\ }
+\DoxyCodeLine{01226\ \ \ \ \ \textcolor{comment}{//\ Copy\ original\ timestamps}}
+\DoxyCodeLine{01227\ \ \ \ \ std::memcpy(req\_payload.data()\ +\ offset,\ failed\_timestamps,\ \textcolor{keyword}{sizeof}(TimestampFields));}
+\DoxyCodeLine{01228\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(TimestampFields);}
+\DoxyCodeLine{01229\ }
+\DoxyCodeLine{01230\ \ \ \ \ \textcolor{comment}{//\ Copy\ original\ coordinates}}
+\DoxyCodeLine{01231\ \ \ \ \ std::memcpy(req\_payload.data()\ +\ offset,\ failed\_coordinates,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}}));}
+\DoxyCodeLine{01232\ \ \ \ \ offset\ +=\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_coordinates}{Coordinates}});}
+\DoxyCodeLine{01233\ }
+\DoxyCodeLine{01234\ \ \ \ \ \textcolor{comment}{//\ Copy\ original\ message\ data}}
+\DoxyCodeLine{01235\ \ \ \ \ std::memcpy(req\_payload.data()\ +\ offset,\ failed\_message\_data,\ failed\_message\_size);}
+\DoxyCodeLine{01236\ \ \ \ \ offset\ +=\ failed\_message\_size;}
+\DoxyCodeLine{01237\ \ \ \ \ }
+\DoxyCodeLine{01238\ \ \ \ \ \textcolor{comment}{//\ Append\ failed\ MAC}}
+\DoxyCodeLine{01239\ \ \ \ \ std::memcpy(req\_payload.data()\ +\ offset,\ \&failed\_mac,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}));}
+\DoxyCodeLine{01240\ \ \ \ \ }
+\DoxyCodeLine{01241\ \ \ \ \ \textcolor{comment}{//\ Create\ REQ\ message}}
+\DoxyCodeLine{01242\ \ \ \ \ ProtocolMessage*\ req\_msg\ =\ \textcolor{keyword}{new}\ ProtocolMessage(ProtocolMessage::Type::REQ,}
+\DoxyCodeLine{01243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ address(),\ 0,\ ProtocolMessage::ZERO,}
+\DoxyCodeLine{01244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ req\_payload.data(),\ req\_payload\_size);}
+\DoxyCodeLine{01245\ \ \ \ \ }
+\DoxyCodeLine{01246\ \ \ \ \ \textcolor{comment}{//\ Send\ unicast\ REQ\ message\ to\ leader\ RSU}}
+\DoxyCodeLine{01247\ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ send(address(),\ current\_leader-\/>address,\ req\_msg-\/>data(),\ req\_msg-\/>size());}
+\DoxyCodeLine{01248\ }
+\DoxyCodeLine{01249\ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ >\ 0)\ \{}
+\DoxyCodeLine{01250\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Successfully\ sent\ REQ\ message\ to\ leader\(\backslash\)n"{}};}
+\DoxyCodeLine{01251\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{01252\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Failed\ to\ send\ REQ\ message\ to\ leader\(\backslash\)n"{}};}
+\DoxyCodeLine{01253\ \ \ \ \ \}}
+\DoxyCodeLine{01254\ \ \ \ \ }
+\DoxyCodeLine{01255\ \ \ \ \ \textcolor{keyword}{delete}\ req\_msg;}
+\DoxyCodeLine{01256\ \}}
+\DoxyCodeLine{01257\ }
+\DoxyCodeLine{01258\ \textcolor{comment}{//\ Initialize\ static\ members}}
+\DoxyCodeLine{01259\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{01260\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_protocol_adf34547f0d266858f1c8b66763df74e2}{Protocol<NIC>::Observed}}\ Protocol<NIC>::\_observed;}
+\DoxyCodeLine{01261\ }
+\DoxyCodeLine{01262\ \textcolor{comment}{//\ Initialize\ BROADCASTs\ addresses}}
+\DoxyCodeLine{01263\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{01264\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_protocol_1_1_address}{Protocol<NIC>::Address}}\ \mbox{\hyperlink{class_protocol_1_1_address_ad5ba9286afd532fff67de8de85236daa}{Protocol<NIC>::Address::BROADCAST}}\ =\ }
+\DoxyCodeLine{01265\ \ \ \ \ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_protocol_1_1_address}{Protocol<NIC>::Address}}(}
+\DoxyCodeLine{01266\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_ethernet_a4d98569f734c1d3050bd1b85aeb30b51}{Ethernet::BROADCAST}},\ \textcolor{comment}{//\ MAC\ broadcast}}
+\DoxyCodeLine{01267\ \ \ \ \ \ \ \ \ 0\ \textcolor{comment}{//\ Broadcast\ port}}
+\DoxyCodeLine{01268\ \ \ \ \ );}
+\DoxyCodeLine{01269\ }
+\DoxyCodeLine{01270\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{01271\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_a53c2c7dd7da28c8193d0f790da4129a2}{Protocol<NIC>::set\_vehicle\_rsu\_manager}}(\mbox{\hyperlink{class_vehicle_r_s_u_manager}{VehicleRSUManager}}<\mbox{\hyperlink{class_protocol_a97ef237ecd6671852095121d551d56e2}{Protocol<NIC>}}>*\ manager)\ \{}
+\DoxyCodeLine{01272\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ ==\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204bae9fa318f4d73c31493e98096efa497e2}{EntityType::VEHICLE}})\ \{}
+\DoxyCodeLine{01273\ \ \ \ \ \ \ \ \ \_vehicle\_rsu\_manager\ =\ manager;}
+\DoxyCodeLine{01274\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ RSU\ manager\ attached\ to\ vehicle\ protocol\(\backslash\)n"{}};}
+\DoxyCodeLine{01275\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{01276\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Attempted\ to\ attach\ RSU\ manager\ to\ non-\/vehicle\ entity\(\backslash\)n"{}};}
+\DoxyCodeLine{01277\ \ \ \ \ \}}
+\DoxyCodeLine{01278\ \}}
+\DoxyCodeLine{01279\ }
+\DoxyCodeLine{01280\ \textcolor{comment}{//\ Neighbor\ RSU\ management\ implementation}}
+\DoxyCodeLine{01281\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{01282\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_ab162aadadb63de98f40f59f16c11c673}{Protocol<NIC>::add\_neighbor\_rsu}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ rsu\_id,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{leader_key_storage_8h_a6eaa89ab7b7d2745dd476c2822fe9425}{MacKeyType}}\&\ key,\ \textcolor{keyword}{const}\ \mbox{\hyperlink{class_protocol_1_1_address}{Address}}\&\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}})\ \{}
+\DoxyCodeLine{01283\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ !=\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204ba75988ec7a180ed96d48291db84701f84}{EntityType::RSU}})\ \{}
+\DoxyCodeLine{01284\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Attempted\ to\ add\ neighbor\ RSU\ to\ non-\/RSU\ entity\(\backslash\)n"{}};}
+\DoxyCodeLine{01285\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01286\ \ \ \ \ \}}
+\DoxyCodeLine{01287\ \ \ \ \ }
+\DoxyCodeLine{01288\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_neighbor\_rsus\_mutex);}
+\DoxyCodeLine{01289\ \ \ \ \ }
+\DoxyCodeLine{01290\ \ \ \ \ \textcolor{comment}{//\ Check\ if\ already\ exists}}
+\DoxyCodeLine{01291\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ neighbor\ :\ \_neighbor\_rsus)\ \{}
+\DoxyCodeLine{01292\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (neighbor.rsu\_id\ ==\ rsu\_id)\ \{}
+\DoxyCodeLine{01293\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Neighbor\ RSU\ "{}}\ <<\ rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ already\ known\(\backslash\)n"{}};}
+\DoxyCodeLine{01294\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01295\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01296\ \ \ \ \ \}}
+\DoxyCodeLine{01297\ \ \ \ \ }
+\DoxyCodeLine{01298\ \ \ \ \ \_neighbor\_rsus.emplace\_back(rsu\_id,\ key,\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{address}});}
+\DoxyCodeLine{01299\ }
+\DoxyCodeLine{01300\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Added\ neighbor\ RSU\ "{}}\ <<\ rsu\_id\ <<\ \textcolor{stringliteral}{"{}\ to\ protocol\ (total:\ "{}}\ <<\ \_neighbor\_rsus.size()\ <<\ \textcolor{stringliteral}{"{})\(\backslash\)n"{}};}
+\DoxyCodeLine{01301\ \}}
+\DoxyCodeLine{01302\ }
+\DoxyCodeLine{01303\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{01304\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_protocol_a69267cd57fd708be329d0a380a8f6543}{Protocol<NIC>::clear\_neighbor\_rsus}}()\ \{}
+\DoxyCodeLine{01305\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_entity\_type\ !=\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204ba75988ec7a180ed96d48291db84701f84}{EntityType::RSU}})\ \{}
+\DoxyCodeLine{01306\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01307\ \ \ \ \ \}}
+\DoxyCodeLine{01308\ \ \ \ \ }
+\DoxyCodeLine{01309\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(\_neighbor\_rsus\_mutex);}
+\DoxyCodeLine{01310\ \ \ \ \ \_neighbor\_rsus.clear();}
+\DoxyCodeLine{01311\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<Protocol>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[Protocol]\ Cleared\ all\ neighbor\ RSUs\ from\ protocol\(\backslash\)n"{}};}
+\DoxyCodeLine{01312\ \}}
+\DoxyCodeLine{01313\ }
+\DoxyCodeLine{01314\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ NIC>}
+\DoxyCodeLine{01315\ \textcolor{keyword}{typename}\ \mbox{\hyperlink{class_protocol_1_1_address}{Protocol<NIC>::Address}}\ \mbox{\hyperlink{class_protocol_ad5834739a942736582589e1b4728432f}{Protocol<NIC>::address}}()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{01316\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\_nic)\ \{}
+\DoxyCodeLine{01317\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_protocol_1_1_address}{Address}}();\ \textcolor{comment}{//\ Return\ null\ address\ if\ no\ NIC}}
+\DoxyCodeLine{01318\ \ \ \ \ \}}
+\DoxyCodeLine{01319\ \ \ \ \ }
+\DoxyCodeLine{01320\ \ \ \ \ \textcolor{comment}{//\ Use\ NIC's\ physical\ address\ and\ a\ default\ port\ based\ on\ entity\ type}}
+\DoxyCodeLine{01321\ \ \ \ \ \mbox{\hyperlink{class_protocol_a51bd900e70a0d1fad04e09192bb0dddf}{Port}}\ protocol\_port\ =\ (\_entity\_type\ ==\ \mbox{\hyperlink{class_protocol_a565242579c756792b869d42723e1204ba75988ec7a180ed96d48291db84701f84}{EntityType::RSU}})\ ?\ 9999\ :\ 8888;}
+\DoxyCodeLine{01322\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{class_protocol_1_1_address}{Address}}(\_nic-\/>address(),\ protocol\_port);}
+\DoxyCodeLine{01323\ \}}
+\DoxyCodeLine{01324\ }
+\DoxyCodeLine{01325\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ PROTOCOL\_H}}
+
+\end{DoxyCode}

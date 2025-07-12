@@ -1,0 +1,256 @@
+\doxysection{CSVComponent\+Data Struct Reference}
+\hypertarget{struct_c_s_v_component_data}{}\label{struct_c_s_v_component_data}\index{CSVComponentData@{CSVComponentData}}
+
+
+Data structure for CSV component.  
+
+
+
+
+{\ttfamily \#include $<$csv\+\_\+component\+\_\+data.\+hpp$>$}
+
+Inheritance diagram for CSVComponent\+Data\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{struct_c_s_v_component_data}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{struct_c_s_v_component_data_a6e07f2a11e96707b4e8bb5b9172b2cac}{CSVComponent\+Data}} ()
+\begin{DoxyCompactList}\small\item\em Constructor initializes CSV component state. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{struct_c_s_v_component_data_ae13471479129183d7282b1b927b0f5be}{load\+\_\+csv\+\_\+file}} (const std\+::string \&file\+\_\+path)
+\begin{DoxyCompactList}\small\item\em Load CSV file and parse its contents. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{struct_c_s_v_component_data_ad3197c6da9d724e022fe607c9435447f}{parse\+\_\+csv\+\_\+line}} (const std\+::string \&line, \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}} \&record)
+\begin{DoxyCompactList}\small\item\em Parse a single CSV line into a \doxylink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}. \end{DoxyCompactList}\item 
+const \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{struct_c_s_v_component_data_a0b38efe9998b58a44dd25a6413b04821}{get\+\_\+next\+\_\+record}} ()
+\begin{DoxyCompactList}\small\item\em Get the next CSV record. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{struct_c_s_v_component_data_aff03541d098adf80e667f0f4dafcee93}{reset}} ()
+\begin{DoxyCompactList}\small\item\em Reset the CSV reader to the beginning. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{struct_c_s_v_component_data_a94176ad7a49e5989af910ede41d9e01f}{is\+\_\+loaded}} () const
+\begin{DoxyCompactList}\small\item\em Get CSV loading status. \end{DoxyCompactList}\item 
+std\+::size\+\_\+t \mbox{\hyperlink{struct_c_s_v_component_data_a9d35935870dc655a86a9404e70947a78}{get\+\_\+total\+\_\+records}} () const
+\begin{DoxyCompactList}\small\item\em Get total number of records in the CSV. \end{DoxyCompactList}\item 
+std\+::size\+\_\+t \mbox{\hyperlink{struct_c_s_v_component_data_a970212d04f4fa3df0a8833f644a88785}{get\+\_\+records\+\_\+sent}} () const
+\begin{DoxyCompactList}\small\item\em Get number of records sent so far. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{struct_component_data}{Component\+Data}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual \mbox{\hyperlink{struct_component_data_a9d2f13c283f7f17eee8f4283c04f519d}{\texorpdfstring{$\sim$}{\string~}\+Component\+Data}} ()=default
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static std\+::size\+\_\+t \mbox{\hyperlink{struct_c_s_v_component_data_aaee534d4a24737e6abbedb975ad31991}{get\+\_\+record\+\_\+size}} ()
+\begin{DoxyCompactList}\small\item\em Get the size of a serialized CSV record in bytes. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::string \mbox{\hyperlink{struct_c_s_v_component_data_ad9f9384c5140438e74b06fc96c58c8c2}{csv\+\_\+file\+\_\+path}}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}} $>$ \mbox{\hyperlink{struct_c_s_v_component_data_a46506b9dbb48606f29276feb71b1eb67}{csv\+\_\+data}}
+\item 
+std\+::size\+\_\+t \mbox{\hyperlink{struct_c_s_v_component_data_aecc10b5b29accc821250999ab67b0a23}{current\+\_\+row\+\_\+index}}
+\item 
+bool \mbox{\hyperlink{struct_c_s_v_component_data_ac835e9fa89f3b4dbdc14178e0e35cc31}{file\+\_\+loaded}}
+\item 
+std\+::size\+\_\+t \mbox{\hyperlink{struct_c_s_v_component_data_a7bc29a1444a8e9cbc4c9f2802d5bb7eb}{total\+\_\+records}}
+\item 
+std\+::size\+\_\+t \mbox{\hyperlink{struct_c_s_v_component_data_a3a4ddcef2b6398bafc0a539b8bb558f5}{records\+\_\+sent}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Data structure for CSV component. 
+
+Following EPOS Smart\+Data principles, this structure contains all the data needed for CSV file reading and data serialization functionality. Reads CSV files in the format\+: timestamp,id,lat,lon,alt,x,y,z,speed,heading,yawrate,acceleration and provides serialization into std\+::vector$<$std\+::uint8\+\_\+t$>$ for message transmission.
+
+Replaces inheritance-\/based data storage with pure composition. 
+
+\label{doc-constructors}
+\Hypertarget{struct_c_s_v_component_data_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{struct_c_s_v_component_data_a6e07f2a11e96707b4e8bb5b9172b2cac}\index{CSVComponentData@{CSVComponentData}!CSVComponentData@{CSVComponentData}}
+\index{CSVComponentData@{CSVComponentData}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{CSVComponentData()}{CSVComponentData()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_a6e07f2a11e96707b4e8bb5b9172b2cac} 
+CSVComponent\+Data\+::\+CSVComponent\+Data (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Constructor initializes CSV component state. 
+
+Sets up the CSV component with default values. The CSV file path should be set using \doxylink{struct_c_s_v_component_data_ae13471479129183d7282b1b927b0f5be}{load\+\_\+csv\+\_\+file()} method after construction. 
+
+\label{doc-func-members}
+\Hypertarget{struct_c_s_v_component_data_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{struct_c_s_v_component_data_a0b38efe9998b58a44dd25a6413b04821}\index{CSVComponentData@{CSVComponentData}!get\_next\_record@{get\_next\_record}}
+\index{get\_next\_record@{get\_next\_record}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{get\_next\_record()}{get\_next\_record()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_a0b38efe9998b58a44dd25a6413b04821} 
+const \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}} \texorpdfstring{$\ast$}{*} CSVComponent\+Data\+::get\+\_\+next\+\_\+record (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get the next CSV record. 
+
+Returns the next CSV record in sequence. If the end of file is reached, it wraps around to the beginning (circular reading).
+
+\begin{DoxyReturn}{Returns}
+Pointer to the next \doxylink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}, or nullptr if no data is loaded 
+\end{DoxyReturn}
+\Hypertarget{struct_c_s_v_component_data_aaee534d4a24737e6abbedb975ad31991}\index{CSVComponentData@{CSVComponentData}!get\_record\_size@{get\_record\_size}}
+\index{get\_record\_size@{get\_record\_size}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{get\_record\_size()}{get\_record\_size()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_aaee534d4a24737e6abbedb975ad31991} 
+std\+::size\+\_\+t CSVComponent\+Data\+::get\+\_\+record\+\_\+size (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+Get the size of a serialized CSV record in bytes. 
+
+\begin{DoxyReturn}{Returns}
+Size of a \doxylink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord} when serialized to bytes 
+\end{DoxyReturn}
+\Hypertarget{struct_c_s_v_component_data_a970212d04f4fa3df0a8833f644a88785}\index{CSVComponentData@{CSVComponentData}!get\_records\_sent@{get\_records\_sent}}
+\index{get\_records\_sent@{get\_records\_sent}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{get\_records\_sent()}{get\_records\_sent()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_a970212d04f4fa3df0a8833f644a88785} 
+std\+::size\+\_\+t CSVComponent\+Data\+::get\+\_\+records\+\_\+sent (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get number of records sent so far. 
+
+\begin{DoxyReturn}{Returns}
+Number of records that have been sent 
+\end{DoxyReturn}
+\Hypertarget{struct_c_s_v_component_data_a9d35935870dc655a86a9404e70947a78}\index{CSVComponentData@{CSVComponentData}!get\_total\_records@{get\_total\_records}}
+\index{get\_total\_records@{get\_total\_records}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{get\_total\_records()}{get\_total\_records()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_a9d35935870dc655a86a9404e70947a78} 
+std\+::size\+\_\+t CSVComponent\+Data\+::get\+\_\+total\+\_\+records (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get total number of records in the CSV. 
+
+\begin{DoxyReturn}{Returns}
+Total number of CSV records loaded 
+\end{DoxyReturn}
+\Hypertarget{struct_c_s_v_component_data_a94176ad7a49e5989af910ede41d9e01f}\index{CSVComponentData@{CSVComponentData}!is\_loaded@{is\_loaded}}
+\index{is\_loaded@{is\_loaded}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{is\_loaded()}{is\_loaded()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_a94176ad7a49e5989af910ede41d9e01f} 
+bool CSVComponent\+Data\+::is\+\_\+loaded (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get CSV loading status. 
+
+\begin{DoxyReturn}{Returns}
+true if CSV file is loaded and ready, false otherwise 
+\end{DoxyReturn}
+\Hypertarget{struct_c_s_v_component_data_ae13471479129183d7282b1b927b0f5be}\index{CSVComponentData@{CSVComponentData}!load\_csv\_file@{load\_csv\_file}}
+\index{load\_csv\_file@{load\_csv\_file}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{load\_csv\_file()}{load\_csv\_file()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_ae13471479129183d7282b1b927b0f5be} 
+bool CSVComponent\+Data\+::load\+\_\+csv\+\_\+file (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{file\+\_\+path}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Load CSV file and parse its contents. 
+
+Loads and parses a CSV file with the expected format\+: timestamp,id,lat,lon,alt,x,y,z,speed,heading,yawrate,acceleration
+
+
+\begin{DoxyParams}{Parameters}
+{\em file\+\_\+path} & Path to the CSV file to load \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if file was loaded successfully, false otherwise 
+\end{DoxyReturn}
+\Hypertarget{struct_c_s_v_component_data_ad3197c6da9d724e022fe607c9435447f}\index{CSVComponentData@{CSVComponentData}!parse\_csv\_line@{parse\_csv\_line}}
+\index{parse\_csv\_line@{parse\_csv\_line}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{parse\_csv\_line()}{parse\_csv\_line()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_ad3197c6da9d724e022fe607c9435447f} 
+bool CSVComponent\+Data\+::parse\+\_\+csv\+\_\+line (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{line}{, }\item[{\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}} \&}]{record}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Parse a single CSV line into a \doxylink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em line} & CSV line to parse \\
+\hline
+{\em record} & Reference to \doxylink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord} to populate \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if parsing was successful, false otherwise 
+\end{DoxyReturn}
+\Hypertarget{struct_c_s_v_component_data_aff03541d098adf80e667f0f4dafcee93}\index{CSVComponentData@{CSVComponentData}!reset@{reset}}
+\index{reset@{reset}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{reset()}{reset()}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_aff03541d098adf80e667f0f4dafcee93} 
+void CSVComponent\+Data\+::reset (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Reset the CSV reader to the beginning. 
+
+
+
+\label{doc-variable-members}
+\Hypertarget{struct_c_s_v_component_data_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{struct_c_s_v_component_data_a46506b9dbb48606f29276feb71b1eb67}\index{CSVComponentData@{CSVComponentData}!csv\_data@{csv\_data}}
+\index{csv\_data@{csv\_data}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{csv\_data}{csv\_data}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_a46506b9dbb48606f29276feb71b1eb67} 
+std\+::vector$<$\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVRecord}}$>$ CSVComponent\+Data\+::csv\+\_\+data}
+
+\Hypertarget{struct_c_s_v_component_data_ad9f9384c5140438e74b06fc96c58c8c2}\index{CSVComponentData@{CSVComponentData}!csv\_file\_path@{csv\_file\_path}}
+\index{csv\_file\_path@{csv\_file\_path}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{csv\_file\_path}{csv\_file\_path}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_ad9f9384c5140438e74b06fc96c58c8c2} 
+std\+::string CSVComponent\+Data\+::csv\+\_\+file\+\_\+path}
+
+\Hypertarget{struct_c_s_v_component_data_aecc10b5b29accc821250999ab67b0a23}\index{CSVComponentData@{CSVComponentData}!current\_row\_index@{current\_row\_index}}
+\index{current\_row\_index@{current\_row\_index}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{current\_row\_index}{current\_row\_index}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_aecc10b5b29accc821250999ab67b0a23} 
+std\+::size\+\_\+t CSVComponent\+Data\+::current\+\_\+row\+\_\+index}
+
+\Hypertarget{struct_c_s_v_component_data_ac835e9fa89f3b4dbdc14178e0e35cc31}\index{CSVComponentData@{CSVComponentData}!file\_loaded@{file\_loaded}}
+\index{file\_loaded@{file\_loaded}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{file\_loaded}{file\_loaded}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_ac835e9fa89f3b4dbdc14178e0e35cc31} 
+bool CSVComponent\+Data\+::file\+\_\+loaded}
+
+\Hypertarget{struct_c_s_v_component_data_a3a4ddcef2b6398bafc0a539b8bb558f5}\index{CSVComponentData@{CSVComponentData}!records\_sent@{records\_sent}}
+\index{records\_sent@{records\_sent}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{records\_sent}{records\_sent}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_a3a4ddcef2b6398bafc0a539b8bb558f5} 
+std\+::size\+\_\+t CSVComponent\+Data\+::records\+\_\+sent}
+
+\Hypertarget{struct_c_s_v_component_data_a7bc29a1444a8e9cbc4c9f2802d5bb7eb}\index{CSVComponentData@{CSVComponentData}!total\_records@{total\_records}}
+\index{total\_records@{total\_records}!CSVComponentData@{CSVComponentData}}
+\doxysubsubsection{\texorpdfstring{total\_records}{total\_records}}
+{\footnotesize\ttfamily \label{struct_c_s_v_component_data_a7bc29a1444a8e9cbc4c9f2802d5bb7eb} 
+std\+::size\+\_\+t CSVComponent\+Data\+::total\+\_\+records}
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+include/app/components/\mbox{\hyperlink{csv__component__data_8hpp}{csv\+\_\+component\+\_\+data.\+hpp}}\end{DoxyCompactItemize}

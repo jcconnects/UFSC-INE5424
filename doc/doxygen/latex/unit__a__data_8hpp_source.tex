@@ -1,0 +1,33 @@
+\doxysection{unit\+\_\+a\+\_\+data.\+hpp}
+\hypertarget{unit__a__data_8hpp_source}{}\label{unit__a__data_8hpp_source}\index{include/app/components/unit\_a\_data.hpp@{include/app/components/unit\_a\_data.hpp}}
+\mbox{\hyperlink{unit__a__data_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ UNIT\_A\_DATA\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ UNIT\_A\_DATA\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <random>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__types_8hpp}{../../api/framework/component\_types.hpp}}"{}}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00014\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_unit_a_data_ac2a90d43bbb5072eec6de17446e93e30}{UnitAData}}\ :\ \textcolor{keyword}{public}\ \mbox{\hyperlink{struct_component_data}{ComponentData}}\ \{}
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{comment}{//\ Producer\ data:\ random\ number\ generation\ (from\ BasicProducerA)}}
+\DoxyCodeLine{00016\ \ \ \ \ std::random\_device\ \mbox{\hyperlink{struct_unit_a_data_af2a2a9392f71477cb85a3783fb64e5c4}{rd}};}
+\DoxyCodeLine{00017\ \ \ \ \ std::mt19937\ \mbox{\hyperlink{struct_unit_a_data_a8228626c7602b7e28125aedb89b3da80}{gen}};}
+\DoxyCodeLine{00018\ \ \ \ \ std::uniform\_real\_distribution<float>\ \mbox{\hyperlink{struct_unit_a_data_abf781a63fc85800597bf8a1f1212b35a}{dist}};}
+\DoxyCodeLine{00019\ \ \ \ \ }
+\DoxyCodeLine{00020\ \ \ \ \ \textcolor{comment}{//\ Consumer\ data:\ tracking\ received\ values\ (from\ BasicConsumerA)}}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_unit_a_data_ac09f6191a5caf0e7c6daa709281e0b62}{last\_received\_value}};}
+\DoxyCodeLine{00022\ \ \ \ \ }
+\DoxyCodeLine{00029\ \ \ \ \ \mbox{\hyperlink{struct_unit_a_data_ac2a90d43bbb5072eec6de17446e93e30}{UnitAData}}()\ :\ \mbox{\hyperlink{struct_unit_a_data_a8228626c7602b7e28125aedb89b3da80}{gen}}(\mbox{\hyperlink{struct_unit_a_data_af2a2a9392f71477cb85a3783fb64e5c4}{rd}}()),\ \mbox{\hyperlink{struct_unit_a_data_abf781a63fc85800597bf8a1f1212b35a}{dist}}(0.0f,\ 100.0f),\ \mbox{\hyperlink{struct_unit_a_data_ac09f6191a5caf0e7c6daa709281e0b62}{last\_received\_value}}(0.0f)\ \{\}}
+\DoxyCodeLine{00030\ \ \ \ \ }
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_unit_a_data_a91ee97e27506ce71f166d4245e32f3e0}{reset\_consumer\_state}}()\ \{}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_unit_a_data_ac09f6191a5caf0e7c6daa709281e0b62}{last\_received\_value}}\ =\ 0.0f;}
+\DoxyCodeLine{00036\ \ \ \ \ \}}
+\DoxyCodeLine{00037\ \ \ \ \ }
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{struct_unit_a_data_a4705a9e53faf5a1d92679fd89cd1da12}{update\_range}}(\textcolor{keywordtype}{float}\ min\_val,\ \textcolor{keywordtype}{float}\ max\_val)\ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{struct_unit_a_data_abf781a63fc85800597bf8a1f1212b35a}{dist}}\ =\ std::uniform\_real\_distribution<float>(min\_val,\ max\_val);}
+\DoxyCodeLine{00049\ \ \ \ \ \}}
+\DoxyCodeLine{00050\ \};}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ UNIT\_A\_DATA\_HPP\ }}
+
+\end{DoxyCode}

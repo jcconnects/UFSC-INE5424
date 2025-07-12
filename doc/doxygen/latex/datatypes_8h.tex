@@ -1,0 +1,189 @@
+\doxysection{include/app/datatypes.h File Reference}
+\hypertarget{datatypes_8h}{}\label{datatypes_8h}\index{include/app/datatypes.h@{include/app/datatypes.h}}
+{\ttfamily \#include $<$cstdint$>$}\newline
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum class \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504f}{Data\+Types}} \+: std\+::uint32\+\_\+t \{ \newline
+\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504face5ae617b7a277d02a8dccc786c7e4e7}{UNIT\+\_\+A}} = 0x00000055
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5c268c7fc56153276aa90202c15aa3ab}{UNIT\+\_\+B}} = 0x00000066
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa138d73ede515e3d653497bd9f5686d7f}{RGB\+\_\+\+IMAGE}} = 0x00000010
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa31b9274291c3f78d5ce8fe9a5263ac8f}{VIDEO\+\_\+\+STREAM}} = 0x00000011
+, \newline
+\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa11d9c6bac83cc056a974aacbc3f1200d}{PIXEL\+\_\+\+MATRIX}} = 0x00000012
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa102f051a6be2e49eed4b5f6f6a88e3bf}{CAMERA\+\_\+\+METADATA}} = 0x00000013
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5436c024f9e385dd79e92c33a58f3059}{SENSOR\+\_\+\+DATA}} = 0x00000101
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa35dce95b0c6df2235d940d939a1494ca}{DIAGNOSTIC\+\_\+\+DATA}} = 0x00000102
+, \newline
+\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fad32f1b4a654bfba5632fd9315fb37f60}{ACCELERATION\+\_\+\+VECTOR}} = 0x00000201
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa285ac75551c4af9971eccedeb1c06e3f}{GYRO\+\_\+\+VECTOR}} = 0x00000202
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faeae332e776c4bab15f0c80b7d4689014}{ORIENTATION\+\_\+\+DATA}} = 0x00000203
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fab4b2d852b80fc9975de8203b7bbdb1be}{INERTIAL\+\_\+\+POSITION}} = 0x00000204
+, \newline
+\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6600c8a0284b0adc7e5ee8db99d44ae2}{POINT\+\_\+\+CLOUD\+\_\+\+XYZ}} = 0x00000301
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa9fc8223809155981ebd9675b5d82618f}{POINT\+\_\+\+CLOUD\+\_\+\+INTENSITY}} = 0x00000302
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa61a53b43dad6b88400ab11e0c2a19443}{LIDAR\+\_\+\+TIMESTAMPED\+\_\+\+SCAN}} = 0x00000303
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faaf72d9006a4feb9178dcfd573e75163b}{EXTERNAL\+\_\+\+UNIT\+\_\+A}} = 0x80000001
+, \newline
+\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa8a5be686d7f700e48bdc5bd64f4f633a}{EXTERNAL\+\_\+\+UNIT\+\_\+B}} = 0x80000002
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa7dcfae735c1da9fbf394eb4601b50cc9}{EXTERNAL\+\_\+\+RGB\+\_\+\+IMAGE}} = 0x80000010
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa03b873ea3e21ad634efbfedc1637dd2a}{EXTERNAL\+\_\+\+VIDEO\+\_\+\+STREAM}} = 0x80000011
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6b6cf4841040d031c564e78fc2bb250e}{EXTERNAL\+\_\+\+PIXEL\+\_\+\+MATRIX}} = 0x80000012
+, \newline
+\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fae79db3c7c98a22589f1cf13733f807af}{EXTERNAL\+\_\+\+CAMERA\+\_\+\+METADATA}} = 0x80000013
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6d6e343dca82038d85a900f8981bf347}{EXTERNAL\+\_\+\+SENSOR\+\_\+\+DATA}} = 0x80000101
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa2b04275ffb6990208339c1b968f4b117}{EXTERNAL\+\_\+\+DIAGNOSTIC\+\_\+\+DATA}} = 0x80000102
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504facdca334be0edeb4844c991fa2da618ae}{EXTERNAL\+\_\+\+ACCELERATION\+\_\+\+VECTOR}} = 0x80000201
+, \newline
+\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6d27095709ba1521b20ec4b4a902c7eb}{EXTERNAL\+\_\+\+GYRO\+\_\+\+VECTOR}} = 0x80000202
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faf2f7961b85ccc38491d61c73423b68da}{EXTERNAL\+\_\+\+ORIENTATION\+\_\+\+DATA}} = 0x80000203
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fabc16f84b0f680e5cc15d9e35608dc26a}{EXTERNAL\+\_\+\+INERTIAL\+\_\+\+POSITION}} = 0x80000204
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa36839459114ab3d7ef142b7befb47bc5}{EXTERNAL\+\_\+\+POINT\+\_\+\+CLOUD\+\_\+\+XYZ}} = 0x80000301
+, \newline
+\mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa435060d6cc5f31cd197e836dad50c4e6}{EXTERNAL\+\_\+\+POINT\+\_\+\+CLOUD\+\_\+\+INTENSITY}} = 0x80000302
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa66ac5e023829144ed419b377ab0422cf}{EXTERNAL\+\_\+\+LIDAR\+\_\+\+TIMESTAMPED\+\_\+\+SCAN}} = 0x80000303
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5741db806a83b5979f7c4bba47a191c9}{CSV\+\_\+\+VEHICLE\+\_\+\+DATA}} = 0x00000401
+, \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fac76d728d26a812ef0db44a38afc0c513}{EXTERNAL\+\_\+\+CSV\+\_\+\+VEHICLE\+\_\+\+DATA}} = 0x80000401
+ \}
+\end{DoxyCompactItemize}
+
+
+\label{doc-enum-members}
+\Hypertarget{datatypes_8h_doc-enum-members}
+\doxysubsection{Enumeration Type Documentation}
+\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504f}\index{datatypes.h@{datatypes.h}!DataTypes@{DataTypes}}
+\index{DataTypes@{DataTypes}!datatypes.h@{datatypes.h}}
+\doxysubsubsection{\texorpdfstring{DataTypes}{DataTypes}}
+{\footnotesize\ttfamily \label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504f} 
+enum class \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504f}{Data\+Types}} \+: std\+::uint32\+\_\+t\hspace{0.3cm}{\ttfamily [strong]}}
+
+\begin{DoxyEnumFields}[2]{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{UNIT\_A@{UNIT\_A}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!UNIT\_A@{UNIT\_A}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504face5ae617b7a277d02a8dccc786c7e4e7}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504face5ae617b7a277d02a8dccc786c7e4e7} 
+UNIT\+\_\+A&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{UNIT\_B@{UNIT\_B}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!UNIT\_B@{UNIT\_B}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5c268c7fc56153276aa90202c15aa3ab}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5c268c7fc56153276aa90202c15aa3ab} 
+UNIT\+\_\+B&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RGB\_IMAGE@{RGB\_IMAGE}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!RGB\_IMAGE@{RGB\_IMAGE}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa138d73ede515e3d653497bd9f5686d7f}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa138d73ede515e3d653497bd9f5686d7f} 
+RGB\+\_\+\+IMAGE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{VIDEO\_STREAM@{VIDEO\_STREAM}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!VIDEO\_STREAM@{VIDEO\_STREAM}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa31b9274291c3f78d5ce8fe9a5263ac8f}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa31b9274291c3f78d5ce8fe9a5263ac8f} 
+VIDEO\+\_\+\+STREAM&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PIXEL\_MATRIX@{PIXEL\_MATRIX}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!PIXEL\_MATRIX@{PIXEL\_MATRIX}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa11d9c6bac83cc056a974aacbc3f1200d}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa11d9c6bac83cc056a974aacbc3f1200d} 
+PIXEL\+\_\+\+MATRIX&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CAMERA\_METADATA@{CAMERA\_METADATA}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!CAMERA\_METADATA@{CAMERA\_METADATA}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa102f051a6be2e49eed4b5f6f6a88e3bf}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa102f051a6be2e49eed4b5f6f6a88e3bf} 
+CAMERA\+\_\+\+METADATA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SENSOR\_DATA@{SENSOR\_DATA}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!SENSOR\_DATA@{SENSOR\_DATA}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5436c024f9e385dd79e92c33a58f3059}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5436c024f9e385dd79e92c33a58f3059} 
+SENSOR\+\_\+\+DATA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DIAGNOSTIC\_DATA@{DIAGNOSTIC\_DATA}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!DIAGNOSTIC\_DATA@{DIAGNOSTIC\_DATA}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa35dce95b0c6df2235d940d939a1494ca}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa35dce95b0c6df2235d940d939a1494ca} 
+DIAGNOSTIC\+\_\+\+DATA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ACCELERATION\_VECTOR@{ACCELERATION\_VECTOR}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!ACCELERATION\_VECTOR@{ACCELERATION\_VECTOR}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fad32f1b4a654bfba5632fd9315fb37f60}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fad32f1b4a654bfba5632fd9315fb37f60} 
+ACCELERATION\+\_\+\+VECTOR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{GYRO\_VECTOR@{GYRO\_VECTOR}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!GYRO\_VECTOR@{GYRO\_VECTOR}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa285ac75551c4af9971eccedeb1c06e3f}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa285ac75551c4af9971eccedeb1c06e3f} 
+GYRO\+\_\+\+VECTOR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ORIENTATION\_DATA@{ORIENTATION\_DATA}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!ORIENTATION\_DATA@{ORIENTATION\_DATA}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faeae332e776c4bab15f0c80b7d4689014}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faeae332e776c4bab15f0c80b7d4689014} 
+ORIENTATION\+\_\+\+DATA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INERTIAL\_POSITION@{INERTIAL\_POSITION}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!INERTIAL\_POSITION@{INERTIAL\_POSITION}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fab4b2d852b80fc9975de8203b7bbdb1be}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fab4b2d852b80fc9975de8203b7bbdb1be} 
+INERTIAL\+\_\+\+POSITION&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{POINT\_CLOUD\_XYZ@{POINT\_CLOUD\_XYZ}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!POINT\_CLOUD\_XYZ@{POINT\_CLOUD\_XYZ}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6600c8a0284b0adc7e5ee8db99d44ae2}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6600c8a0284b0adc7e5ee8db99d44ae2} 
+POINT\+\_\+\+CLOUD\+\_\+\+XYZ&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{POINT\_CLOUD\_INTENSITY@{POINT\_CLOUD\_INTENSITY}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!POINT\_CLOUD\_INTENSITY@{POINT\_CLOUD\_INTENSITY}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa9fc8223809155981ebd9675b5d82618f}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa9fc8223809155981ebd9675b5d82618f} 
+POINT\+\_\+\+CLOUD\+\_\+\+INTENSITY&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LIDAR\_TIMESTAMPED\_SCAN@{LIDAR\_TIMESTAMPED\_SCAN}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!LIDAR\_TIMESTAMPED\_SCAN@{LIDAR\_TIMESTAMPED\_SCAN}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa61a53b43dad6b88400ab11e0c2a19443}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa61a53b43dad6b88400ab11e0c2a19443} 
+LIDAR\+\_\+\+TIMESTAMPED\+\_\+\+SCAN&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_UNIT\_A@{EXTERNAL\_UNIT\_A}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_UNIT\_A@{EXTERNAL\_UNIT\_A}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faaf72d9006a4feb9178dcfd573e75163b}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faaf72d9006a4feb9178dcfd573e75163b} 
+EXTERNAL\+\_\+\+UNIT\+\_\+A&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_UNIT\_B@{EXTERNAL\_UNIT\_B}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_UNIT\_B@{EXTERNAL\_UNIT\_B}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa8a5be686d7f700e48bdc5bd64f4f633a}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa8a5be686d7f700e48bdc5bd64f4f633a} 
+EXTERNAL\+\_\+\+UNIT\+\_\+B&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_RGB\_IMAGE@{EXTERNAL\_RGB\_IMAGE}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_RGB\_IMAGE@{EXTERNAL\_RGB\_IMAGE}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa7dcfae735c1da9fbf394eb4601b50cc9}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa7dcfae735c1da9fbf394eb4601b50cc9} 
+EXTERNAL\+\_\+\+RGB\+\_\+\+IMAGE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_VIDEO\_STREAM@{EXTERNAL\_VIDEO\_STREAM}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_VIDEO\_STREAM@{EXTERNAL\_VIDEO\_STREAM}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa03b873ea3e21ad634efbfedc1637dd2a}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa03b873ea3e21ad634efbfedc1637dd2a} 
+EXTERNAL\+\_\+\+VIDEO\+\_\+\+STREAM&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_PIXEL\_MATRIX@{EXTERNAL\_PIXEL\_MATRIX}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_PIXEL\_MATRIX@{EXTERNAL\_PIXEL\_MATRIX}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6b6cf4841040d031c564e78fc2bb250e}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6b6cf4841040d031c564e78fc2bb250e} 
+EXTERNAL\+\_\+\+PIXEL\+\_\+\+MATRIX&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_CAMERA\_METADATA@{EXTERNAL\_CAMERA\_METADATA}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_CAMERA\_METADATA@{EXTERNAL\_CAMERA\_METADATA}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fae79db3c7c98a22589f1cf13733f807af}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fae79db3c7c98a22589f1cf13733f807af} 
+EXTERNAL\+\_\+\+CAMERA\+\_\+\+METADATA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_SENSOR\_DATA@{EXTERNAL\_SENSOR\_DATA}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_SENSOR\_DATA@{EXTERNAL\_SENSOR\_DATA}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6d6e343dca82038d85a900f8981bf347}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6d6e343dca82038d85a900f8981bf347} 
+EXTERNAL\+\_\+\+SENSOR\+\_\+\+DATA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_DIAGNOSTIC\_DATA@{EXTERNAL\_DIAGNOSTIC\_DATA}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_DIAGNOSTIC\_DATA@{EXTERNAL\_DIAGNOSTIC\_DATA}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa2b04275ffb6990208339c1b968f4b117}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa2b04275ffb6990208339c1b968f4b117} 
+EXTERNAL\+\_\+\+DIAGNOSTIC\+\_\+\+DATA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_ACCELERATION\_VECTOR@{EXTERNAL\_ACCELERATION\_VECTOR}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_ACCELERATION\_VECTOR@{EXTERNAL\_ACCELERATION\_VECTOR}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504facdca334be0edeb4844c991fa2da618ae}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504facdca334be0edeb4844c991fa2da618ae} 
+EXTERNAL\+\_\+\+ACCELERATION\+\_\+\+VECTOR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_GYRO\_VECTOR@{EXTERNAL\_GYRO\_VECTOR}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_GYRO\_VECTOR@{EXTERNAL\_GYRO\_VECTOR}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6d27095709ba1521b20ec4b4a902c7eb}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6d27095709ba1521b20ec4b4a902c7eb} 
+EXTERNAL\+\_\+\+GYRO\+\_\+\+VECTOR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_ORIENTATION\_DATA@{EXTERNAL\_ORIENTATION\_DATA}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_ORIENTATION\_DATA@{EXTERNAL\_ORIENTATION\_DATA}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faf2f7961b85ccc38491d61c73423b68da}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faf2f7961b85ccc38491d61c73423b68da} 
+EXTERNAL\+\_\+\+ORIENTATION\+\_\+\+DATA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_INERTIAL\_POSITION@{EXTERNAL\_INERTIAL\_POSITION}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_INERTIAL\_POSITION@{EXTERNAL\_INERTIAL\_POSITION}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fabc16f84b0f680e5cc15d9e35608dc26a}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fabc16f84b0f680e5cc15d9e35608dc26a} 
+EXTERNAL\+\_\+\+INERTIAL\+\_\+\+POSITION&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_POINT\_CLOUD\_XYZ@{EXTERNAL\_POINT\_CLOUD\_XYZ}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_POINT\_CLOUD\_XYZ@{EXTERNAL\_POINT\_CLOUD\_XYZ}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa36839459114ab3d7ef142b7befb47bc5}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa36839459114ab3d7ef142b7befb47bc5} 
+EXTERNAL\+\_\+\+POINT\+\_\+\+CLOUD\+\_\+\+XYZ&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_POINT\_CLOUD\_INTENSITY@{EXTERNAL\_POINT\_CLOUD\_INTENSITY}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_POINT\_CLOUD\_INTENSITY@{EXTERNAL\_POINT\_CLOUD\_INTENSITY}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa435060d6cc5f31cd197e836dad50c4e6}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa435060d6cc5f31cd197e836dad50c4e6} 
+EXTERNAL\+\_\+\+POINT\+\_\+\+CLOUD\+\_\+\+INTENSITY&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_LIDAR\_TIMESTAMPED\_SCAN@{EXTERNAL\_LIDAR\_TIMESTAMPED\_SCAN}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_LIDAR\_TIMESTAMPED\_SCAN@{EXTERNAL\_LIDAR\_TIMESTAMPED\_SCAN}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa66ac5e023829144ed419b377ab0422cf}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa66ac5e023829144ed419b377ab0422cf} 
+EXTERNAL\+\_\+\+LIDAR\+\_\+\+TIMESTAMPED\+\_\+\+SCAN&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{CSV\_VEHICLE\_DATA@{CSV\_VEHICLE\_DATA}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!CSV\_VEHICLE\_DATA@{CSV\_VEHICLE\_DATA}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5741db806a83b5979f7c4bba47a191c9}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5741db806a83b5979f7c4bba47a191c9} 
+CSV\+\_\+\+VEHICLE\+\_\+\+DATA&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{EXTERNAL\_CSV\_VEHICLE\_DATA@{EXTERNAL\_CSV\_VEHICLE\_DATA}!datatypes.h@{datatypes.h}}\index{datatypes.h@{datatypes.h}!EXTERNAL\_CSV\_VEHICLE\_DATA@{EXTERNAL\_CSV\_VEHICLE\_DATA}}}\Hypertarget{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fac76d728d26a812ef0db44a38afc0c513}\label{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fac76d728d26a812ef0db44a38afc0c513} 
+EXTERNAL\+\_\+\+CSV\+\_\+\+VEHICLE\+\_\+\+DATA&\\
+\hline
+
+\end{DoxyEnumFields}

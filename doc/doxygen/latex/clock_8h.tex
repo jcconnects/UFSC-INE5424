@@ -1,0 +1,92 @@
+\doxysection{include/api/framework/clock.h File Reference}
+\hypertarget{clock_8h}{}\label{clock_8h}\index{include/api/framework/clock.h@{include/api/framework/clock.h}}
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include $<$atomic$>$}\newline
+{\ttfamily \#include $<$mutex$>$}\newline
+{\ttfamily \#include $<$cstdint$>$}\newline
+{\ttfamily \#include $<$ostream$>$}\newline
+{\ttfamily \#include "{}api/util/debug.\+h"{}}\newline
+{\ttfamily \#include "{}api/traits.\+h"{}}\newline
+{\ttfamily \#include "{}api/framework/leader\+Key\+Storage.\+h"{}}\newline
+{\ttfamily \#include "{}api/network/ethernet.\+h"{}}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_ptp_relevant_data}{Ptp\+Relevant\+Data}}
+\item 
+struct \mbox{\hyperlink{struct_ptp_internal_message_info}{Ptp\+Internal\+Message\+Info}}
+\item 
+class \mbox{\hyperlink{class_clock}{Clock}}
+\begin{DoxyCompactList}\small\item\em Thread-\/safe singleton for PTP clock synchronization. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{Timestamp\+Type}} = std\+::chrono\+::time\+\_\+point$<$std\+::chrono\+::steady\+\_\+clock, std\+::chrono\+::microseconds$>$
+\item 
+using \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{Duration\+Type}} = std\+::chrono\+::microseconds
+\item 
+using \mbox{\hyperlink{clock_8h_a1da24dd25411ec4c2076f1a166d98609}{Frequency\+Error\+Type}} = double
+\item 
+using \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{Leader\+Id\+Type}} = uint32\+\_\+t
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+std\+::ostream \& \mbox{\hyperlink{clock_8h_ab4b4300b39e933c58a649b409d765592}{operator$<$$<$}} (std\+::ostream \&os, \mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bda}{Clock\+::\+State}} state)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{Leader\+Id\+Type}} \mbox{\hyperlink{clock_8h_ab68356bb4b1730ce465eda344b055c3c}{INVALID\+\_\+\+LEADER\+\_\+\+ID}} = 0
+\end{DoxyCompactItemize}
+
+
+\label{doc-typedef-members}
+\Hypertarget{clock_8h_doc-typedef-members}
+\doxysubsection{Typedef Documentation}
+\Hypertarget{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}\index{clock.h@{clock.h}!DurationType@{DurationType}}
+\index{DurationType@{DurationType}!clock.h@{clock.h}}
+\doxysubsubsection{\texorpdfstring{DurationType}{DurationType}}
+{\footnotesize\ttfamily \label{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6} 
+using \mbox{\hyperlink{clock_8h_ac9b36752fe8dc0a5e6a756cc671179c6}{Duration\+Type}} = std\+::chrono\+::microseconds}
+
+\Hypertarget{clock_8h_a1da24dd25411ec4c2076f1a166d98609}\index{clock.h@{clock.h}!FrequencyErrorType@{FrequencyErrorType}}
+\index{FrequencyErrorType@{FrequencyErrorType}!clock.h@{clock.h}}
+\doxysubsubsection{\texorpdfstring{FrequencyErrorType}{FrequencyErrorType}}
+{\footnotesize\ttfamily \label{clock_8h_a1da24dd25411ec4c2076f1a166d98609} 
+using \mbox{\hyperlink{clock_8h_a1da24dd25411ec4c2076f1a166d98609}{Frequency\+Error\+Type}} = double}
+
+\Hypertarget{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}\index{clock.h@{clock.h}!LeaderIdType@{LeaderIdType}}
+\index{LeaderIdType@{LeaderIdType}!clock.h@{clock.h}}
+\doxysubsubsection{\texorpdfstring{LeaderIdType}{LeaderIdType}}
+{\footnotesize\ttfamily \label{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec} 
+using \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{Leader\+Id\+Type}} = uint32\+\_\+t}
+
+\Hypertarget{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}\index{clock.h@{clock.h}!TimestampType@{TimestampType}}
+\index{TimestampType@{TimestampType}!clock.h@{clock.h}}
+\doxysubsubsection{\texorpdfstring{TimestampType}{TimestampType}}
+{\footnotesize\ttfamily \label{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06} 
+using \mbox{\hyperlink{clock_8h_aa3c3737ae755c2234a30d313aa8b0c06}{Timestamp\+Type}} = std\+::chrono\+::time\+\_\+point$<$std\+::chrono\+::steady\+\_\+clock, std\+::chrono\+::microseconds$>$}
+
+
+
+\label{doc-func-members}
+\Hypertarget{clock_8h_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{clock_8h_ab4b4300b39e933c58a649b409d765592}\index{clock.h@{clock.h}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!clock.h@{clock.h}}
+\doxysubsubsection{\texorpdfstring{operator$<$$<$()}{operator<<()}}
+{\footnotesize\ttfamily \label{clock_8h_ab4b4300b39e933c58a649b409d765592} 
+std\+::ostream \& operator$<$$<$ (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{os}{, }\item[{\mbox{\hyperlink{class_clock_a5ea60a8cfa56e8ea89ff4e4baa198bda}{Clock\+::\+State}}}]{state}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\label{doc-var-members}
+\Hypertarget{clock_8h_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{clock_8h_ab68356bb4b1730ce465eda344b055c3c}\index{clock.h@{clock.h}!INVALID\_LEADER\_ID@{INVALID\_LEADER\_ID}}
+\index{INVALID\_LEADER\_ID@{INVALID\_LEADER\_ID}!clock.h@{clock.h}}
+\doxysubsubsection{\texorpdfstring{INVALID\_LEADER\_ID}{INVALID\_LEADER\_ID}}
+{\footnotesize\ttfamily \label{clock_8h_ab68356bb4b1730ce465eda344b055c3c} 
+const \mbox{\hyperlink{clock_8h_a7da5de846d393d9b4a1a00ad9c7f7eec}{Leader\+Id\+Type}} INVALID\+\_\+\+LEADER\+\_\+\+ID = 0}
+

@@ -1,0 +1,108 @@
+\doxysection{csv\+\_\+consumer\+\_\+functions.\+hpp}
+\hypertarget{csv__consumer__functions_8hpp_source}{}\label{csv__consumer__functions_8hpp_source}\index{include/app/components/csv\_consumer\_functions.hpp@{include/app/components/csv\_consumer\_functions.hpp}}
+\mbox{\hyperlink{csv__consumer__functions_8hpp}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ CSV\_CONSUMER\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ CSV\_CONSUMER\_FUNCTIONS\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{csv__consumer__data_8hpp}{csv\_consumer\_data.hpp}}"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{csv__component__data_8hpp}{csv\_component\_data.hpp}}"{}}\ \ \textcolor{comment}{//\ For\ CSVRecord\ structure}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{component__functions_8hpp}{../../api/framework/component\_functions.hpp}}"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{debug_8h}{../../api/util/debug.h}}"{}}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00024\ \textcolor{keyword}{inline}\ std::vector<std::uint8\_t>\ \mbox{\hyperlink{csv__consumer__functions_8hpp_a6f088f8a9b4babc29c1d1e7abc090a23}{csv\_consumer\_producer}}(std::uint32\_t\ unit,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{comment}{//\ CSV\ consumer\ is\ consumer-\/only\ -\/\ return\ empty\ data}}
+\DoxyCodeLine{00026\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[CSVConsumer]\ Producer\ function\ called\ (CSV\ consumer\ has\ no\ producer\ implementation)\(\backslash\)n"{}};}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordflow}{return}\ std::vector<std::uint8\_t>();}
+\DoxyCodeLine{00028\ \}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00044\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{csv__consumer__functions_8hpp_a3fa016dba40799955a6c072ae823e1b1}{csv\_consumer\_consumer}}(\textcolor{keywordtype}{void}*\ msg,\ \mbox{\hyperlink{struct_component_data}{ComponentData}}*\ \mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00045\ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_consumer_data}{CSVConsumerData}}*\ consumer\_data\ =\ \textcolor{keyword}{static\_cast<}\mbox{\hyperlink{struct_c_s_v_consumer_data}{CSVConsumerData}}*\textcolor{keyword}{>}(\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}});}
+\DoxyCodeLine{00046\ \ \ \ \ }
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordflow}{if}\ (!msg\ ||\ !\mbox{\hyperlink{protocol_8h_aa1e4d9d59a0086ac69bc32be878e18cb}{data}})\ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a8a0be1d967a291a31bad4b5fa07afe76ab707f7db5c95d4366940103f50fae3a8}{WRN}})\ <<\ \textcolor{stringliteral}{"{}[CSVConsumer]\ Received\ null\ message\ or\ data\ pointer\(\backslash\)n"{}};}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (consumer\_data)\ \{}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ consumer\_data-\/>\mbox{\hyperlink{struct_c_s_v_consumer_data_abc3158303435a12f53bca08008ee8b3d}{mark\_invalid\_message}}();}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00053\ \ \ \ \ \}}
+\DoxyCodeLine{00054\ \ \ \ \ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{//\ Note:\ In\ real\ implementation,\ msg\ would\ be\ cast\ to\ Agent::Message*}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{//\ and\ we\ would\ extract\ timestamp\ from\ message\ header\ and\ CSV\ data\ from\ value}}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{//\ For\ testing\ purposes,\ we\ simulate\ this\ behavior}}
+\DoxyCodeLine{00058\ \ \ \ \ }
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{//\ Cast\ message\ to\ byte\ array\ for\ parsing\ the\ CSV\ record\ data}}
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{keyword}{const}\ std::uint8\_t*\ message\_bytes\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }std::uint8\_t*\textcolor{keyword}{>}(msg);}
+\DoxyCodeLine{00061\ \ \ \ \ }
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{comment}{//\ Calculate\ expected\ message\ size:\ only\ CSV\ record\ (timestamp\ is\ now\ in\ message\ header)}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keyword}{const}\ std::size\_t\ expected\_size\ =\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVComponentData::CSVRecord}});}
+\DoxyCodeLine{00064\ \ \ \ \ }
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{//\ Note:\ In\ real\ implementation,\ we\ would\ get\ these\ from\ the\ Message\ object:}}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{comment}{//\ std::size\_t\ message\_size\ =\ message-\/>value\_size();\ }}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{//\ std::uint64\_t\ csv\_timestamp\ =\ message-\/>timestamp().count();}}
+\DoxyCodeLine{00068\ \ \ \ \ std::size\_t\ message\_size\ =\ expected\_size;\ \textcolor{comment}{//\ This\ would\ come\ from\ message-\/>value\_size()}}
+\DoxyCodeLine{00069\ \ \ \ \ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{comment}{//\ Validate\ message\ size}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{if}\ (message\_size\ <\ expected\_size)\ \{}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a703fe3296c8c842877446fe15f1bddbba0f886785b600b91048fcdc434c6b4a8e}{ERR}})\ <<\ \textcolor{stringliteral}{"{}[CSVConsumer]\ Invalid\ message\ size:\ "{}}\ <<\ message\_size\ }
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ expected:\ "{}}\ <<\ expected\_size\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ consumer\_data-\/>\mbox{\hyperlink{struct_c_s_v_consumer_data_abc3158303435a12f53bca08008ee8b3d}{mark\_invalid\_message}}();}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00076\ \ \ \ \ \}}
+\DoxyCodeLine{00077\ \ \ \ \ }
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{comment}{//\ Simulate\ extracting\ timestamp\ from\ message\ header\ }}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{comment}{//\ In\ real\ implementation:\ csv\_timestamp\ =\ message-\/>timestamp().count();}}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keyword}{auto}\ now\ =\ std::chrono::duration\_cast<std::chrono::microseconds>(}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ std::chrono::system\_clock::now().time\_since\_epoch()).count();}
+\DoxyCodeLine{00082\ \ \ \ \ std::uint64\_t\ csv\_timestamp\ =\ now;\ \textcolor{comment}{//\ Simulated\ timestamp\ from\ message\ header}}
+\DoxyCodeLine{00083\ \ \ \ \ }
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{//\ Extract\ CSV\ record\ directly\ from\ message\ data\ (no\ timestamp\ prefix\ anymore)}}
+\DoxyCodeLine{00085\ \ \ \ \ \mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVComponentData::CSVRecord}}\ csv\_record;}
+\DoxyCodeLine{00086\ \ \ \ \ std::memcpy(\&csv\_record,\ message\_bytes,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record}{CSVComponentData::CSVRecord}}));}
+\DoxyCodeLine{00087\ \ \ \ \ }
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{comment}{//\ Update\ tracking\ data}}
+\DoxyCodeLine{00089\ \ \ \ \ consumer\_data-\/>\mbox{\hyperlink{struct_c_s_v_consumer_data_ad07b5a76aa39e6f816152527f83fff75}{update\_message\_tracking}}(}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ message\_size,}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ csv\_timestamp,}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ae6047bc010acbc99517601faba13bc9e}{id}},}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a09a1bb8269dfd155255a6da14dc85ba3}{x}},}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a2bf1883b533454266b6b3d3031aa1001}{y}},}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ad8d426bf21782e73622fe486ef8f46a4}{z}},}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_aa501deaf9838bcdac56184f3ce3a6f22}{speed}}}
+\DoxyCodeLine{00097\ \ \ \ \ );}
+\DoxyCodeLine{00098\ \ \ \ \ }
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{comment}{//\ Log\ the\ received\ CSV\ data}}
+\DoxyCodeLine{00100\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[CSVConsumer]\ Received\ CSV\ vehicle\ data\ message\ \#"{}}\ <<\ consumer\_data-\/>\mbox{\hyperlink{struct_c_s_v_consumer_data_a3b122a626d88b18f905280e1248d2ed9}{messages\_received}}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ timestamp:\ "{}}\ <<\ csv\_timestamp}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ vehicle\_id:\ "{}}\ <<\ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ae6047bc010acbc99517601faba13bc9e}{id}}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ position:\ ("{}}\ <<\ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a09a1bb8269dfd155255a6da14dc85ba3}{x}}\ <<\ \textcolor{stringliteral}{"{},\ "{}}\ <<\ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a2bf1883b533454266b6b3d3031aa1001}{y}}\ <<\ \textcolor{stringliteral}{"{},\ "{}}\ <<\ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ad8d426bf21782e73622fe486ef8f46a4}{z}}\ <<\ \textcolor{stringliteral}{"{})"{}}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ speed:\ "{}}\ <<\ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_aa501deaf9838bcdac56184f3ce3a6f22}{speed}}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ size:\ "{}}\ <<\ message\_size\ <<\ \textcolor{stringliteral}{"{}\ bytes\(\backslash\)n"{}};}
+\DoxyCodeLine{00106\ \ \ \ \ }
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{comment}{//\ Additional\ detailed\ logging\ for\ debugging}}
+\DoxyCodeLine{00108\ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a897a262bdd244180d7aba71cd004b747a067c599a4252b028fe5ee215b368df1c}{TRC}})\ <<\ \textcolor{stringliteral}{"{}[CSVConsumer]\ CSV\ record\ details:\ "{}}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}lat="{}}\ <<\ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a5faa4647f4f56e32ca174b7f11dacde9}{lat}}\ <<\ \textcolor{stringliteral}{"{},\ "{}}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}lon="{}}\ <<\ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_aa65d8240c115fb8b4918077781b3d597}{lon}}\ <<\ \textcolor{stringliteral}{"{},\ "{}}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}alt="{}}\ <<\ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_adac58840143593675837fb9bd386d223}{alt}}\ <<\ \textcolor{stringliteral}{"{},\ "{}}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}heading="{}}\ <<\ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_ac20dd70b97fb6164eeab62f73299df95}{heading}}\ <<\ \textcolor{stringliteral}{"{},\ "{}}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}yawrate="{}}\ <<\ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a279a76f37ea9e29dcf378b1a6c96034c}{yawrate}}\ <<\ \textcolor{stringliteral}{"{},\ "{}}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}acceleration="{}}\ <<\ csv\_record.\mbox{\hyperlink{struct_c_s_v_component_data_1_1_c_s_v_record_a607d75c19ec5e52d4d83f2bd0f8380ff}{acceleration}}\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00115\ \ \ \ \ }
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{comment}{//\ Log\ statistics\ periodically\ (every\ 100\ messages)}}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keywordflow}{if}\ (consumer\_data-\/>\mbox{\hyperlink{struct_c_s_v_consumer_data_a3b122a626d88b18f905280e1248d2ed9}{messages\_received}}\ \%\ 100\ ==\ 0)\ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{debug_8h_a660fc0a5d907ebe2af475e96bd544090}{db<void>}}(\mbox{\hyperlink{debug_8h_a652e158e58e6fa8494e9137c8dafcf94a2e6059d72d8fde88f3127eb147e4eff8}{INF}})\ <<\ \textcolor{stringliteral}{"{}[CSVConsumer]\ Statistics:\ "{}}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}total\_messages="{}}\ <<\ consumer\_data-\/>\mbox{\hyperlink{struct_c_s_v_consumer_data_a3b122a626d88b18f905280e1248d2ed9}{messages\_received}}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ invalid\_messages="{}}\ <<\ consumer\_data-\/>\mbox{\hyperlink{struct_c_s_v_consumer_data_a932b2a246058564b7bc1e3cfd72977d2}{invalid\_messages}}}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ total\_bytes="{}}\ <<\ consumer\_data-\/>\mbox{\hyperlink{struct_c_s_v_consumer_data_a084c2b6706aa564f50e87e2936e72c40}{total\_bytes\_received}}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ msg\_rate="{}}\ <<\ consumer\_data-\/>\mbox{\hyperlink{struct_c_s_v_consumer_data_aa8ca242f6f7742cd5b1dac2ed93a99bb}{get\_message\_rate}}()\ <<\ \textcolor{stringliteral}{"{}\ msg/s"{}}}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{},\ data\_rate="{}}\ <<\ consumer\_data-\/>\mbox{\hyperlink{struct_c_s_v_consumer_data_adabf0892337c21d63631d58f6d239084}{get\_data\_rate}}()\ <<\ \textcolor{stringliteral}{"{}\ bytes/s\(\backslash\)n"{}};}
+\DoxyCodeLine{00124\ \ \ \ \ \}}
+\DoxyCodeLine{00125\ \}}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ CSV\_CONSUMER\_FUNCTIONS\_HPP\ }}
+
+\end{DoxyCode}

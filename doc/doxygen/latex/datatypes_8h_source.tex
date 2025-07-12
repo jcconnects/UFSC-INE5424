@@ -1,0 +1,74 @@
+\doxysection{datatypes.\+h}
+\hypertarget{datatypes_8h_source}{}\label{datatypes_8h_source}\index{include/app/datatypes.h@{include/app/datatypes.h}}
+\mbox{\hyperlink{datatypes_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DATATYPES\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DATATYPES\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{keyword}{enum\ class}\ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504f}{DataTypes}}\ :\ std::uint32\_t\ \{}
+\DoxyCodeLine{00007\ \ \ \ \ \textcolor{comment}{/*\ Internal\ (bit\ 31\ =\ 0)\ */}}
+\DoxyCodeLine{00008\ \ \ \ \ }
+\DoxyCodeLine{00009\ \ \ \ \ \textcolor{comment}{//\ Simple\ test\ units}}
+\DoxyCodeLine{00010\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504face5ae617b7a277d02a8dccc786c7e4e7}{UNIT\_A}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x00000055,}
+\DoxyCodeLine{00011\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5c268c7fc56153276aa90202c15aa3ab}{UNIT\_B}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x00000066,}
+\DoxyCodeLine{00012\ \ \ \ \ }
+\DoxyCodeLine{00013\ \ \ \ \ \textcolor{comment}{//\ Camera}}
+\DoxyCodeLine{00014\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa138d73ede515e3d653497bd9f5686d7f}{RGB\_IMAGE}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x00000010,}
+\DoxyCodeLine{00015\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa31b9274291c3f78d5ce8fe9a5263ac8f}{VIDEO\_STREAM}}\ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x00000011,}
+\DoxyCodeLine{00016\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa11d9c6bac83cc056a974aacbc3f1200d}{PIXEL\_MATRIX}}\ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x00000012,}
+\DoxyCodeLine{00017\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa102f051a6be2e49eed4b5f6f6a88e3bf}{CAMERA\_METADATA}}\ \ \ \ \ \ \ \ \ \ =\ 0x00000013,}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{comment}{//\ ECU}}
+\DoxyCodeLine{00020\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5436c024f9e385dd79e92c33a58f3059}{SENSOR\_DATA}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x00000101,}
+\DoxyCodeLine{00021\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa35dce95b0c6df2235d940d939a1494ca}{DIAGNOSTIC\_DATA}}\ \ \ \ \ \ \ \ \ \ =\ 0x00000102,}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{comment}{//\ INS}}
+\DoxyCodeLine{00024\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fad32f1b4a654bfba5632fd9315fb37f60}{ACCELERATION\_VECTOR}}\ \ \ \ \ \ =\ 0x00000201,}
+\DoxyCodeLine{00025\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa285ac75551c4af9971eccedeb1c06e3f}{GYRO\_VECTOR}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x00000202,}
+\DoxyCodeLine{00026\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faeae332e776c4bab15f0c80b7d4689014}{ORIENTATION\_DATA}}\ \ \ \ \ \ \ \ \ =\ 0x00000203,}
+\DoxyCodeLine{00027\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fab4b2d852b80fc9975de8203b7bbdb1be}{INERTIAL\_POSITION}}\ \ \ \ \ \ \ \ =\ 0x00000204,}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{comment}{//\ Lidar}}
+\DoxyCodeLine{00030\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6600c8a0284b0adc7e5ee8db99d44ae2}{POINT\_CLOUD\_XYZ}}\ \ \ \ \ \ \ \ \ \ =\ 0x00000301,}
+\DoxyCodeLine{00031\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa9fc8223809155981ebd9675b5d82618f}{POINT\_CLOUD\_INTENSITY}}\ \ \ \ =\ 0x00000302,}
+\DoxyCodeLine{00032\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa61a53b43dad6b88400ab11e0c2a19443}{LIDAR\_TIMESTAMPED\_SCAN}}\ \ \ =\ 0x00000303,}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{comment}{/*\ External\ (bit\ 31\ =\ 1)\ */}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{comment}{//\ Simple\ test\ units}}
+\DoxyCodeLine{00037\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faaf72d9006a4feb9178dcfd573e75163b}{EXTERNAL\_UNIT\_A}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x80000001,}
+\DoxyCodeLine{00038\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa8a5be686d7f700e48bdc5bd64f4f633a}{EXTERNAL\_UNIT\_B}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x80000002,}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{//\ Camera}}
+\DoxyCodeLine{00041\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa7dcfae735c1da9fbf394eb4601b50cc9}{EXTERNAL\_RGB\_IMAGE}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x80000010,}
+\DoxyCodeLine{00042\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa03b873ea3e21ad634efbfedc1637dd2a}{EXTERNAL\_VIDEO\_STREAM}}\ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x80000011,}
+\DoxyCodeLine{00043\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6b6cf4841040d031c564e78fc2bb250e}{EXTERNAL\_PIXEL\_MATRIX}}\ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x80000012,}
+\DoxyCodeLine{00044\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fae79db3c7c98a22589f1cf13733f807af}{EXTERNAL\_CAMERA\_METADATA}}\ \ \ \ \ \ \ \ \ \ =\ 0x80000013,}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{//\ ECU}}
+\DoxyCodeLine{00047\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6d6e343dca82038d85a900f8981bf347}{EXTERNAL\_SENSOR\_DATA}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x80000101,}
+\DoxyCodeLine{00048\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa2b04275ffb6990208339c1b968f4b117}{EXTERNAL\_DIAGNOSTIC\_DATA}}\ \ \ \ \ \ \ \ \ \ =\ 0x80000102,}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{//\ INS}}
+\DoxyCodeLine{00051\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504facdca334be0edeb4844c991fa2da618ae}{EXTERNAL\_ACCELERATION\_VECTOR}}\ \ \ \ \ \ =\ 0x80000201,}
+\DoxyCodeLine{00052\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa6d27095709ba1521b20ec4b4a902c7eb}{EXTERNAL\_GYRO\_VECTOR}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x80000202,}
+\DoxyCodeLine{00053\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504faf2f7961b85ccc38491d61c73423b68da}{EXTERNAL\_ORIENTATION\_DATA}}\ \ \ \ \ \ \ \ \ =\ 0x80000203,}
+\DoxyCodeLine{00054\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fabc16f84b0f680e5cc15d9e35608dc26a}{EXTERNAL\_INERTIAL\_POSITION}}\ \ \ \ \ \ \ \ =\ 0x80000204,}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{//\ Lidar}}
+\DoxyCodeLine{00057\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa36839459114ab3d7ef142b7befb47bc5}{EXTERNAL\_POINT\_CLOUD\_XYZ}}\ \ \ \ \ \ \ \ \ \ =\ 0x80000301,}
+\DoxyCodeLine{00058\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa435060d6cc5f31cd197e836dad50c4e6}{EXTERNAL\_POINT\_CLOUD\_INTENSITY}}\ \ \ \ =\ 0x80000302,}
+\DoxyCodeLine{00059\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa66ac5e023829144ed419b377ab0422cf}{EXTERNAL\_LIDAR\_TIMESTAMPED\_SCAN}}\ \ \ =\ 0x80000303,}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{//\ CSV\ Data}}
+\DoxyCodeLine{00062\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fa5741db806a83b5979f7c4bba47a191c9}{CSV\_VEHICLE\_DATA}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x00000401,}
+\DoxyCodeLine{00063\ \ \ \ \ \mbox{\hyperlink{datatypes_8h_a25497ba2d1a0dd3eafe0295fb262504fac76d728d26a812ef0db44a38afc0c513}{EXTERNAL\_CSV\_VEHICLE\_DATA}}\ \ \ \ \ \ \ \ \ =\ 0x80000401}
+\DoxyCodeLine{00064\ \};}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DATATYPES\_H}}
+
+\end{DoxyCode}
