@@ -12,13 +12,14 @@
 #include <stdexcept>
 #include <exception>
 #include <cstdint>
-#include "../../include/api/network/nic.h"
-#include "../../include/api/network/socketEngine.h"
-#include "../../include/api/network/ethernet.h"
-#include "../../include/api/network/initializer.h"
-#include "../../include/api/traits.h"
-#include "../../tests/testcase.h"
-#include "../../tests/test_utils.h"
+
+#include "api/network/nic.h"
+#include "api/network/socketEngine.h"
+#include "api/network/ethernet.h"
+#include "api/network/initializer.h"
+#include "api/traits.h"
+#include "../testcase.h"
+#include "../test_utils.h"
 
 using namespace std::chrono_literals;
 
@@ -176,12 +177,12 @@ NICTest::NICTest() {
     DEFINE_TEST(testStatisticsInitialization);
     DEFINE_TEST(testStatisticsPacketCounters);
     DEFINE_TEST(testStatisticsByteCounters);
-    // DEFINE_TEST(testStatisticsDropCounters);
-    // DEFINE_TEST(testStatisticsErrorConditions);
+    DEFINE_TEST(testStatisticsDropCounters);
+    DEFINE_TEST(testStatisticsErrorConditions);
 
     // === ERROR HANDLING TESTS ===
-    // DEFINE_TEST(testNullBufferSendHandling);
-    // DEFINE_TEST(testInvalidParameterHandling);
+    DEFINE_TEST(testNullBufferSendHandling);
+    DEFINE_TEST(testInvalidParameterHandling);
     DEFINE_TEST(testResourceExhaustionHandling);
 
     // === THREAD SAFETY TESTS ===
@@ -764,8 +765,8 @@ void NICTest::testNullBufferSendHandling() {
         
         // Verify we can access statistics without crashing
         auto stats = getStats(nic);
-        // Just verify we can read the statistics (tx_drops is unsigned, so always >= 0)
-        (void)stats; // Suppress unused variable warning
+        // Just verify we can read the statistics and they are reasonable
+        assert_true(stats.tx_drops < 1000000, "tx_drops should be reasonable");
         
     } catch (const std::exception& e) {
         // Clean up on exception

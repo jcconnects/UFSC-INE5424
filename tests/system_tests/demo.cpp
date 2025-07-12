@@ -9,15 +9,12 @@
 #include <signal.h>
 #include <errno.h>
 
-#include "../../include/app/vehicle.h"
-#include "../../include/api/util/debug.h"
-#include "../../include/app/components/basic_producer_a.h"
-#include "../../include/app/components/basic_consumer_a.h"
-#include "../../include/app/components/basic_producer_b.h"
-#include "../../include/app/components/basic_consumer_b.h"
-#include "../../include/api/framework/rsu.h"
-#include "../../include/api/framework/leaderKeyStorage.h"
-#include "../../include/api/framework/map_config.h"
+#include "app/vehicle.h"
+#include "api/util/debug.h"
+#include "api/framework/rsu.h"
+#include "api/framework/leaderKeyStorage.h"
+#include "api/framework/map_config.h"
+#include "app/datatypes.h"
 #include "../testcase.h"
 
 #ifndef RSU_RADIUS
@@ -334,7 +331,7 @@ int Demo::run_demo_with_config(const std::string& config_file) {
         script_path = g_map_config->get_trajectory_generator_script();
     } catch (const std::exception& e) {
         db<Demo>(WRN) << "Error accessing trajectory generator script config: " << e.what() << "\n";
-        script_path = "scripts/trajectory_generator_map_1.py"; // fallback
+        script_path = "tools/scripts/trajectory_generator_map_1.py"; // fallback
     }
     
     std::string python_command = "python3 " + script_path;
@@ -541,11 +538,39 @@ void Demo::run_vehicle(Vehicle* v, unsigned int vehicle_id) {
     
     // Give every vehicle all basic components
     v->create_component<BasicProducerA>("ProducerA");
-    v->create_component<BasicProducerB>("ProducerB");
+    // v->create_component<BasicProducerB>("ProducerB");
     v->create_component<BasicConsumerA>("ConsumerA");
-    v->create_component<BasicConsumerB>("ConsumerB");
+    // v->create_component<BasicConsumerB>("ConsumerB");
     
     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] configured with all basic components (Producer-A, Producer-B, Consumer-A, Consumer-B)\n";
+
+    // // Start consumers with periodic interest
+    auto consumerA = v->get_component<Agent>("ConsumerA");
+    // auto consumerB = v->get_component<Agent>("ConsumerB");
+
+    // // Create CSV producer and consumer components
+    // v->create_csv_component_with_file("CSVProducer" + std::to_string(vehicle_id), "include/app/components/datasets/dataset/dynamics-vehicle_" + std::to_string(vehicle_id % 15) + ".csv");
+    // v->create_component<CSVConsumerComponent>("CSVConsumer" + std::to_string(vehicle_id));
+    // auto consumer_agent = v->get_component<Agent>("CSVConsumer" + std::to_string(vehicle_id));
+    // if (consumer_agent) {
+    //     consumer_agent->start_periodic_interest(
+    //         static_cast<std::uint32_t>(DataTypes::CSV_VEHICLE_DATA), 
+    //         Agent::Microseconds(500000) // 500ms period
+    //     );
+    //     db<Vehicle>(INF) << "[CSV Consumer " << vehicle_id << "] Started periodic interest for CSV_VEHICLE_DATA\n";
+    // }
+    
+    if (consumerA) {
+        // Start ConsumerA with 500ms period using Agent's periodic interest method
+        consumerA->start_periodic_interest(static_cast<std::uint32_t>(DataTypes::UNIT_A), Agent::Microseconds(500000));
+        db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] ConsumerA started with 500ms period\n";
+    }
+    
+    // if (consumerB) {
+    //     // Start ConsumerB with 750ms period using Agent's periodic interest method
+    //     consumerB->start_periodic_interest(static_cast<std::uint32_t>(DataTypes::UNIT_B), Agent::Microseconds(750000));
+    //     db<Vehicle>(INF) << "[Vehicle " << vehicle_id << "] ConsumerB started with 750ms period\n";
+    // }
 
     // Use randomized behavior for vehicle lifetime
     unsigned int min_lifetime = std::max(5u, sim_duration / 3);  // At least 5s, or 1/3 of sim duration

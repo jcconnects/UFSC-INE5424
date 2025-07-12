@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <string>
 #include <cstring>
+#include <fstream>
 
 #include "api/traits.h"
 #include "api/network/ethernet.h"
@@ -95,6 +96,9 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         // Helper method to fill TX timestamp in packet
         void fillTxTimestamp(DataBuffer* buf, unsigned int packet_size);
 
+        // Helper method to log latency to CSV file
+        void logLatency(std::int64_t latency_us);
+
     private:
 
         Address _address;
@@ -105,6 +109,7 @@ class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::
         sem_t _buffer_sem;
         sem_t _binary_sem;
         double _radius;
+        std::ofstream _latency_csv_file;
 
         bool running() { return _running.load(std::memory_order_acquire); }
 };
@@ -127,6 +132,21 @@ NIC<Engine>::NIC() : _running(true), _radius(1000.0) {  // Default 1000m transmi
     // Setting default address - must be done before starting Engine
     _address = Engine::mac_address();
     
+    // Initialize CSV file for latency logging
+    _latency_csv_file.open("nic_latency.csv", std::ios::out | std::ios::app);
+    if (_latency_csv_file.is_open()) {
+        // Check if file is empty (new file) to write header
+        std::ifstream test_file("nic_latency.csv");
+        test_file.seekg(0, std::ios::end);
+        if (test_file.tellg() == 0) {
+            _latency_csv_file << "latency_us\n";
+        }
+        test_file.close();
+        db<NIC>(INF) << "[NIC] [constructor] CSV latency log file opened\n";
+    } else {
+        db<NIC>(WRN) << "[NIC] [constructor] Failed to open CSV latency log file\n";
+    }
+    
     // NOW it's safe to start the Engine - all NIC infrastructure is ready
     Engine::start();
     db<NIC>(INF) << "[NIC] [constructor] NIC fully initialized and Engine started with default radius " << _radius << "m\n";
@@ -136,6 +156,12 @@ template <typename Engine>
 NIC<Engine>::~NIC() {
     // Destroy engine first
     stop();
+
+    // Close CSV file
+    if (_latency_csv_file.is_open()) {
+        _latency_csv_file.close();
+        db<NIC>(INF) << "[NIC] [destructor] CSV latency log file closed\n";
+    }
 
     sem_destroy(&_buffer_sem);
     sem_destroy(&_binary_sem);
@@ -160,6 +186,12 @@ int NIC<Engine>::send(DataBuffer* buf, unsigned int packet_size) {
     db<NIC>(TRC) << "NIC<Engine>::send() called!\n";
     if (!running()) {
         db<NIC>(TRC) << "[NIC] send called when NIC is not running \n";
+        return 0;
+    }
+
+    if (!buf) {
+        db<NIC>(WRN) << "[NIC] send() called with a null buffer\n";
+        _statistics.tx_drops++;
         return 0;
     }
 
@@ -189,6 +221,12 @@ int NIC<Engine>::send(DataBuffer* buf) {
         return -1;
     }
 
+    if (!buf) {
+        db<NIC>(WRN) << "[NIC] send() called with a null buffer\n";
+        _statistics.tx_drops++;
+        return -1;
+    }
+
     int result = Engine::send(buf->data(), buf->size());
     db<NIC>(INF) << "[NIC] Engine::send returned " << result << "\n";
 
@@ -210,6 +248,12 @@ int NIC<Engine>::receive(DataBuffer* buf, Address* src, Address* dst, void* data
     if (!running()) {
         db<NIC>(ERR) << "[NIC] receive() called when NIC is inactive\n";
         return -1;
+    }
+
+    if (!buf) {
+        db<NIC>(WRN) << "[NIC] receive() called with a null buffer\n";
+        _statistics.rx_drops++;
+        return 0;
     }
 
     Ethernet::Frame* frame = buf->data();
@@ -272,7 +316,8 @@ void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
     // 3. Fill RX timestamp in the buffer
     db<NIC>(TRC) << "[NIC] [handle()] filling RX timestamp in the buffer\n";
     auto& clock = Clock::getInstance();
-    std::int64_t timestamp = clock.getLocalSystemTime().time_since_epoch().count();
+    TimestampType rx_time = clock.getLocalSystemTime();
+    std::int64_t timestamp = rx_time.time_since_epoch().count();
     buf->setRX(timestamp);
     db<NIC>(TRC) << "[NIC] [handle()] RX timestamp filled in the buffer: " << timestamp << "\n";
 
@@ -281,12 +326,34 @@ void NIC<Engine>::handle(Ethernet::Frame* frame, unsigned int size) {
     buf->setData(frame, size);
     db<NIC>(TRC) << "[NIC] [handle()] frame copied to buffer\n";
 
+    // 5. Extract TX timestamp and calculate latency for logging
+    db<NIC>(TRC) << "[NIC] [handle()] extracting TX timestamp for latency calculation\n";
+    const unsigned int header_size = sizeof(std::uint16_t) * 2 + sizeof(std::uint32_t); // 8 bytes
+    const unsigned int tx_timestamp_offset = header_size + 8; // Header + offsetof(TimestampFields, tx_timestamp)
+    
+    if (packet_size > tx_timestamp_offset + sizeof(TimestampType)) {
+        const TimestampType* tx_timestamp_ptr = reinterpret_cast<const TimestampType*>(frame->payload + tx_timestamp_offset);
+        TimestampType tx_time = *tx_timestamp_ptr;
+        
+        // Calculate latency in microseconds
+        std::int64_t latency_us = (rx_time - tx_time).count();
+        
+        db<NIC>(INF) << "[NIC] [handle()] Latency calculated: TX=" << tx_time.time_since_epoch().count() 
+                      << "us, RX=" << rx_time.time_since_epoch().count() << "us, Latency=" << latency_us << "us\n";
+        
+        // Log latency to CSV file
+        logLatency(latency_us);
+    } else {
+        db<NIC>(WRN) << "[NIC] [handle()] Packet too small for TX timestamp extraction. Size: " << packet_size 
+                      << ", required: " << (tx_timestamp_offset + sizeof(TimestampType)) << "\n";
+    }
+
    if (!running()) {
         db<NIC>(ERR) << "[NIC] [handle()] trying to notify protocol when NIC is inactive\n";
         return;
     }
 
-    // 5. Notify Observers
+    // 6. Notify Observers
     if (!notify(buf, proto)) {
         db<NIC>(INF) << "[NIC] [handle()] data received, but no one was notified (" << proto << ")\n";
         free(buf); // if no one is listening, release buffer
@@ -335,6 +402,11 @@ typename NIC<Engine>::DataBuffer* NIC<Engine>::alloc(Address dst, Protocol_Numbe
 template <typename Engine>
 void NIC<Engine>::free(DataBuffer* buf) {
     db<NIC>(TRC) << "NIC<Engine>::free() called!\n";
+
+    if (buf == nullptr) {
+        db<NIC>(WRN) << "[NIC] free() called with a null buffer\n";
+        return;
+    }
 
     if (!running()) {
         db<NIC>(ERR) << "[NIC] free() called when NIC is inactive\n";
@@ -385,8 +457,8 @@ void NIC<Engine>::fillTxTimestamp(DataBuffer* buf, unsigned int packet_size) {
     
     // Get current synchronized time from Clock
     auto& clock = Clock::getInstance();
-    bool is_sync;
-    TimestampType tx_time = clock.getSynchronizedTime(&is_sync);
+    bool is_sync = true;
+    TimestampType tx_time = clock.getLocalSystemTime();
     
     // Calculate correct offset for TX timestamp accounting for structure alignment
     // Header: 8 bytes (2×uint16_t + uint32_t)
@@ -419,6 +491,22 @@ double NIC<Engine>::radius() {
 template <typename Engine>
 void NIC<Engine>::setRadius(double radius) {
     _radius = radius;
+}
+
+/**
+ * @brief Log latency measurement to CSV file
+ * 
+ * @param latency_us The latency in microseconds to log
+ */
+template <typename Engine>
+void NIC<Engine>::logLatency(std::int64_t latency_us) {
+    if (_latency_csv_file.is_open()) {
+        _latency_csv_file << latency_us << "\n";
+        _latency_csv_file.flush(); // Ensure data is written immediately
+        db<NIC>(TRC) << "[NIC] [logLatency] Logged latency: " << latency_us << " us\n";
+    } else {
+        db<NIC>(WRN) << "[NIC] [logLatency] CSV file not open, cannot log latency\n";
+    }
 }
 
 #endif // NIC_H

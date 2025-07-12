@@ -33,6 +33,16 @@ add_executable(location_service_test location_service_test.cpp)
 target_link_libraries(location_service_test PRIVATE project_lib pthread)
 add_test(NAME location_service_test COMMAND location_service_test)
 
+# Add agent test
+add_executable(agent_test agent_test.cpp)
+target_link_libraries(agent_test PRIVATE project_lib pthread)
+add_test(NAME agent_test COMMAND agent_test)
+
+# Add vehicle internal latency test
+add_executable(vehicle_internal_latency_test vehicle_internal_latency_test.cpp)
+target_link_libraries(vehicle_internal_latency_test PRIVATE project_lib pthread)
+add_test(NAME vehicle_internal_latency_test COMMAND vehicle_internal_latency_test)
+
 # Add this test to the list of all unit tests
 add_custom_target(unit_tests 
     DEPENDS 
@@ -52,4 +62,6 @@ add_custom_target(unit_tests
         statusManager_test
         radius_collision_test
         location_service_test
+        agent_test
+        vehicle_internal_latency_test
 ) 

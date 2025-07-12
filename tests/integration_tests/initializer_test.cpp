@@ -5,16 +5,14 @@
 #include <cstring>
 #include <vector>
 #include <exception>
-#include "../../include/app/vehicle.h"
-#include "../../include/api/network/ethernet.h"
-#include "../../tests/testcase.h"
-#include "../../tests/test_utils.h"
 
-// Include available component headers
-#include "../../include/app/components/ecu_component.h"
-#include "../../include/app/components/camera_component.h"
-#include "../../include/app/components/lidar_component.h"
-#include "../../include/app/components/ins_component.h"
+#include "app/vehicle.h"
+#include "api/network/ethernet.h"
+#include "../testcase.h"
+#include "../test_utils.h"
+
+// Component types are defined as structs in vehicle.h
+// No need to include component headers since Vehicle uses factory functions
 // Note: battery_component.h doesn't exist in current codebase
 
 // Helper namespace to provide the missing Initializer functionality

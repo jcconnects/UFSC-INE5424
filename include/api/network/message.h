@@ -5,7 +5,8 @@
 #include <cstring>
 #include <vector>
 #include <chrono>
-#include "../util/debug.h"
+
+#include "api/util/debug.h"
 #include "api/framework/clock.h"  // Include Clock for synchronized timestamps
 
 /**
@@ -66,6 +67,7 @@ class Message {
         const unsigned int value_size() const;
         const void* data() const;
         const unsigned int size() const;
+        const bool external() const;
         static Message deserialize(const void* serialized, const unsigned int size);
 
         // Clock integration utilities
@@ -79,6 +81,7 @@ class Message {
         void unit(const Unit type);
         void period(const Microseconds period);
         void value(const void* data, const unsigned int size);
+        void external(const bool external);
 
     private:
         // Internal helper
@@ -109,6 +112,7 @@ class Message {
 
         // Serialized message buffer
         Array _serialized_data;
+        bool _external;
 
 };
 
@@ -121,7 +125,8 @@ Message<Channel>::Message(Type message_type, const Origin& origin, Unit unit, Mi
     _origin(),
     _timestamp(ZERO),
     _period(ZERO),
-    _value()
+    _value(),
+    _external(false)
 {
     // Use Clock singleton for synchronized timestamps instead of system_clock
     auto& clock = Clock::getInstance();
@@ -163,6 +168,7 @@ Message<Channel>::Message(const Message& other) {
     _timestamp = other.timestamp();
     _period = other.period();
     _unit = other.unit();
+    _external = other.external();
     
     // Copy value data if present
     if (other.value_size() > 0) {
@@ -241,6 +247,11 @@ const unsigned int Message<Channel>::size() const {
 
     // Returns serialized message size
     return static_cast<const unsigned int>(_serialized_data.size());
+}
+
+template <typename Channel>
+const bool Message<Channel>::external() const {
+    return _external;
 }
 
 template <typename Channel>
@@ -338,6 +349,12 @@ void Message<Channel>::value(const void* data, const unsigned int size) {
 
     _value.resize(size);
     std::memcpy(_value.data(), data, size);
+}
+
+template <typename Channel>
+void Message<Channel>::external(const bool external) {
+    _external = external;
+    db<Message<Channel>>(TRC) << "Message::external() called with external: " << _external << "\n";
 }
 
 template <typename Channel>

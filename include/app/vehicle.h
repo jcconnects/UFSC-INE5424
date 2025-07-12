@@ -2,6 +2,7 @@
 #define VEHICLE_H
 
 #include <atomic> // for std::atomic
+#include <csignal>
 #include <vector> // for std::vector
 #include <memory> // for std::unique_ptr
 #include <string> // for std::string
@@ -14,8 +15,30 @@
 #include "api/network/ethernet.h"
 #include "api/framework/vehicleRSUManager.h"
 
-// Forward declarations
-class ECUComponent;
+// Include all component factory headers for Phase 4.3
+#include "components/camera_factory.hpp"
+#include "components/lidar_factory.hpp"
+#include "components/ecu_factory.hpp"
+#include "components/ins_factory.hpp"
+#include "components/basic_producer_a_factory.hpp"
+#include "components/basic_producer_b_factory.hpp"
+#include "components/basic_consumer_a_factory.hpp"
+#include "components/basic_consumer_b_factory.hpp"
+#include "components/csv_component_factory.hpp"
+#include "components/csv_consumer_factory.hpp"
+
+// Component type identifiers for template specialization
+// These replace the old inheritance-based component classes
+struct ECUComponent {};
+struct CameraComponent {};
+struct LidarComponent {};
+struct INSComponent {};
+struct BasicProducerA {};
+struct BasicProducerB {};
+struct BasicConsumerA {};
+struct BasicConsumerB {};
+struct CSVComponent {};
+struct CSVConsumerComponent {};
 
 // Vehicle class definition
 class Vehicle {
@@ -40,6 +63,12 @@ class Vehicle {
 
         template <typename ComponentType>
         void create_component(const std::string& name);
+        
+        template <typename ComponentType>
+        ComponentType* get_component(const std::string& name);
+        
+        // Special method for CSV component creation with file path
+        void create_csv_component_with_file(const std::string& name, const std::string& csv_file_path);
         
         // CSV logging setup
         void setup_csv_logging();
@@ -110,6 +139,7 @@ inline void Vehicle::start() {
     }
 
     _running.store(true, std::memory_order_release);
+    _gateway->start();
 
     db<Vehicle>(INF) << "[Vehicle " << _id << "] started.\n";
 }
@@ -126,19 +156,242 @@ inline void Vehicle::stop() {
     db<Vehicle>(INF) << "[Vehicle " << _id << "] stopped.\n";
 }
 
+/**
+ * @brief Generic template with compile-time error for unsupported types
+ * 
+ * This template provides a compile-time error message for unsupported component types.
+ * Only the specialized templates below should be used for actual component creation.
+ * Following EPOS principles of compile-time type safety.
+ */
 template <typename ComponentType>
 inline void Vehicle::create_component(const std::string& name) {
-    // CRITICAL FIX: Create unique address for each agent instead of using gateway address
-    // This prevents the gateway from filtering out agent messages as "self-originated"
+    static_assert(sizeof(ComponentType) == 0, 
+        "Unsupported component type. Supported types: ECUComponent, CameraComponent, LidarComponent, INSComponent, BasicProducerA, BasicProducerB, BasicConsumerA, BasicConsumerB, CSVComponent, CSVConsumerComponent");
+}
+
+/**
+ * @brief Template specialization for ECU component creation
+ * 
+ * Creates an ECU component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<ECUComponent>(const std::string& name) {
     static unsigned int component_counter = 1;
     Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
     
-    auto component = std::make_unique<ComponentType>(_gateway->bus(), component_addr, name);
-    
-    // Set up CSV logging for the component
+    auto component = create_ecu_component(_gateway->bus(), component_addr, name);
     component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for Camera component creation
+ * 
+ * Creates a Camera component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<CameraComponent>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
     
-    _components.push_back(std::move(component));   
+    auto component = create_camera_component(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for Lidar component creation
+ * 
+ * Creates a Lidar component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<LidarComponent>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_lidar_component(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for INS component creation
+ * 
+ * Creates an INS component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<INSComponent>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_ins_component(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for BasicProducerA component creation
+ * 
+ * Creates a BasicProducerA component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<BasicProducerA>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_basic_producer_a(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for BasicProducerB component creation
+ * 
+ * Creates a BasicProducerB component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<BasicProducerB>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_basic_producer_b(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for BasicConsumerA component creation
+ * 
+ * Creates a BasicConsumerA component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<BasicConsumerA>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_basic_consumer_a(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for BasicConsumerB component creation
+ * 
+ * Creates a BasicConsumerB component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<BasicConsumerB>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_basic_consumer_b(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+/**
+ * @brief Template specialization for CSV component creation
+ * 
+ * CSVComponent requires a CSV file path parameter that cannot be provided through
+ * the standard template interface. This template specialization provides a clear
+ * compile-time error directing users to the appropriate creation method.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<CSVComponent>(const std::string& name) {
+    throw std::runtime_error("CSVComponent requires a CSV file path. Use this method instead:\n"
+                             "- create_csv_component_with_file(name, csv_file_path)");
+}
+
+/**
+ * @brief Template specialization for CSV consumer component creation
+ * 
+ * Creates a CSV consumer component using the factory function instead of direct instantiation.
+ * This eliminates the inheritance-based approach and uses function-based composition.
+ * 
+ * @param name Component name for identification
+ */
+template<>
+inline void Vehicle::create_component<CSVConsumerComponent>(const std::string& name) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_csv_consumer(_gateway->bus(), component_addr, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+
+/**
+ * @brief Create CSV component with specific file path
+ * 
+ * Creates a CSV component using the provided CSV file path.
+ * This method handles the file path parameter that the template version cannot.
+ * 
+ * @param name Component name for identification
+ * @param csv_file_path Path to the CSV file to load
+ */
+inline void Vehicle::create_csv_component_with_file(const std::string& name, const std::string& csv_file_path) {
+    static unsigned int component_counter = 1;
+    Gateway::Address component_addr(_gateway->address().paddr(), component_counter++);
+    
+    auto component = create_csv_component(_gateway->bus(), component_addr, csv_file_path, name);
+    component->set_csv_logger(_log_dir);
+    _components.push_back(std::move(component));
+}
+
+template <typename ComponentType>
+inline ComponentType* Vehicle::get_component(const std::string& name) {
+    for (auto& component : _components) {
+        if (component->name() == name) {
+            return static_cast<ComponentType*>(component.get());
+        }
+    }
+    return nullptr;
+}
+
+/**
+ * @brief Template specialization for Agent component retrieval
+ * 
+ * Returns the Agent pointer directly without casting, since all components
+ * are stored as Agent instances in the factory-based approach.
+ * 
+ * @param name Component name for identification
+ * @return Pointer to Agent component or nullptr if not found
+ */
+template<>
+inline Agent* Vehicle::get_component<Agent>(const std::string& name) {
+    for (auto& component : _components) {
+        if (component->name() == name) {
+            return component.get();
+        }
+    }
+    return nullptr;
 }
 
 inline const unsigned int Vehicle::id() const {

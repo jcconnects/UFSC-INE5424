@@ -43,6 +43,14 @@ else ifeq ($(BUILD_TYPE),profile)
 else ifeq ($(BUILD_TYPE),strict)
     # Strict mode: show all warnings, treat warnings as errors
     CXXFLAGS := $(BASE_CXXFLAGS) $(WARNING_FLAGS) $(PLATFORM_FLAGS) $(DEBUG_FLAGS) -Werror
+else ifeq ($(BUILD_TYPE),asan)
+    # AddressSanitizer build
+    CXXFLAGS += $(DEBUG_FLAGS) -fsanitize=address -fno-omit-frame-pointer
+    LDFLAGS += -fsanitize=address
+else ifeq ($(BUILD_TYPE),tsan)
+    # ThreadSanitizer build
+    CXXFLAGS += $(DEBUG_FLAGS) -fsanitize=thread -fno-omit-frame-pointer
+    LDFLAGS += -fsanitize=thread
 else
     CXXFLAGS += $(DEBUG_FLAGS)
 endif
@@ -57,6 +65,7 @@ BINDIR := bin
 OBJDIR := build/obj
 LIBDIR := build/lib
 DOCDIR := doc
+DOXYFILE := config/Doxyfile
 
 # Test directories
 UNIT_TESTDIR := $(TESTDIR)/unit_tests
@@ -94,7 +103,7 @@ all: compile_tests unit_tests integration_tests system_tests
 
 # Compile and run all tests in the correct order
 .PHONY: test
-test: dirs unit_tests system_tests
+test: dirs unit_tests integration_tests system_tests
 
 # Compile all tests
 .PHONY: compile_tests
@@ -221,14 +230,13 @@ coverage: clean compile_tests test ## Generate code coverage report
 # =============================================================================
 
 docs: ## Generate documentation with Doxygen
-	@echo "Generating documentation with Doxygen..."
-	@mkdir -p $(DOCDIR)/doxygen
-	@doxygen
-	@echo "Documentation generated in $(DOCDIR)/doxygen/html/"
+	@echo "Generating documentation with Doxygen (config: $(DOXYFILE))..."
+	@doxygen $(DOXYFILE)
+	@echo "Documentation generated in doc/doxygen/html/"
 
 docs-open: docs ## Generate and open documentation
 	@echo "Opening documentation in browser..."
-	@open $(DOCDIR)/doxygen/html/index.html
+	@open doc/doxygen/html/index.html
 
 clean-docs: ## Clean generated documentation
 	@echo "Cleaning documentation..."
@@ -368,6 +376,88 @@ format: ## Format code using clang-format
 	else \
 		echo "clang-format not found. Please install it for code formatting."; \
 	fi
+
+# =============================================================================
+# Help
+# =============================================================================
+
+.PHONY: help
+help: ## Show this help message with examples
+	@echo "Usage: make [target] [VAR=value]"
+	@echo ""
+	@echo "-----------------------------------------------------------------------------"
+	@echo " Main Targets"
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  make help                  - Show this help message."
+	@echo "  make                       - Default target. Compiles and runs all tests."
+	@echo "  make all                   - Same as 'make'."
+	@echo "  make compile_tests         - Compiles all test binaries without running them."
+	@echo "  make test                  - Runs all compiled tests (unit, integration, system)."
+	@echo ""
+	@echo "-----------------------------------------------------------------------------"
+	@echo " Running Test Suites"
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  make unit_tests            - Runs all unit tests."
+	@echo "  make integration_tests     - Runs all integration tests."
+	@echo "  make system_tests          - Runs all system tests."
+	@echo ""
+	@echo "-----------------------------------------------------------------------------"
+	@echo " Running Specific Tests"
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  To run a specific test, use 'run_unit_<test_name>', 'run_integration_<test_name>', or 'run_system_<test_name>'."
+	@echo "  The <test_name> is the basename of the test file without the .cpp extension."
+	@echo "  Examples:"
+	@echo "    make run_unit_agent_test"
+	@echo "    make run_integration_nic_test"
+	@echo "    make run_system_demo"
+	@echo ""
+	@echo "-----------------------------------------------------------------------------"
+	@echo " Build Configurations (via BUILD_TYPE variable)"
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  The default build type is 'debug'. Change it by passing BUILD_TYPE=<type>."
+	@echo "  Available types: debug, release, profile, strict, asan, tsan."
+	@echo "  Examples:"
+	@echo "    make BUILD_TYPE=release all           - Build and test in release mode."
+	@echo "    make BUILD_TYPE=asan compile_tests    - Compile tests with AddressSanitizer."
+	@echo "    make BUILD_TYPE=tsan compile_tests    - Compile tests with ThreadSanitizer."
+	@echo "    make BUILD_TYPE=strict test           - Run tests with strict compiler warnings."
+	@echo ""
+	@echo "-----------------------------------------------------------------------------"
+	@echo " Analysis and Debugging Tools"
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  make valgrind_<test_name>  - Run an integration test with Valgrind for memory checking."
+	@echo "    Example: make valgrind_nic_test"
+	@echo "  make coverage              - Generate a code coverage report."
+	@echo "  make thread_analysis       - Run thread analysis scripts."
+	@echo "  make config                - Show the current build configuration."
+	@echo "  make debug-vars            - Print Makefile variables for debugging."
+	@echo ""
+	@echo "-----------------------------------------------------------------------------"
+	@echo " Documentation"
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  make docs                  - Generate Doxygen documentation."
+	@echo "  make docs-open             - Generate and open documentation in a browser."
+	@echo "  make clean-docs            - Remove generated documentation."
+	@echo ""
+	@echo "-----------------------------------------------------------------------------"
+	@echo " Cleaning"
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  make clean                 - Remove all build artifacts (binaries, logs)."
+	@echo "  make distclean             - Perform 'clean' and also remove documentation."
+	@echo ""
+	@echo "-----------------------------------------------------------------------------"
+	@echo " Docker Support"
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  make docker-build          - Build the Docker image for the application."
+	@echo "  make docker-run            - Run the application inside a Docker container."
+	@echo ""
+	@echo "-----------------------------------------------------------------------------"
+	@echo " Other Utilities"
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  make format                - Format C++ code using clang-format."
+	@echo "  make install-deps          - Install development dependencies (e.g., Doxygen, Valgrind)."
+	@echo "  make platform-check        - Check for platform compatibility."
+	@echo ""
 
 # =============================================================================
 # Debug and Analysis

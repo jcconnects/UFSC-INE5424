@@ -302,6 +302,11 @@ template <typename NIC>
 int Protocol<NIC>::send(Address from, Address to, const void* data, unsigned int size) {
     db<Protocol>(TRC) << "Protocol<NIC>::send() called!\n";
 
+    if (!data || size == 0) {
+        db<Protocol>(WRN) << "[Protocol] SEND - Invalid data or size. Dropping message.\n";
+        return 0; // Or a specific error code
+    }
+
     if (!_nic) {
         db<Protocol>(TRC) << "Protocol<NIC>::send() called after release!\n";
         return 0;
@@ -467,6 +472,11 @@ template <typename NIC>
 int Protocol<NIC>::receive(Buffer* buf, Address *from, void* data, unsigned int size) {
     db<Protocol>(TRC) << "Protocol<NIC>::receive() called!\n";
 
+    if (!buf) {
+        db<Protocol>(WRN) << "[Protocol] receive() called with a null buffer.\n";
+        return -1;
+    }
+
     typename NIC::Address src_mac;
     typename NIC::Address dst_mac;
 
@@ -582,33 +592,32 @@ void Protocol<NIC>::update(typename NIC::Protocol_Number prot, Buffer * buf) {
         if (payload_size >= 1) {
             uint8_t raw_msg_type = message_data[0];
             
-                    // Check if this message type requires authentication
-        auto msg_type = static_cast<typename ProtocolMessage::Type>(raw_msg_type);
-        if (is_authenticated_message_type(msg_type)) {
+            // Check if this message type requires authentication
+            auto msg_type = static_cast<typename ProtocolMessage::Type>(raw_msg_type);
+
+            if (is_authenticated_message_type(msg_type)) {
             
-            db<Protocol>(TRC) << "[Protocol] Verifying Hybrid MAC for authenticated message (packet fields + payload)\n";
-            
-            // Verify MAC authentication (hybrid approach: message + packet fields)
-            // Note: TX timestamp is excluded from MAC calculation for architectural cleanliness
-            if (!verify_mac(message_data, payload_size, pkt->header(), 
-                           pkt->timestamps(), pkt->coordinates(), pkt->authentication()->mac)) {
-                db<Protocol>(WRN) << "[Protocol] Hybrid MAC verification failed - packet may be tampered\n";
+                // Verify MAC authentication (hybrid approach: message + packet fields)
+                // Note: TX timestamp is excluded from MAC calculation for architectural cleanliness
+                if (!verify_mac(message_data, payload_size, pkt->header(), 
+                            pkt->timestamps(), pkt->coordinates(), pkt->authentication()->mac)) {
+                    db<Protocol>(WRN) << "[Protocol] Hybrid MAC verification failed - packet may be tampered\n";
                 
-                // For vehicles: Send REQ message to leader RSU instead of just dropping
-                if (_entity_type == EntityType::VEHICLE && _vehicle_rsu_manager) {
-                    db<Protocol>(INF) << "[Protocol] Sending REQ message to leader RSU for failed authentication\n";
-                    send_req_message_to_leader(message_data, payload_size, pkt->authentication()->mac,
-                                               pkt->header(), pkt->timestamps(), pkt->coordinates());
-                } else {
-                    db<Protocol>(INF) << "[Protocol] RSU dropping message with failed MAC\n";
+                    // For vehicles: Send REQ message to leader RSU instead of just dropping
+                    if (_entity_type == EntityType::VEHICLE && _vehicle_rsu_manager) {
+                        db<Protocol>(INF) << "[Protocol] Sending REQ message to leader RSU for failed authentication\n";
+                        send_req_message_to_leader(message_data, payload_size, pkt->authentication()->mac,
+                                                pkt->header(), pkt->timestamps(), pkt->coordinates());
+                    } else {
+                        db<Protocol>(INF) << "[Protocol] RSU dropping message with failed MAC\n";
+                    }
+                
+                    free(buf);
+                    return;
                 }
-                
-                free(buf);
-                return;
-            }
             
-            db<Protocol>(INF) << "[Protocol] Hybrid MAC verification successful - packet integrity confirmed\n";
-        }
+                db<Protocol>(INF) << "[Protocol] Hybrid MAC verification successful - packet integrity confirmed\n";
+            }
             
             // STATUS message interception (no authentication required)
             if (raw_msg_type == static_cast<uint8_t>(ProtocolMessage::Type::STATUS)) {

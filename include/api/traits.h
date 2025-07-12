@@ -37,6 +37,8 @@ class LeaderKeyStorage;
 class RSU;
 template <typename Protocol_T>
 class VehicleRSUManager;
+template <typename V, size_t N>
+class StaticSizeHashedCache;
 
 // Traits definition
 template <typename T>
@@ -138,6 +140,12 @@ struct Traits<RSU> : public Traits<void>
 // Traits for VehicleRSUManager class
 template<typename Protocol_T>
 struct Traits<VehicleRSUManager<Protocol_T>> : public Traits<void>
+{
+    static const bool debugged = false;
+};
+
+template <typename V, unsigned int S>
+struct Traits<StaticSizeHashedCache<V, S>> : public Traits<void>
 {
     static const bool debugged = false;
 };

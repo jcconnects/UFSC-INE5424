@@ -79,7 +79,7 @@ public:
         _cleanup_thread = std::make_unique<Periodic_Thread<VehicleRSUManager>>(
             this, &VehicleRSUManager::cleanup_stale_rsus
         );
-        _cleanup_thread->start(5000000); // 5 seconds in microseconds
+        _cleanup_thread->start(1000000); // 1 seconds in microseconds
         db<VehicleRSUManager>(TRC) << "[RSUManager " << _vehicle_id 
                                    << "] Periodic cleanup thread started\n";
     }

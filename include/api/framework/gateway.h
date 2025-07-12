@@ -7,13 +7,13 @@
 #include <chrono>
 #include <sstream>
 
-#include "../network/communicator.h"
-#include "../network/bus.h"
-#include "network.h"
-#include "../util/csv_logger.h"
-#include "../network/message.h"
-#include "../util/debug.h"
-#include "../traits.h"
+#include "api/traits.h"
+#include "api/network/communicator.h"
+#include "api/network/bus.h"
+#include "api/framework/network.h"
+#include "api/util/csv_logger.h"
+#include "api/network/message.h"
+#include "api/util/debug.h"
 
 class Gateway {
     public:
@@ -30,6 +30,8 @@ class Gateway {
 
         Gateway(const unsigned int id, Network::EntityType entity_type = Network::EntityType::VEHICLE);
         ~Gateway();
+
+        void start();
 
         bool send(Message* message);
         bool receive(Message* msg);
@@ -66,7 +68,7 @@ class Gateway {
 };
 
 /******** Gateway Implementation ********/
-inline Gateway::Gateway(const unsigned int id, Network::EntityType entity_type) : _id(id) {
+inline Gateway::Gateway(const unsigned int id, Network::EntityType entity_type) : _id(id), _running(false) {
     db<Gateway>(TRC) << "Gateway::Gateway(" << id << ", entity_type) called!\n";
     _network = new Network(id, entity_type);
     
@@ -81,16 +83,25 @@ inline Gateway::Gateway(const unsigned int id, Network::EntityType entity_type) 
     _can->attach(_can_observer, c);
     
     db<Gateway>(INF) << "[Gateway " << _id << "] created with address: " << addr.to_string() << "\n";
+}
 
-    _running = true;
+inline void Gateway::start() {
+    db<Gateway>(TRC) << "Gateway::start() called for ID " << _id << "!\n";
+    if (_running.load()) {
+        db<Gateway>(WRN) << "[Gateway " << _id << "] start() called but already running.\n";
+        return;
+    }
+    _running.store(true, std::memory_order_release);
     pthread_create(&_receive_thread, nullptr, Gateway::mainloop, this);
     pthread_create(&_internal_thread, nullptr, Gateway::internalLoop, this);
-    
     db<Gateway>(INF) << "[Gateway " << _id << "] threads started\n";
 }
 
 inline Gateway::~Gateway() {
     db<Gateway>(TRC) << "Gateway::~Gateway() called for ID " << _id << "!\n";
+    if (!_running.load()) {
+        return;
+    }
     _running.store(false, std::memory_order_release);
 
     _comms->release();
@@ -231,16 +242,12 @@ inline bool Gateway::internalReceive(Message* msg) {
         db<Gateway>(WRN) << "[Gateway " << _id << "] no internal message received\n";
         return false;
     }
-
-    if (!received_msg) {
-        return false;
-    }
     
     // Copy the received message to the output parameter
     *msg = *received_msg;
     
     db<Gateway>(INF) << "[Gateway " << _id << "] received internal message of type " << static_cast<int>(msg->message_type()) 
-                     << " for unit " << msg->unit() << "\n";
+                     << " for unit " << msg->unit() << " external: " << msg->external() << "\n";
     
     // Clean up the received message
     delete received_msg;
@@ -257,7 +264,7 @@ inline void* Gateway::internalLoop(void* arg) {
         Message msg;
         if (self->internalReceive(&msg)) {
             // CRITICAL FIX: Check if message originated from this gateway to prevent feedback loop
-            if (msg.origin() == self->_comms->address()) {
+            if (msg.origin() == self->_comms->address() || !msg.external()) {
                 db<Gateway>(INF) << "[Gateway " << self->_id << "] ignoring internal message from self (origin: " 
                                  << msg.origin().to_string() << ", self: " << self->_comms->address().to_string() << ")\n";
                 continue;

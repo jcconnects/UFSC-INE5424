@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <sys/syscall.h>
 #include <unistd.h>
-#include "traits.h"
+#include "api/traits.h"
 
 class Debug
 {

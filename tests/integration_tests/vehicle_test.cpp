@@ -5,15 +5,13 @@
 #include <cstring>
 #include <vector>
 #include <exception>
+
 #include "app/vehicle.h"
 #include "../testcase.h"
 #include "../test_utils.h"
 
-// Include available component headers for testing
-#include "../../include/app/components/ecu_component.h"
-#include "../../include/app/components/camera_component.h"
-#include "../../include/app/components/lidar_component.h"
-#include "../../include/app/components/ins_component.h"
+// Component types are now created via factory functions in Vehicle
+// No need to include old inheritance-based component headers
 
 using namespace std::chrono_literals;
 

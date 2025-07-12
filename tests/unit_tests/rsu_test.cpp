@@ -1,6 +1,3 @@
-#include "../../tests/testcase.h"
-#include "../../include/api/framework/rsu.h"
-#include "../../include/api/util/debug.h"
 #include <thread>
 #include <vector>
 #include <atomic>
@@ -8,6 +5,10 @@
 #include <fstream>
 #include <string>
 #include <regex>
+
+#include "../testcase.h"
+#include "api/framework/rsu.h"
+#include "api/util/debug.h"
 
 using namespace std::chrono_literals;
 
@@ -116,7 +117,7 @@ RSUTest::RSUTest() {
 
     // === THREAD SAFETY AND CONCURRENCY TESTS ===
     DEFINE_TEST(testMultipleRSUInstances);
-    //DEFINE_TEST(testConcurrentStartStop);
+    DEFINE_TEST(testConcurrentStartStop);
     DEFINE_TEST(testThreadSafety);
 }
 
