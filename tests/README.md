@@ -10,7 +10,10 @@ tests/
 ├── unit_tests/         # Tests for individual components in isolation
 ├── integration_tests/  # Tests for interactions between components
 ├── system_tests/       # Tests for the entire system functioning together
+├── stubs/              # Stubs for the tests
 ├── test_utils.h        # Common utilities for all tests
+├── testcase.h          # Testcase class
+├── README.md           # This file
 └── CMakeLists.txt      # Build configuration for tests
 ```
 
@@ -81,44 +84,12 @@ Test outputs are stored in:
 
 Unit and integration tests output directly to the console, while system tests redirect their output to log files to keep the console clean. 
 
-## New Tests for P2 Component Architecture
+## Valgrind
 
-### Unit Tests
+The tests can be run with Valgrind to check for memory leaks.
 
-#### Component Test
-
-The `component_test` verifies the functionality of the non-templated `Component` base class introduced in the P2 architecture changes. It tests:
-
-- Component creation through the Initializer
-- Component lifecycle (start/stop)
-- Communicator initialization and basic message sending
-- Thread management
-
-To run:
 ```bash
-make run_unit_component_test
+make run_unit_<test_name>_valgrind
+make run_integration_<test_name>_valgrind
+make run_system_<test_name>_valgrind
 ```
-
-### Integration Tests
-
-#### Memory Management Test
-
-The `memory_management_test` verifies proper memory management of components when using `std::unique_ptr` in the Vehicle class. It tests:
-
-- Component memory allocation and deallocation
-- Vehicle component ownership
-- Cleanup during vehicle destruction
-
-This test can be run with Valgrind to check for memory leaks:
-```bash
-make run_integration_memory_management_test
-make run_integration_memory_management_test_valgrind
-```
-
-Both tests are also automatically included when running:
-```bash
-make unit_tests        # Includes component_test
-make integration_tests # Includes memory_management_test
-# Or just run all tests with:
-make
-``` 

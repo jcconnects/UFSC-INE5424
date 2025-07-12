@@ -6,45 +6,6 @@ This document provides an overview of the entire communication system architectu
 
 The communication system implements a layered architecture for network communication between autonomous vehicles. The system follows the Observer design pattern for asynchronous message passing between components.
 
-### Architecture Diagram
-
-```
-+------------------+    +------------------+
-|     Vehicle      |    |     Vehicle      |
-+------------------+    +------------------+
-         |                       |
-         v                       v
-+------------------+    +------------------+
-|   Components     |    |   Components     |
-| (ECU, LiDAR, etc)|    | (ECU, LiDAR, etc)|
-+------------------+    +------------------+
-         |                       |
-         v                       v
-+------------------+    +------------------+
-|   Communicator   |    |   Communicator   |
-+------------------+    +------------------+
-         |                       |
-         v                       v
-+------------------+    +------------------+
-|     Protocol     |    |     Protocol     |
-+------------------+    +------------------+
-         |                       |
-         v                       v
-+------------------+    +------------------+
-|       NIC        |    |       NIC        |
-+------------------+    +------------------+
-         |                       |
-         v                       v
-+------------------+    +------------------+
-|   SocketEngine   |    |   SocketEngine   |
-+------------------+    +------------------+
-         |                       |
-         v                       v
-+------------------+----+------------------+
-|              Network                     |
-+------------------------------------------+
-```
-
 ### Observer Pattern Flow
 
 The communication stack implements two types of Observer patterns:
@@ -56,46 +17,6 @@ The communication stack implements two types of Observer patterns:
 2. **Concurrent Observer Pattern** (Protocol → Communicator)
    - Protocol (via `Concurrent_Observed`) notifies Communicator (as `Concurrent_Observer`) based on port numbers
    - Enables asynchronous message handling with thread synchronization via semaphores
-
-## Component Documentation
-
-### Core Components
-
-| Component | Description | Detailed Documentation |
-|-----------|-------------|------------------------|
-| **Initializer** | Manages process creation and lifecycle for vehicles and communication components | [README-Initializer.md](classes/README-Initializer.md) |
-| **Observer** | Implements thread-safe observer patterns for asynchronous communication | [README-Observer.md](classes/README-Observer.md) |
-| **Vehicle** | Manages the lifecycle of a vehicle and its components | [Vehicle.h](../include/vehicle.h) |
-| **Component** | Base class for all vehicle components with thread management | [Component.h](../include/component.h) |
-
-### Communication Stack
-
-| Layer | Component | Description | Detailed Documentation |
-|-------|-----------|-------------|------------------------|
-| Application | **Communicator** | High-level communication endpoint for applications | [README-Communicator.md](classes/README-Communicator.md) |
-| Transport | **Protocol** | Implements port-based addressing and message routing | [README-Protocol.md](classes/README-Protocol.md) |
-| Network | **NIC** | Network interface card implementation for frame handling | [README-Nic.md](classes/README-Nic.md) |
-| Link | **Ethernet** | Ethernet frame handling and MAC address management | [README-Ethernet.md](classes/README-Ethernet.md) |
-| Physical | **SocketEngine** | Low-level network access with raw sockets and asynchronous I/O | [README-SocketEngine.md](classes/README-SocketEngine.md) |
-| Physical (Alt) | **SharedMemoryEngine** | Shared memory communication for local inter-process communication | [README-SharedMemoryEngine.md](classes/README-SharedMemoryEngine.md) |
-
-### Vehicle Components
-
-| Component | Description | Source File |
-|-----------|-------------|-------------|
-| **LiDAR Component** | Generates and transmits point cloud data | [lidar_component.h](../include/components/lidar_component.h) |
-| **Camera Component** | Simulates video frame capture and transmission | [camera_component.h](../include/components/camera_component.h) |
-| **ECU Component** | Electronic Control Unit for vehicle management | [ecu_component.h](../include/components/ecu_component.h) |
-| **INS Component** | Inertial Navigation System for position tracking | [ins_component.h](../include/components/ins_component.h) |
-| **Battery Component** | Battery status monitoring and reporting | [battery_component.h](../include/components/battery_component.h) |
-
-### Data Structures
-
-| Component | Description | Detailed Documentation |
-|-----------|-------------|------------------------|
-| **Message** | Generic container for communication data | [README-Message.md](classes/README-Message.md) |
-| **Buffer** | Memory management for network data | [README-Buffer.md](classes/README-Buffer.md) |
-| **Address** | Addressing scheme for communication endpoints | [address.h](../include/address.h) |
 
 ## Component Relationships
 
@@ -126,41 +47,6 @@ The Component architecture follows these principles:
    - All components derive from the Component base class
    - Specialized components implement specific vehicle functions
    - Components have a standard interface but custom behaviors
-
-### Communication Flow
-
-1. **Message Creation**:
-   - Component creates a **Message** with data
-   - **Component** uses its **Communicator** to prepare the message for transmission
-
-2. **Message Sending**:
-   - **Communicator** passes message to **Protocol**
-   - **Protocol** adds protocol headers and passes to **NIC**
-   - **NIC** formats an **Ethernet** frame and passes to **SocketEngine** or **SharedMemoryEngine**
-   - Engine transmits the raw frame to the network or shared memory
-
-3. **Message Reception**:
-   - Engine receives a raw frame via its dedicated thread
-   - Engine notifies **NIC** through its callback mechanism
-   - **NIC** notifies **Protocol** based on protocol number (Conditional Observer)
-   - **Protocol** processes the frame and notifies **Communicator** based on port (Concurrent Observer)
-   - **Communicator** delivers the **Message** to the appropriate **Component**
-
-### Engine Integration
-
-The system supports two types of communication engines:
-
-1. **SocketEngine**:
-   - Implemented with raw sockets for direct Ethernet frame transmission/reception
-   - Uses epoll for efficient asynchronous I/O
-   - Runs a dedicated thread for receiving frames
-   - Provides callback mechanism that integrates with the NIC layer
-
-2. **SharedMemoryEngine**:
-   - Provides efficient local inter-process communication
-   - Uses shared memory regions for data exchange
-   - Supports high-throughput communication between local processes
-   - Integrates with the same NIC interface as SocketEngine
 
 ## Implementation Details
 
@@ -202,36 +88,4 @@ For detailed usage examples of each component, refer to their respective README 
 5. **Callback Pattern**: For asynchronous event handling in communication engines
 6. **Thread-Per-Component**: Each component runs in its own thread for isolation
 
-## Testing Framework
-
-The system includes a comprehensive testing framework organized in a hierarchical structure to ensure robust verification at all levels:
-
-### Test Organization
-
-Tests are located in the `tests/` directory and organized into three levels:
-
-1. **Unit Tests** (`tests/unit_tests/`)
-   - Test individual components in isolation
-   - Verify core functionality of each class
-   - Run first in the test sequence
-
-2. **Integration Tests** (`tests/integration_tests/`)
-   - Test interactions between multiple components
-   - Verify correct communication between layers
-   - Run after unit tests pass
-
-3. **System Tests** (`tests/system_tests/`)
-   - Test the entire system functioning together
-   - Simulate real-world usage scenarios
-   - Run after integration tests pass
-
-### Network Interface Management
-
-The tests create a dummy network interface for simulation:
-
-- Uses a unique interface name (`test-dummy0`) to avoid conflicts with real interfaces
-- Implements safety checks to ensure real network interfaces are never modified
-- Interface is automatically created before tests and removed afterward
-- Tests verify that the interface is a dummy interface before attempting deletion
-
-For more details on the testing framework, see [README_tests.md](README_tests.md) and the testing directory's [README.md](../tests/README.md). 
+For more details on the testing framework, the testing directory's [README.md](../tests/README.md). 
