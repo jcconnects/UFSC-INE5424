@@ -31,8 +31,7 @@ jobs:
         
     - name: Generate documentation
       run: |
-        mkdir -p doc/doxygen
-        doxygen
+        make docs
         
     - name: Setup Pages
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
