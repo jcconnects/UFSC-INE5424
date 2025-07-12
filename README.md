@@ -50,7 +50,7 @@ The build creates a dummy network interface; real interfaces remain untouched.
 ## 4. Documentation & Slides
 
 * 🌐 **Online API docs** (GitHub Pages) — auto-generated Doxygen:  
-  https://joaopedroschmidtcordeiro.github.io/UFSC-INE5424/
+  https://jcconnects.github.io/UFSC-INE5424/
 * 📚 **System architecture & implementation details**: [`doc/README.md`](doc/README.md)
 * 📚 **Test environment**: [`tests/README.md`](tests/README.md)
 * 🎞️ **Stage slides**: [`doc/slides.md`](doc/slides.md)
